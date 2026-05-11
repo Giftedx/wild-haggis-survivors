@@ -22,6 +22,7 @@ import { renderGameOverGoldPanel } from './game-over/renderGameOverGoldPanel';
 import { renderGameOverStatGrid } from './game-over/renderGameOverStatGrid';
 import { renderGameOverSeedAndLinkRows } from './game-over/renderGameOverSeedAndLinkRows';
 import { renderGameOverActionRow } from './game-over/renderGameOverActionRow';
+import { renderGameOverWeeTale } from './game-over/renderGameOverWeeTale';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -276,6 +277,27 @@ export class GameOverScene extends Phaser.Scene {
       uiScale,
       payload: this.payload,
       focusController: this.focusController,
+    });
+
+    // Wee Tale — single italic prose epitaph closing the run. Sits
+    // BELOW the action button row as a soft footer line so it
+    // never collides with the inner-panel / seed-row stack. Clamped
+    // both inside the panel (panelTop + PANEL_H - 6) and inside the
+    // canvas (height - 8) so the bottom-most line is always visible
+    // on short viewports.
+    const weeTaleY = Math.min(
+      buttonsY + (compact ? 22 : 26),
+      panelTop + PANEL_H - 6,
+      height - 8,
+    );
+    renderGameOverWeeTale({
+      scene: this,
+      payload: this.payload,
+      panelCenterX,
+      centerY: weeTaleY,
+      maxWidth: PANEL_W - 32,
+      uiScale,
+      depth: d + 3,
     });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {

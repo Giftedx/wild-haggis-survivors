@@ -168,4 +168,19 @@ describe('W18 locale scaffolding', () => {
     const scsBanter = (SCS_STRINGS.ui as LocaleTree).banter as LocaleTree;
     expect(collectMissingLeaves(enBanter, scsBanter, 'ui.banter')).toEqual([]);
   });
+
+  /**
+   * Wee Tales — closing prose lines at run end. Voice-card lore
+   * content is bilingual-locked: every EN wee-tale leaf must have a
+   * Scots counterpart. Catches future authoring slips where an EN
+   * line lands without a matching SCS entry — the Scots player
+   * would see the EN line via the locale fallback, which silently
+   * defeats the overlay for the most narratively visible surface
+   * of the run.
+   */
+  it('every EN wee-tale leaf has a Scots translation', () => {
+    const enWeeTale = (EN_STRINGS.ui as LocaleTree).weeTale as LocaleTree;
+    const scsWeeTale = (SCS_STRINGS.ui as LocaleTree).weeTale as LocaleTree;
+    expect(collectMissingLeaves(enWeeTale, scsWeeTale, 'ui.weeTale')).toEqual([]);
+  });
 });

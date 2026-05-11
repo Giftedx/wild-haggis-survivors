@@ -1,0 +1,297 @@
+/**
+ * Wee Tales — procedural prose epitaph at run end.
+ *
+ * A pure function pair: `computeWeeTaleTags(context)` derives a tag-
+ * set from a `WeeTaleContext`; `pickWeeTale(context, rngSample)`
+ * returns an `{ i18nKey, params }` descriptor that the caller
+ * resolves through `t()`. The caller (Game Over scene) supplies a
+ * seed-derived `rngSample ∈ [0, 1)` so the same run always closes
+ * with the same line — the wee tale is part of the run's identity,
+ * not a re-roll on every game-over render.
+ *
+ * Selection algorithm:
+ *   1. Tag the context (mode, duration bucket, boss roster, variant,
+ *      ironmoor / curse / post-bell, death source).
+ *   2. Filter the catalogue: keep templates whose `requires` is a
+ *      subset of the tag-set AND whose `forbids` is disjoint.
+ *   3. Weight by specificity — more required tags = higher weight,
+ *      so a memorable run gets a memorable line; a generic swarm
+ *      death still gets a kindly baseline.
+ *   4. Sample the weighted pool with `rngSample`.
+ *
+ * Voice register: Hearth-warm for victory, Hearth-grave for death
+ * (per `docs/VOICE_CARD.md`). NO maudlin / saccharine; the moor is
+ * kind without pity. NO competitive framing; the haggis is the
+ * protagonist, not the player's avatar to brag with.
+ *
+ * Architectural note: the picker is i18n-agnostic — it returns the
+ * key + params and lets the caller resolve. That keeps the unit
+ * tests independent of locale state and makes Scots overlay parity
+ * a content authoring concern rather than an engine concern.
+ */
+import type { VariantKey } from '../data/variants';
+import type { BiomeId } from '../data/biomes';
+import { formatClockTime } from './formatClockTime';
+
+export interface WeeTaleContext {
+  readonly mode: 'victory' | 'death';
+  readonly variantKey: VariantKey;
+  readonly timeSurvivedSec: number;
+  /** Boss enemy keys in kill order. Empty for non-boss runs. */
+  readonly bossesKilled: readonly string[];
+  /** Enemy key that landed the killing blow (death runs only). */
+  readonly deathSourceKey?: string;
+  /** Route keys picked across the run's act intermissions. */
+  readonly routes: readonly string[];
+  /** Relic keys held at run end. */
+  readonly relics: readonly string[];
+  /** Biome ids the player walked across this run. */
+  readonly biomes: readonly BiomeId[];
+  readonly ironmoor: boolean;
+  /** Curse key if a curse was active; undefined / empty = clean run. */
+  readonly curseKey?: string;
+  /** Seconds spent past the 25-minute bell (post-bell endless tail). */
+  readonly postBellSec?: number;
+}
+
+/**
+ * Closed union of every tag the catalogue is permitted to reference.
+ * Adding a new tag here without a corresponding clause in
+ * `computeWeeTaleTags` is a compile-time guarded miss (no template
+ * will ever match the new tag).
+ */
+export type WeeTaleTag =
+  | 'victory' | 'death'
+  | 'short' | 'long' | 'epic'
+  | 'no_boss' | 'any_boss'
+  | 'gordon' | 'tour_bus' | 'taxman'
+  | 'each_uisge' | 'nicnevin' | 'the_laird' | 'hunter_general'
+  | 'gordon_death' | 'tour_bus_death' | 'taxman_death'
+  | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'hunter_general_death'
+  | 'cursed' | 'ironmoor' | 'post_bell'
+  | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
+  | 'biome_coastal' | 'biome_haar' | 'biome_frost'
+  | VariantKey;
+
+export interface WeeTaleTemplate {
+  /** i18n dot-path resolved by the caller through `t(key, params)`. */
+  readonly key: string;
+  /** Tags ALL of which must be in the context tag-set. */
+  readonly requires?: readonly WeeTaleTag[];
+  /** Tags NONE of which may be in the context tag-set. */
+  readonly forbids?: readonly WeeTaleTag[];
+  /** Base weight before specificity bonus. Default 1. */
+  readonly weight?: number;
+}
+
+/** Time bucket thresholds — seconds. */
+const SHORT_THRESHOLD_SEC = 180;     // 3:00
+const LONG_THRESHOLD_SEC = 720;      // 12:00
+const EPIC_THRESHOLD_SEC = 1200;     // 20:00
+
+/**
+ * Derive the tag-set for a context. Pure: no module-level state, no
+ * randomness, no i18n. The union of every clause's output should be
+ * a subset of the `WeeTaleTag` union type — adding a tag below
+ * without extending the union (or a template `requires` clause
+ * without extending the tagger) drifts the picker silently, so the
+ * two surfaces are kept in lockstep by tests.
+ */
+export function computeWeeTaleTags(ctx: WeeTaleContext): Set<WeeTaleTag> {
+  const tags = new Set<WeeTaleTag>();
+  tags.add(ctx.mode);
+
+  // Duration buckets — non-overlapping. A run that lasts exactly the
+  // boundary value counts as the lower bucket (e.g. 180 s = `short`).
+  if (ctx.timeSurvivedSec >= EPIC_THRESHOLD_SEC) tags.add('epic');
+  else if (ctx.timeSurvivedSec > LONG_THRESHOLD_SEC) tags.add('long');
+  else if (ctx.timeSurvivedSec <= SHORT_THRESHOLD_SEC) tags.add('short');
+  else tags.add('long');
+
+  // Boss roster — every boss killed this run gets its own tag plus
+  // an `any_boss` umbrella so umbrella templates can match without
+  // the picker needing to OR across every specific key.
+  if (ctx.bossesKilled.length === 0) {
+    tags.add('no_boss');
+  } else {
+    tags.add('any_boss');
+    for (const b of ctx.bossesKilled) {
+      // The cast is intentional — we tag every boss key the run
+      // produced, even if it isn't in the closed union (future-proof
+      // for new bosses without a template). The catalogue only
+      // references the known seven.
+      tags.add(b as WeeTaleTag);
+    }
+  }
+
+  // Death source — separate tag namespace so a "taxman killed you"
+  // template doesn't accidentally match a "you killed the taxman"
+  // run. The suffix `_death` is the discriminator.
+  if (ctx.mode === 'death' && typeof ctx.deathSourceKey === 'string' && ctx.deathSourceKey.length > 0) {
+    tags.add(`${ctx.deathSourceKey}_death` as WeeTaleTag);
+  }
+
+  if (ctx.ironmoor) tags.add('ironmoor');
+  if (typeof ctx.curseKey === 'string' && ctx.curseKey.length > 0) tags.add('cursed');
+  if (typeof ctx.postBellSec === 'number' && ctx.postBellSec > 0) tags.add('post_bell');
+
+  // Variant — every run has exactly one. Direct add (the
+  // VariantKey union is part of `WeeTaleTag`).
+  tags.add(ctx.variantKey);
+
+  for (const b of ctx.biomes) {
+    tags.add(`biome_${b}` as WeeTaleTag);
+  }
+
+  return tags;
+}
+
+/**
+ * Filter the catalogue down to templates whose tag constraints are
+ * satisfied by the context tag-set. Order in the returned array
+ * matches the catalogue's authoring order (stable for replay
+ * determinism).
+ */
+export function weeTalePoolForContext(ctx: WeeTaleContext): WeeTaleTemplate[] {
+  const tags = computeWeeTaleTags(ctx);
+  return WEE_TALE_TEMPLATES.filter((tmpl) => {
+    const requires = tmpl.requires ?? [];
+    for (const r of requires) {
+      if (!tags.has(r)) return false;
+    }
+    const forbids = tmpl.forbids ?? [];
+    for (const f of forbids) {
+      if (tags.has(f)) return false;
+    }
+    return true;
+  });
+}
+
+export interface WeeTalePick {
+  readonly i18nKey: string;
+  readonly params: Readonly<Record<string, string | number>>;
+}
+
+/**
+ * Sample one template from the context's filtered pool, then build
+ * the substitution params. Returns `null` only when the catalogue
+ * has no matching template AT ALL — the shipped catalogue ensures
+ * that's impossible (death + victory fallback families always
+ * match), but the null return type keeps callers honest if a future
+ * authoring slip empties the pool.
+ */
+export function pickWeeTale(ctx: WeeTaleContext, rngSample: number): WeeTalePick | null {
+  const pool = weeTalePoolForContext(ctx);
+  if (pool.length === 0) return null;
+
+  // Weight: base × 4^specificity. Specificity = # of required tags.
+  // Exponential curve so a tier-3 template (~64) decisively beats
+  // tier-2 (~16) which decisively beats the tier-1 fallbacks (~4),
+  // even when the fallback family has more entries authored. This
+  // matches the design intent: a memorable run (e.g. Taxman kill,
+  // post-bell, cursed) should consistently get a memorable line.
+  const weights = pool.map((tmpl) => {
+    const base = tmpl.weight ?? 1;
+    const specificity = (tmpl.requires ?? []).length;
+    return base * Math.pow(4, specificity);
+  });
+  const total = weights.reduce((s, w) => s + w, 0);
+
+  const sample = clamp01(rngSample) * total;
+  let acc = 0;
+  let picked = pool[pool.length - 1]!;
+  for (let i = 0; i < pool.length; i++) {
+    acc += weights[i]!;
+    if (sample <= acc) {
+      picked = pool[i]!;
+      break;
+    }
+  }
+
+  return {
+    i18nKey: picked.key,
+    params: buildTemplateParams(ctx),
+  };
+}
+
+function clamp01(x: number): number {
+  if (!Number.isFinite(x)) return 0;
+  if (x < 0) return 0;
+  if (x >= 1) return 0.9999999;
+  return x;
+}
+
+/**
+ * Build the i18n substitution params shared across every template.
+ * The catalogue only references slot names that the run context can
+ * fill — `{time}`, `{variant}`, `{boss}`, `{source}`. A template
+ * that mentions an unfilled slot will resolve the literal slot
+ * marker (e.g. `{boss}`) at render time, which the parity test
+ * catches.
+ *
+ * `time` uses mm:ss without zero-padding the minutes (matches
+ * `formatClockTime`). `boss` is the LAST boss killed (memorable
+ * close); `source` is the killer enemy key (death runs).
+ */
+function buildTemplateParams(ctx: WeeTaleContext): Record<string, string | number> {
+  const params: Record<string, string | number> = {
+    time: formatClockTime(Math.max(0, Math.floor(ctx.timeSurvivedSec))),
+    variant: ctx.variantKey,
+  };
+  if (ctx.bossesKilled.length > 0) {
+    params.boss = ctx.bossesKilled[ctx.bossesKilled.length - 1]!;
+  }
+  if (ctx.deathSourceKey) {
+    params.source = ctx.deathSourceKey;
+  }
+  return params;
+}
+
+/**
+ * The wee tale catalogue.
+ *
+ * Authoring rules (per `docs/VOICE_CARD.md`):
+ *   - Hearth-grave for death; Hearth-warm for victory.
+ *   - No maudlin "rest in peace" lines — the moor is kind without
+ *     pity.
+ *   - No competitive framing — the player isn't bragging.
+ *   - 1–2 sentences max; the panel has limited room.
+ *   - `{slot}` substitutions only for slots `time` / `variant` /
+ *     `boss` / `source`; resolution + display-name lookup happens at
+ *     render time in the scene.
+ *
+ * Order: generic fallbacks first (so authoring order matches the
+ * specificity ramp), then per-boss / per-variant flavour leaves.
+ */
+export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
+  // ── Death fallbacks (single-tag) ───────────────────────────────
+  { key: 'ui.weeTale.death.fallback_a', requires: ['death'] },
+  { key: 'ui.weeTale.death.fallback_b', requires: ['death'] },
+  { key: 'ui.weeTale.death.fallback_c', requires: ['death'] },
+
+  // ── Death by time bucket ──────────────────────────────────────
+  { key: 'ui.weeTale.death.short_a', requires: ['death', 'short'] },
+  { key: 'ui.weeTale.death.long_a', requires: ['death', 'long'] },
+  { key: 'ui.weeTale.death.epic_a', requires: ['death', 'epic'] },
+
+  // ── Death by killer (act-resolver bosses are the memorable ones) ──
+  { key: 'ui.weeTale.death.taxman', requires: ['death', 'taxman_death'] },
+  { key: 'ui.weeTale.death.gordon', requires: ['death', 'gordon_death'] },
+  { key: 'ui.weeTale.death.tour_bus', requires: ['death', 'tour_bus_death'] },
+  // Tier-3 — the Taxman by definition is the post-bell boss, but
+  // having a dedicated line for "taxman + post-bell" lifts the
+  // specificity tier so the Taxman gets the closing word on any run
+  // he finishes (most expected; matches the lore framing).
+  { key: 'ui.weeTale.death.taxman_postbell', requires: ['death', 'taxman_death', 'post_bell'] },
+
+  // ── Victory fallbacks (single-tag) ─────────────────────────────
+  { key: 'ui.weeTale.victory.fallback_a', requires: ['victory'] },
+  { key: 'ui.weeTale.victory.fallback_b', requires: ['victory'] },
+
+  // ── Victory by accomplishment ──────────────────────────────────
+  { key: 'ui.weeTale.victory.epic', requires: ['victory', 'epic'] },
+  { key: 'ui.weeTale.victory.cursed', requires: ['victory', 'cursed'] },
+  { key: 'ui.weeTale.victory.ironmoor', requires: ['victory', 'ironmoor'] },
+  { key: 'ui.weeTale.victory.taxman_kill', requires: ['victory', 'taxman'] },
+  { key: 'ui.weeTale.victory.three_bosses', requires: ['victory', 'gordon', 'tour_bus', 'taxman'] },
+] as const;

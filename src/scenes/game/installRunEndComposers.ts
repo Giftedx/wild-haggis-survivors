@@ -77,6 +77,13 @@ export interface InstallRunEndComposersOpts {
   getRouteLabels(): readonly string[];
   getRelicLabels(): readonly string[];
   getRuneLabels(): readonly string[];
+  /**
+   * Wee Tales — boss enemy keys killed this run, in kill order.
+   * Threaded into the RunExitComposer so the Game Over payload's
+   * `bossKilledKeys` field can drive the wee-tale picker tag-set
+   * (`any_boss`, `gordon`, `tour_bus`, `taxman`, …).
+   */
+  getBossKilledKeys(): readonly string[];
 
   // RunHistoryRecorder-only.
   getBossKillCount(): number;
@@ -135,6 +142,10 @@ export function installRunEndComposers(
     getRouteLabels: opts.getRouteLabels,
     getRelicLabels: opts.getRelicLabels,
     getRuneLabels: opts.getRuneLabels,
+    // Wee Tales — share the same biomes-visited accessor that the
+    // history recorder already uses, plus the new boss-kill roster.
+    getBossKilledKeys: opts.getBossKilledKeys,
+    getBiomesVisited: opts.getBiomesVisited,
   };
   const runExit = new RunExitComposer(runExitHooks);
 

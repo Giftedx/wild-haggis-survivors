@@ -223,6 +223,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * `src/scenes/game/bossKillHighlight.ts` for the contract.
    */
   bossKillHighlight: import('./game/bossKillHighlight').BossKillHighlight | null = null;
+  /**
+   * Wee Tales (2026-05-11) — ordered list of boss enemy keys killed
+   * this run. Populated alongside `bossKillHighlight` in the
+   * `onBossKilled` callback. Read by GameOverScene to drive the
+   * wee-tale picker's tag-set (so a "three_bosses victory" line
+   * matches a run that actually killed gordon + tour_bus + taxman).
+   * Reset in `resetTransientRunState`.
+   */
+  bossKilledKeys: string[] = [];
   edgeIndicators!: EdgeIndicators;
   minimap!: Minimap;
   /** M1 Moor Road — per-run node-path system + HUD widget. */
@@ -608,6 +617,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setRelicSlotUI: (v) => { this.relicSlotUI = v; },
       setXpOverflowGoldBatch: (v) => { this.xpOverflowGoldBatch = v; },
       setBossKillHighlight: (v) => { this.bossKillHighlight = v; },
+      setBossKilledKeys: (v) => { this.bossKilledKeys = v; },
     });
 
     // S1 Phase 2 — clear last run's snapshot. The field is overwritten
@@ -1060,6 +1070,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRouteLabels: () => resolveRouteLabels(this.runActState.pickerHistory),
       getRelicLabels: () => resolveRelicLabels(this.relicSystem ?? null),
       getRuneLabels: () => resolveRuneLabels(this.ownedRuneIds),
+      // Wee Tales — surface the per-run boss-kill roster to the run
+      // exit composer; `getBiomesVisited` (further below) already
+      // feeds both history + exit composers via the install hook.
+      getBossKilledKeys: () => this.bossKilledKeys,
       getBossKillCount: () => this.runScore.bossKillCount,
       getRoutePicks: () => this.runActState.pickerHistory,
       getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
@@ -1140,6 +1154,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onEliteKilled: (x, y) => this.relicOrchestrator.rollAndSpawn('elite', x, y),
       onBossKilled: (bossKey, x, y) => {
         this.relicOrchestrator.rollAndSpawn('boss', x, y, bossKey);
+        // Wee Tales — record the boss key in kill order so the run-end
+        // tale-picker can match a "three_bosses victory" or per-boss
+        // line. Push-only here; resetTransientRunState clears the
+        // array on the next run.
+        this.bossKilledKeys.push(bossKey);
         // W82 Phase 3 — snapshot the rolling buffer at the kill
         // moment. Non-destructive: the recorder keeps rolling so a
         // subsequent boss kill produces its own clean snapshot

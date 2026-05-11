@@ -3629,4 +3629,49 @@ export const ui = {
     shared_run_challenge_victory_clean: '↗ Shared run · {variant} · {time} to beat',
     shared_run_challenge_death_clean: '↗ Shared run · {variant} · {time} to outlast',
   },
+  /**
+   * Wee Tales — single procedural prose epitaph that closes a run.
+   *
+   * Voice register: Hearth (per `docs/VOICE_CARD.md`).
+   *   - Death lines are grave-warm, not maudlin. The moor is kind
+   *     without pity. NO "rest in peace" or "may they find rest" —
+   *     the haggis isn't dead, the *run* ended.
+   *   - Victory lines are warm without being braggy. "Walked home"
+   *     is the canonical phrase — the run survived, not the player
+   *     conquered.
+   *   - 1–2 sentences max; the panel has limited room.
+   *
+   * Slots: `{time}` is mm:ss-formatted; `{boss}` and `{source}` are
+   * enemy keys that the render path resolves into display names via
+   * `getEnemyDisplayName()`; `{variant}` is the variant key that the
+   * render path resolves into a variant display name.
+   */
+  weeTale: {
+    death: {
+      // Generic fallbacks (1-tag specificity) — kindly, no specifics.
+      fallback_a: 'The moor closed gently at {time}. There\'ll be another walk.',
+      fallback_b: 'Down at {time}. The peat keeps its own counting.',
+      fallback_c: 'Run ended at {time}. The hawthorn still bends where ye walked.',
+      // Time-bucket lines — short / long / epic.
+      short_a: 'A short walk: {time}. The moor was learning ye too.',
+      long_a: 'A long walk: {time}. The boots remembered the road.',
+      epic_a: 'A long, lit walk: {time}. The moor saw ye go far.',
+      // Killer-flavoured death lines for the act-resolver bosses.
+      gordon: 'Felled at {time} by Gordon\'s sergeants. Even a slow boss has a fast minute.',
+      tour_bus: 'The tour bus came round the bend at {time}. Headlights, then nothing.',
+      taxman: 'The Taxman closed the ledger at {time}. A debt only ever called once.',
+      taxman_postbell: 'Past the bell-toll. The Taxman caught up at {time} — he always does, eventually.',
+    },
+    victory: {
+      // Generic victory fallbacks (1-tag).
+      fallback_a: 'Walked home at {time}. The kettle was on.',
+      fallback_b: 'Made it back at {time}. Gran will hear the whole of it.',
+      // Specific accomplishment lines.
+      epic: 'Walked home at {time} with the moor singing behind. A long, lit road.',
+      cursed: 'Bore the burden the whole way and still walked home at {time}. The hawthorn bends.',
+      ironmoor: 'Ironmoor cleared at {time}. Once was enough — and once is plenty.',
+      taxman_kill: 'Closed the Taxman\'s ledger at {time}. He won\'t forget; the haggis won\'t either.',
+      three_bosses: 'Three boss-skulls in the heather behind. Home at {time}, walking light.',
+    },
+  },
 } as const;

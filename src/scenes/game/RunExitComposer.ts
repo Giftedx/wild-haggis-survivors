@@ -58,6 +58,19 @@ export interface RunExitHooks {
   getOwnedPassivesLength(): number;
   getEvolvedWeaponsLength(): number;
 
+  /**
+   * Wee Tales — boss enemy keys killed this run, in kill order.
+   * Optional so legacy / test mocks don't have to set up the
+   * roster; missing → empty list → wee-tale picker tags `no_boss`.
+   */
+  getBossKilledKeys?(): readonly string[];
+  /**
+   * Wee Tales — biome IDs the player walked across this run.
+   * Optional for the same reason; missing → no biome tags surface
+   * on the wee-tale picker.
+   */
+  getBiomesVisited?(): readonly string[];
+
   // Phaser-side transitions — injected so this module stays Phaser-free.
   stopGameScene(): void;
   startGameOverScene(payload: GameOverPayload): void;
@@ -172,6 +185,17 @@ export class RunExitComposer {
       ...(h.getRuneLabels ? (() => {
         const runes = h.getRuneLabels!();
         return runes.length > 0 ? { runeLabels: runes } : {};
+      })() : {}),
+      // Wee Tales — pass through the roster + biome set for the
+      // run-end tale picker. Omit empty lists so the payload stays
+      // tidy when nothing memorable happened.
+      ...(h.getBossKilledKeys ? (() => {
+        const keys = h.getBossKilledKeys!();
+        return keys.length > 0 ? { bossKilledKeys: [...keys] } : {};
+      })() : {}),
+      ...(h.getBiomesVisited ? (() => {
+        const biomes = h.getBiomesVisited!();
+        return biomes.length > 0 ? { biomesVisited: [...biomes] } : {};
       })() : {}),
     };
   }

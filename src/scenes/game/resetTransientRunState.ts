@@ -141,6 +141,11 @@ export interface ResetTransientRunStateDeps {
    * scene instance never serves the previous run's clip Blob.
    */
   setBossKillHighlight: (v: null) => void;
+  /**
+   * Wee Tales — clears the run's boss-kill key roster so a recycled
+   * scene starts the next run's tale-context tagging clean.
+   */
+  setBossKilledKeys: (v: string[]) => void;
 }
 
 /**
@@ -237,4 +242,6 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   // the rolling-buffer chunks for GC) so the recycled scene starts
   // fresh.
   deps.setBossKillHighlight(null);
+  // Wee Tales — clear the boss-kill key roster.
+  deps.setBossKilledKeys([]);
 }

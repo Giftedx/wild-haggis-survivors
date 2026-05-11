@@ -2906,4 +2906,27 @@ export const ui = {
     shared_run_challenge_victory_clean: '↗ Shared run · {variant} · {time} tae beat',
     shared_run_challenge_death_clean: '↗ Shared run · {variant} · {time} tae outlast',
   },
+  weeTale: {
+    death: {
+      fallback_a: 'Tha moor closed gently at {time}. There\'ll be anither walk.',
+      fallback_b: 'Doon at {time}. Tha peat keeps its ain coontin.',
+      fallback_c: 'Run ended at {time}. Tha hawthorn still bends whaur ye walked.',
+      short_a: 'A wee walk: {time}. Tha moor wis learnin ye an aw.',
+      long_a: 'A lang walk: {time}. Tha buits mindit the road.',
+      epic_a: 'A lang, lit walk: {time}. Tha moor saw ye gang far.',
+      gordon: 'Felled at {time} by Gordon\'s sergeants. Even a slow boss has a fast minute.',
+      tour_bus: 'Tha tour bus cam roond tha bend at {time}. Heidlichts, then naethin.',
+      taxman: 'Tha Taxman closed tha ledger at {time}. A debt cried but the wance.',
+      taxman_postbell: 'Past tha bell-toll. Tha Taxman caught up at {time} — he aye dis, by-an-by.',
+    },
+    victory: {
+      fallback_a: 'Walked hame at {time}. Tha kettle wis oan.',
+      fallback_b: 'Got back at {time}. Gran\'ll hear tha hale o it.',
+      epic: 'Walked hame at {time} wi tha moor singin ahint. A lang, lit road.',
+      cursed: 'Cairried tha burden the haill wey an still walked hame at {time}. Tha hawthorn bends.',
+      ironmoor: 'Ironmoor cleared at {time}. Wance wis aneuch — an wance is plenty.',
+      taxman_kill: 'Steekit tha Taxman\'s ledger at {time}. He\'ll no forget; tha haggis winnae either.',
+      three_bosses: 'Three boss-skulls in tha heather ahint. Hame at {time}, walkin licht.',
+    },
+  },
 } as const;

@@ -64,4 +64,20 @@ export interface GameOverPayload {
    * `variantLabel` above; this radiator does not duplicate it.
    */
   runeLabels?: readonly string[];
+  /**
+   * Wee Tales (2026-05-11) — boss enemy keys killed this run, in
+   * kill order. Drives the wee-tale picker's `any_boss` umbrella
+   * tag plus per-boss tags (gordon / tour_bus / taxman / …) so a
+   * "three boss-skulls in the heather" line can match a real
+   * triple-kill victory. Omitted when no boss was killed; defaults
+   * to empty array on the consumer side.
+   */
+  bossKilledKeys?: readonly string[];
+  /**
+   * Wee Tales — biome IDs the player walked across this run. Drives
+   * the optional `biome_*` tag clauses on the wee-tale picker so a
+   * "felled at the heather edge" line can match the actual biome
+   * spread. Omitted when empty.
+   */
+  biomesVisited?: readonly string[];
 }
