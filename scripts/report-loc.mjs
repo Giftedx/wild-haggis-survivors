@@ -55,9 +55,9 @@ const BASELINE = {
 
 /**
  * Single hard guardrail: GameScene's growth is the most-watched signal in
- * the codebase. 2200 lines = ~21% growth past the 2026-05-10 baseline of
- * 1818. Past that, force a split before adding more. Past 2200 GameScene
- * stops being legible to a fresh reader; the discipline is "does the file
+ * the codebase. HARD_CEILING_GAMESCENE (2200) is ~21% above the 2026-05-10
+ * BASELINE entry for `scenes/GameScene.ts` (1819). CI fails past 2200 — extract
+ * a slice before bolting on more wiring. The discipline is "does the file
  * fit on one mental page?" not an arbitrary ceiling.
  */
 const HARD_CEILING_GAMESCENE = 2200;
