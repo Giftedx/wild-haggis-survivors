@@ -14,7 +14,7 @@ If the bar conflicts with a task you've been given, surface the conflict — don
 - **Lint**: `npm run lint`
 - **Build**: `npm run build` (TypeScript typecheck + Vite build)
 - **Preview build**: `npm run preview`
-- **E2E (Playwright, production preview)**: `npm run test:e2e` (requires a prior `npm run build` unless the preview server already serves `dist/`)
+- **E2E (Playwright, production preview)**: `npm run test:e2e` (requires a prior `npm run build` unless the preview server already serves `dist/`). `e2e/fixtures.ts` defaults **`AUTO_BATTLE` off** before each navigation; specs that need the dev auto-battler set **`AUTO_BATTLE = true`** in their own `page.addInitScript` (runs after the fixture).
 - **Full local gate (matches GitHub Actions)**: `npm run ci:all` — lint, Vitest, build, then E2E
 
 Before claiming anything is “fixed” or “done”, run at least `npm test` and `npm run build`. For changes that touch UI, boot, or CI, prefer **`npm run ci:all`** once dependencies are installed (and Playwright browsers are available: `npx playwright install chromium`).
