@@ -56,8 +56,7 @@ test.describe('Key remapping E2E', () => {
           hasCompletedTutorial: true,
         }));
         // No AUTO_BATTLE — Player.update skips manual dash input when the
-        // auto-battle steering is active, which would mask the rebind path.
-        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = false;
+        // auto-battle steering is active; default is off in `e2e/fixtures.ts`.
       } catch {
         /* ignore */
       }

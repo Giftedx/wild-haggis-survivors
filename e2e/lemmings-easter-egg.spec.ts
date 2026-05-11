@@ -45,8 +45,7 @@ test.describe('lemmings easter egg (DESIGN_IDEAS §13)', () => {
       } catch { /* ignore */ }
       // AUTO_BATTLE off — the lemmings trigger watches for player
       // stillness; auto-pilot would keep velocity > 8 px/s and never
-      // let the timer accumulate even if it WAS legal to fire.
-      (window as unknown as { AUTO_BATTLE?: boolean }).AUTO_BATTLE = false;
+      // let the timer accumulate even if it WAS legal to fire. Default off in `e2e/fixtures.ts`.
     }, { metaVer: CURRENT_META_SAVE_VERSION, saveVer: CURRENT_SAVE_SCHEMA_VERSION });
 
     await page.goto('/');

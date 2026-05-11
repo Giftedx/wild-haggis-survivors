@@ -35,9 +35,6 @@ test.describe('drift mastery (DESIGN_IDEAS §1)', () => {
           hasCompletedTutorial: true,
         }));
         localStorage.removeItem('whs_save');
-        // Keep AUTO_BATTLE off — at timeScale=10 drift charge re-banks fast
-        // enough to mask the G consume edge this spec asserts.
-        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = false;
       } catch { /* ignore */ }
     }, CURRENT_META_SAVE_VERSION);
 

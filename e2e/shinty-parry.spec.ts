@@ -25,6 +25,7 @@ test.describe('shinty parry (DESIGN_IDEAS §1)', () => {
         // AUTO_BATTLE intentionally OFF — its `timeScale: 10` would
         // fast-forward the parry cooldown past the 450ms wall-time wait
         // below, masking the cooldown phase the assertion checks.
+        // Default is forced off in `e2e/fixtures.ts`.
       } catch {
         /* ignore */
       }

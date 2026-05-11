@@ -20,6 +20,10 @@ export const test = base.extend({
   context: async ({ context }, use) => {
     await context.addInitScript(() => {
       (window as Window & { FORCE_CANVAS?: boolean }).FORCE_CANVAS = true;
+      // Default dev hook off — specs that need auto-picks / soak throughput
+      // set `AUTO_BATTLE = true` in their own `page.addInitScript` (runs after
+      // this context script on each navigation).
+      (window as Window & { AUTO_BATTLE?: boolean }).AUTO_BATTLE = false;
       try {
         const raw = localStorage.getItem('whs_game_settings');
         const existing = raw && raw.length > 0

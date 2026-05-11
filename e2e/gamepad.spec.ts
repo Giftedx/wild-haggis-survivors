@@ -63,7 +63,6 @@ test.describe('Gamepad runtime E2E', () => {
           saveVersion: ver,
           hasCompletedTutorial: true,
         }));
-        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = false;
       } catch {
         /* ignore */
       }
