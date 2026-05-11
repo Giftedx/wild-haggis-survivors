@@ -37,7 +37,7 @@ test.describe('whisky breath (DESIGN_IDEAS §1)', () => {
           hasCompletedTutorial: true,
         }));
         localStorage.removeItem('whs_save');
-        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
+        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = false;
       } catch { /* ignore */ }
     }, CURRENT_META_SAVE_VERSION);
 

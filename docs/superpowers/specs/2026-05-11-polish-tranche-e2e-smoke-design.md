@@ -1,8 +1,13 @@
 ---
 title: "Polish tranche — one mechanic e2e smoke"
 date: 2026-05-11
-status: draft
+status: shipped
 ---
+
+## Shipped (2026-05-11)
+
+- `e2e/sgian-dubh.spec.ts` — live `WeaponSystem` glue: equipped `sgian_dubh` stamps `cooldownRemaining` once enemies exist (Chromium-only).
+- Sister smokes already in tree: stance (`Q`), shinty parry (`E`), drift mastery (`G`), whisky breath (`F`), stag antler dash-strike.
 
 ## Goal
 
