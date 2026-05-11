@@ -2,7 +2,7 @@
 
 **Scope:** Stability, maintainability, and shipping velocity without changing core gameplay feel.
 
-## Current Snapshot (2026-05-09)
+## Current Snapshot (2026-05-11)
 
 ### Stack
 
@@ -40,7 +40,7 @@
 | **B5** Biomes charter | ✅ Phases 0–2 shipped 2026-04-29/30 (Seawrack `a160662`, Haar `4c97626`, Frost `24c9301`); Phase 3 Edinburgh blocked on cultural consultation. |
 | **W95** Mobile rework | ⏳ Not started — playtest matrix at `docs/MOBILE_DEVICE_TEST_MATRIX.md` pending hardware. |
 | **W27** Capture & share | ⏳ Phase 0 prototype shipped 2026-04-22; Phase 2 not yet scoped (see plan `2026-04-22-w27-capture-pipeline-phase2.md`). |
-| **P3** Cloud saves | ⏳ Worker + D1 backend prototype shipped via top-10 #3 (2026-04-27); UX + conflict resolution awaits stakeholder approval (ADR-0006 still draft). |
+| **P3** Cloud saves | ⏳ Worker + D1 backend prototype shipped via top-10 #3 (2026-04-27); UX + conflict resolution + privacy/legal humans-in-the-loop still open ([`ADR-0006`](adr/0006-cloud-save-backend.md) **Accepted** 2026-05-09 — architecture only). |
 | **B1** Banter density push | ✅ All phases (1–5) shipped 2026-04-26; native Gaelic review on 8 leaves still open. |
 
 ### 2026-05-09 mechanics ship sprint
@@ -67,7 +67,7 @@ A solo-dev sprint shipped 13 features in one day, twelve from `docs/DESIGN_IDEAS
 
 ### Active fronts
 
-- **Codebase restructure (2026-04-30)** — Phases 0–7 SHIPPED by 2026-05-09; T401 GameScene decomposition is the historical chain that fed it (3526 → 1819 LOC at the 2026-05-10 baseline). Current GameScene **1839 LOC** (hard-ceilinged at 2200; per-file ratchet retired 2026-05-10 — see [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) + [`docs/REVIEW.md` C2](REVIEW.md)). ≤1200 facade-rewrite target remains out of scope.
+- **Codebase restructure (2026-04-30)** — Phases 0–7 SHIPPED by 2026-05-09; T401 GameScene decomposition is the historical chain that fed it (3526 → 1819 LOC at the 2026-05-10 baseline). Current GameScene **1841 LOC** (hard-ceilinged at 2200; per-file ratchet retired 2026-05-10 — see [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) + [`docs/REVIEW.md` C2](REVIEW.md)). ≤1200 facade-rewrite target remains out of scope.
 - **Cultural review gates** — Doric + Shetlandic native-speaker review (`docs/C2_DIALECT_REVIEW.md`), Burns Kinsley + Canongate audit (`docs/C2_BURNS_PROVENANCE.md`), 8 Gaelic banter leaves flagged.
 
 ### Next flagship slot — declared polish / content phase (2026-05-09)
