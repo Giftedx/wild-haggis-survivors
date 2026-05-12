@@ -22,6 +22,11 @@ import { route, type CroftActionKey } from './croft/CroftInteractionRouter';
 import { startRunTargetForCroft, visibleCroftActions } from './croftProgressiveDisclosure';
 import { createGameButton } from '../ui/gameButton';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import {
+  createDomFocusLayer,
+  wrapLabeledDomFocusActions,
+  type DomFocusLayer,
+} from '../ui/domFocusLayer';
 import { audio } from '../systems/AudioSystem';
 import { SaveManager } from '../core/SaveManager';
 import { loadSave, writeSave } from '../utils/save';
@@ -107,7 +112,16 @@ export class CroftScene extends Phaser.Scene {
   private seasonalBanner: SeasonalBannerHandle | null = null;
   private bookshelfHit: Phaser.GameObjects.Rectangle | null = null;
   private gamepadNav: GamepadMenuNav | null = null;
-  private actionEntries: Array<{ key: CroftActionKey; rect: Phaser.GameObjects.Rectangle }> = [];
+  private domFocusLayer: DomFocusLayer | null = null;
+  private croftKeyHandler?: (e: KeyboardEvent) => void;
+  private croftEscHandler?: () => void;
+  /** Bottom nav row — included after action column in gamepad / DOM order (T407). */
+  private backNavRect: Phaser.GameObjects.Rectangle | null = null;
+  private actionEntries: Array<{
+    key: CroftActionKey;
+    rect: Phaser.GameObjects.Rectangle;
+    label: string;
+  }> = [];
   private trophyHits: Phaser.GameObjects.Rectangle[] = [];
   private granBubble: Phaser.GameObjects.Container | null = null;
   private granBubbleTimer: Phaser.Time.TimerEvent | null = null;
@@ -121,6 +135,11 @@ export class CroftScene extends Phaser.Scene {
     // wipe transient state so we never carry over from a prior
     // entry (see CLAUDE.md "Scene reuse" gotcha).
     this.transitioning = false;
+    this.uninstallCroftKeyboardShortcuts();
+    if (this.croftEscHandler) {
+      this.input.keyboard?.off('keydown-ESC', this.croftEscHandler);
+      this.croftEscHandler = undefined;
+    }
     this.placeholders.forEach((obj) => obj.destroy());
     this.placeholders = [];
     // Wild Living World Phase 2 — companion picker is tracked
@@ -173,8 +192,11 @@ export class CroftScene extends Phaser.Scene {
     this.seasonalBanner = null;
     this.bookshelfHit?.destroy();
     this.bookshelfHit = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
     this.gamepadNav?.destroy();
     this.gamepadNav = null;
+    this.backNavRect = null;
     this.actionEntries = [];
     this.trophyHits.forEach((r) => r.destroy());
     this.trophyHits = [];
@@ -223,17 +245,30 @@ export class CroftScene extends Phaser.Scene {
     this.drawLivingWorldPanel(layout);
     this.drawCompanionPicker(layout);
     this.drawBack();
+    this.installCroftKeyboardShortcuts();
     // E1 M4 T22 — seasonal banner appears only when an event window
     // is live; the helper itself handles the no-op path.
     this.seasonalBanner = installSeasonalEventBanner(this);
 
-    // Keyboard ESC returns to Menu.
-    this.input.keyboard?.on('keydown-ESC', () => this.exitToMenu());
+    // Keyboard ESC returns to Menu (named handler — removed on shutdown).
+    this.croftEscHandler = () => this.exitToMenu();
+    this.input.keyboard?.on('keydown-ESC', this.croftEscHandler);
 
     // Warm pibroch-soft bed starts quiet and fades in.
     this.ambient = new CroftAmbientLoop();
     this.ambient.start();
-    this.events.once('shutdown', () => this.ambient?.stop());
+    this.events.once('shutdown', () => {
+      this.ambient?.stop();
+      this.uninstallCroftKeyboardShortcuts();
+      if (this.croftEscHandler) {
+        this.input.keyboard?.off('keydown-ESC', this.croftEscHandler);
+        this.croftEscHandler = undefined;
+      }
+      this.domFocusLayer?.destroy();
+      this.domFocusLayer = null;
+      this.gamepadNav?.destroy();
+      this.gamepadNav = null;
+    });
 
     addSceneFadeIn(this, 300);
   }
@@ -937,26 +972,104 @@ export class CroftScene extends Phaser.Scene {
       label.setDepth(83);
       rect.on('pointerdown', () => this.handleAction(action.key));
       this.placeholders.push(rect, label);
-      this.actionEntries.push({ key: action.key, rect });
+      this.actionEntries.push({ key: action.key, rect, label: t(action.i18n) });
     });
 
-    // H1 M3 T23 — gamepad + keyboard nav over the action column. D-pad
-    // / left-stick cycles through entries; Enter / A activates the
-    // focused one. Pointer clicks still work in parallel.
-    const navEntries: GamepadMenuEntry[] = this.actionEntries.map((e) => ({
-      rect: e.rect,
-      activate: () => this.handleAction(e.key),
-    }));
-    this.gamepadNav = new GamepadMenuNav(this, navEntries);
+    // H1 M3 T23 + T407 — first pass: gamepad / DOM over visible actions only.
+    // `drawBack` appends the back row and calls `refreshCroftGamepadNav` again.
+    this.refreshCroftGamepadNav();
+  }
 
-    // Keyboard shortcut: Enter activates Start Run (the primary action).
-    // GamepadMenuNav drives gamepad navigation separately — its entries
-    // share the same activate() closures so both input paths route to
-    // `handleAction`. Arrow-key keyboard nav is a future polish pass.
-    this.input.keyboard?.on('keydown-ENTER', () => {
-      const first = this.actionEntries[0];
-      if (first) this.handleAction(first.key);
+  /** Rebuilds D-pad nav + DOM mirror from `actionEntries` + optional `backNavRect`. */
+  private refreshCroftGamepadNav(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+
+    type DomRow = { id: string; label: string; onActivate: () => void };
+    type RowMeta = { id: string; label: string };
+    const entries: GamepadMenuEntry[] = [];
+    const domRows: DomRow[] = [];
+    const push = (rect: Phaser.GameObjects.Rectangle | null, row: RowMeta, activate: () => void) => {
+      if (!rect?.active) return;
+      entries.push({ rect, activate });
+      domRows.push({ id: row.id, label: row.label, onActivate: activate });
+    };
+
+    for (const e of this.actionEntries) {
+      push(e.rect, { id: `croft-action-${e.key}`, label: e.label }, () => {
+        this.handleAction(e.key);
+      });
+    }
+    if (this.backNavRect) {
+      push(this.backNavRect, { id: 'croft-back', label: t('ui.croft.back') }, () => {
+        this.exitToMenu();
+      });
+    }
+
+    if (entries.length === 0) return;
+
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
     });
+
+    if (typeof document === 'undefined') return;
+    const actions = wrapLabeledDomFocusActions(domRows);
+    const idx = this.gamepadNav.getIndex();
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-croft-focus-layer',
+      label: t('ui.croft.title'),
+      description: t('ui.croft.subtitle'),
+      role: 'group',
+      actions,
+      initialFocusIndex: idx,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
+    });
+    this.domFocusLayer.setFocusedIndex(idx);
+  }
+
+  private installCroftKeyboardShortcuts(): void {
+    this.uninstallCroftKeyboardShortcuts();
+    const kb = this.input.keyboard;
+    if (!kb) return;
+    this.croftKeyHandler = (e: KeyboardEvent) => {
+      if (this.transitioning) return;
+      const nav = this.gamepadNav;
+      if (!nav || nav.getEntryCount() === 0) return;
+      const n = nav.getEntryCount();
+      const digit = parseInt(e.key, 10);
+      if (Number.isFinite(digit) && digit >= 1 && digit <= n) {
+        e.preventDefault();
+        nav.activateIndex(digit - 1);
+        return;
+      }
+      if (
+        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+        || (e.key === 'Tab' && e.shiftKey)
+      ) {
+        e.preventDefault();
+        nav.step(-1);
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
+        e.preventDefault();
+        nav.step(1);
+        return;
+      }
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      nav.activateCurrent();
+    };
+    kb.on('keydown', this.croftKeyHandler);
+  }
+
+  private uninstallCroftKeyboardShortcuts(): void {
+    if (!this.croftKeyHandler) return;
+    this.input.keyboard?.off('keydown', this.croftKeyHandler);
+    this.croftKeyHandler = undefined;
   }
 
   private resolveActionLayout(actionCount: number): {
@@ -1033,6 +1146,8 @@ export class CroftScene extends Phaser.Scene {
     });
     backRect.on('pointerdown', () => this.exitToMenu());
     this.placeholders.push(backRect);
+    this.backNavRect = backRect;
+    this.refreshCroftGamepadNav();
   }
 
   private exitToMenu(): void {
