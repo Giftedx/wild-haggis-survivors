@@ -31,6 +31,13 @@ export interface DomFocusLayer {
   destroy(): void;
 }
 
+/** T407 — wrap pre-resolved labels + handlers into `DomFocusAction[]` (menu hubs). */
+export function wrapLabeledDomFocusActions(
+  rows: readonly { readonly id: string; readonly label: string; readonly onActivate: () => void }[],
+): DomFocusAction[] {
+  return rows.map((r) => ({ id: r.id, label: r.label, onActivate: r.onActivate }));
+}
+
 const VISUALLY_HIDDEN_STYLE = {
   position: 'fixed',
   width: '1px',

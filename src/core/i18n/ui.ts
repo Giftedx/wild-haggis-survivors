@@ -398,6 +398,9 @@ export const ui = {
     locked: 'LOCKED',
     sfx_toggle: 'SFX: {state}',
     music_toggle: 'Music: {state}',
+    /** Loadout carousel — DOM/gamepad row labels (T407). */
+    carousel_previous: 'Previous variant',
+    carousel_next: 'Next variant',
   },
   shop: {
     title: 'GOLD SHOP',

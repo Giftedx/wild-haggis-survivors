@@ -7,6 +7,11 @@ import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import {
+  createDomFocusLayer,
+  wrapLabeledDomFocusActions,
+  type DomFocusLayer,
+} from '../ui/domFocusLayer';
+import {
   DEFAULT_VARIANT_KEY,
   VARIANTS,
   VariantKey,
@@ -46,6 +51,8 @@ export class MenuScene extends Phaser.Scene {
   private uiScale = 1;
   private highContrastUi = false;
   private gamepadNav: GamepadMenuNav | null = null;
+  private domFocusLayer: DomFocusLayer | null = null;
+  private menuKeyHandler?: (e: KeyboardEvent) => void;
   private playHit!: Phaser.GameObjects.Rectangle;
   private upgradesHit!: Phaser.GameObjects.Rectangle;
   private sfxHit!: Phaser.GameObjects.Rectangle;
@@ -259,6 +266,7 @@ export class MenuScene extends Phaser.Scene {
     }
 
     this.renderVariantCarousel();
+    this.installMenuKeyboardShortcuts();
 
     // Ambient moor wind — cozy between storms
     audio.startAmbientWind();
@@ -270,6 +278,9 @@ export class MenuScene extends Phaser.Scene {
 
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();
+      this.uninstallMenuKeyboardShortcuts();
+      this.domFocusLayer?.destroy();
+      this.domFocusLayer = null;
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
       this.seasonalBanner?.destroy();
@@ -523,44 +534,143 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private refreshGamepadNav(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
     this.gamepadNav?.destroy();
     this.gamepadNav = null;
 
+    type DomRow = { id: string; label: string; onActivate: () => void };
+    type RowMeta = { id: string; label: string };
     const entries: GamepadMenuEntry[] = [];
-    const push = (rect: Phaser.GameObjects.Rectangle | null, activate: () => void) => {
-      if (rect?.active) entries.push({ rect, activate });
+    const domRows: DomRow[] = [];
+    const push = (rect: Phaser.GameObjects.Rectangle | null, row: RowMeta | null, activate: () => void) => {
+      if (!rect?.active || !row) return;
+      entries.push({ rect, activate });
+      domRows.push({ id: row.id, label: row.label, onActivate: activate });
     };
 
-    push(this.playHit, () => {
-      audio.playClick();
-      // H1 T7 — gamepad-Activate on primary button matches pointer behaviour:
-      // route to the croft hub, defer run-start commit to CroftScene.
-      this.fadeToScene('Croft');
-    });
-    push(this.upgradesHit, () => {
-      audio.playClick();
-      this.fadeToScene('Shop');
-    });
-    push(this.carouselLeftHit, () => {
-      audio.playClick();
-      this.carouselIndex = (this.carouselIndex - 1 + VARIANTS.length) % VARIANTS.length;
-      this.renderVariantCarousel();
-    });
-    push(this.carouselRightHit, () => {
-      audio.playClick();
-      this.carouselIndex = (this.carouselIndex + 1) % VARIANTS.length;
-      this.renderVariantCarousel();
-    });
-    push(this.variantSelectHit, () => {
-      const v = VARIANTS[this.carouselIndex];
-      if (!v || !isVariantUnlocked(v, progressSnapshotFromSave(this.saveData)) || this.selectedVariantKey === v.key) return;
-      audio.playClick();
-      this.selectVariant(v.key);
-    });
-    push(this.sfxHit, () => this.sfxToggleFire());
-    push(this.musicHit, () => this.musicToggleFire());
+    const prefsNow = getSettingsManager().load();
+    const sfxOn = prefsNow.sfxVolume > 0.001;
+    const musicOn = prefsNow.musicVolume > 0.001;
+    const sfxLabelStr = t('ui.loadout.sfx_toggle', { state: t(sfxOn ? 'ui.common.on' : 'ui.common.off') });
+    const musicLabelStr = t('ui.loadout.music_toggle', { state: t(musicOn ? 'ui.common.on' : 'ui.common.off') });
 
-    this.gamepadNav = new GamepadMenuNav(this, entries);
+    push(
+      this.playHit,
+      { id: 'loadout-play', label: t('ui.loadout.play') },
+      () => {
+        audio.playClick();
+        // H1 T7 — gamepad-Activate on primary button matches pointer behaviour:
+        // route to the croft hub, defer run-start commit to CroftScene.
+        this.fadeToScene('Croft');
+      },
+    );
+    push(
+      this.upgradesHit,
+      { id: 'loadout-upgrades', label: t('ui.loadout.upgrades') },
+      () => {
+        audio.playClick();
+        this.fadeToScene('Shop');
+      },
+    );
+    push(
+      this.carouselLeftHit,
+      { id: 'loadout-carousel-prev', label: t('ui.loadout.carousel_previous') },
+      () => {
+        audio.playClick();
+        this.carouselIndex = (this.carouselIndex - 1 + VARIANTS.length) % VARIANTS.length;
+        this.renderVariantCarousel();
+      },
+    );
+    push(
+      this.carouselRightHit,
+      { id: 'loadout-carousel-next', label: t('ui.loadout.carousel_next') },
+      () => {
+        audio.playClick();
+        this.carouselIndex = (this.carouselIndex + 1) % VARIANTS.length;
+        this.renderVariantCarousel();
+      },
+    );
+    push(
+      this.variantSelectHit,
+      { id: 'loadout-variant-select', label: t('ui.loadout.select') },
+      () => {
+        const v = VARIANTS[this.carouselIndex];
+        if (!v || !isVariantUnlocked(v, progressSnapshotFromSave(this.saveData)) || this.selectedVariantKey === v.key) return;
+        audio.playClick();
+        this.selectVariant(v.key);
+      },
+    );
+    push(this.sfxHit, { id: 'loadout-sfx', label: sfxLabelStr }, () => this.sfxToggleFire());
+    push(this.musicHit, { id: 'loadout-music', label: musicLabelStr }, () => this.musicToggleFire());
+
+    if (entries.length === 0) return;
+
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
+    });
+    this.installMenuDomLayer(domRows);
+  }
+
+  private installMenuDomLayer(rows: readonly { id: string; label: string; onActivate: () => void }[]): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+    if (typeof document === 'undefined' || rows.length === 0) return;
+    const actions = wrapLabeledDomFocusActions(rows);
+    const idx = this.gamepadNav?.getIndex() ?? 0;
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-menu-loadout-focus-layer',
+      label: t('ui.loadout.variant_loadout'),
+      description: t('ui.loadout.subtitle'),
+      role: 'group',
+      actions,
+      initialFocusIndex: idx,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
+    });
+    this.domFocusLayer.setFocusedIndex(idx);
+  }
+
+  private installMenuKeyboardShortcuts(): void {
+    this.uninstallMenuKeyboardShortcuts();
+    const kb = this.input.keyboard;
+    if (!kb) return;
+    this.menuKeyHandler = (e: KeyboardEvent) => {
+      if (this.transitioning) return;
+      const nav = this.gamepadNav;
+      if (!nav || nav.getEntryCount() === 0) return;
+      const n = nav.getEntryCount();
+      const digit = parseInt(e.key, 10);
+      if (Number.isFinite(digit) && digit >= 1 && digit <= n) {
+        e.preventDefault();
+        nav.activateIndex(digit - 1);
+        return;
+      }
+      if (
+        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+        || (e.key === 'Tab' && e.shiftKey)
+      ) {
+        e.preventDefault();
+        nav.step(-1);
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
+        e.preventDefault();
+        nav.step(1);
+        return;
+      }
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      nav.activateCurrent();
+    };
+    kb.on('keydown', this.menuKeyHandler);
+  }
+
+  private uninstallMenuKeyboardShortcuts(): void {
+    if (!this.menuKeyHandler) return;
+    this.input.keyboard?.off('keydown', this.menuKeyHandler);
+    this.menuKeyHandler = undefined;
   }
 
   private selectVariant(key: VariantKey): void {

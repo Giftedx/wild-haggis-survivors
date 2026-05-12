@@ -3,6 +3,11 @@ import { SaveManager } from '../core/SaveManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import {
+  createDomFocusLayer,
+  wrapLabeledDomFocusActions,
+  type DomFocusLayer,
+} from '../ui/domFocusLayer';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
 import { loadSave } from '../utils/save';
@@ -46,6 +51,8 @@ import { textStyle } from '../ui/typography';
 export class MainMenuScene extends Phaser.Scene {
   private saveManager = new SaveManager();
   private gamepadNav: GamepadMenuNav | null = null;
+  private domFocusLayer: DomFocusLayer | null = null;
+  private mainMenuKeyHandler?: (e: KeyboardEvent) => void;
   /** All tweens attached to decoration — killed on scene shutdown. */
   private cozyTweenTargets: Phaser.GameObjects.GameObject[] = [];
 
@@ -665,23 +672,58 @@ export class MainMenuScene extends Phaser.Scene {
     // Ambient moor wind — cozy between storms
     if (!reduceParticles) audio.startAmbientWind();
 
-    // === Gamepad navigation wiring ===
+    // === Gamepad navigation wiring + T407 DOM focus mirror ===
     // Daily Challenge sits between Start and Meta Upgrades in focus order so
     // a player with a controller can land on it without cycling through the
     // whole menu.
-    const entries: GamepadMenuEntry[] = [{ rect: startBtn, activate: goPrimary }];
-    if (abandonBtn && goLoadoutFresh) entries.push({ rect: abandonBtn, activate: goLoadoutFresh });
-    entries.push(
-      { rect: dailyBtn, activate: startDaily },
-      { rect: metaBtn, activate: () => this.scene.start('MetaShop') },
-    );
-    if (chronicleBtn) entries.push({ rect: chronicleBtn, activate: goChronicle });
-    if (almanacBtn) entries.push({ rect: almanacBtn, activate: goAlmanac });
-    if (deedsBtn) entries.push({ rect: deedsBtn, activate: goDeeds });
-    entries.push({ rect: optBtn, activate: () => this.scene.start('Settings') });
-    this.gamepadNav = new GamepadMenuNav(this, entries);
+    type DomRow = { id: string; label: string; onActivate: () => void };
+    type RowMeta = { id: string; label: string };
+    const entries: GamepadMenuEntry[] = [];
+    const domRows: DomRow[] = [];
+    const pushMain = (rect: Phaser.GameObjects.Rectangle, row: RowMeta, activate: () => void) => {
+      entries.push({ rect, activate });
+      domRows.push({ id: row.id, label: row.label, onActivate: activate });
+    };
+
+    const primaryLabel = suspended ? t('ui.menu.resume_run') : t('ui.menu.start_run');
+    pushMain(startBtn, { id: 'main-start', label: primaryLabel }, goPrimary);
+    if (abandonBtn && goLoadoutFresh) {
+      pushMain(abandonBtn, { id: 'main-abandon', label: t('ui.menu.new_run_loadout') }, goLoadoutFresh);
+    }
+    const dailyDomLabel = `${t('ui.menu.daily_challenge')} — ${daily.subtitle}`;
+    pushMain(dailyBtn, { id: 'main-daily', label: dailyDomLabel }, startDaily);
+    pushMain(metaBtn, { id: 'main-meta', label: t('ui.menu.meta_upgrades') }, () => {
+      this.scene.start('MetaShop');
+    });
+    if (chronicleBtn) {
+      pushMain(chronicleBtn, { id: 'main-chronicle', label: t('ui.menu.chronicle') }, goChronicle);
+    }
+    if (almanacBtn) {
+      pushMain(almanacBtn, { id: 'main-almanac', label: t('ui.menu.almanac') }, goAlmanac);
+    }
+    if (deedsBtn) {
+      pushMain(deedsBtn, { id: 'main-deeds', label: t('ui.menu.deeds') }, goDeeds);
+    }
+    pushMain(optBtn, { id: 'main-options', label: t('ui.menu.options') }, () => {
+      this.scene.start('Settings');
+    });
+
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
+    });
+    const mainMenuFocusDescription = suspended
+      ? t('ui.menu.hint_suspended')
+      : isFirstEverVisit
+        ? t('ui.menu.hint_fresh_with_comfort')
+        : t('ui.menu.hint_fresh');
+    this.installMainMenuDomLayer(domRows, mainMenuFocusDescription);
+    this.installMainMenuKeyboardShortcuts();
+
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();
+      this.uninstallMainMenuKeyboardShortcuts();
+      this.domFocusLayer?.destroy();
+      this.domFocusLayer = null;
       // Kill every decoration tween so they don't leak across scene restarts.
       for (const target of this.cozyTweenTargets) {
         try { this.tweens.killTweensOf(target); } catch { /* ignore */ }
@@ -691,6 +733,70 @@ export class MainMenuScene extends Phaser.Scene {
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
     });
+  }
+
+  private installMainMenuDomLayer(
+    rows: readonly { id: string; label: string; onActivate: () => void }[],
+    description: string,
+  ): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+    if (typeof document === 'undefined' || rows.length === 0) return;
+    const actions = wrapLabeledDomFocusActions(rows);
+    const idx = this.gamepadNav?.getIndex() ?? 0;
+    const titleOneLine = t('ui.menu.title').replace(/\n/g, ' ');
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-main-menu-focus-layer',
+      label: titleOneLine,
+      description,
+      role: 'group',
+      actions,
+      initialFocusIndex: idx,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
+    });
+    this.domFocusLayer.setFocusedIndex(idx);
+  }
+
+  private installMainMenuKeyboardShortcuts(): void {
+    this.uninstallMainMenuKeyboardShortcuts();
+    const kb = this.input.keyboard;
+    if (!kb) return;
+    this.mainMenuKeyHandler = (e: KeyboardEvent) => {
+      const nav = this.gamepadNav;
+      if (!nav || nav.getEntryCount() === 0) return;
+      const n = nav.getEntryCount();
+      const digit = parseInt(e.key, 10);
+      if (Number.isFinite(digit) && digit >= 1 && digit <= n) {
+        e.preventDefault();
+        nav.activateIndex(digit - 1);
+        return;
+      }
+      if (
+        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+        || (e.key === 'Tab' && e.shiftKey)
+      ) {
+        e.preventDefault();
+        nav.step(-1);
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
+        e.preventDefault();
+        nav.step(1);
+        return;
+      }
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      nav.activateCurrent();
+    };
+    kb.on('keydown', this.mainMenuKeyHandler);
+  }
+
+  private uninstallMainMenuKeyboardShortcuts(): void {
+    if (!this.mainMenuKeyHandler) return;
+    this.input.keyboard?.off('keydown', this.mainMenuKeyHandler);
+    this.mainMenuKeyHandler = undefined;
   }
 
   /**

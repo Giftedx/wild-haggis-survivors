@@ -663,6 +663,8 @@ export const ui = {
     locked: 'LOCKED',
     sfx_toggle: 'SFX: {state}',
     music_toggle: 'Music: {state}',
+    carousel_previous: 'Last wee beastie',
+    carousel_next: 'Neist wee beastie',
   },
   shop: {
     title: 'GOLD SHOP',

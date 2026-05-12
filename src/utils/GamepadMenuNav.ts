@@ -15,6 +15,11 @@ export type GamepadMenuEntry = {
   activate: () => void;
 };
 
+export interface GamepadMenuNavOptions {
+  /** Fired after every highlight pass (gamepad move, keyboard step, external sync). */
+  onHighlightChange?: (index: number) => void;
+}
+
 /**
  * D-pad / left-stick navigation + face-button confirm for simple vertical menus.
  */
@@ -29,7 +34,8 @@ export class GamepadMenuNav {
 
   constructor(
     private readonly scene: Phaser.Scene,
-    private readonly entries: GamepadMenuEntry[]
+    private readonly entries: GamepadMenuEntry[],
+    private readonly navOpts?: GamepadMenuNavOptions,
   ) {
     if (entries.length > 0) {
       this.scene.events.on('update', this.onUpdate, this);
@@ -66,6 +72,39 @@ export class GamepadMenuNav {
         e.rect.setStrokeStyle(0);
       }
     }
+    this.navOpts?.onHighlightChange?.(this.index);
+  }
+
+  getIndex(): number {
+    return this.index;
+  }
+
+  getEntryCount(): number {
+    return this.entries.length;
+  }
+
+  /** Keyboard / external menu — wraps with the same step semantics as D-pad. */
+  step(direction: -1 | 1): void {
+    if (this.entries.length === 0) return;
+    this.index = stepGamepadMenuIndex(this.index, this.entries.length, direction);
+    this.applyHighlight();
+  }
+
+  /** DOM Tab / assistive-tech focus — clamp to valid row (no wrap). */
+  syncExternalIndex(i: number): void {
+    if (this.entries.length === 0) return;
+    this.index = Math.max(0, Math.min(this.entries.length - 1, i));
+    this.applyHighlight();
+  }
+
+  activateCurrent(): void {
+    const e = this.entries[this.index];
+    if (e?.rect.active) e.activate();
+  }
+
+  activateIndex(i: number): void {
+    this.syncExternalIndex(i);
+    this.activateCurrent();
   }
 
   private onUpdate(_time: number, delta: number): void {

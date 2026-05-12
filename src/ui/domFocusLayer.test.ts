@@ -3,6 +3,7 @@ import {
   createDomFocusLayer,
   domFocusDirectionForKey,
   normalizeDomFocusIndex,
+  wrapLabeledDomFocusActions,
 } from './domFocusLayer';
 
 class TestEvent {
@@ -377,5 +378,17 @@ describe('dom focus layer helpers', () => {
     expect(doc.body.children).toHaveLength(1);
     layer.destroy();
     expect(doc.body.children).toHaveLength(0);
+  });
+
+  it('wrapLabeledDomFocusActions maps rows to DomFocusAction shape', () => {
+    let calls = 0;
+    const wrapped = wrapLabeledDomFocusActions([
+      { id: 'row-a', label: 'Row A', onActivate: () => { calls += 1; } },
+    ]);
+    expect(wrapped).toHaveLength(1);
+    expect(wrapped[0].id).toBe('row-a');
+    expect(wrapped[0].label).toBe('Row A');
+    wrapped[0].onActivate();
+    expect(calls).toBe(1);
   });
 });
