@@ -54,4 +54,19 @@ export const evolution = {
     description: 'A great sweep that answers the waulking song with pipes. Wider, heavier — and every fourth beat lands a crescendo.',
     flavour: "The tuning fork rang once and the moor remembered the long, slow tune. Pibroch — piob mhor — the great-pipe lament that walks at funeral pace through the glen. The waulking song was women's work; the pibroch is the answering grief. They were always one music. The hammer finally hears both ends.",
   },
+  dirk_flurry: {
+    name: 'Dirk Flurry',
+    description: 'Three arcs at once — centre, left-flank, right-flank. The wall of blade.',
+    flavour: "Gillie's Edge teaches what the foot already knew: the dance is faster than the eye. Three cuts arrive together; the wounded hear only one. The Highland dirk was always meant to move this way; the haggis is simply the one finally proving it.",
+  },
+  banshee_wail: {
+    name: 'Banshee Wail',
+    description: "Five hex-screams seek the furthest living things on the moor — Granny's grief, given range.",
+    flavour: "The widow's shawl carries the curse past the brawl. The bean-sìth — the woman of the sìth — wails for the unprepared; her voice reaches who needs reaching. Granny remembers every name. The shawl remembers warmth. Together they remember to wail.",
+  },
+  freedom_blade: {
+    name: 'Freedom Blade',
+    description: 'The full 360° sweep, then two shockwaves rolling out behind it. Stirling Bridge in three heartbeats.',
+    flavour: "The Stirling Medal was minted for valour, not for keeping. With it pinned to the haggis's plaid the Wallace Sword turns once and the moor turns with it. The cry from the bridge has been carrying for seven hundred years; this is what the carrying sounds like.",
+  },
 } as const;

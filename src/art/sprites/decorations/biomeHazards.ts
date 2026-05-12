@@ -475,3 +475,82 @@ export function bakeHazardRimePatch(scene: Phaser.Scene): void {
   g.generateTexture('hazard_rime_patch', w, h);
   g.destroy();
 }
+
+// Highland Horrors — Cairngorm Plateau hazard.
+// Wind shear: a rotor turbulence icon. Tight, directional, dangerous-
+// looking. Slate-grey spiralling lines that imply sudden gust.
+export function bakeHazardWindShear(scene: Phaser.Scene): void {
+  const w = 22, h = 22;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Outer gust ring — pale slate
+  g.fillStyle(0x9aacb8, 0.30);
+  g.fillCircle(cx, cy, 10);
+
+  // Mid ring — colder grey
+  g.fillStyle(0xb8c8d4, 0.45);
+  g.fillCircle(cx, cy, 7);
+
+  // Core — bright white-blue
+  g.fillStyle(0xe0eef6, 0.75);
+  g.fillCircle(cx, cy, 4);
+  g.fillStyle(0xffffff, 0.90);
+  g.fillCircle(cx, cy, 2);
+
+  // Directional streaks — 3 gust lines radiating at angles
+  g.fillStyle(0xb8c8d4, 0.70);
+  // Streak NW→SE
+  g.fillRect(cx - 9, cy - 2, 18, 1.5);
+  // Streak NE
+  g.fillRect(cx - 2, cy - 9, 1.5, 18);
+  // Diagonal hint
+  g.fillStyle(0xd0dce6, 0.50);
+  for (let i = 0; i < 5; i++) {
+    const ang = (i / 5) * Math.PI * 2 + 0.4;
+    const r1 = 5, r2 = 9;
+    g.fillRect(
+      cx + Math.cos(ang) * r1 - 0.5,
+      cy + Math.sin(ang) * r1 - 0.5,
+      Math.cos(ang) * (r2 - r1),
+      1,
+    );
+  }
+
+  g.generateTexture('hazard_wind_shear', w, h);
+  g.destroy();
+}
+
+// Highland Horrors — Glen Coe hazard.
+// Highland mist: a soft, wide mist pool. Pale off-white with warm grey
+// edges — the valley mist that settles on the river floor.
+export function bakeHazardHighlandMist(scene: Phaser.Scene): void {
+  const w = 44, h = 30;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Outer mist halo — very faint
+  g.fillStyle(0xd8d0c8, 0.22);
+  g.fillEllipse(cx, cy, 42, 28);
+
+  // Mid mist body
+  g.fillStyle(0xe0d8d0, 0.38);
+  g.fillEllipse(cx, cy, 34, 22);
+
+  // Inner mist — slightly brighter
+  g.fillStyle(0xece8e0, 0.55);
+  g.fillEllipse(cx, cy, 24, 14);
+
+  // Core — pale bone white
+  g.fillStyle(0xf4f0ea, 0.70);
+  g.fillEllipse(cx, cy, 14, 8);
+
+  // Wisps trailing on the edges — 3 asymmetric tendrils
+  g.fillStyle(0xe0d8d0, 0.30);
+  g.fillEllipse(cx - 14, cy + 2, 10, 4);
+  g.fillEllipse(cx + 13, cy - 2, 9, 3);
+  g.fillEllipse(cx + 3, cy + 8, 8, 3);
+
+  g.generateTexture('hazard_highland_mist', w, h);
+  g.destroy();
+}

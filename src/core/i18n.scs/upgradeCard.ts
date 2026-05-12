@@ -43,6 +43,18 @@ export const upgradeCard = {
     name: 'Waulkin Mallet',
     description: 'A heavy aik beater. Hits on tha beat laund harder; aff-beat hits still hit.',
   },
+  add_dirk_dance: {
+    name: 'Dirk Daunce',
+    description: "Three quick slashes — centre, left, richt. Pair wi Gillie's Edge fer tha legendary Dirk Flurry.",
+  },
+  add_grannies_curse: {
+    name: "Granny's Curse",
+    description: "Slaw hex-bolts in aw airts. Wee dunt, but they linger an perce. Pair wi Widow's Shawl fer tha Banshee Wail.",
+  },
+  add_wallace_sword: {
+    name: 'Wallace Swurd',
+    description: 'A great-swurd swing wider than tha claymore — slaw, brutal. Pair wi tha Stirling Medal fer tha Freedom Blade.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
@@ -94,6 +106,18 @@ export const upgradeCard = {
   add_tuning_fork: {
     name: 'Tuning Fork',
     description: 'Tap it aince, the moor tunes tae the bar. Aligned-beat pulses ring looder. Evolves Waulkin Mallet.',
+  },
+  add_gillies_edge: {
+    name: "Gillie's Edge",
+    description: "A gemmekeeper's licht fit. +8% move speed. Evolves Dirk Daunce.",
+  },
+  add_widows_shawl: {
+    name: "Widow's Shawl",
+    description: "Wairm oo' agin tha Heiland cauld. +12 max HP. Evolves Granny's Curse.",
+  },
+  add_stirling_medal: {
+    name: 'Stirling Medal',
+    description: 'Valour at Stirling Brig, 1297. +10% crit chance. Evolves Wallace Swurd.',
   },
   boost_hp: {
     name: 'Thick Hide',

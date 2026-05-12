@@ -1093,6 +1093,25 @@ export class WeaponSystem {
       case 'william_blade':
         this.fireWilliamBladeWaves(w, px, py, dmg, isCrit);
         break;
+      case 'dirk_flurry':
+        // Highland Horrors — three simultaneous dirk arcs (center +
+        // ±30°). Each arc rolls its own crit so the flurry varies; an
+        // enemy caught in overlap takes only the first hit (the inner
+        // Set guards re-strike). Inherits Dirk Dance's arc width.
+        this.fireDirkFlurry(w, px, py);
+        break;
+      case 'banshee_wail':
+        // Highland Horrors — five hex-bolts seek the FURTHEST living
+        // things on the field (Granny's grief carries past the brawl).
+        // Distinct from Thistle Storm's closest-first homing.
+        this.fireBansheeWail(w, px, py, dmg, isCrit);
+        break;
+      case 'freedom_blade':
+        // Highland Horrors — Wallace's full 360° battle-cry sweep
+        // followed by two expanding shockwaves rolling out across
+        // the moor (Stirling Bridge in two heartbeats).
+        this.fireFreedomBlade(w, px, py, dmg, radius, isCrit);
+        break;
       default:
         this.fireProjectile(w, px, py, 'thistle');
         break;
@@ -1173,6 +1192,152 @@ export class WeaponSystem {
       this.scene.getUpdateTickers().addOnce('scaled', (wave + 1) * 170, () => {
         if (this.destroyed || !this.scene?.sys?.isActive()) return;
         this.fireExpandingRing(px, py, waveDmg, maxR, weaponKey, isCrit);
+      });
+    }
+  }
+
+  /**
+   * Dirk Flurry (Dirk Dance evolution) — three simultaneous tartan-red
+   * arcs centred on the aim direction at -30° / 0° / +30°. Each arc
+   * rolls its own damage so the flurry varies; enemies caught by
+   * multiple arcs only take the first hit (Set-guarded). Pure arc
+   * dispatch — no projectiles, no homing — keeps the sister cost
+   * profile of arc_sweep.
+   */
+  private fireDirkFlurry(w: ActiveWeapon, px: number, py: number): void {
+    const radius = this.effectiveAoe(w);
+    // Aim — nearest-enemy if available, else current facing (matches
+    // fireArcSweep's resolution so the centre arc behaves identically
+    // to a normal Dirk Dance swing).
+    let centerFacing = this.playerFacing;
+    const nearest = this.findClosestEnemy(px, py, radius * 1.5);
+    if (nearest) {
+      centerFacing = Phaser.Math.Angle.Between(px, py, nearest.x, nearest.y);
+    }
+    const halfArc = Phaser.Math.DegToRad(w.config.arcDegrees / 2);
+    const spreadRad = Math.PI / 6; // ±30°
+    const weaponKey = w.config.key;
+
+    // Single weapon-fired-event flash (sister to arc_sweep's spark) at
+    // the centre arc — the three blades read as one motion, not three.
+    this.spawnWeaponFlourish(
+      px + Math.cos(centerFacing) * 28,
+      py + Math.sin(centerFacing) * 28,
+      'fx_weapon_claymore_spark',
+      { scale: 0.6, endScale: 1.1, duration: 220, rotation: centerFacing },
+    );
+
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const radiusSq = radius * radius;
+    const hitSet = new Set<Enemy>();
+
+    for (const off of [-spreadRad, 0, spreadRad]) {
+      const facing = centerFacing + off;
+      const { damage: armDmg, isCrit: armCrit } = this.effectiveDamage(w);
+
+      // Visual arc wedge — tartan-red dirk colour (matches tartan.ts
+      // WEAPON_ACCENTS for dirk_dance). Lower alpha than the base arc
+      // sweep since three arcs overlap.
+      const gfx = this.acquireVfxGraphics();
+      gfx.fillStyle(0x9a2a2a, 0.32);
+      gfx.slice(px, py, radius, facing - halfArc, facing + halfArc, false);
+      gfx.fillPath();
+      this.scene.tweens.add({
+        targets: gfx, alpha: 0, duration: 230,
+        onComplete: () => { gfx.setVisible(false); gfx.clear(); },
+      });
+
+      // Damage gate — same dot-product test as fireArcSweep.
+      const fcos = Math.cos(facing);
+      const fsin = Math.sin(facing);
+      const arcThresh = Math.cos(halfArc);
+      for (const enemy of enemies) {
+        if (!enemy.active) continue;
+        if (hitSet.has(enemy)) continue;
+        const dx = enemy.x - px;
+        const dy = enemy.y - py;
+        const distSq = dx * dx + dy * dy;
+        if (distSq > radiusSq) continue;
+        const dist = Math.sqrt(distSq);
+        if (dist < 1e-6) continue;
+        const nx = dx / dist;
+        const ny = dy / dist;
+        if (nx * fcos + ny * fsin < arcThresh) continue;
+        hitSet.add(enemy);
+        this.dealDamageToEnemy(enemy, armDmg, armCrit, weaponKey);
+        if (w.config.knockback > 0) {
+          const body = enemy.body as Phaser.Physics.Arcade.Body;
+          const mass = Math.max(0.05, body.mass);
+          const kb = w.config.knockback / mass;
+          enemy.applyKnockback(nx * kb, ny * kb, 150);
+        }
+      }
+    }
+  }
+
+  /**
+   * Banshee Wail (Granny's Curse evolution) — five hex-bolts seek
+   * the FURTHEST living things. Distinct from Thistle Storm which
+   * tracks closest-first. The wail carries past the brawl.
+   */
+  private fireBansheeWail(w: ActiveWeapon, px: number, py: number, dmg: number, isCrit: boolean): void {
+    this.ensureEnemyCache();
+    const sorted = this.cachedSortedEnemies;
+    const count = 5;
+    const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
+    if (maxShot <= 0) return;
+
+    // Single bloom at the centre so the wail reads as one ritual gesture
+    // even when the five bolts spray off in five directions.
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_thistle_storm_bloom', {
+      scale: 0.95, endScale: 1.5, duration: 360,
+    });
+
+    // Pick the furthest N enemies (sorted is closest→furthest, so the
+    // tail). For a sparse field where N enemies exist below the cache
+    // size, we still fire maxShot bolts; gaps fan out radially.
+    const targetCount = Math.min(sorted.length, maxShot);
+    for (let i = 0; i < maxShot; i++) {
+      const proj = this.getProjectile('thistle');
+      if (!proj) continue;
+
+      let tx: number, ty: number;
+      if (i < targetCount) {
+        // Furthest-first: walk from the tail backwards.
+        const target = sorted[sorted.length - 1 - i];
+        tx = target.x;
+        ty = target.y;
+      } else {
+        const angle = (i / Math.max(1, maxShot)) * Math.PI * 2;
+        tx = px + Math.cos(angle) * 500;
+        ty = py + Math.sin(angle) * 500;
+      }
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed * 1.2, dmg, w.config.pierce + 1, 1000, isCrit);
+      proj.setWeaponKey(w.config.key);
+      proj.setPibrochAligned(this.currentPibrochAligned());
+      this.applyProjectileVisual(proj, 'thistle');
+      this.spawnProjectileTrail(px, py, 'thistle');
+    }
+  }
+
+  /**
+   * Freedom Blade (Wallace Sword evolution) — full 360° sweep on the
+   * fire-tick followed by two expanding shockwaves at 220 ms / 440 ms.
+   * The waves carry 60% of the swing damage (still big — Wallace's
+   * base is 50).
+   */
+  private fireFreedomBlade(w: ActiveWeapon, px: number, py: number, dmg: number, radius: number, isCrit: boolean): void {
+    const weaponKey = w.config.key;
+    // Immediate 360° sweep — every enemy in radius feels the swing.
+    this.fireFullSweep(px, py, dmg, radius, weaponKey, isCrit);
+
+    // Two delayed shockwaves rolling out across the moor.
+    const waveDmg = Math.ceil(dmg * 0.6);
+    const waveMaxR = radius * 2.4;
+    for (let wave = 0; wave < 2; wave++) {
+      this.scene.getUpdateTickers().addOnce('scaled', (wave + 1) * 220, () => {
+        if (this.destroyed || !this.scene?.sys?.isActive()) return;
+        this.fireExpandingRing(px, py, waveDmg, waveMaxR, weaponKey, isCrit);
       });
     }
   }

@@ -13,6 +13,9 @@ import { drawShintyBall } from './shintyBall';
 import { drawWhetstone } from './whetstone';
 import { drawVelvetAntler } from './velvetAntler';
 import { drawTuningFork } from './tuningFork';
+import { drawGilliesEdge } from './gilliesEdge';
+import { drawWidowsShawl } from './widowsShawl';
+import { drawStirlingMedal } from './stirlingMedal';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -46,6 +49,10 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawWhetstone(scene);
   drawVelvetAntler(scene);
   drawTuningFork(scene);
+  // Highland Horrors evolution-paired passives.
+  drawGilliesEdge(scene);
+  drawWidowsShawl(scene);
+  drawStirlingMedal(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

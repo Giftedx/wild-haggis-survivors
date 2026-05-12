@@ -46,7 +46,10 @@ export type HazardKey =
   | 'loose_scree'
   | 'tidal_wrack'
   | 'slick_cobble'
-  | 'rime_patch';
+  | 'rime_patch'
+  // Highland Horrors drop — new plateau + glen hazards.
+  | 'wind_shear'
+  | 'highland_mist';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -128,6 +131,34 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 11000,
     spawnIntervalMs: 9500,
   },
+  // Highland Horrors — Cairngorm Plateau hazard.
+  // A sudden gust that scythes across the exposed top — rotor turbulence.
+  // High damage (10), small hitbox (12 px), short lifetime (4500ms) — a
+  // beat longer than falling_slate (the gust passes fast but lingers
+  // slightly more than a telegraphed slab).
+  wind_shear: {
+    key: 'wind_shear',
+    texture: 'hazard_wind_shear',
+    biome: 'cairngorm',
+    damage: 10,
+    hitboxRadius: 12,
+    lifetimeMs: 4500,
+    spawnIntervalMs: 8000,
+  },
+  // Highland Horrors — Glen Coe hazard.
+  // Low river mist settling in the valley floor. Wide, soft, lingers.
+  // Chip damage (4, tied with burn_water and tidal_wrack — atmosphere,
+  // not punishment) but it lingers long enough that standing still
+  // in the glen pays for it.
+  highland_mist: {
+    key: 'highland_mist',
+    texture: 'hazard_highland_mist',
+    biome: 'glen_coe',
+    damage: 4,
+    hitboxRadius: 22,
+    lifetimeMs: 14000,
+    spawnIntervalMs: 10500,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -139,4 +170,6 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'tidal_wrack',
   'slick_cobble',
   'rime_patch',
+  'wind_shear',
+  'highland_mist',
 ];

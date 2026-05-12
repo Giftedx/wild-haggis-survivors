@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -17,7 +17,9 @@ export type BiomeModifierKind =
   | 'heatherBloom'
   | 'coastalTide'
   | 'haarConcealment'
-  | 'frostBite';
+  | 'frostBite'
+  | 'cairngormWind'
+  | 'glenCoeEcho';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -213,9 +215,66 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // are clear and biting, not foggy. Low ambient haar.
     ambientHaarDensity: 0.15,
   },
+  // Highland Horrors drop — Cairngorm Plateau.
+  // Exposed subarctic plateau above the treeline. Britain's only true
+  // arctic landscape: quartzite, rime, golden-eagle thermals. The Bodach
+  // Glas paces the summit ridge. Wind cuts from the north without warning.
+  cairngorm: {
+    id: 'cairngorm',
+    nameKey: 'biomes.cairngorm.name',
+    tint: 0x6a7a60,
+    entryToastKey: 'biomes.cairngorm.entry',
+    loreSnippetKey: 'biomes.cairngorm.loreSnippet',
+    loreKey: 'biomes.cairngorm.lore',
+    toastColor: '#a8b898',
+    spawnWeightMods: {
+      bodach_glas: 2.5,
+      ghost: 1.8,
+      eagle: 1.5,
+      golden_eagle: 2.0,
+      berserker: 1.3,
+      tourist: 0.1,
+      chef: 0.05,
+      sheep: 0.5,
+      highland_cow: 0.2,
+    },
+    modifier: 'cairngormWind',
+    // Exposed plateau — cold, clear. Grounded music character even below
+    // frost (0.10) because the summit silence is heavier than peat breath.
+    moodTimbre: 0.08,
+    ambientHaarDensity: 0.1,
+  },
+  // Highland Horrors drop — Glen Coe.
+  // Three miles of red-black rock, the River Coe fast below. The
+  // Glencoe massacre (February 1692) is the weight this valley carries —
+  // treat with gravity, not horror-gamification. Enemies feel faster here;
+  // the glen remembers speed. (*Ref: SCOTTISH_RESEARCH_DEEP.md §6.9.*)
+  glen_coe: {
+    id: 'glen_coe',
+    nameKey: 'biomes.glen_coe.name',
+    tint: 0x2a1a14,
+    entryToastKey: 'biomes.glen_coe.entry',
+    loreSnippetKey: 'biomes.glen_coe.loreSnippet',
+    loreKey: 'biomes.glen_coe.lore',
+    toastColor: '#8a6858',
+    spawnWeightMods: {
+      ghost: 2.0,
+      berserker: 1.5,
+      eagle: 1.3,
+      haar_wraith: 1.0,
+      redcap: 1.2,
+      sheep: 0.6,
+      tourist: 0.2,
+      chef: 0.1,
+    },
+    modifier: 'glenCoeEcho',
+    // Glen Coe — sombre, dark, the weight of history. Heavier than bog.
+    moodTimbre: 0.2,
+    ambientHaarDensity: 0.3,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

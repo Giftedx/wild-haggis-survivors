@@ -64,4 +64,34 @@ export const weapon = {
     description: 'The waulking song answered by the great pipes. Wider sweep, heavier sting on the beat, a full crescendo every fourth.',
     flavour: "Piob mhor — the long, slow lament that hangs across the glen at dawn. The mallet was the call; the pibroch is the answer coming back across the moor. Listen for the fourth beat. That's where the room shakes.",
   },
+  dirk_dance: {
+    name: 'Dirk Dance',
+    description: 'Three quick slashes on the beat — centre, left, right. Volume not weight.',
+    flavour: "The gillie's footwork made steel. A Highland dirk is shorter than a claymore and longer than a sgian dubh — it lives in the in-between, where the dance is. Three taps, one breath, three answers.",
+  },
+  grannies_curse: {
+    name: "Granny's Curse",
+    description: "Slow hex-bolts in all directions. Wee damage each, but they linger and pierce.",
+    flavour: "Every Highland village had a woman the bairns ran from. She kept a clean croft. She kept a sharp tongue. The bolts she throws are mostly slow on purpose; the moor learns who deserves the slower one.",
+  },
+  wallace_sword: {
+    name: 'Wallace Sword',
+    description: 'A great-sword swing wider than the claymore. Slow to lift, mountains in the cut.',
+    flavour: "Five feet four inches of forged steel, kept at the Wallace Monument. No haggis could lift it; this haggis does. Stirling Bridge is older than Scotland; the blade knows the route home.",
+  },
+  dirk_flurry: {
+    name: 'Dirk Flurry',
+    description: 'Three blades, one breath. The arc that was three becomes a wall.',
+    flavour: "When the gillie's foot is right, the centre cut, the left, and the right arrive together — no daylight between them. The moor learned to call it a dance. The wounded just call it the flurry.",
+  },
+  banshee_wail: {
+    name: 'Banshee Wail',
+    description: "Five wails that seek the furthest living thing on the moor. The curse always reaches the edge of the field.",
+    flavour: "The bean-sìth wails for what's about to be lost, not what's already gone. Granny's curse, wrapped in the widow's shawl, gives the wail somewhere to land — the furthest creature, who'd thought distance was safety.",
+  },
+  freedom_blade: {
+    name: 'Freedom Blade',
+    description: 'A full 360° swing followed by two shockwaves rolling out across the moor.',
+    flavour: "The cry from Stirling Bridge carried across the glens; the answer rang back two heartbeats later. This is that. The sword turns once and the moor remembers it twice more.",
+  },
 } as const;

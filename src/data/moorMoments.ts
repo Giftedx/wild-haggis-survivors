@@ -63,6 +63,12 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   // (frost reads brighter than haar despite less saturation — snow
   // throws light back). Distinct from coastal/haar greys.
   frost: 0xc8e0ee,
+  // Highland Horrors — Cairngorm: quartzite pale-green, the colour of
+  // lichen-covered exposed rock on a bright cold day.
+  cairngorm: 0xb0c8a0,
+  // Highland Horrors — Glen Coe: deep red-ochre, the distinctive
+  // Glencoe volcanic rock in afternoon light.
+  glen_coe: 0x9a6048,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

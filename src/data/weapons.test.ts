@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 13 weapons', () => {
-    expect(keys).toHaveLength(13);
+  it('has exactly 16 weapons (Highland Horrors added dirk_dance/grannies_curse/wallace_sword)', () => {
+    expect(keys).toHaveLength(16);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {

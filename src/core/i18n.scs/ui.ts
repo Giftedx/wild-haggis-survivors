@@ -1136,6 +1136,24 @@ export const ui = {
         c: 'Tunin fork hummed true. Noo tha bar drops on ivvery fourth.',
         d: 'Hammer on tha strang beat — tha moor sings alang.',
       },
+      dirk_dance: {
+        a: 'Three blades, ane braith. Tha daunce hauldit.',
+        b: 'Gillie\'s fit wis richt. Tha dirks kent whaur tae be.',
+        c: 'Centre, left, richt — arrived thegither. Nae daylicht.',
+        d: 'Tha flurry. Tha moor learns a new wurd fer "waw".',
+      },
+      grannies_curse: {
+        a: 'Granny\'s curse, happit in tha shawl. Tha wail finds onythin.',
+        b: 'Tha bean-sìth haes somewhaur tae land noo. Faurthest first.',
+        c: 'Five hex-screams, five thrapples — tha edge o tha field hears.',
+        d: 'Oo\' agin cauld; wail agin distance. Baith wairm in their wey.',
+      },
+      wallace_sword: {
+        a: 'Tha Stirling Medal pinned, tha swurd turns. Tha moor turns wi it.',
+        b: 'Three hertbeats. Tha cry fae tha brig in ilk ane.',
+        c: 'Freedom\'s a heavy wurd fer a heavy blade. Liftit clean.',
+        d: 'Tha swing, syne tha answer, syne tha answer tae tha answer.',
+      },
     },
     curse_start: {
       generic: {
@@ -1633,6 +1651,18 @@ export const ui = {
         b: 'Bracken\'s white. Winter\'s claimed it.',
         c: 'Snaw-patches still on tha ben. Cairngorm wather.',
         d: 'Cauld taks tha tired first. Keep movin.',
+      },
+      cairngorm: {
+        a: 'Up on tha taps. Wind\'s wi ye — but it\'ll turn.',
+        b: 'Quartzite an thin air. Tha Bodach Glas wauks here.',
+        c: 'Subarctic plateau — snaw in July. Move cannie.',
+        d: 'Compass needle\'s swithering. Tha summit kens itsel.',
+      },
+      glen_coe: {
+        a: 'Glen Coe. Daunder respectful — tha glen\'s no forgotten.',
+        b: 'Reid-black rock abuin, river quick ablow. A wecht ye can taste.',
+        c: 'Three mile o corrie. 1692 still in tha wind.',
+        d: 'Reid deer in silence. Tha glen prefers tha quiet.',
       },
     },
     moor_moment: {

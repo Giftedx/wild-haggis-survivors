@@ -106,6 +106,30 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_brahan_eye_stone',
     'deco_antler_shed',
   ],
+  // Highland Horrors — Cairngorm Plateau story props. Exposed summit
+  // archaeology: Pictish stone (Cairngorm tops carry many), milestone
+  // (snow-bound waymarker reads as eerie isolation), standing_stone_glyph
+  // (ancient summit markers), antler shed (red deer shed in the corries),
+  // brahan_eye_stone (the seer's cold stone — "the tops make seers of us all").
+  cairngorm: [
+    'deco_pictish_stone',
+    'deco_milestone',
+    'deco_standing_stone_glyph',
+    'deco_antler_shed',
+    'deco_brahan_eye_stone',
+  ],
+  // Highland Horrors — Glen Coe story props. Valley of grief and beauty;
+  // handle respectfully. Rowan charm (planted at glen entries for protection),
+  // standing_stone_glyph (the glen has old stones), milestone (the Military
+  // Road ran through here post-Culloden), antler shed (Glen Coe red deer),
+  // sheep skull (the glen tests everything). NO ruined-croft per Risk 4.
+  glen_coe: [
+    'deco_rowan_charm',
+    'deco_standing_stone_glyph',
+    'deco_milestone',
+    'deco_antler_shed',
+    'deco_sheep_skull',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -187,6 +211,31 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_winter_snowcap', 0.84],
     ['deco_rock_2', 0.94],
     ['deco_thistle', 1.0],
+  ],
+  // Highland Horrors — Cairngorm Plateau flora. Exposed quartzite, rime,
+  // tough summit vegetation. Reuses frost textures where appropriate (snow,
+  // rime bracken, bare birch) — the Cairngorm plateau in autumn reads like a
+  // frost biome gone lighter. Rock-heavy: the tops are mostly stone.
+  cairngorm: [
+    ['deco_rock_3', 0.25],
+    ['deco_rime_bracken', 0.42],
+    ['deco_snow_patch', 0.56],
+    ['deco_bare_birch', 0.68],
+    ['deco_wind_grass', 0.80],
+    ['deco_rock_2', 0.92],
+    ['deco_thistle', 1.0],
+  ],
+  // Highland Horrors — Glen Coe flora. Dramatic valley: heather, bracken,
+  // rocks, and the dark water of the river Coe. Reuses existing textures;
+  // the red-black tint of the biome does the visual heavy lifting.
+  glen_coe: [
+    ['deco_heather', 0.20],
+    ['deco_bracken', 0.38],
+    ['deco_rock', 0.52],
+    ['deco_bare_birch', 0.65],
+    ['deco_bog_cotton', 0.76],
+    ['deco_rock_2', 0.88],
+    ['deco_wind_grass', 1.0],
   ],
 };
 

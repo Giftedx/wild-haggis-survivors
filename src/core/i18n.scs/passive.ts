@@ -35,4 +35,13 @@ export const passive = {
   velvet_antler: {
     flavour: 'Velvet — tha saft skin a stag wears across his growin antler aw simmer, fou o bluid an stored sun. Gran cuts a strip o it fer tha haggis at Lùnastal each year an pins it tae tha broo-baund; tha haggis haes wan extra dash in him fer ilka day tha velvet stays warm. Sheds clean by tha rut. Growes back by tha hairst.',
   },
+  gillies_edge: {
+    flavour: "Tha gillie wis tha laird's hunter — licht-fitted, quick-turnin, gane afore tha gun went aff. Tha brogues wir tha secret; tha laces, tha secret o tha brogue. Gran ties tha haggis's a parteecular wey. Tha wey tha gemmekeepers tied theirs in tha corries o Glenfeshie, 1888.",
+  },
+  widows_shawl: {
+    flavour: "Cauld-wather oo', wove at hame, dyed three times in aller bark. Worn bi tha wives wha waitit fer tha men wha didnae come back fae sea, fae Culloden, fae emigration. Tha shawl is grief made wearable — an wairm. Tha haggis wears ane in Granny's name; she wid nivver hae cawed it hers.",
+  },
+  stirling_medal: {
+    flavour: "Struck efter tha brig at Stirling fell in September 1297 — Wallace an Murray staundin on tha English banes o an airmy that widnae cross. Tha medal is wee an unmarked ayont tha saltire; tha men wha earned them gae them awa. Tha haggis got this ane fae a kist drudged fae tha Forth.",
+  },
 } as const;

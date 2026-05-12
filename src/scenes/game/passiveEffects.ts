@@ -78,5 +78,25 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // silhouette (the haggis isn't a stag — he carries one).
       player.addDashCharge();
       break;
+    case 'gillies_edge':
+      // +8% move speed — the gamekeeper's light foot. Pairs with
+      // Dirk Dance at lv5 for the Dirk Flurry evolution (three
+      // simultaneous arcs). No accessory equip — gillie's edge is
+      // about footwork, not silhouette.
+      player.addSpeed(PLAYER.SPEED * 0.08);
+      break;
+    case 'widows_shawl':
+      // +12 max HP — warm wool against the Highland cold. The widow's
+      // shawl is grief made wearable; the bulk that keeps you alive.
+      // Pairs with Granny's Curse at lv5 for the Banshee Wail
+      // evolution (five homing hex-screams).
+      player.addMaxHp(12);
+      break;
+    case 'stirling_medal':
+      // +10% crit chance — valour at Stirling Bridge, 1297. Pairs
+      // with Wallace Sword at lv5 for the Freedom Blade evolution
+      // (360° sweep + two shockwaves).
+      player.addCritChance(0.10);
+      break;
   }
 }

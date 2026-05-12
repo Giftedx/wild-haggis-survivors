@@ -41,4 +41,16 @@ export const biomes = {
     loreSnippet: 'Cairngorm winter. Tha Bodach Glas walks here.',
     lore: 'Tha high taps abuin tha tree-line — Cairngorms in winter, snaw-patches that linger past Lammas, ptarmigan chyngin white tae match tha grund. Tha Bodach Glas walks here, tha grey auld man o tha munetin — Hieland climbers hae heard him pacin ahint them on Ben Macdui fer twa centuries, an some hae turned tae find naebody, an some hivnae come back at aw. Bracken locks in rime; bare birch silhouettes ring tha corries. Cauld disnae forgie tha unprepared; tha wind is tha munetin\'s voice.',
   },
+  cairngorm: {
+    name: 'Cairngorm Taps',
+    entry: 'Up on tha taps. Wind\'s wi ye — but it\'ll turn.',
+    loreSnippet: 'High Cairngorm plateau. Ptarmigan turn white here. Tha Bodach Glas walks this ridge.',
+    lore: 'Tha high Cairngorms — bare quartzite abuin tha tree-line, ptarmigan rinnin low unner a pewter sky. Britain\'s ainly subarctic plateau: there ar patches o snaw here in July. Tha Bodach Glas walks tha summit ridge, tha grey auld man wha paces ahint ye on Ben Macdui. Climbers hae heard his fitsteaps fer twa centuries. Tha wind comes wi\'oot direction; tha compass needle swithers. Gowden eagles haud tha thermals; rime builds on tha sooth face o every stane. Tha cauld is polite til it isnae.',
+  },
+  glen_coe: {
+    name: 'Glen Coe',
+    entry: 'Glen Coe. Dauner respectful — tha glen\'s no forgotten.',
+    loreSnippet: 'A valley that hauds awthin. Reid-black rock, deep heather, tha wecht o 1692.',
+    lore: 'Three mile o reid-black rock an steep corrie, tha River Coe rinnin fast ablow. Februar 1692: thirty-echt MacDonalds killed in their beds bi sodgers they had sheltered — tha Glencoe massacre. No a horror story; a fact, like tha rock. Tha glen cairries it wi\'oot complaint. Reid deer move tha upper corrie in silence. Tha signal fires war lit on these ridges in tha \'45; Ossian claimed these hills as his. Daunder saft here. Tha glen hauds awthin, an gies naethin back easy.',
+  },
 } as const;

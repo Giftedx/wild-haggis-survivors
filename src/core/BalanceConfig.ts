@@ -312,6 +312,40 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.pibroch_hammer.name',
     descriptionKey: 'evolution.pibroch_hammer.description',
   },
+  // Highland Horrors — three new weapon family evolutions.
+  {
+    // Dirk Dance + Gillie's Edge → Dirk Flurry. The gamekeeper's
+    // agile footwork teaches the dirk three simultaneous arcs: center,
+    // left-flank, right-flank — a spinning wall of blade that covers
+    // the full forward half-circle at once.
+    baseWeapon: 'dirk_dance',
+    requiredPassive: 'gillies_edge',
+    evolvedWeapon: 'dirk_flurry',
+    nameKey: 'evolution.dirk_flurry.name',
+    descriptionKey: 'evolution.dirk_flurry.description',
+  },
+  {
+    // Granny's Curse + Widow's Shawl → Banshee Wail. The grief of a
+    // Highland widow wrapped in wool calls five homing wail-bolts that
+    // seek the furthest living thing on the moor, each one carrying her
+    // curse to the uttermost edge.
+    baseWeapon: 'grannies_curse',
+    requiredPassive: 'widows_shawl',
+    evolvedWeapon: 'banshee_wail',
+    nameKey: 'evolution.banshee_wail.name',
+    descriptionKey: 'evolution.banshee_wail.description',
+  },
+  {
+    // Wallace Sword + Stirling Medal → Freedom Blade. The full
+    // 360° sweep of the battle-cry at Stirling Bridge — every enemy
+    // on the field feels the swing, and two expanding shockwaves
+    // roll out behind it across the moor.
+    baseWeapon: 'wallace_sword',
+    requiredPassive: 'stirling_medal',
+    evolvedWeapon: 'freedom_blade',
+    nameKey: 'evolution.freedom_blade.name',
+    descriptionKey: 'evolution.freedom_blade.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */

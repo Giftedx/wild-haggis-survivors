@@ -81,6 +81,10 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   stag_antler:     '#c8b890', // bone-cream antler tine
   waulking_mallet: '#8a6630', // waulking-oak tan
   pibroch_hammer:  '#e6c468', // pibroch brass-band gold
+  // Highland Horrors — three new weapon families.
+  dirk_dance:      '#9a2a2a', // tartan-blood red (dirk-hilt cloth wrap)
+  grannies_curse:  '#5a3060', // hex-purple (widow's mourning dye)
+  wallace_sword:   '#3a4a5a', // patriot steel (Stirling Bridge grey-blue)
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

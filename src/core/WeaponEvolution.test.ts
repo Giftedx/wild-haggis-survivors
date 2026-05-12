@@ -92,11 +92,13 @@ describe('weapon evolution (chest-gated)', () => {
     }
   );
 
-  it('covers all 11 evolution recipes (not accidentally truncated)', () => {
+  it('covers all 14 evolution recipes (not accidentally truncated)', () => {
     // Phase 2 (2026-05-11) added Pibroch Hammer (waulking_mallet +
-    // tuning_fork). If this count changes, double-check the BURNS
-    // threshold sibling test in `BalanceConfig.evolution.test.ts`.
-    expect(EVOLUTION_RECIPES.length).toBe(11);
+    // tuning_fork). Highland Horrors (2026-05-12) added Dirk Flurry,
+    // Banshee Wail, Freedom Blade. If this count changes, double-check
+    // the BURNS threshold sibling test in
+    // `BalanceConfig.evolution.test.ts`.
+    expect(EVOLUTION_RECIPES.length).toBe(14);
   });
 });
 

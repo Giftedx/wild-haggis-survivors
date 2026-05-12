@@ -457,6 +457,28 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.waulking_mallet.c',
         'ui.banter.weapon_evolve.waulking_mallet.d',
       ],
+      // Highland Horrors (2026-05-12) — three new evolution chains:
+      // Dirk Dance + Gillie's Edge → Dirk Flurry,
+      // Granny's Curse + Widow's Shawl → Banshee Wail,
+      // Wallace Sword + Stirling Medal → Freedom Blade.
+      dirk_dance: [
+        'ui.banter.weapon_evolve.dirk_dance.a',
+        'ui.banter.weapon_evolve.dirk_dance.b',
+        'ui.banter.weapon_evolve.dirk_dance.c',
+        'ui.banter.weapon_evolve.dirk_dance.d',
+      ],
+      grannies_curse: [
+        'ui.banter.weapon_evolve.grannies_curse.a',
+        'ui.banter.weapon_evolve.grannies_curse.b',
+        'ui.banter.weapon_evolve.grannies_curse.c',
+        'ui.banter.weapon_evolve.grannies_curse.d',
+      ],
+      wallace_sword: [
+        'ui.banter.weapon_evolve.wallace_sword.a',
+        'ui.banter.weapon_evolve.wallace_sword.b',
+        'ui.banter.weapon_evolve.wallace_sword.c',
+        'ui.banter.weapon_evolve.wallace_sword.d',
+      ],
       // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
       // CLAUDE.md "9 of the 10 weapons have a paired passive". Banter pool
       // intentionally omits a `bagpipes` tag so the system can never queue
@@ -999,6 +1021,23 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.frost.b',
         'ui.banter.biome_change.frost.c',
         'ui.banter.biome_change.frost.d',
+      ],
+      // Highland Horrors (2026-05-12) — two new biomes. Cairngorm
+      // plateau leans grave (subarctic / Bodach Glas); Glen Coe leans
+      // grave-respectful (massacre, weight of 1692). Voice register
+      // matches the existing hearth pool (short, observational, not
+      // melodramatic).
+      cairngorm: [
+        'ui.banter.biome_change.cairngorm.a',
+        'ui.banter.biome_change.cairngorm.b',
+        'ui.banter.biome_change.cairngorm.c',
+        'ui.banter.biome_change.cairngorm.d',
+      ],
+      glen_coe: [
+        'ui.banter.biome_change.glen_coe.a',
+        'ui.banter.biome_change.glen_coe.b',
+        'ui.banter.biome_change.glen_coe.c',
+        'ui.banter.biome_change.glen_coe.d',
       ],
     },
   },

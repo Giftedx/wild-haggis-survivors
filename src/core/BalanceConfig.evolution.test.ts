@@ -6,14 +6,16 @@ import { EN_STRINGS, t, type LocaleTree } from './i18n';
 import { SCS_STRINGS } from './i18n.scs';
 
 describe('EVOLUTION_RECIPES', () => {
-  it('has 11 evolution recipes (every weapon except utility-only bagpipes)', () => {
+  it('has 14 evolution recipes (Highland Horrors added 3: Dirk Flurry, Banshee Wail, Freedom Blade)', () => {
     // Wild Living World Phase 2 (2026-05-11) added Pibroch Hammer
-    // (`waulking_mallet` + `tuning_fork`). The Burns Wee Beastie
-    // unlock threshold is now hand-pinned in `BalanceConfig.ts` (no
-    // longer derived from this length) so adding a new evolution
-    // doesn't silently raise the achievement bar — see the test for
-    // `BURNS_EVOLUTION_THRESHOLD === 10` below.
-    expect(EVOLUTION_RECIPES).toHaveLength(11);
+    // (`waulking_mallet` + `tuning_fork`). Highland Horrors (2026-05-12)
+    // added dirk_dance + gillies_edge → dirk_flurry, grannies_curse +
+    // widows_shawl → banshee_wail, wallace_sword + stirling_medal →
+    // freedom_blade. The Burns Wee Beastie unlock threshold remains
+    // hand-pinned at 10 in `BalanceConfig.ts` (not derived from this
+    // length) so adding a new evolution doesn't silently raise the
+    // achievement bar — see `BURNS_EVOLUTION_THRESHOLD === 10` below.
+    expect(EVOLUTION_RECIPES).toHaveLength(14);
   });
 
   it('every recipe references a valid base weapon', () => {
@@ -84,7 +86,7 @@ describe('P1.4 — bagpipes utility-only player-facing copy', () => {
     const rawDesc = t('achievement.ach_burns_beastie_unlock.description');
     // Hard string-match guard. Any future edit that puts "every weapon"
     // back in the same line trips the test loudly.
-    expect(rawDesc.toLowerCase(), `EN achievement copy implies all 11 weapons evolve: ${rawDesc}`)
+    expect(rawDesc.toLowerCase(), `EN achievement copy implies all 14 weapons evolve: ${rawDesc}`)
       .not.toContain('every weapon');
     // The string MUST contain the {count} placeholder — that's the contract
     // that `BURNS_EVOLUTION_THRESHOLD` (derived from `EVOLUTION_RECIPES.length`

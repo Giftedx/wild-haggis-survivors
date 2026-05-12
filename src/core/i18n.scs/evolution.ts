@@ -54,4 +54,19 @@ export const evolution = {
     description: 'A great sweep that answers tha waulkin sang wi pipes. Wider, heavier — an ilka fowert beat lands a crescendo.',
     flavour: 'Tha tuning fork rang yince an tha moor minded tha lang, slaw tune. Piobaireachd — piob mhor — tha great-pipe lament that walks at burial pace throu tha glen. Tha waulkin sang wis weemin\'s wark; tha piobaireachd is tha answerin grief. They wir aye ae music. Tha haimmer at last hears baith ends.',
   },
+  dirk_flurry: {
+    name: 'Dirk Flurry',
+    description: 'Three arcs at yince — centre, left-flank, richt-flank. Tha waw o blade.',
+    flavour: "Gillie's Edge teaches whit tha fit aw\'ready kent: tha daunce is faster than tha ee. Three cuts arrive thegither; tha woundit hear ainly ane. Tha Heiland dirk wis aye meant tae move this wey; tha haggis is jist tha ane at last preivin it.",
+  },
+  banshee_wail: {
+    name: 'Banshee Wail',
+    description: "Five hex-screams seek tha faurthest livin things on tha moor — Granny's grief, gien range.",
+    flavour: "Tha widow's shawl cairries tha curse past tha brawl. Tha bean-sìth — tha wumman o tha sìth — wails fer tha unprepared; her vyce reaches wha needs reachin. Granny minds ivvery name. Tha shawl minds wairmth. Thegither they mind tae wail.",
+  },
+  freedom_blade: {
+    name: 'Freedom Blade',
+    description: 'Tha fou 360° sweep, syne twa shockwaves rowin oot ahint it. Stirling Brig in three hertbeats.',
+    flavour: "Tha Stirling Medal wis minted fer valour, no fer keepin. Wi it pinned tae tha haggis's plaid tha Wallace Swurd turns yince an tha moor turns wi it. Tha cry fae tha brig haes been cairryin fer seiven hunner year; this is whit tha cairryin sounds like.",
+  },
 } as const;

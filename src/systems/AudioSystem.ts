@@ -249,6 +249,9 @@ export class AudioSystem {
       tidal_wrack: { f0: 380, f1: 220, type: 'sine', dur: 0.22, vol: 0.07 },     // soft wash
       slick_cobble: { f0: 560, f1: 300, type: 'sawtooth', dur: 0.10, vol: 0.07 }, // brief slip
       rime_patch: { f0: 1500, f1: 900, type: 'triangle', dur: 0.08, vol: 0.06 },  // crystal chime
+      // Highland Horrors plateau/glen hazards.
+      wind_shear: { f0: 900, f1: 240, type: 'sawtooth', dur: 0.18, vol: 0.09 },   // sharp gust descending
+      highland_mist: { f0: 280, f1: 220, type: 'sine', dur: 0.32, vol: 0.06 },    // long, soft, low
     };
     const p = presets[hazardKey];
     osc.type = p.type;

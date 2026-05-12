@@ -44,6 +44,18 @@ export const upgradeCard = {
     name: 'Waulking Mallet',
     description: 'A weighted oak beater. Hits on the beat land harder; off-beat hits still hit.',
   },
+  add_dirk_dance: {
+    name: 'Dirk Dance',
+    description: 'Three quick slashes — centre, left, right. Pair wi Gillie\'s Edge for the legendary Dirk Flurry.',
+  },
+  add_grannies_curse: {
+    name: "Granny's Curse",
+    description: 'Slow hex-bolts in all directions. Wee damage, but they linger and pierce. Pair wi Widow\'s Shawl for the Banshee Wail.',
+  },
+  add_wallace_sword: {
+    name: 'Wallace Sword',
+    description: 'A great-sword swing wider than the claymore — slow, brutal. Pair wi the Stirling Medal for the Freedom Blade.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',
@@ -96,6 +108,18 @@ export const upgradeCard = {
   add_tuning_fork: {
     name: 'Tuning Fork',
     description: 'Tap it once, the moor tunes to the bar. Aligned-beat pulses ring louder. Evolves Waulking Mallet.',
+  },
+  add_gillies_edge: {
+    name: "Gillie's Edge",
+    description: 'A gamekeeper\'s light foot. +8% move speed. Evolves Dirk Dance.',
+  },
+  add_widows_shawl: {
+    name: "Widow's Shawl",
+    description: 'Warm wool against the Highland cold. +12 max HP. Evolves Granny\'s Curse.',
+  },
+  add_stirling_medal: {
+    name: 'Stirling Medal',
+    description: 'Valour at Stirling Bridge, 1297. +10% crit chance. Evolves Wallace Sword.',
   },
   // Stat boost cards
   boost_hp: {

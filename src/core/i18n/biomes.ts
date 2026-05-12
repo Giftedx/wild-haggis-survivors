@@ -41,4 +41,16 @@ export const biomes = {
     loreSnippet: 'Cairngorm winter. The Bodach Glas walks here.',
     lore: 'The high tops above the tree-line — Cairngorms in winter, snow-patches that linger past Lammas, ptarmigan changing white tae match the ground. The Bodach Glas walks here, the grey old man o the mountain — Highland climbers have heard him pacing behind them on Ben Macdui fer two centuries, an some have turned tae find naebody, an some havenae come back at all. Bracken locks in rime; bare birch silhouettes ring the corries. Cold doesnae forgive the unprepared; the wind is the mountain\'s voice.',
   },
+  cairngorm: {
+    name: 'Cairngorm Tops',
+    entry: 'Up on the tops. Wind\'s wi\' ye — but it\'ll turn.',
+    loreSnippet: 'High Cairngorm plateau. Ptarmigan turn white here. The Bodach Glas walks this ridge.',
+    lore: 'The high Cairngorms — bare quartzite above the treeline, ptarmigan running low under a pewter sky. Britain\'s only subarctic plateau: there are patches of snow here in July. The Bodach Glas walks the summit ridge, the grey old man who paces behind you on Ben Macdui. Climbers have heard his footsteps for two centuries. The wind comes without direction; the compass needle swithers. Golden eagles hold the thermals; rime builds on the south face of every stone. The cold is polite until it isn\'t.',
+  },
+  glen_coe: {
+    name: 'Glen Coe',
+    entry: 'Glen Coe. Walk respectful — the glen\'s no\' forgotten.',
+    loreSnippet: 'A valley that holds everything. Red-black rock, deep heather, the weight of 1692.',
+    lore: 'Three miles of red-black rock and steep corrie, the River Coe running fast below. February 1692: thirty-eight MacDonalls killed in their beds by soldiers they had sheltered — the Glencoe massacre. Not a horror story; a fact, like the rock. The glen carries it without complaint. Red deer move the upper corrie in silence. The signal fires were lit on these ridges in the \'45; Ossian claimed these hills as his. Walk soft here. The glen holds everything, and gives nothing back easy.',
+  },
 } as const;

@@ -103,7 +103,10 @@ describe('PASSIVE_KEYS', () => {
   it('is derived from PASSIVE_CARDS and contains all passive keys', () => {
     // Wild Living World Phase 2 (2026-05-11) added `tuning_fork` —
     // the Waulking Mallet's evolution pairing for the Pibroch Hammer.
-    expect(PASSIVE_KEYS).toHaveLength(13);
+    // Highland Horrors (2026-05-12) added `gillies_edge`, `widows_shawl`,
+    // `stirling_medal` — pairings for Dirk Flurry, Banshee Wail,
+    // Freedom Blade.
+    expect(PASSIVE_KEYS).toHaveLength(16);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');
@@ -111,6 +114,9 @@ describe('PASSIVE_KEYS', () => {
     expect(PASSIVE_KEYS).toContain('whetstone');
     expect(PASSIVE_KEYS).toContain('velvet_antler');
     expect(PASSIVE_KEYS).toContain('tuning_fork');
+    expect(PASSIVE_KEYS).toContain('gillies_edge');
+    expect(PASSIVE_KEYS).toContain('widows_shawl');
+    expect(PASSIVE_KEYS).toContain('stirling_medal');
   });
 });
 

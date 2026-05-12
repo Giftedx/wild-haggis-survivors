@@ -1545,7 +1545,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'heatherBloom'
       | 'coastalTide'
       | 'haarConcealment'
-      | 'frostBite',
+      | 'frostBite'
+      | 'cairngormWind'
+      | 'glenCoeEcho',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1587,6 +1589,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // charter dropped (HazardsSystem doesn't support conditional
         // gates); the speed tax carries the frost tension instead.
         this.biomeSpeedMul = 0.75;
+        break;
+      case 'cairngormWind':
+        // Exposed plateau — wind resistance slows the haggis (-10%)
+        // but the thin air carries blows further (knockback +15%).
+        // Lighter than frostBite (-25%) — the plateau is cold but
+        // you can move; it's the gusts that get you (wind_shear hazard).
+        this.biomeSpeedMul = 0.90;
+        this.biomeKnockbackBonus = 1.15;
+        break;
+      case 'glenCoeEcho':
+        // The glen amplifies everything — knockback resonates in the
+        // valley (+20%). A small violence in Glen Coe lands harder.
+        // Speed is neutral: the glen doesn't slow you, it watches.
+        this.biomeKnockbackBonus = 1.20;
         break;
     }
   }

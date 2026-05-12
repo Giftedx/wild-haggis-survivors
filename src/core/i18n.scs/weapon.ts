@@ -64,4 +64,34 @@ export const weapon = {
     description: 'Tha waulkin sang answered by tha great pipes. Wider sweep, heavier sting on tha beat, a fou crescendo ilk fowert.',
     flavour: "Piob mhor — tha lang, slaw lament that hings athort tha glen at daw. Tha mallet wis tha cry; tha piobaireachd is tha answer comin back ower tha moor. List for tha fowert beat. That's whaur tha ruim shaks.",
   },
+  dirk_dance: {
+    name: 'Dirk Daunce',
+    description: 'Three quick slashes on tha beat — centre, left, richt. Vollum no wecht.',
+    flavour: "Tha gillie's fitwirk made steel. A Heiland dirk is shorter than a claymore an langer than a sgian dubh — it lives in tha atween, whaur tha daunce is. Three taps, ane braith, three answers.",
+  },
+  grannies_curse: {
+    name: "Granny's Curse",
+    description: "Slaw hex-bolts in aw airts. Wee dunt each, but they linger an perce.",
+    flavour: "Ivvery Heiland clachan haed a wumman tha bairns ran fae. She kept a clean croft. She kept a shairp tongue. Tha bolts she flings are maistly slaw on purpose; tha moor learns wha deserves tha slawer ane.",
+  },
+  wallace_sword: {
+    name: 'Wallace Swurd',
+    description: 'A great-swurd swing wider than tha claymore. Slaw tae lift, mountains in tha cut.',
+    flavour: "Five fit fower inches o forged steel, kept at tha Wallace Monument. Nae haggis could lift it; this haggis dis. Stirling Brig is aulder than Scotland; tha blade kens tha road hame.",
+  },
+  dirk_flurry: {
+    name: 'Dirk Flurry',
+    description: 'Three blades, ane braith. Tha arc that wis three becomes a waw.',
+    flavour: "When tha gillie's fit is richt, tha centre cut, tha left, an tha richt arrive thegither — nae daylicht atween them. Tha moor learnt tae caw it a daunce. Tha woundit jist caw it tha flurry.",
+  },
+  banshee_wail: {
+    name: 'Banshee Wail',
+    description: "Five wails that seek tha faurthest livin thing on tha moor. Tha curse aye reaches tha edge o tha field.",
+    flavour: "Tha bean-sìth wails fer whit's aboot tae be lost, no whit's aw\'ready gane. Granny's curse, happit in tha widow's shawl, gies tha wail somewhaur tae land — tha faurthest craitur, wha'd thocht distance wis safety.",
+  },
+  freedom_blade: {
+    name: 'Freedom Blade',
+    description: 'A fou 360° swing follaed by twa shockwaves rowin oot athort tha moor.',
+    flavour: "Tha cry fae Stirling Brig cairried athort tha glens; tha answer rang back twa hertbeats efter. This is that. Tha swurd turns aince an tha moor minds it twa times mair.",
+  },
 } as const;

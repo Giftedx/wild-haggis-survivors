@@ -22,6 +22,12 @@ import { drawStagAntlerIcon } from './stagAntler';
 import { drawMonarchChargeIcon } from './monarchCharge';
 import { drawWaulkingMalletIcon } from './waulkingMallet';
 import { drawPibrochHammerIcon } from './pibrochHammer';
+import { drawDirkDanceIcon } from './dirkDance';
+import { drawGranniesCurseIcon } from './granniesCurse';
+import { drawWallaceSwordIcon } from './wallaceSword';
+import { drawDirkFlurryIcon } from './dirkFlurry';
+import { drawBansheeWailIcon } from './bansheeWail';
+import { drawFreedomBladeIcon } from './freedomBlade';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -39,6 +45,10 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawSgianDubhIcon(scene);
   drawStagAntlerIcon(scene);
   drawWaulkingMalletIcon(scene);
+  // Highland Horrors base weapons.
+  drawDirkDanceIcon(scene);
+  drawGranniesCurseIcon(scene);
+  drawWallaceSwordIcon(scene);
   // Evolutions
   drawThistleStormIcon(scene);
   drawHighlandGamesIcon(scene);
@@ -50,6 +60,10 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawSgianGealIcon(scene);
   drawMonarchChargeIcon(scene);
   drawPibrochHammerIcon(scene);
+  // Highland Horrors evolutions.
+  drawDirkFlurryIcon(scene);
+  drawBansheeWailIcon(scene);
+  drawFreedomBladeIcon(scene);
   // Standalone + utility
   drawClaymoreIcon(scene);
   drawBagpipesUtilityIcon(scene);

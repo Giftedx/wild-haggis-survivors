@@ -1664,6 +1664,24 @@ export const ui = {
         c: 'Tuning fork hummed true. Now the bar drops on every fourth.',
         d: 'Hammer on the strong beat — the moor sings along.',
       },
+      dirk_dance: {
+        a: 'Three blades, one breath. The dance held.',
+        b: 'Gillie\'s foot was right. The dirks knew where to be.',
+        c: 'Centre, left, right — arrived together. No daylight.',
+        d: 'The flurry. The moor learns a new word for "wall".',
+      },
+      grannies_curse: {
+        a: 'Granny\'s curse, wrapped in the shawl. The wail finds anything.',
+        b: 'The bean-sìth has somewhere to land now. Furthest first.',
+        c: 'Five hex-screams, five throats — the edge of the field hears.',
+        d: 'Wool against cold; wail against distance. Both warm in their way.',
+      },
+      wallace_sword: {
+        a: 'The Stirling Medal pinned, the sword turns. The moor turns with it.',
+        b: 'Three heartbeats. The cry from the bridge in each one.',
+        c: 'Freedom\'s a heavy word for a heavy blade. Lifted clean.',
+        d: 'The swing, then the answer, then the answer to the answer.',
+      },
     },
     curse_start: {
       generic: {
@@ -2162,6 +2180,18 @@ export const ui = {
         b: 'Bracken\'s white. Winter\'s claimed it.',
         c: 'Snow-patches still on the ben. Cairngorms weather.',
         d: 'Cold takes the tired first. Keep moving.',
+      },
+      cairngorm: {
+        a: 'Up on the tops. Wind\'s wi\' ye — but it\'ll turn.',
+        b: 'Quartzite an thin air. Tha Bodach Glas walks here.',
+        c: 'Subarctic plateau — snaw in July. Move careful.',
+        d: 'Compass needle\'s swithering. The summit kens it\'s itsel.',
+      },
+      glen_coe: {
+        a: 'Glen Coe. Walk respectful — the glen\'s no\' forgotten.',
+        b: 'Red-black rock above, river quick below. A weight ye can taste.',
+        c: 'Three miles o\' corrie. 1692 still in the wind.',
+        d: 'Red deer in silence. The glen prefers the quiet.',
       },
     },
     moor_moment: {

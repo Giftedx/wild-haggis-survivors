@@ -34,7 +34,10 @@ export type WeaponKey =
   | 'sgian_dubh'
   | 'stag_antler'
   | 'waulking_mallet'
-  | 'pibroch_hammer';
+  | 'pibroch_hammer'
+  | 'dirk_dance'
+  | 'grannies_curse'
+  | 'wallace_sword';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -382,6 +385,93 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       radius: 1.10,
     },
   },
+  // Highland Horrors — Dirk Dance. The Highland dirk: longer than
+  // a sgian dubh, shorter than a claymore. A rapid three-beat combo
+  // of slashes — center, left, right — fired at 130ms intervals to
+  // give a true parry-and-riposte feel. Arc is tight and fast, living
+  // on volume rather than weight. Pairs with Gillie's Edge at lv5 →
+  // Dirk Flurry: all three arcs fire simultaneously, rotating through
+  // ±35°, becoming a spinning wall of blade.
+  dirk_dance: {
+    key: 'dirk_dance',
+    nameKey: 'weapon.dirk_dance.name',
+    descriptionKey: 'weapon.dirk_dance.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 950,
+    damage: 9,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 85,
+    arcDegrees: 70,
+    knockback: 28,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.87,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // Highland Horrors — Granny's Curse. The formidable Highland
+  // grandmother lobbing slow, wide-scattering hex bolts across the
+  // moor in all directions. Low damage each, but each pierces and
+  // the spread covers surprising ground. The Widow's Shawl at lv5
+  // weaves the curse into the Banshee Wail: five homing hex-screams
+  // that seek the furthest enemies on the field.
+  grannies_curse: {
+    key: 'grannies_curse',
+    nameKey: 'weapon.grannies_curse.name',
+    descriptionKey: 'weapon.grannies_curse.description',
+    behavior: 'projectile',
+    cooldownMs: 1600,
+    damage: 7,
+    projectileSpeed: 160,
+    projectileCount: 3,
+    pierce: 2,
+    range: 380,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 12,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.88,
+      countAt: [4],
+      pierce: 1,
+      radius: 1,
+    },
+  },
+
+  // Highland Horrors — Wallace Sword. William Wallace's great sword
+  // — wider arc than the claymore, heavier damage, but devastatingly
+  // slow. The weapon of a man who moved mountains with a blade. The
+  // Stirling Medal at lv5 unlocks Freedom Blade: the full 360° sweep
+  // that carries across the moor like the battle-cry at Stirling Bridge.
+  wallace_sword: {
+    key: 'wallace_sword',
+    nameKey: 'weapon.wallace_sword.name',
+    descriptionKey: 'weapon.wallace_sword.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 3400,
+    damage: 50,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 180,
+    arcDegrees: 220,
+    knockback: 140,
+    levelScaling: {
+      damage: 1.30,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.12,
+    },
+  },
+
   // Wild Living World Phase 2 — Pibroch Hammer (Waulking Mallet
   // evolution). The waulking song is a *call*; the pibroch (piob
   // mhor) is the *answer* — a great-pipe lament rolling out across

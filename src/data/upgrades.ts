@@ -32,7 +32,19 @@ export type PassiveKey =
   // "Tuning Fork" — a thumb-sized fork the haggis taps before a sweep,
   // the audible test-note before the pipes drone in. Paired with a
   // level-5 Waulking Mallet at chest grants the Pibroch Hammer.
-  | 'tuning_fork';
+  | 'tuning_fork'
+  // Highland Horrors — Dirk Dance evolution paired passive.
+  // "Gillie's Edge" — the gamekeeper's agility: light foot, quick turn.
+  // +8% move speed. Paired with a level-5 Dirk Dance at chest → Dirk Flurry.
+  | 'gillies_edge'
+  // Highland Horrors — Granny's Curse evolution paired passive.
+  // "Widow's Shawl" — warm wool worn against the Highland cold.
+  // +12 max HP. Paired with a level-5 Granny's Curse at chest → Banshee Wail.
+  | 'widows_shawl'
+  // Highland Horrors — Wallace Sword evolution paired passive.
+  // "Stirling Medal" — valor at Stirling Bridge, 1297.
+  // +10% crit chance. Paired with a level-5 Wallace Sword at chest → Freedom Blade.
+  | 'stirling_medal';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -189,6 +201,31 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_bagpipes',
     effect: { type: 'add_weapon', weaponKey: 'waulking_mallet' },
   },
+  // Highland Horrors — three new weapon families.
+  {
+    id: 'add_dirk_dance',
+    name: 'upgradeCard.add_dirk_dance.name',
+    description: 'upgradeCard.add_dirk_dance.description',
+    rarity: 'uncommon',
+    icon: 'wicon_dirk_dance',
+    effect: { type: 'add_weapon', weaponKey: 'dirk_dance' },
+  },
+  {
+    id: 'add_grannies_curse',
+    name: 'upgradeCard.add_grannies_curse.name',
+    description: 'upgradeCard.add_grannies_curse.description',
+    rarity: 'uncommon',
+    icon: 'wicon_grannies_curse',
+    effect: { type: 'add_weapon', weaponKey: 'grannies_curse' },
+  },
+  {
+    id: 'add_wallace_sword',
+    name: 'upgradeCard.add_wallace_sword.name',
+    description: 'upgradeCard.add_wallace_sword.description',
+    rarity: 'rare',
+    icon: 'wicon_wallace_sword',
+    effect: { type: 'add_weapon', weaponKey: 'wallace_sword' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -301,6 +338,31 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_tuning_fork',
     effect: { type: 'add_passive', passiveKey: 'tuning_fork' },
+  },
+  // Highland Horrors — three evolution-paired passives.
+  {
+    id: 'add_gillies_edge',
+    name: 'upgradeCard.add_gillies_edge.name',
+    description: 'upgradeCard.add_gillies_edge.description',
+    rarity: 'uncommon',
+    icon: 'ucard_gillies_edge',
+    effect: { type: 'add_passive', passiveKey: 'gillies_edge' },
+  },
+  {
+    id: 'add_widows_shawl',
+    name: 'upgradeCard.add_widows_shawl.name',
+    description: 'upgradeCard.add_widows_shawl.description',
+    rarity: 'uncommon',
+    icon: 'ucard_widows_shawl',
+    effect: { type: 'add_passive', passiveKey: 'widows_shawl' },
+  },
+  {
+    id: 'add_stirling_medal',
+    name: 'upgradeCard.add_stirling_medal.name',
+    description: 'upgradeCard.add_stirling_medal.description',
+    rarity: 'rare',
+    icon: 'ucard_stirling_medal',
+    effect: { type: 'add_passive', passiveKey: 'stirling_medal' },
   },
 ];
 
