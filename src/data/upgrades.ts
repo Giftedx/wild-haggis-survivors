@@ -542,9 +542,12 @@ export const STAT_CARDS: UpgradeCard[] = [
 //
 // All echoes use the existing `stat_boost` effect so LevelUpFlow.apply()
 // can route them through the same applyStatBoost dispatch — no new effect
-// type, no duplicate switch. Amounts are intentionally small (roughly half
-// the STAT_CARDS equivalents) because the player receives many echoes over
-// the 10-minute back half of a run.
+// type, no duplicate switch. Amounts are calibrated to roughly 60–80%
+// of the pre-cap STAT_CARDS equivalents (was ~half; lifted 2026-05-12
+// after playtester reported the level-30 cap felt like a dead-end —
+// echoes were technically firing but psychologically a consolation
+// prize). They're still echoes, not full level-ups, but each one
+// registers as forward motion now.
 
 export const ECHO_CARDS: UpgradeCard[] = [
   {
@@ -553,7 +556,7 @@ export const ECHO_CARDS: UpgradeCard[] = [
     description: 'upgradeCard.echo_damage.description',
     rarity: 'common',
     icon: 'ucard_stat_damage',
-    effect: { type: 'stat_boost', stat: 'damage', amount: 0.04 },
+    effect: { type: 'stat_boost', stat: 'damage', amount: 0.06 },
   },
   {
     id: 'echo_crit',
@@ -561,7 +564,7 @@ export const ECHO_CARDS: UpgradeCard[] = [
     description: 'upgradeCard.echo_crit.description',
     rarity: 'common',
     icon: 'ucard_stat_damage',
-    effect: { type: 'stat_boost', stat: 'crit', amount: 0.02 },
+    effect: { type: 'stat_boost', stat: 'crit', amount: 0.03 },
   },
   {
     id: 'echo_speed',
@@ -569,7 +572,7 @@ export const ECHO_CARDS: UpgradeCard[] = [
     description: 'upgradeCard.echo_speed.description',
     rarity: 'common',
     icon: 'ucard_stat_speed',
-    effect: { type: 'stat_boost', stat: 'speed', amount: 0.03 },
+    effect: { type: 'stat_boost', stat: 'speed', amount: 0.05 },
   },
   {
     id: 'echo_hp',
@@ -577,7 +580,7 @@ export const ECHO_CARDS: UpgradeCard[] = [
     description: 'upgradeCard.echo_hp.description',
     rarity: 'common',
     icon: 'ucard_stat_health',
-    effect: { type: 'stat_boost', stat: 'maxHp', amount: 5 },
+    effect: { type: 'stat_boost', stat: 'maxHp', amount: 8 },
   },
   {
     id: 'echo_pickup',
@@ -585,7 +588,7 @@ export const ECHO_CARDS: UpgradeCard[] = [
     description: 'upgradeCard.echo_pickup.description',
     rarity: 'common',
     icon: 'ucard_stat_pickup',
-    effect: { type: 'stat_boost', stat: 'pickup', amount: 6 },
+    effect: { type: 'stat_boost', stat: 'pickup', amount: 10 },
   },
   {
     id: 'echo_armor',
@@ -601,7 +604,7 @@ export const ECHO_CARDS: UpgradeCard[] = [
     description: 'upgradeCard.echo_cooldown.description',
     rarity: 'uncommon',
     icon: 'ucard_stat_cooldown',
-    effect: { type: 'stat_boost', stat: 'cooldown', amount: 0.03 },
+    effect: { type: 'stat_boost', stat: 'cooldown', amount: 0.05 },
   },
   {
     id: 'echo_lifesteal',
@@ -609,7 +612,7 @@ export const ECHO_CARDS: UpgradeCard[] = [
     description: 'upgradeCard.echo_lifesteal.description',
     rarity: 'rare',
     icon: 'ucard_stat_health',
-    effect: { type: 'stat_boost', stat: 'lifesteal', amount: 0.3 },
+    effect: { type: 'stat_boost', stat: 'lifesteal', amount: 0.5 },
   },
 ];
 

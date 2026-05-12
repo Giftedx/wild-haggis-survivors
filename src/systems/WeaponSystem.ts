@@ -1227,17 +1227,26 @@ export class WeaponSystem {
       { scale: 0.6, endScale: 1.1, duration: 220, rotation: centerFacing },
     );
 
-    const enemies = this.enemyGroup.getChildren() as Enemy[];
-    const radiusSq = radius * radius;
-    const hitSet = new Set<Enemy>();
+    // Pre-roll three independent damage stamps (first-hit-wins, but the
+    // crit roll varies per arm — the flurry feels stochastic in play).
+    const armRolls: ReadonlyArray<{ damage: number; isCrit: boolean }> = [
+      this.effectiveDamage(w),
+      this.effectiveDamage(w),
+      this.effectiveDamage(w),
+    ];
+    const offs: ReadonlyArray<number> = [-spreadRad, 0, spreadRad];
+    const facings: ReadonlyArray<number> = [
+      centerFacing + offs[0],
+      centerFacing + offs[1],
+      centerFacing + offs[2],
+    ];
 
-    for (const off of [-spreadRad, 0, spreadRad]) {
-      const facing = centerFacing + off;
-      const { damage: armDmg, isCrit: armCrit } = this.effectiveDamage(w);
-
-      // Visual arc wedge — tartan-red dirk colour (matches tartan.ts
-      // WEAPON_ACCENTS for dirk_dance). Lower alpha than the base arc
-      // sweep since three arcs overlap.
+    // Visual arc wedges — tartan-red dirk colour (matches tartan.ts
+    // WEAPON_ACCENTS for dirk_dance). Lower alpha than the base arc
+    // sweep since three arcs overlap. Drawn before the damage loop so
+    // a stutter on a busy frame still paints the swing.
+    for (let i = 0; i < 3; i++) {
+      const facing = facings[i];
       const gfx = this.acquireVfxGraphics();
       gfx.fillStyle(0x9a2a2a, 0.32);
       gfx.slice(px, py, radius, facing - halfArc, facing + halfArc, false);
@@ -1246,31 +1255,51 @@ export class WeaponSystem {
         targets: gfx, alpha: 0, duration: 230,
         onComplete: () => { gfx.setVisible(false); gfx.clear(); },
       });
+    }
 
-      // Damage gate — same dot-product test as fireArcSweep.
-      const fcos = Math.cos(facing);
-      const fsin = Math.sin(facing);
-      const arcThresh = Math.cos(halfArc);
-      for (const enemy of enemies) {
-        if (!enemy.active) continue;
-        if (hitSet.has(enemy)) continue;
-        const dx = enemy.x - px;
-        const dy = enemy.y - py;
-        const distSq = dx * dx + dy * dy;
-        if (distSq > radiusSq) continue;
-        const dist = Math.sqrt(distSq);
-        if (dist < 1e-6) continue;
-        const nx = dx / dist;
-        const ny = dy / dist;
-        if (nx * fcos + ny * fsin < arcThresh) continue;
-        hitSet.add(enemy);
-        this.dealDamageToEnemy(enemy, armDmg, armCrit, weaponKey);
-        if (w.config.knockback > 0) {
-          const body = enemy.body as Phaser.Physics.Arcade.Body;
-          const mass = Math.max(0.05, body.mass);
-          const kb = w.config.knockback / mass;
-          enemy.applyKnockback(nx * kb, ny * kb, 150);
-        }
+    // Single pool walk — for each enemy, test all three arcs and apply
+    // the first match. Previously this looped the enemies three times
+    // (one per arc) for a 3× cost; the single-pass variant matches the
+    // "first-hit-wins" semantics of the original Set guard without the
+    // Set allocation and without the redundant distance math.
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const radiusSq = radius * radius;
+    const arcThresh = Math.cos(halfArc);
+    const fcos0 = Math.cos(facings[0]);
+    const fsin0 = Math.sin(facings[0]);
+    const fcos1 = Math.cos(facings[1]);
+    const fsin1 = Math.sin(facings[1]);
+    const fcos2 = Math.cos(facings[2]);
+    const fsin2 = Math.sin(facings[2]);
+
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq > radiusSq) continue;
+      const dist = Math.sqrt(distSq);
+      if (dist < 1e-6) continue;
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      // Test arcs in order — first hit wins. Centre arc (i=1) is most
+      // likely to land for aimed swings, but we test left/centre/right
+      // in catalogue order so the leftmost roll claims the kill when an
+      // enemy is on a seam (small but consistent — replay determinism).
+      let armIdx = -1;
+      if (nx * fcos0 + ny * fsin0 >= arcThresh) armIdx = 0;
+      else if (nx * fcos1 + ny * fsin1 >= arcThresh) armIdx = 1;
+      else if (nx * fcos2 + ny * fsin2 >= arcThresh) armIdx = 2;
+      if (armIdx < 0) continue;
+
+      const roll = armRolls[armIdx];
+      this.dealDamageToEnemy(enemy, roll.damage, roll.isCrit, weaponKey);
+      if (w.config.knockback > 0) {
+        const body = enemy.body as Phaser.Physics.Arcade.Body;
+        const mass = Math.max(0.05, body.mass);
+        const kb = w.config.knockback / mass;
+        enemy.applyKnockback(nx * kb, ny * kb, 150);
       }
     }
   }

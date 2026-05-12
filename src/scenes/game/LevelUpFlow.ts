@@ -428,7 +428,12 @@ export class LevelUpFlow {
     if (effect.type === 'stat_boost') {
       this.applyStatBoost(effect.stat, effect.amount);
       const juice = this.hooks.getJuice();
-      juice.showToast(t('ui.game.upgrade_echo_applied', { name: t(card.name) }), '#88ccff');
+      // CRIT_GOLD (#ffdd44) — warm "victory" tone. Pre-2026-05-12 this was
+      // cool-blue (#88ccff) which read as ephemeral/consolation; playtester
+      // feedback was that the cap felt like a dead-end. Gold + bumped echo
+      // magnitudes (upgrades.ts ECHO_CARDS) make the cadence feel like
+      // real progress instead of background drip.
+      juice.showToast(t('ui.game.upgrade_echo_applied', { name: t(card.name) }), '#ffdd44');
     }
 
     const xpSystem = this.hooks.getXPSystem();
