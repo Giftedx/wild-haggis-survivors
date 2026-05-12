@@ -627,7 +627,7 @@ export const ui = {
     stats_relics: 'Sporran: {relics}',
     stats_variant: 'Variant: {variant}',
     stats_runes: 'Runes: {runes}',
-    keys_resume: 'ESC / P / Stairt — back intae it',
+    keys_resume: 'ESC / P / Stairt — back intae it · Tab or saighearan — flit · Enter — tak · 1–8 — lowp tae raw',
     passives_heading: 'Curios:',
     elite_affix_heading: 'Gowd elites — traits:',
     save_screenshot: 'Save a pic',

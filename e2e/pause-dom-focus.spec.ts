@@ -96,6 +96,14 @@ test.describe('PauseMenu DOM focus mirror', () => {
       expect(effective.startsWith('ui.pause.'), `button ${i} leaks ui.pause.* key`).toBe(false);
     }
 
+    const resumeBtn = layer.locator('button[data-focus-id="pause-resume"]');
+    await resumeBtn.focus();
+    await page.keyboard.press('ArrowDown');
+    const focusedAfterArrow = await page.evaluate(() =>
+      (document.activeElement as HTMLElement | null)?.getAttribute('data-focus-id') ?? '',
+    );
+    expect(focusedAfterArrow).toBe('pause-toggle-sfx');
+
     await page.evaluate(() => {
       const g = (window as unknown as { game?: {
         scene: { getScene(k: string): unknown };

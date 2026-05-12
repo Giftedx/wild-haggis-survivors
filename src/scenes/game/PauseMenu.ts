@@ -26,7 +26,7 @@ import {
   resolvePauseEliteRefColor,
 } from './pauseMenuStyle';
 import { resolveToggleTextColor } from '../toggleTextPalette';
-import { createGameButton } from '../../ui/gameButton';
+import { createGameButton, resolveTierBorder, type ButtonTier } from '../../ui/gameButton';
 import { textStyle } from '../../ui/typography';
 import { audio } from '../../systems/AudioSystem';
 import { saveScreenshot } from '../../utils/screenshot';
@@ -36,6 +36,25 @@ import { TOAST_COLORS } from '../../ui/toastPalette';
 import { ClipRecorder } from '../../utils/clipRecorder';
 import { createDomFocusLayer, type DomFocusAction, type DomFocusLayer } from '../../ui/domFocusLayer';
 import { buildPauseMenuDomFocusActions } from './pauseMenuDomFocusActions';
+import {
+  firstEnabledModalFocusIndex,
+  moveModalFocusIndex,
+  type ModalFocusEntry,
+} from '../../ui/modalFocus';
+
+const PAUSE_FOCUS_STROKE_COLOR = 0xffe080;
+
+/** One row in the pause overlay focus ring + activation stack. */
+interface PauseFocusEntry extends ModalFocusEntry {
+  readonly kind: 'rect' | 'text';
+  readonly rect?: Phaser.GameObjects.Rectangle;
+  readonly text?: Phaser.GameObjects.Text;
+  readonly tier?: ButtonTier;
+  readonly highContrast?: boolean;
+  /** For `text` rows — re-read idle colour after toggles (SFX/Music). */
+  readonly getIdleTextColor?: () => string;
+  readonly activate: () => void;
+}
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -94,6 +113,14 @@ export class PauseMenu {
   private readonly settings = getSettingsManager();
   /** T407 — visually hidden DOM mirror for pause actions (screen readers / Tab). */
   private domFocusLayer: DomFocusLayer | null = null;
+  /** T407 — keyboard/gamepad row focus (Phaser stroke + DOM sync). */
+  private pauseFocusEntries: PauseFocusEntry[] = [];
+  private focusedPauseIndex = -1;
+  private pauseKeyHandler?: (e: KeyboardEvent) => void;
+  private pauseGamepadUpdateHandler: (() => void) | null = null;
+  private prevPausePadBack = false;
+  private prevPausePadForward = false;
+  private prevPausePadConfirm = false;
 
   constructor(private readonly scene: GameScene, private readonly hooks: PauseMenuHooks) {}
 
@@ -103,6 +130,8 @@ export class PauseMenu {
 
   open(): void {
     let refreshPauseDomActions: () => void = () => {};
+    this.pauseFocusEntries = [];
+    this.focusedPauseIndex = -1;
     const { x, y, width, height } = this.hooks.getUiViewport();
     const d = 250;
     const scene = this.scene;
@@ -110,6 +139,41 @@ export class PauseMenu {
     const hc = prefs.highContrastUi;
     const uiScale = prefs.uiScale;
     const style = resolvePauseMenuStyle(height, hc);
+    const pushRectFocus = (
+      rect: Phaser.GameObjects.Rectangle,
+      tier: ButtonTier,
+      activate: () => void,
+    ): void => {
+      const idx = this.pauseFocusEntries.length;
+      this.pauseFocusEntries.push({
+        kind: 'rect',
+        rect,
+        tier,
+        highContrast: hc,
+        activate,
+      });
+      rect.on('pointerover', () => {
+        this.focusedPauseIndex = idx;
+        this.applyPauseFocus();
+      });
+    };
+    const pushTextFocus = (
+      textObj: Phaser.GameObjects.Text,
+      getIdleTextColor: () => string,
+      activate: () => void,
+    ): void => {
+      const idx = this.pauseFocusEntries.length;
+      this.pauseFocusEntries.push({
+        kind: 'text',
+        text: textObj,
+        getIdleTextColor,
+        activate,
+      });
+      textObj.on('pointerover', () => {
+        this.focusedPauseIndex = idx;
+        this.applyPauseFocus();
+      });
+    };
     this.elements.push(
       scene.add.rectangle(x + width / 2, y + height / 2, width, height, COLORS.BG_DARK, style.backdropAlpha)
         .setScrollFactor(0).setDepth(d).setInteractive()
@@ -186,11 +250,13 @@ export class PauseMenu {
       });
       rect.setScrollFactor(0).setDepth(d + 1);
       lbl.setScrollFactor(0).setDepth(d + 2);
-      rect.on('pointerdown', () => {
+      const doRelic = (): void => {
         onClick();
         this.close();
         this.open();
-      });
+      };
+      rect.on('pointerdown', doRelic);
+      pushRectFocus(rect, 'secondary', doRelic);
       this.elements.push(rect);
       this.elements.push(lbl);
     };
@@ -215,6 +281,7 @@ export class PauseMenu {
     });
     resumeBtn.setScrollFactor(0).setDepth(d + 1);
     resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
+    pushRectFocus(resumeBtn, 'primary', () => this.hooks.onResumeRequested());
     resumeLabel.setScrollFactor(0).setDepth(d + 2);
     this.elements.push(resumeBtn);
     this.elements.push(resumeLabel);
@@ -272,7 +339,7 @@ export class PauseMenu {
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setScale(uiScale)
       .setInteractive({ useHandCursor: true });
-    sfxText.on('pointerdown', () => {
+    const toggleSfx = (): void => {
       audio.playClick();
       sfxOn = !sfxOn;
       sfxText.setText(sfxLabel(sfxOn));
@@ -280,7 +347,10 @@ export class PauseMenu {
       this.settings.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
       applyAudioFromUserSettings(this.settings.load());
       refreshPauseDomActions();
-    });
+      this.applyPauseFocusVisualsOnly();
+    };
+    sfxText.on('pointerdown', toggleSfx);
+    pushTextFocus(sfxText, () => resolveToggleTextColor(sfxOn), toggleSfx);
     this.elements.push(sfxText);
 
     let musicOn = prefs.musicVolume > 0.001;
@@ -291,7 +361,7 @@ export class PauseMenu {
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setScale(uiScale)
       .setInteractive({ useHandCursor: true });
-    musicText.on('pointerdown', () => {
+    const toggleMusic = (): void => {
       audio.playClick();
       musicOn = !musicOn;
       musicText.setText(musicLabel(musicOn));
@@ -300,7 +370,10 @@ export class PauseMenu {
       applyAudioFromUserSettings(this.settings.load());
       if (musicOn && !musicEngine.isPlaying()) musicEngine.start();
       refreshPauseDomActions();
-    });
+      this.applyPauseFocusVisualsOnly();
+    };
+    musicText.on('pointerdown', toggleMusic);
+    pushTextFocus(musicText, () => resolveToggleTextColor(musicOn), toggleMusic);
     this.elements.push(musicText);
 
     if (passives.length > 0 && passiveBottomY !== null) {
@@ -339,6 +412,9 @@ export class PauseMenu {
       });
       clipBtn.setScrollFactor(0).setDepth(d + 1);
       clipBtn.on('pointerdown', () => { void this.handleSaveClip(clipRecorder); });
+      pushRectFocus(clipBtn, 'secondary', () => {
+        void this.handleSaveClip(clipRecorder);
+      });
       clipLabel.setScrollFactor(0).setDepth(d + 2);
       this.elements.push(clipBtn);
       this.elements.push(clipLabel);
@@ -351,6 +427,9 @@ export class PauseMenu {
       });
       ssBtn.setScrollFactor(0).setDepth(d + 1);
       ssBtn.on('pointerdown', () => { void this.handleSaveScreenshot(); });
+      pushRectFocus(ssBtn, 'secondary', () => {
+        void this.handleSaveScreenshot();
+      });
       ssLabel.setScrollFactor(0).setDepth(d + 2);
       this.elements.push(ssBtn);
       this.elements.push(ssLabel);
@@ -362,6 +441,7 @@ export class PauseMenu {
     });
     quitBtn.setScrollFactor(0).setDepth(d + 1);
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());
+    pushRectFocus(quitBtn, 'secondary', () => this.hooks.onQuitRequested());
     quitLabel.setScrollFactor(0).setDepth(d + 2);
     this.elements.push(quitBtn);
     this.elements.push(quitLabel);
@@ -385,26 +465,9 @@ export class PauseMenu {
         resumeLabel: t('ui.pause.resume'),
         onResume: () => this.hooks.onResumeRequested(),
         sfxLabel: sfxLabel(sfxOn),
-        onToggleSfx: () => {
-          audio.playClick();
-          sfxOn = !sfxOn;
-          sfxText.setText(sfxLabel(sfxOn));
-          sfxText.setColor(resolveToggleTextColor(sfxOn));
-          this.settings.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
-          applyAudioFromUserSettings(this.settings.load());
-          refreshPauseDomActions();
-        },
+        onToggleSfx: toggleSfx,
         musicLabel: musicLabel(musicOn),
-        onToggleMusic: () => {
-          audio.playClick();
-          musicOn = !musicOn;
-          musicText.setText(musicLabel(musicOn));
-          musicText.setColor(resolveToggleTextColor(musicOn));
-          this.settings.update((st) => ({ ...st, musicVolume: musicOn ? 1 : 0 }));
-          applyAudioFromUserSettings(this.settings.load());
-          if (musicOn && !musicEngine.isPlaying()) musicEngine.start();
-          refreshPauseDomActions();
-        },
+        onToggleMusic: toggleMusic,
         showSaveClip: clipAvailable,
         saveClipLabel: t('ui.pause.save_clip'),
         onSaveClip: () => {
@@ -423,7 +486,133 @@ export class PauseMenu {
       this.domFocusLayer?.setActions(buildPauseDomActions());
     };
 
+    this.focusedPauseIndex = firstEnabledModalFocusIndex(this.pauseFocusEntries);
+    this.installPauseKeyboardShortcuts();
+    this.installPauseGamepadShortcuts();
+
     this.mountPauseDomFocusLayer(buildPauseDomActions);
+    this.applyPauseFocus();
+  }
+
+  private applyRectIdleStroke(
+    rect: Phaser.GameObjects.Rectangle,
+    tier: ButtonTier,
+    useHc: boolean,
+  ): void {
+    const b = resolveTierBorder(tier, useHc);
+    if (b) rect.setStrokeStyle(b.width, b.color, b.alpha);
+    else rect.setStrokeStyle(0);
+  }
+
+  private applyPauseFocusVisualsOnly(): void {
+    for (let i = 0; i < this.pauseFocusEntries.length; i++) {
+      const e = this.pauseFocusEntries[i]!;
+      if (e.kind === 'rect' && e.rect && e.tier !== undefined) {
+        if (i === this.focusedPauseIndex) {
+          e.rect.setStrokeStyle(3, PAUSE_FOCUS_STROKE_COLOR, 1);
+        } else {
+          this.applyRectIdleStroke(e.rect, e.tier, e.highContrast ?? false);
+        }
+      } else if (e.kind === 'text' && e.text && e.getIdleTextColor) {
+        e.text.setColor(this.focusedPauseIndex === i ? '#ffe080' : e.getIdleTextColor());
+      }
+    }
+  }
+
+  private applyPauseFocus(): void {
+    this.applyPauseFocusVisualsOnly();
+    if (
+      this.domFocusLayer
+      && this.focusedPauseIndex >= 0
+      && this.focusedPauseIndex < this.pauseFocusEntries.length
+    ) {
+      this.domFocusLayer.setFocusedIndex(this.focusedPauseIndex);
+    }
+  }
+
+  private movePauseFocus(direction: -1 | 1): void {
+    this.focusedPauseIndex = moveModalFocusIndex(
+      this.pauseFocusEntries,
+      this.focusedPauseIndex,
+      direction,
+    );
+    this.applyPauseFocus();
+  }
+
+  private activatePauseFocused(): void {
+    const entry = this.pauseFocusEntries[this.focusedPauseIndex];
+    if (!entry || entry.disabled) return;
+    entry.activate();
+  }
+
+  private installPauseKeyboardShortcuts(): void {
+    const kb = this.scene.input.keyboard;
+    if (!kb) return;
+    this.pauseKeyHandler = (e: KeyboardEvent) => {
+      const n = this.pauseFocusEntries.length;
+      const digit = parseInt(e.key, 10);
+      if (Number.isFinite(digit) && digit >= 1 && digit <= n) {
+        const row = this.pauseFocusEntries[digit - 1];
+        if (row && !row.disabled) {
+          e.preventDefault();
+          this.focusedPauseIndex = digit - 1;
+          this.applyPauseFocus();
+          row.activate();
+        }
+        return;
+      }
+      if (
+        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+        || (e.key === 'Tab' && e.shiftKey)
+      ) {
+        e.preventDefault();
+        this.movePauseFocus(-1);
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
+        e.preventDefault();
+        this.movePauseFocus(1);
+        return;
+      }
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      this.activatePauseFocused();
+    };
+    kb.on('keydown', this.pauseKeyHandler);
+  }
+
+  private uninstallPauseKeyboardShortcuts(): void {
+    if (!this.pauseKeyHandler) return;
+    this.scene.input.keyboard?.off('keydown', this.pauseKeyHandler);
+    this.pauseKeyHandler = undefined;
+  }
+
+  private installPauseGamepadShortcuts(): void {
+    this.uninstallPauseGamepadShortcuts();
+    this.prevPausePadBack = this.prevPausePadForward = this.prevPausePadConfirm = false;
+    this.pauseGamepadUpdateHandler = () => {
+      const pad = this.scene.input.gamepad?.pad1;
+      if (!pad?.connected) {
+        this.prevPausePadBack = this.prevPausePadForward = this.prevPausePadConfirm = false;
+        return;
+      }
+      const back = pad.left || pad.up || pad.leftStick.x < -0.5 || pad.leftStick.y < -0.5;
+      const forward = pad.right || pad.down || pad.leftStick.x > 0.5 || pad.leftStick.y > 0.5;
+      const confirm = pad.buttons[0]?.pressed === true || pad.buttons[9]?.pressed === true;
+      if (back && !this.prevPausePadBack) this.movePauseFocus(-1);
+      if (forward && !this.prevPausePadForward) this.movePauseFocus(1);
+      if (confirm && !this.prevPausePadConfirm) this.activatePauseFocused();
+      this.prevPausePadBack = back;
+      this.prevPausePadForward = forward;
+      this.prevPausePadConfirm = confirm;
+    };
+    this.scene.events.on('update', this.pauseGamepadUpdateHandler);
+  }
+
+  private uninstallPauseGamepadShortcuts(): void {
+    if (!this.pauseGamepadUpdateHandler) return;
+    this.scene.events.off('update', this.pauseGamepadUpdateHandler);
+    this.pauseGamepadUpdateHandler = null;
   }
 
   private mountPauseDomFocusLayer(buildActions: () => DomFocusAction[]): void {
@@ -435,7 +624,14 @@ export class PauseMenu {
       description: t('ui.pause.keys_resume'),
       role: 'dialog',
       actions: buildActions(),
-      initialFocusIndex: 0,
+      initialFocusIndex: this.focusedPauseIndex >= 0 ? this.focusedPauseIndex : 0,
+      onFocusIndexChange: (index) => {
+        if (index < 0 || index >= this.pauseFocusEntries.length) return;
+        const row = this.pauseFocusEntries[index];
+        if (row?.disabled) return;
+        this.focusedPauseIndex = index;
+        this.applyPauseFocusVisualsOnly();
+      },
     });
   }
 
@@ -494,6 +690,10 @@ export class PauseMenu {
   }
 
   close(): void {
+    this.uninstallPauseKeyboardShortcuts();
+    this.uninstallPauseGamepadShortcuts();
+    this.pauseFocusEntries = [];
+    this.focusedPauseIndex = -1;
     this.unmountPauseDomFocusLayer();
     for (const el of this.elements) {
       if ('removeAllListeners' in el) {

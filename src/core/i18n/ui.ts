@@ -1108,7 +1108,7 @@ export const ui = {
      *  collections omit the line. */
     stats_runes: 'Runes: {runes}',
     /** Subtle affordance under RESUME — keyboard + gamepad Start. */
-    keys_resume: 'ESC / P / Start — resume',
+    keys_resume: 'ESC / P / Start — resume · Arrows or Tab — move · Enter — choose · 1–8 — jump to row',
     /** R1 M3 T21 — whisky_dram active-relic button label. */
     whisky_dram_use: 'Sip the Whisky Dram (+20% HP)',
     whisky_dram_drunk: 'Whisky Dram — took the edge off.',
