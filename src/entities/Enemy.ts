@@ -353,7 +353,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Damage scales at half the rate of HP — enemies get tougher but not overwhelming
     // Hazards use flat damage (invincible static obstacles — scaling would be unfair)
     if (config.behavior !== 'hazard') {
-      const dmgMul = 1 + (ENEMIES.HP_SCALE_PER_MINUTE * 0.5) * (gameTimeSec / 60);
+      // Damage scales at 0.8× the HP curve (was 0.5×) — playtester
+      // 2026-05-12 reported standing-still pre-boss was viable because
+      // contact chip damage never built. At 0.8× the late-game brawler
+      // still loses the trade if they sit, but the early minutes stay
+      // forgiving (delta vs HP curve is small until ~min 8).
+      const dmgMul = 1 + (ENEMIES.HP_SCALE_PER_MINUTE * 0.8) * (gameTimeSec / 60);
       this.damage = Math.ceil(config.damage * dmgMul);
     }
 
@@ -457,6 +462,22 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Tick status effects (burn/freeze/poison)
     this.tickStatusEffects(delta);
     if (!this.active) return; // May have died from DoT
+
+    // Fleeing enemies (sheep packs etc.) that have escaped well outside
+    // the camera silently despawn. Without this, the spatial-cull path
+    // would keep them alive in the pool indefinitely — over a long run
+    // the 400-slot ENEMIES.MAX_ACTIVE cap eventually saturates with
+    // off-screen sheep and no new hostiles can spawn. Threshold sits
+    // comfortably beyond the cull margin (200) plus a camera half-view
+    // so an on-screen flee → re-engage flicker never trips it.
+    if (this.behavior === 'flee') {
+      const dx = this.x - targetX;
+      const dy = this.y - targetY;
+      if (dx * dx + dy * dy > 900 * 900) {
+        this.die();
+        return;
+      }
+    }
 
     const cam = this.scene.cameras.main;
     const wv = cam.worldView;

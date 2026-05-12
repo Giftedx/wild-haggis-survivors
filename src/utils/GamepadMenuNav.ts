@@ -38,6 +38,20 @@ export class GamepadMenuNav {
     private readonly navOpts?: GamepadMenuNavOptions,
   ) {
     if (entries.length > 0) {
+      // Seed prev-button state from the live pad so a button that was
+      // already held when this nav opened (e.g. dash held while a
+      // level-up overlay popped) does NOT register as a press-edge on
+      // the very first frame and auto-confirm the highlighted entry.
+      // The button must be released and re-pressed inside the menu
+      // before activate() fires.
+      const pad = this.scene.input.gamepad?.pad1;
+      if (pad?.connected) {
+        this.prevUp = pad.up || pad.leftStick.y < -0.45;
+        this.prevDown = pad.down || pad.leftStick.y > 0.45;
+        const aHeld = pad.buttons[0]?.pressed ?? false;
+        const startHeld = pad.buttons[9]?.pressed ?? false;
+        this.prevConfirm = aHeld || startHeld;
+      }
       this.scene.events.on('update', this.onUpdate, this);
       this.applyHighlight();
     }

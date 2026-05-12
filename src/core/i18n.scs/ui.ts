@@ -415,10 +415,11 @@ export const ui = {
   relics: {
     sporran_full: {
       title: 'Sporran\'s fu',
-      hint: 'Pick wan tae let go, or skip tha new relic.',
+      hint: 'Click a held relic tae mark it. Click agin tae let it go.',
       keep_new: 'Click a held relic tae swap, or here tae skip',
       keep_new_short: 'Skip tha new relic',
       discard: 'Let this go',
+      discard_confirm: 'Click agin tae confirm',
     },
   },
   reliquary: {
@@ -805,7 +806,7 @@ export const ui = {
     upgrade_echo_applied: 'Echo heard — {name}.',
     upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
     upgrade_overcharge_weapon: 'Owerchairged: {name} — pure radge.',
-    max_level_toast: 'Max level — yer a walkin storm! That\'s plenty.',
+    max_level_toast: 'Max level — yer a walkin storm. Beat tha Taxman tae ring tha bell; tha moor\'s no\' done wi ye yet.',
     xp_overflow_gold: 'Max level — tha moor pays in gold: +{gold}g (overflow XP).',
     codex_first_cull: 'First cull logged: {name} — tha herd\'s takin notes.',
     second_wind: 'Second wind — yer no duin yet, pal!',

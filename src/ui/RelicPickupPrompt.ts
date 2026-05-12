@@ -164,6 +164,63 @@ export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupP
     objects.push(header);
   }
 
+  // Two-step discard confirm: first click marks the card (red X
+  // overlay + label flips to "Click again to confirm"); second click
+  // on the same card actually discards. Clicking a different held
+  // card moves the X. Clicking the incoming or pressing ESC still
+  // rejects outright. Playtester (panko, 2026-05-12) reported a
+  // first-time read of "pick the one to keep" instead of "let go".
+  // The X gives the action an unmistakable visual signal.
+  type HeldCardChrome = {
+    cardX: number;
+    cardY: number;
+    cardW: number;
+    cardH: number;
+    bg: Phaser.GameObjects.Rectangle;
+    label: Phaser.GameObjects.Text;
+    particleColour: number;
+  };
+  const heldChrome: (HeldCardChrome | null)[] = [null, null, null];
+  let pendingIdx: -1 | 0 | 1 | 2 = -1;
+  let pendingX: Phaser.GameObjects.Text | null = null;
+  const discardLabel = resolveModalString('ui.relics.sporran_full.discard', 'Let this go');
+  const confirmLabel = resolveModalString('ui.relics.sporran_full.discard_confirm', 'Click again to confirm');
+
+  function setPending(idx: -1 | 0 | 1 | 2): void {
+    if (pendingIdx === idx) return;
+    // Restore previous card's label + clear its X overlay.
+    if (pendingIdx !== -1) {
+      const prev = heldChrome[pendingIdx];
+      if (prev) {
+        prev.label.setText(discardLabel);
+        prev.label.setColor(COLORS_CSS.WHISKY_GOLD);
+        prev.bg.setStrokeStyle(2, prev.particleColour);
+      }
+      pendingX?.destroy();
+      pendingX = null;
+    }
+    pendingIdx = idx;
+    if (idx === -1) return;
+    const cur = heldChrome[idx];
+    if (!cur) return;
+    cur.label.setText(confirmLabel);
+    cur.label.setColor('#ff6a4a');
+    cur.bg.setStrokeStyle(3, 0xff6a4a, 1);
+    pendingX = scene.add
+      .text(cur.cardX, cur.cardY, '✕', {
+        fontFamily: 'monospace',
+        fontSize: `${Math.round(cur.cardH * 0.7)}px`,
+        color: '#ff4a4a',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setAlpha(0.85)
+      .setScrollFactor(0)
+      .setDepth(PROMPT_DEPTH + 5);
+    pendingX.setShadow(0, 0, '#000000', 8, true, true);
+    objects.push(pendingX);
+  }
+
   for (let i = 0; i < cards.length; i++) {
     const def = cards[i];
     const isIncoming = i === 3;
@@ -243,18 +300,32 @@ export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupP
       .setDepth(PROMPT_DEPTH + 3);
     objects.push(label);
 
-    bg.on('pointerover', () => bg.setStrokeStyle(3, 0xffffff, 1));
-    bg.on('pointerout', () => bg.setStrokeStyle(
-      isIncoming ? 3 : 2,
-      isIncoming ? COLORS.WHISKY_GOLD : def.particleColour,
-    ));
+    bg.on('pointerover', () => {
+      if (pendingIdx !== i) bg.setStrokeStyle(3, 0xffffff, 1);
+    });
+    bg.on('pointerout', () => {
+      if (pendingIdx === i) return; // keep the red pending stroke
+      bg.setStrokeStyle(
+        isIncoming ? 3 : 2,
+        isIncoming ? COLORS.WHISKY_GOLD : def.particleColour,
+      );
+    });
     bg.on('pointerdown', () => {
       if (isIncoming) {
         doReject();
-      } else {
+      } else if (pendingIdx === i) {
         doReplace(i as 0 | 1 | 2);
+      } else {
+        setPending(i as 0 | 1 | 2);
       }
     });
+
+    if (!isIncoming) {
+      heldChrome[i] = {
+        cardX, cardY, cardW, cardH, bg, label,
+        particleColour: def.particleColour,
+      };
+    }
   }
 
   // Escape key also cancels.

@@ -735,10 +735,11 @@ export const ui = {
   relics: {
     sporran_full: {
       title: 'Sporran\'s full',
-      hint: 'Pick one to let go, or skip the new relic.',
+      hint: 'Click a held relic to mark it. Click again to let it go.',
       keep_new: 'Click a held relic to swap, or here to skip',
       keep_new_short: 'Skip new relic',
       discard: 'Let this go',
+      discard_confirm: 'Click again to confirm',
     },
   },
   reliquary: {
@@ -1221,7 +1222,7 @@ export const ui = {
     upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
     /** Phase B Endless — Overcharge mythic-tier toast. Edge register. */
     upgrade_overcharge_weapon: 'Overcharged: {name} — pure radge.',
-    max_level_toast: 'Max level — yir a walking storm! That\'s plenty.',
+    max_level_toast: 'Max level — yir a walking storm. Beat the Taxman tae ring the bell; the moor\'s no\' done wi\' ye yet.',
     /** Shown when XP converts to gold at max level (batched). */
     xp_overflow_gold: 'Max level — the moor pays in gold: +{gold}g (overflow XP).',
     /** Shown once per account the first time an enemy key is culled — meta codex. */
