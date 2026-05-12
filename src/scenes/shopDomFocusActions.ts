@@ -9,8 +9,9 @@ import type { DomFocusAction } from '../ui/domFocusLayer';
  * Pure helper: builds `DomFocusAction[]` for `createDomFocusLayer`. Phaser-
  * free aside from `t()` so Vitest can assert ordering + id stability.
  *
- * Action order matches the scene layout: current page rows (top → bottom),
- * then Prev page, Next page, Back to menu.
+ * Action order matches the scene layout and `ShopScene` `GamepadMenuNav`
+ * entry order: current page rows (top → bottom), then Prev page, Next page,
+ * Back to menu.
  */
 export interface ShopDomActionInput {
   readonly visibleUpgrades: readonly PermanentUpgrade[];

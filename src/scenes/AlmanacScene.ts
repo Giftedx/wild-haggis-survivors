@@ -31,6 +31,9 @@ import {
   type SceneReturnData,
   type SceneReturnTarget,
 } from './returnTarget';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import { buildAlmanacDomFocusActions } from './almanacDomFocusActions';
 
 const TAB_ACTIVE_BG = 0x3a2e12;
 const TAB_IDLE_BG = 0x11182a;
@@ -73,6 +76,15 @@ export class AlmanacScene extends Phaser.Scene {
     banter: createExpandState(),
   };
   private returnTo: SceneReturnTarget = 'MainMenu';
+  private gamepadNav: GamepadMenuNav | null = null;
+  private domFocusLayer: DomFocusLayer | null = null;
+  private almanacTabHitRects: Phaser.GameObjects.Rectangle[] = [];
+  private almanacBodyNavRect: Phaser.GameObjects.Rectangle | null = null;
+  private almanacBackRect: Phaser.GameObjects.Rectangle | null = null;
+  private almanacLayoutWidth = 800;
+  private almanacLayoutHeight = 600;
+  private almanacLayoutUiScale = 1;
+  private activeRehearsal: Phaser.GameObjects.Text | null = null;
 
   constructor() {
     super({ key: 'Almanac' });
@@ -80,11 +92,28 @@ export class AlmanacScene extends Phaser.Scene {
 
   init(data?: SceneReturnData): void {
     this.returnTo = resolveSceneReturnTarget(data?.returnTo);
+    this.activeTab = DEFAULT_ALMANAC_TAB;
+    this.activeBookHandle?.destroy();
+    this.activeBookHandle = null;
+    for (const o of this.tabObjects) o.destroy();
+    this.tabObjects = [];
+    for (const o of this.bodyObjects) o.destroy();
+    this.bodyObjects = [];
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+    this.almanacTabHitRects = [];
+    this.almanacBodyNavRect = null;
+    this.almanacBackRect = null;
   }
 
   create(): void {
     const { width, height } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
+    this.almanacLayoutWidth = width;
+    this.almanacLayoutHeight = height;
+    this.almanacLayoutUiScale = uiScale;
 
     // Flush any pending kill buffer so the Beasties book reads the
     // freshest counts even if the player alt-tabbed mid-run into the
@@ -120,53 +149,39 @@ export class AlmanacScene extends Phaser.Scene {
       x: width / 2, y: height - 32, width: 200, height: 38,
       label: t('ui.almanac.back'), fontSize: '15px', uiScale,
     });
-    const goBack = () => {
-      audio.playClick();
-      this.scene.start(this.returnTo);
-    };
-    backBtn.on('pointerdown', goBack);
+    this.almanacBackRect = backBtn;
+    backBtn.on('pointerdown', () => this.almanacGoBack());
 
     // Esc is overloaded via resolveAlmanacEsc: if an entry is expanded
     // on the active tab, close it; otherwise exit. Lets keyboard users
     // escape a deep read without leaving the Almanac entirely.
-    this.input.keyboard?.on('keydown-ESC', () => {
-      if (resolveAlmanacEsc(this.activeTab, this.expandStates) === 'close-expanded') {
-        this.expandStates[this.activeTab] = closeExpanded(this.expandStates[this.activeTab]);
-        this.renderActiveBook(width, this.scale.height, uiScale);
-        return;
-      }
-      goBack();
-    });
+    this.input.keyboard?.on('keydown-ESC', this.almanacEscKeyHandler);
 
     // Tab / Shift+Tab + Left / Right cycle the active book. Capture TAB
     // so the browser doesn't yank focus out of the canvas on press.
     this.input.keyboard?.addCapture('TAB');
-    const cycleTab = (direction: 'next' | 'prev') => {
-      audio.playClick();
-      this.activeTab = cycleAlmanacTab(this.activeTab, direction);
-      this.renderTabBar(width, uiScale);
-      this.renderActiveBook(width, this.scale.height, uiScale);
-    };
-    this.input.keyboard?.on('keydown-TAB', (event: KeyboardEvent) => {
-      cycleTab(event.shiftKey ? 'prev' : 'next');
-    });
-    this.input.keyboard?.on('keydown-LEFT', () => cycleTab('prev'));
-    this.input.keyboard?.on('keydown-RIGHT', () => cycleTab('next'));
+    this.input.keyboard?.on('keydown-TAB', this.almanacTabKeyHandler);
+    this.input.keyboard?.on('keydown-LEFT', this.almanacArrowLeft);
+    this.input.keyboard?.on('keydown-RIGHT', this.almanacArrowRight);
 
     // Enter toggles the active book's expansion — collapses the open
     // panel, or opens the first entry when nothing is open. Keeps the
     // keyboard contract coherent without a full focused-cell model.
-    this.input.keyboard?.on('keydown-ENTER', () => {
-      const firstKey = this.firstEntryKeyForActiveTab();
-      const action = resolveAlmanacEnterToggle(firstKey, this.expandStates[this.activeTab]);
-      if (action.action === 'none') return;
-      audio.playClick();
-      this.expandStates[this.activeTab] =
-        action.action === 'collapse'
-          ? closeExpanded(this.expandStates[this.activeTab])
-          : toggleExpanded(this.expandStates[this.activeTab], action.key!);
-      this.renderActiveBook(width, this.scale.height, uiScale);
+    this.input.keyboard?.on('keydown-ENTER', this.almanacEnterKeyHandler);
+
+    this.events.once('shutdown', () => {
+      this.gamepadNav?.destroy();
+      this.gamepadNav = null;
+      this.domFocusLayer?.destroy();
+      this.domFocusLayer = null;
+      this.input.keyboard?.off('keydown-ESC', this.almanacEscKeyHandler);
+      this.input.keyboard?.off('keydown-TAB', this.almanacTabKeyHandler);
+      this.input.keyboard?.off('keydown-LEFT', this.almanacArrowLeft);
+      this.input.keyboard?.off('keydown-RIGHT', this.almanacArrowRight);
+      this.input.keyboard?.off('keydown-ENTER', this.almanacEnterKeyHandler);
     });
+
+    this.rebuildAlmanacT407Nav();
 
     stopAmbientWindOnShutdown(this);
   }
@@ -187,9 +202,135 @@ export class AlmanacScene extends Phaser.Scene {
     }
   }
 
+  private almanacGoBack = (): void => {
+    audio.playClick();
+    this.scene.start(this.returnTo);
+  };
+
+  private almanacEscKeyHandler = (): void => {
+    if (resolveAlmanacEsc(this.activeTab, this.expandStates) === 'close-expanded') {
+      this.expandStates[this.activeTab] = closeExpanded(this.expandStates[this.activeTab]);
+      this.renderActiveBook(this.almanacLayoutWidth, this.almanacLayoutHeight, this.almanacLayoutUiScale);
+      return;
+    }
+    this.almanacGoBack();
+  };
+
+  private almanacCycleTab = (direction: 'next' | 'prev'): void => {
+    audio.playClick();
+    this.activeTab = cycleAlmanacTab(this.activeTab, direction);
+    this.renderTabBar(this.almanacLayoutWidth, this.almanacLayoutUiScale);
+    this.renderActiveBook(this.almanacLayoutWidth, this.almanacLayoutHeight, this.almanacLayoutUiScale);
+  };
+
+  private almanacTabKeyHandler = (event: KeyboardEvent): void => {
+    this.almanacCycleTab(event.shiftKey ? 'prev' : 'next');
+  };
+
+  private almanacArrowLeft = (): void => {
+    this.almanacCycleTab('prev');
+  };
+
+  private almanacArrowRight = (): void => {
+    this.almanacCycleTab('next');
+  };
+
+  private almanacPerformEnterToggle = (): void => {
+    const firstKey = this.firstEntryKeyForActiveTab();
+    const action = resolveAlmanacEnterToggle(firstKey, this.expandStates[this.activeTab]);
+    if (action.action === 'none') return;
+    audio.playClick();
+    this.expandStates[this.activeTab] =
+      action.action === 'collapse'
+        ? closeExpanded(this.expandStates[this.activeTab])
+        : toggleExpanded(this.expandStates[this.activeTab], action.key!);
+    this.renderActiveBook(this.almanacLayoutWidth, this.almanacLayoutHeight, this.almanacLayoutUiScale);
+  };
+
+  private almanacEnterKeyHandler = (): void => {
+    this.almanacPerformEnterToggle();
+  };
+
+  /**
+   * T407 — gamepad rects + DOM focus mirror. Does **not** use
+   * `bindHubMenuKeyboardNav`: ArrowLeft/ArrowRight are reserved for tab
+   * cycling (see `almanac/keyboardNav.ts`).
+   */
+  private rebuildAlmanacT407Nav(): void {
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+
+    const entries: GamepadMenuEntry[] = [];
+    for (let i = 0; i < ALMANAC_TAB_KEYS.length; i++) {
+      const tabKey = ALMANAC_TAB_KEYS[i]!;
+      const rect = this.almanacTabHitRects[i];
+      if (!rect?.active) continue;
+      entries.push({
+        rect,
+        activate: () => {
+          if (this.activeTab === tabKey) return;
+          audio.playClick();
+          this.activeTab = tabKey;
+          this.renderTabBar(this.almanacLayoutWidth, this.almanacLayoutUiScale);
+          this.renderActiveBook(this.almanacLayoutWidth, this.almanacLayoutHeight, this.almanacLayoutUiScale);
+        },
+      });
+    }
+
+    if (this.almanacBodyNavRect?.active) {
+      entries.push({
+        rect: this.almanacBodyNavRect,
+        activate: () => this.almanacPerformEnterToggle(),
+      });
+    }
+
+    if (this.almanacBackRect?.active) {
+      entries.push({
+        rect: this.almanacBackRect,
+        activate: () => this.almanacGoBack(),
+      });
+    }
+
+    if (entries.length === 0) return;
+
+    const tabs = ALMANAC_TAB_KEYS.map((k) => ({ key: k, label: t(almanacTabLabelKey(k)) }));
+
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-almanac-focus-layer',
+      label: t('ui.almanac.title'),
+      description: t('ui.almanac.subtitle'),
+      role: 'group',
+      actions: buildAlmanacDomFocusActions({
+        tabs,
+        bookPanelLabel: t('ui.almanac.subtitle'),
+        onSelectTab: (sel) => {
+          if (this.activeTab === sel) return;
+          audio.playClick();
+          this.activeTab = sel;
+          this.renderTabBar(this.almanacLayoutWidth, this.almanacLayoutUiScale);
+          this.renderActiveBook(this.almanacLayoutWidth, this.almanacLayoutHeight, this.almanacLayoutUiScale);
+        },
+        onBookPanel: () => this.almanacPerformEnterToggle(),
+        onBack: () => this.almanacGoBack(),
+      }),
+      initialFocusIndex: 0,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
+    });
+
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
+    });
+    this.domFocusLayer.setFocusedIndex(this.gamepadNav.getIndex());
+  }
+
   private renderTabBar(width: number, uiScale: number): void {
     for (const o of this.tabObjects) o.destroy();
     this.tabObjects = [];
+    this.almanacTabHitRects = [];
 
     const tabCount = ALMANAC_TAB_KEYS.length;
     const barY = 108;
@@ -210,9 +351,14 @@ export class AlmanacScene extends Phaser.Scene {
         audio.playClick();
         this.activeTab = key;
         this.renderTabBar(width, uiScale);
-        this.renderActiveBook(width, this.scale.height, uiScale);
+        this.renderActiveBook(
+          this.almanacLayoutWidth,
+          this.almanacLayoutHeight,
+          this.almanacLayoutUiScale,
+        );
       });
       this.tabObjects.push(rect);
+      this.almanacTabHitRects.push(rect);
 
       const label = this.add
         .text(cx, barY, t(almanacTabLabelKey(key)),
@@ -236,6 +382,7 @@ export class AlmanacScene extends Phaser.Scene {
     this.activeBookHandle = null;
     for (const o of this.bodyObjects) o.destroy();
     this.bodyObjects = [];
+    this.almanacBodyNavRect = null;
 
     const bodyTop = 140;
     const bodyBottom = height - 72;
@@ -248,6 +395,18 @@ export class AlmanacScene extends Phaser.Scene {
       height: bodyHeight,
     };
 
+    this.almanacBodyNavRect = this.add
+      .rectangle(
+        viewport.x + viewport.width / 2,
+        viewport.y + viewport.height / 2,
+        viewport.width,
+        viewport.height,
+        0x000000,
+        0,
+      )
+      .setDepth(-8);
+    this.bodyObjects.push(this.almanacBodyNavRect);
+
     if (this.activeTab === 'beasties') {
       const entries = buildBeastiesEntries(loadSave().discoveryLog);
       const tab: AlmanacTabKey = 'beasties';
@@ -255,9 +414,14 @@ export class AlmanacScene extends Phaser.Scene {
         expandedKey: this.expandStates[tab].expandedKey,
         onToggle: (key) => {
           this.expandStates[tab] = toggleExpanded(this.expandStates[tab], key);
-          this.renderActiveBook(width, this.scale.height, uiScale);
+          this.renderActiveBook(
+            this.almanacLayoutWidth,
+            this.almanacLayoutHeight,
+            this.almanacLayoutUiScale,
+          );
         },
       });
+      this.rebuildAlmanacT407Nav();
       return;
     }
 
@@ -268,9 +432,14 @@ export class AlmanacScene extends Phaser.Scene {
         expandedKey: this.expandStates[tab].expandedKey,
         onToggle: (key) => {
           this.expandStates[tab] = toggleExpanded(this.expandStates[tab], key);
-          this.renderActiveBook(width, this.scale.height, uiScale);
+          this.renderActiveBook(
+            this.almanacLayoutWidth,
+            this.almanacLayoutHeight,
+            this.almanacLayoutUiScale,
+          );
         },
       });
+      this.rebuildAlmanacT407Nav();
       return;
     }
 
@@ -281,9 +450,14 @@ export class AlmanacScene extends Phaser.Scene {
         expandedKey: this.expandStates[tab].expandedKey,
         onToggle: (key) => {
           this.expandStates[tab] = toggleExpanded(this.expandStates[tab], key);
-          this.renderActiveBook(width, this.scale.height, uiScale);
+          this.renderActiveBook(
+            this.almanacLayoutWidth,
+            this.almanacLayoutHeight,
+            this.almanacLayoutUiScale,
+          );
         },
       });
+      this.rebuildAlmanacT407Nav();
       return;
     }
 
@@ -294,10 +468,15 @@ export class AlmanacScene extends Phaser.Scene {
         expandedKey: this.expandStates[tab].expandedKey,
         onToggle: (key) => {
           this.expandStates[tab] = toggleExpanded(this.expandStates[tab], key);
-          this.renderActiveBook(width, this.scale.height, uiScale);
+          this.renderActiveBook(
+            this.almanacLayoutWidth,
+            this.almanacLayoutHeight,
+            this.almanacLayoutUiScale,
+          );
         },
         onHearAgain: (key) => this.rehearseBanterLine(key),
       });
+      this.rebuildAlmanacT407Nav();
       return;
     }
 
@@ -312,6 +491,7 @@ export class AlmanacScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
     this.bodyObjects.push(placeholder);
+    this.rebuildAlmanacT407Nav();
   }
 
   /**
@@ -352,6 +532,4 @@ export class AlmanacScene extends Phaser.Scene {
       });
     });
   }
-
-  private activeRehearsal: Phaser.GameObjects.Text | null = null;
 }

@@ -30,6 +30,8 @@ import {
 } from './returnTarget';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
 import { buildShopDomFocusActions } from './shopDomFocusActions';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
 
 /**
  * ShopScene — paged upgrade shop that fits the default 800x600 canvas.
@@ -44,6 +46,10 @@ export class ShopScene extends Phaser.Scene {
    * upgrade rows, pagination, and back. Sister to CurseScene / SporranScene.
    */
   private domFocusLayer: DomFocusLayer | null = null;
+  private gamepadNav: GamepadMenuNav | null = null;
+  private hubKeyboardUnbind?: () => void;
+  /** Built in `renderUpgradeRow` — footer appends pagination + back then constructs `GamepadMenuNav`. */
+  private shopGamepadEntries: GamepadMenuEntry[] = [];
   private rowElements: Phaser.GameObjects.GameObject[] = [];
   private footerElements: Phaser.GameObjects.GameObject[] = [];
   private goldText!: Phaser.GameObjects.Text;
@@ -120,11 +126,16 @@ export class ShopScene extends Phaser.Scene {
     this.renderFooter();
 
     this.installShopDomFocusLayer();
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav);
 
     this.shopMusic.start();
     stopAmbientWindOnShutdown(this);
     this.events.once('shutdown', () => {
       this.shopMusic.stop();
+      this.hubKeyboardUnbind?.();
+      this.hubKeyboardUnbind = undefined;
+      this.gamepadNav?.destroy();
+      this.gamepadNav = null;
       this.uninstallShopDomFocusLayer();
     });
     addSceneFadeIn(this, 400, 0x1a1008);
@@ -139,6 +150,9 @@ export class ShopScene extends Phaser.Scene {
       role: 'dialog',
       actions: this.buildShopDomFocusActionList(),
       initialFocusIndex: 0,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
     });
   }
 
@@ -213,6 +227,9 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private renderRows(): void {
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.shopGamepadEntries = [];
     clearGameObjects(this.rowElements);
     // Stale hovered row may have been destroyed mid-pointer (page flip).
     // Reset the flavour strip so a phantom line doesn't linger.
@@ -285,6 +302,7 @@ export class ShopScene extends Phaser.Scene {
         )
         .setOrigin(0.5);
       this.rowElements.push(maxLabel);
+      this.shopGamepadEntries.push({ rect: rowBg, activate: () => undefined });
       return;
     }
 
@@ -299,10 +317,10 @@ export class ShopScene extends Phaser.Scene {
     });
     buyButton.setStrokeStyle(1, buyPalette.strokeColor, 1);
 
+    buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade, rowState));
+    this.shopGamepadEntries.push({ rect: buyButton, activate: () => this.purchaseUpgrade(upgrade, rowState) });
     if (!canAfford) {
       setGameButtonDisabled({ rect: buyButton, label: buyText }, true, buyPalette.fillColor);
-    } else {
-      buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade, rowState));
     }
 
     this.rowElements.push(buyButton, buyText);
@@ -344,7 +362,7 @@ export class ShopScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const totalPages = this.getTotalPages();
 
-    this.createPageButton(136, height - 20 - 52, t('ui.shop.prev'), this.currentPage > 0, () => {
+    const prevRect = this.createPageButton(136, height - 20 - 52, t('ui.shop.prev'), this.currentPage > 0, () => {
       audio.playClick();
       this.currentPage--;
       this.updateHeader();
@@ -352,7 +370,7 @@ export class ShopScene extends Phaser.Scene {
       this.renderFooter();
     });
 
-    this.createPageButton(width - 136, height - 20 - 52, t('ui.shop.next'), this.currentPage < totalPages - 1, () => {
+    const nextRect = this.createPageButton(width - 136, height - 20 - 52, t('ui.shop.next'), this.currentPage < totalPages - 1, () => {
       audio.playClick();
       this.currentPage++;
       this.updateHeader();
@@ -372,7 +390,42 @@ export class ShopScene extends Phaser.Scene {
 
     this.footerElements.push(backButton, backText);
 
+    const entries: GamepadMenuEntry[] = [...this.shopGamepadEntries];
+    entries.push({
+      rect: prevRect,
+      activate: () => {
+        if (this.currentPage <= 0) return;
+        audio.playClick();
+        this.currentPage--;
+        this.updateHeader();
+        this.renderRows();
+        this.renderFooter();
+      },
+    });
+    entries.push({
+      rect: nextRect,
+      activate: () => {
+        if (this.currentPage >= totalPages - 1) return;
+        audio.playClick();
+        this.currentPage++;
+        this.updateHeader();
+        this.renderRows();
+        this.renderFooter();
+      },
+    });
+    entries.push({
+      rect: backButton,
+      activate: () => {
+        audio.playClick();
+        startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => this.scene.start(this.returnTo));
+      },
+    });
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
+    });
+
     this.refreshShopDomActions();
+    this.domFocusLayer?.setFocusedIndex(this.gamepadNav.getIndex());
   }
 
   private createPageButton(
@@ -380,8 +433,8 @@ export class ShopScene extends Phaser.Scene {
     y: number,
     label: string,
     enabled: boolean,
-    onClick: () => void
-  ): void {
+    onClick: () => void,
+  ): Phaser.GameObjects.Rectangle {
     const pageBtnStyle = resolveShopPageButtonPalette(enabled);
     const { rect: button, label: text } = createGameButton(this, {
       x, y, width: 116, height: 34, label,
@@ -399,6 +452,7 @@ export class ShopScene extends Phaser.Scene {
     }
 
     this.footerElements.push(button, text);
+    return button;
   }
 
 }

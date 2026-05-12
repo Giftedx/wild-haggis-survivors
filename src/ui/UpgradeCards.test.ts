@@ -79,6 +79,8 @@ describe('UpgradeCardsUI layout', () => {
       textures: {
         exists: (key: string) => key === 'wicon_thistle_shot',
       },
+      events: { on: vi.fn(), off: vi.fn(), once: vi.fn() },
+      input: { keyboard: { on: vi.fn(), off: vi.fn() }, gamepad: {} },
       add: {
         rectangle: (x: number, y: number, width: number, height: number) => {
           const rect = new MockDisplayObject(x, y, width, height);
@@ -133,6 +135,8 @@ describe('UpgradeCardsUI layout', () => {
     const scene: any = {
       scale: { width: 800, height: 600 },
       cameras: { main: { zoom: 1.3, width: 620, height: 465 } },
+      events: { on: vi.fn(), off: vi.fn(), once: vi.fn() },
+      input: { keyboard: { on: vi.fn(), off: vi.fn() }, gamepad: {} },
       add: {
         rectangle: (x: number, y: number, width: number, height: number) => {
           const rect = new MockDisplayObject(x, y, width, height);
@@ -188,6 +192,8 @@ describe('UpgradeCardsUI layout', () => {
     const scene: any = {
       scale: { width: 620, height: 465 },
       cameras: { main: { zoom: 1 } },
+      events: { on: vi.fn(), off: vi.fn(), once: vi.fn() },
+      input: { keyboard: { on: vi.fn(), off: vi.fn() }, gamepad: {} },
       add: {
         rectangle: (x: number, y: number, width: number, height: number) => {
           const rect = new MockDisplayObject(x, y, width, height);

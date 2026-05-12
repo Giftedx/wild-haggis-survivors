@@ -7,6 +7,10 @@ import { expect, test } from './fixtures';
  * textures + i18n resolve as in production, then asserts the visually-hidden
  * mirror mounts with stable `data-focus-id` values.
  *
+ * Scene-side T407 also mounts `GamepadMenuNav` + `bindHubMenuKeyboardNav`
+ * in lockstep with the DOM layer — exercised indirectly via the same
+ * `show()` path (no separate assertion here).
+ *
  * Sister specs: `e2e/shop-dom-focus.spec.ts`, `e2e/meta-shop-dom-focus.spec.ts`.
  */
 

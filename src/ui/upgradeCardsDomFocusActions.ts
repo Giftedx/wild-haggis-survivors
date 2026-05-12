@@ -8,8 +8,8 @@ import type { DomFocusAction } from './domFocusLayer';
  * Pure helper for `createDomFocusLayer`. Phaser-free aside from `t()`.
  *
  * Action order: one button per offered card (left → right), optional
- * reroll last. `data-focus-id` pattern `levelup-card-{n}` matches keyboard
- * digits 1–3 muscle-memory.
+ * reroll last. `data-focus-id` pattern `levelup-card-{n}` matches hub
+ * keyboard digit jump 1–n (same muscle-memory as other T407 menus).
  */
 export interface UpgradeCardsDomActionInput {
   readonly cards: readonly UpgradeCard[];

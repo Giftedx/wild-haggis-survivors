@@ -12,6 +12,8 @@ import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { legendaryTrailSpec, resolveRarityPillPulseSpec } from './upgradeCardCelebration';
 import { createDomFocusLayer, type DomFocusLayer } from './domFocusLayer';
 import { buildUpgradeCardsDomFocusActions } from './upgradeCardsDomFocusActions';
+import { bindHubMenuKeyboardNav } from './hubMenuKeyboardNav';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -27,6 +29,11 @@ import { buildUpgradeCardsDomFocusActions } from './upgradeCardsDomFocusActions'
  * sizes scale by uiScale so players on a 1.4x comfort setting actually
  * see bigger level-up text; card dimensions stay fixed so 3-4 cards
  * still fit across the screen.
+ *
+ * T407 — `GamepadMenuNav` + `bindHubMenuKeyboardNav` mirror the DOM focus
+ * layer (ghost hit rects appended after card chrome so layout unit tests
+ * stay stable). Digit keys 1–n route through the hub handler so they
+ * cannot double-fire alongside a legacy listener.
  */
 export class UpgradeCardsUI {
   private scene: Phaser.Scene;
@@ -40,13 +47,6 @@ export class UpgradeCardsUI {
   private highContrastUi: boolean = false;
   /** Active haggis variant key — used to pick variant-specific card icons (kilt tartan). */
   private variantKey: string = 'classic';
-  /**
-   * 1/2/3 keyboard shortcut handler — installed in show(), removed in
-   * hide(). T302 — bound to `scene.input.keyboard` so the listener is
-   * scene-scoped (auto-cleaned on scene shutdown / restart) rather than
-   * a window-level listener that survives scene tear-down.
-   */
-  private keyHandler?: (e: KeyboardEvent) => void;
   /** Subscription to scene shutdown — guarantees listener cleanup even if hide() never fires. */
   private shutdownSub?: () => void;
   /**
@@ -54,6 +54,8 @@ export class UpgradeCardsUI {
    * Sister pattern to ShopScene / MetaShopScene / CurseScene.
    */
   private domFocusLayer: DomFocusLayer | null = null;
+  private gamepadNav: GamepadMenuNav | null = null;
+  private hubKeyboardUnbind?: () => void;
   /** Card centre positions for legendary trail + DOM parity (set each `show()`). */
   private lastPickCenters: Array<{ x: number; y: number }> = [];
 
@@ -62,14 +64,12 @@ export class UpgradeCardsUI {
     this.onSelect = onSelect;
     this.tickers = tickers;
     // T302 — defensive net: if the scene tears down with the picker
-    // open, free the keyboard listener so it can't fire into a
+    // open, free DOM + gamepad + hub listeners so they can't fire into a
     // destroyed UI on the next scene boot. Skipped when the test stub
     // scene doesn't expose `events` (existing layout tests pass a
-    // minimal mock); the keyboard listener is also installed against a
-    // possibly-absent `input.keyboard` so the no-event case is safe.
+    // minimal mock).
     if (this.scene.events && typeof this.scene.events.once === 'function') {
       const shutdownHandler = () => {
-        this.uninstallKeyboardShortcuts();
         this.uninstallUpgradeDomFocusLayer();
       };
       this.scene.events.once('shutdown', shutdownHandler);
@@ -149,9 +149,19 @@ export class UpgradeCardsUI {
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(subtitle);
 
+    const rerollEligible = this.rerollsLeft > 0 && this.onReroll !== null && !opts?.hideReroll;
+    const rerollY = top + height - Math.round(48 * this.uiScale);
+
+    const triggerReroll = (): void => {
+      if (this.rerollsLeft <= 0) return;
+      audio.playClick();
+      this.rerollsLeft--;
+      this.hide();
+      this.onReroll!();
+    };
+
     // Reroll button
-    if (this.rerollsLeft > 0 && this.onReroll && !opts?.hideReroll) {
-      const rerollY = top + height - Math.round(48 * this.uiScale);
+    if (rerollEligible) {
       const rerollBtn = this.scene.add.text(centerX, rerollY, t('ui.upgradeCards.reroll', { count: this.rerollsLeft }), {
         fontFamily: 'monospace', fontSize: this.fs(18), color: titleColor,
         fontStyle: 'bold', stroke: '#000', strokeThickness: 3,
@@ -164,10 +174,7 @@ export class UpgradeCardsUI {
       rerollBtn.on('pointerout', () => rerollBtn.setColor(titleColor));
       rerollBtn.on('pointerdown', () => {
         if (this.rerollsLeft > 0) {
-          audio.playClick();
-          this.rerollsLeft--;
-          this.hide();
-          this.onReroll!();
+          triggerReroll();
         }
       });
     }
@@ -193,8 +200,33 @@ export class UpgradeCardsUI {
       this.pendingHandles.push(handle);
     });
 
-    this.installKeyboardShortcuts(cards);
-    this.installUpgradeDomFocusLayer(cards, opts, titleStr, subtitleStr);
+    const navRing = 4;
+    const navEntries: GamepadMenuEntry[] = [];
+    for (let i = 0; i < cards.length; i++) {
+      const x = startX + i * (cardW + gap);
+      const ghost = this.scene.add
+        .rectangle(x, cardY, cardW + navRing * 2, cardH + navRing * 2, 0x000000, 0.0001)
+        .setStrokeStyle(0)
+        .setScrollFactor(0)
+        .setDepth(depth + 15);
+      this.elements.push(ghost);
+      const idx = i;
+      navEntries.push({
+        rect: ghost,
+        activate: () => this.commitCardPick(cards[idx]!, idx),
+      });
+    }
+    if (rerollEligible) {
+      const ghost = this.scene.add
+        .rectangle(centerX, rerollY, 260, 48, 0x000000, 0.0001)
+        .setStrokeStyle(0)
+        .setScrollFactor(0)
+        .setDepth(depth + 15);
+      this.elements.push(ghost);
+      navEntries.push({ rect: ghost, activate: () => triggerReroll() });
+    }
+
+    this.installUpgradeDomFocusLayer(cards, opts, titleStr, subtitleStr, navEntries);
 
     if (typeof globalThis !== 'undefined') {
       const win = globalThis as unknown as { AUTO_BATTLE?: boolean };
@@ -210,6 +242,10 @@ export class UpgradeCardsUI {
   }
 
   private uninstallUpgradeDomFocusLayer(): void {
+    this.hubKeyboardUnbind?.();
+    this.hubKeyboardUnbind = undefined;
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
     this.domFocusLayer?.destroy();
     this.domFocusLayer = null;
   }
@@ -219,8 +255,8 @@ export class UpgradeCardsUI {
     opts: { bannerTitle?: string; bannerSubtitle?: string; hideReroll?: boolean } | undefined,
     titleStr: string,
     subtitleStr: string,
+    navEntries: GamepadMenuEntry[],
   ): void {
-    if (typeof document === 'undefined') return;
     this.uninstallUpgradeDomFocusLayer();
     const rerollVisible = this.rerollsLeft > 0 && this.onReroll !== null && !opts?.hideReroll;
     const rerollLabel = rerollVisible
@@ -253,11 +289,23 @@ export class UpgradeCardsUI {
             : null,
       }),
       initialFocusIndex: 0,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
     });
+
+    const entries = navEntries.filter((e) => e.rect.active);
+    this.gamepadNav = new GamepadMenuNav(this.scene, entries, {
+      onHighlightChange: (i) => {
+        this.domFocusLayer?.setFocusedIndex(i);
+      },
+    });
+    this.domFocusLayer?.setFocusedIndex(this.gamepadNav.getIndex());
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this.scene, () => this.gamepadNav);
   }
 
   /**
-   * Shared pick path for pointer, keyboard 1–3, and DOM focus layer.
+   * Shared pick path for pointer, gamepad confirm, hub keyboard, DOM, and digit keys.
    */
   private commitCardPick(card: UpgradeCard, cardIndex: number): void {
     const origin = this.lastPickCenters[cardIndex];
@@ -516,7 +564,6 @@ export class UpgradeCardsUI {
     this.uninstallUpgradeDomFocusLayer();
     for (const h of this.pendingHandles) h.cancel();
     this.pendingHandles = [];
-    this.uninstallKeyboardShortcuts();
     this.lastPickCenters = [];
 
     for (const el of this.elements) {
@@ -529,40 +576,8 @@ export class UpgradeCardsUI {
     this.elements = [];
   }
 
-  /**
-   * 1/2/3 keyboard shortcuts for the level-up card picker — mirrors the
-   * ActIntermission picker pattern so keyboard players have one
-   * consistent muscle memory. Handler no-ops for pressing a digit beyond
-   * the card count (2-card choice can't resolve a "3" press).
-   */
-  private installKeyboardShortcuts(cards: UpgradeCard[]): void {
-    const kb = this.scene.input?.keyboard;
-    if (!kb) return;
-    this.uninstallKeyboardShortcuts();
-    // T302 — scene-scoped listener (mirrors ActIntermissionScene). The
-    // raw Phaser KeyboardEvent matches the existing handler shape; the
-    // wrapping cb signature lets us reuse the same `keyHandler` field for
-    // off() bookkeeping.
-    this.keyHandler = (e: KeyboardEvent) => {
-      const idx = ({ '1': 0, '2': 1, '3': 2 } as Record<string, number | undefined>)[e.key];
-      if (idx === undefined) return;
-      const card = cards[idx];
-      if (!card) return;
-      e.preventDefault();
-      this.commitCardPick(card, idx);
-    };
-    kb.on('keydown', this.keyHandler);
-  }
-
-  private uninstallKeyboardShortcuts(): void {
-    if (!this.keyHandler) return;
-    this.scene.input?.keyboard?.off('keydown', this.keyHandler);
-    this.keyHandler = undefined;
-  }
-
   /** Test / explicit-teardown helper — releases the shutdown subscription. */
   destroy(): void {
-    this.uninstallKeyboardShortcuts();
     this.uninstallUpgradeDomFocusLayer();
     this.shutdownSub?.();
     this.shutdownSub = undefined;

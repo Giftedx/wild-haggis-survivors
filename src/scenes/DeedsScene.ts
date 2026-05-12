@@ -27,6 +27,10 @@ import {
   type SceneReturnData,
   type SceneReturnTarget,
 } from './returnTarget';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
+import { buildDeedsDomFocusActions } from './deedsDomFocusActions';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -49,6 +53,26 @@ export class DeedsScene extends Phaser.Scene {
   private returnTo: SceneReturnTarget = 'MainMenu';
   private currentPage = 0;
   private pageElements: Phaser.GameObjects.GameObject[] = [];
+  private gamepadNav: GamepadMenuNav | null = null;
+  private domFocusLayer: DomFocusLayer | null = null;
+  private hubKeyboardUnbind?: () => void;
+  private deedsEscHandler?: () => void;
+  private deedsKeyLeft?: () => void;
+  private deedsKeyRight?: () => void;
+  private deedsBackRect: Phaser.GameObjects.Rectangle | null = null;
+  private deedsCardHits: Array<{ deed: DeedProgress; rect: Phaser.GameObjects.Rectangle }> = [];
+  private deedsNavPrevRect: Phaser.GameObjects.Rectangle | null = null;
+  private deedsNavNextRect: Phaser.GameObjects.Rectangle | null = null;
+  private deedsAll: DeedProgress[] = [];
+  private deedsCardsPerPage = DEEDS_CARDS_PER_PAGE;
+  private deedsTotalPages = 1;
+  private deedsCols = 3;
+  private deedsLayoutUiScale = 1;
+  private deedsLayoutWidth = 800;
+  private deedsLayoutHeight = 600;
+  private deedsLayoutIsMobile = false;
+  private deedsCounterEarned = 0;
+  private deedsCounterTotal = 0;
 
   constructor() {
     super({ key: 'Deeds' });
@@ -88,6 +112,8 @@ export class DeedsScene extends Phaser.Scene {
     };
     const deeds = computeAllDeeds(snapshot);
     const summary = deedSummary(snapshot);
+    this.deedsCounterEarned = summary.earned;
+    this.deedsCounterTotal = summary.total;
 
     // ── Background + ambient wash ──
     addSceneBackdrop(this);
@@ -137,117 +163,256 @@ export class DeedsScene extends Phaser.Scene {
     const cardsPerPage = isMobileDeeds ? 4 : DEEDS_CARDS_PER_PAGE;
     const totalPages = Math.max(1, Math.ceil(deeds.length / cardsPerPage));
 
-    // ── Back button ──
+    this.deedsAll = deeds;
+    this.deedsCardsPerPage = cardsPerPage;
+    this.deedsTotalPages = totalPages;
+    this.deedsCols = cols;
+    this.deedsLayoutUiScale = uiScale;
+    this.deedsLayoutWidth = width;
+    this.deedsLayoutHeight = height;
+    this.deedsLayoutIsMobile = isMobileDeeds;
+
+    // ── Back button (persistent across page turns; not in `pageElements`) ──
     const backBtn = createBackButton(this, {
       x: width / 2, y: height - 32, width: 200, height: 38,
       label: t('ui.deeds.back'), fontSize: '15px', uiScale,
     });
+    this.deedsBackRect = backBtn;
     const goBack = () => {
       audio.playClick();
       this.scene.start(this.returnTo);
     };
     backBtn.on('pointerdown', goBack);
-    this.input.keyboard?.on('keydown-ESC', goBack);
+    this.deedsEscHandler = goBack;
+    this.input.keyboard?.on('keydown-ESC', this.deedsEscHandler);
 
-    const renderPage = (page: number): void => {
-      // Tear down prior page's transient elements (cards + page nav).
-      for (const el of this.pageElements) el.destroy();
-      this.pageElements = [];
-
-      const start = page * cardsPerPage;
-      const slice = deeds.slice(start, start + cardsPerPage);
-      const rows = Math.max(1, Math.ceil(slice.length / cols));
-
-      const gridTop = isMobileDeeds ? 126 : 104;
-      const gridBottom = height - 96; // reserve room for page nav + BACK
-      const gridHeight = gridBottom - gridTop;
-      const horizontalMargin = 24;
-      const gutter = 14;
-      const colWidth = (width - horizontalMargin * 2 - gutter * (cols - 1)) / cols;
-      const rowHeight = (gridHeight - gutter * (rows - 1)) / rows;
-
-      slice.forEach((deed, idx) => {
-        const col = idx % cols;
-        const row = Math.floor(idx / cols);
-        const cx = horizontalMargin + colWidth / 2 + col * (colWidth + gutter);
-        const cy = gridTop + rowHeight / 2 + row * (rowHeight + gutter);
-        this.drawDeedCard(deed, cx, cy, colWidth, rowHeight, uiScale);
-      });
-
-      if (totalPages > 1) {
-        const navY = height - 70;
-        const indicator = this.add
-          .text(width / 2, navY, `${page + 1} / ${totalPages}`, {
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            color: COLORS_CSS.WHISKY_GOLD,
-            fontStyle: 'bold',
-          })
-          .setOrigin(0.5)
-          .setScale(uiScale);
-        this.pageElements.push(indicator);
-
-        const prevHit = this.add
-          .rectangle(width / 2 - 76, navY, 32, 28, 0x11182a, 0.6)
-          .setStrokeStyle(1, 0x355079, 1)
-          .setInteractive({ useHandCursor: true });
-        const prevLabel = this.add
-          .text(width / 2 - 76, navY, '◀', {
-            fontFamily: 'monospace', fontSize: '14px',
-            color: page > 0 ? COLORS_CSS.WHISKY_GOLD : '#586075',
-          })
-          .setOrigin(0.5)
-          .setScale(uiScale);
-        prevHit.on('pointerdown', () => {
-          if (page > 0) {
-            audio.playClick();
-            this.currentPage = page - 1;
-            renderPage(this.currentPage);
-          }
-        });
-        this.pageElements.push(prevHit, prevLabel);
-
-        const nextHit = this.add
-          .rectangle(width / 2 + 76, navY, 32, 28, 0x11182a, 0.6)
-          .setStrokeStyle(1, 0x355079, 1)
-          .setInteractive({ useHandCursor: true });
-        const nextLabel = this.add
-          .text(width / 2 + 76, navY, '▶', {
-            fontFamily: 'monospace', fontSize: '14px',
-            color: page < totalPages - 1 ? COLORS_CSS.WHISKY_GOLD : '#586075',
-          })
-          .setOrigin(0.5)
-          .setScale(uiScale);
-        nextHit.on('pointerdown', () => {
-          if (page < totalPages - 1) {
-            audio.playClick();
-            this.currentPage = page + 1;
-            renderPage(this.currentPage);
-          }
-        });
-        this.pageElements.push(nextHit, nextLabel);
-      }
+    this.deedsKeyLeft = () => {
+      if (this.currentPage <= 0 || this.deedsTotalPages <= 1) return;
+      audio.playClick();
+      this.currentPage--;
+      this.renderDeedsPage();
     };
+    this.deedsKeyRight = () => {
+      if (this.currentPage >= this.deedsTotalPages - 1 || this.deedsTotalPages <= 1) return;
+      audio.playClick();
+      this.currentPage++;
+      this.renderDeedsPage();
+    };
+    this.input.keyboard?.on('keydown-LEFT', this.deedsKeyLeft);
+    this.input.keyboard?.on('keydown-RIGHT', this.deedsKeyRight);
 
-    renderPage(this.currentPage);
+    this.renderDeedsPage();
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav);
 
-    // Arrow keys for page nav.
-    this.input.keyboard?.on('keydown-LEFT', () => {
-      if (this.currentPage > 0) {
-        audio.playClick();
-        this.currentPage--;
-        renderPage(this.currentPage);
+    this.events.once('shutdown', () => {
+      this.hubKeyboardUnbind?.();
+      this.hubKeyboardUnbind = undefined;
+      this.gamepadNav?.destroy();
+      this.gamepadNav = null;
+      this.domFocusLayer?.destroy();
+      this.domFocusLayer = null;
+      if (this.deedsEscHandler) {
+        this.input.keyboard?.off('keydown-ESC', this.deedsEscHandler);
+        this.deedsEscHandler = undefined;
       }
-    });
-    this.input.keyboard?.on('keydown-RIGHT', () => {
-      if (this.currentPage < totalPages - 1) {
-        audio.playClick();
-        this.currentPage++;
-        renderPage(this.currentPage);
+      if (this.deedsKeyLeft) {
+        this.input.keyboard?.off('keydown-LEFT', this.deedsKeyLeft);
+        this.deedsKeyLeft = undefined;
+      }
+      if (this.deedsKeyRight) {
+        this.input.keyboard?.off('keydown-RIGHT', this.deedsKeyRight);
+        this.deedsKeyRight = undefined;
       }
     });
 
     stopAmbientWindOnShutdown(this);
+  }
+
+  private renderDeedsPage(): void {
+    for (const el of this.pageElements) el.destroy();
+    this.pageElements = [];
+    this.deedsCardHits = [];
+    this.deedsNavPrevRect = null;
+    this.deedsNavNextRect = null;
+
+    const page = this.currentPage;
+    const { deedsLayoutWidth: width, deedsLayoutHeight: height, deedsLayoutUiScale: uiScale } = this;
+    const { deedsCardsPerPage: cardsPerPage, deedsTotalPages: totalPages, deedsCols: cols } = this;
+    const isMobileDeeds = this.deedsLayoutIsMobile;
+
+    const start = page * cardsPerPage;
+    const slice = this.deedsAll.slice(start, start + cardsPerPage);
+    const rows = Math.max(1, Math.ceil(slice.length / cols));
+
+    const gridTop = isMobileDeeds ? 126 : 104;
+    const gridBottom = height - 96;
+    const gridHeight = gridBottom - gridTop;
+    const horizontalMargin = 24;
+    const gutter = 14;
+    const colWidth = (width - horizontalMargin * 2 - gutter * (cols - 1)) / cols;
+    const rowHeight = (gridHeight - gutter * (rows - 1)) / rows;
+
+    slice.forEach((deed, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const cx = horizontalMargin + colWidth / 2 + col * (colWidth + gutter);
+      const cy = gridTop + rowHeight / 2 + row * (rowHeight + gutter);
+      const rect = this.drawDeedCard(deed, cx, cy, colWidth, rowHeight, uiScale);
+      this.deedsCardHits.push({ deed, rect });
+    });
+
+    if (totalPages > 1) {
+      const navY = height - 70;
+      const indicator = this.add
+        .text(width / 2, navY, `${page + 1} / ${totalPages}`, {
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: COLORS_CSS.WHISKY_GOLD,
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5)
+        .setScale(uiScale);
+      this.pageElements.push(indicator);
+
+      const prevHit = this.add
+        .rectangle(width / 2 - 76, navY, 32, 28, 0x11182a, 0.6)
+        .setStrokeStyle(1, 0x355079, 1)
+        .setInteractive({ useHandCursor: true });
+      const prevLabel = this.add
+        .text(width / 2 - 76, navY, '◀', {
+          fontFamily: 'monospace', fontSize: '14px',
+          color: page > 0 ? COLORS_CSS.WHISKY_GOLD : '#586075',
+        })
+        .setOrigin(0.5)
+        .setScale(uiScale);
+      prevHit.on('pointerdown', () => {
+        if (page > 0) {
+          audio.playClick();
+          this.currentPage = page - 1;
+          this.renderDeedsPage();
+        }
+      });
+      this.pageElements.push(prevHit, prevLabel);
+      this.deedsNavPrevRect = prevHit;
+
+      const nextHit = this.add
+        .rectangle(width / 2 + 76, navY, 32, 28, 0x11182a, 0.6)
+        .setStrokeStyle(1, 0x355079, 1)
+        .setInteractive({ useHandCursor: true });
+      const nextLabel = this.add
+        .text(width / 2 + 76, navY, '▶', {
+          fontFamily: 'monospace', fontSize: '14px',
+          color: page < totalPages - 1 ? COLORS_CSS.WHISKY_GOLD : '#586075',
+        })
+        .setOrigin(0.5)
+        .setScale(uiScale);
+      nextHit.on('pointerdown', () => {
+        if (page < totalPages - 1) {
+          audio.playClick();
+          this.currentPage = page + 1;
+          this.renderDeedsPage();
+        }
+      });
+      this.pageElements.push(nextHit, nextLabel);
+      this.deedsNavNextRect = nextHit;
+    }
+
+    this.rebuildDeedsT407Nav();
+  }
+
+  /**
+   * T407 — rebuild gamepad highlight rects + DOM focus mirror after the deed
+   * grid or pagination changes.
+   */
+  private rebuildDeedsT407Nav(): void {
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+
+    const entries: GamepadMenuEntry[] = [];
+    for (const { rect } of this.deedsCardHits) {
+      entries.push({ rect, activate: () => undefined });
+    }
+
+    const pageNav = this.deedsTotalPages > 1 && this.deedsNavPrevRect && this.deedsNavNextRect;
+    if (pageNav && this.deedsNavPrevRect && this.deedsNavNextRect) {
+      entries.push({
+        rect: this.deedsNavPrevRect,
+        activate: () => {
+          if (this.currentPage <= 0) return;
+          audio.playClick();
+          this.currentPage--;
+          this.renderDeedsPage();
+        },
+      });
+      entries.push({
+        rect: this.deedsNavNextRect,
+        activate: () => {
+          if (this.currentPage >= this.deedsTotalPages - 1) return;
+          audio.playClick();
+          this.currentPage++;
+          this.renderDeedsPage();
+        },
+      });
+    }
+
+    if (this.deedsBackRect?.active) {
+      entries.push({
+        rect: this.deedsBackRect,
+        activate: () => {
+          audio.playClick();
+          this.scene.start(this.returnTo);
+        },
+      });
+    }
+
+    if (entries.length === 0) return;
+
+    const start = this.currentPage * this.deedsCardsPerPage;
+    const visibleSlice = this.deedsAll.slice(start, start + this.deedsCardsPerPage);
+    const pageNavVisible = this.deedsTotalPages > 1;
+
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-deeds-focus-layer',
+      label: t('ui.deeds.title'),
+      description: t('ui.deeds.counter', {
+        earned: this.deedsCounterEarned,
+        total: this.deedsCounterTotal,
+      }),
+      role: 'group',
+      actions: buildDeedsDomFocusActions({
+        visibleDeeds: visibleSlice,
+        pageNavVisible,
+        hasPrevPage: this.currentPage > 0,
+        hasNextPage: this.currentPage < this.deedsTotalPages - 1,
+        onPrevPage: () => {
+          if (this.currentPage <= 0) return;
+          audio.playClick();
+          this.currentPage--;
+          this.renderDeedsPage();
+        },
+        onNextPage: () => {
+          if (this.currentPage >= this.deedsTotalPages - 1) return;
+          audio.playClick();
+          this.currentPage++;
+          this.renderDeedsPage();
+        },
+        onBack: () => {
+          audio.playClick();
+          this.scene.start(this.returnTo);
+        },
+      }),
+      initialFocusIndex: 0,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
+    });
+
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
+    });
+    this.domFocusLayer.setFocusedIndex(this.gamepadNav.getIndex());
   }
 
   private drawDeedCard(
@@ -257,7 +422,7 @@ export class DeedsScene extends Phaser.Scene {
     w: number,
     h: number,
     uiScale: number,
-  ): void {
+  ): Phaser.GameObjects.Rectangle {
     const def = ACHIEVEMENT_DEFS[deed.id];
     const isUnlocked = deed.status === 'unlocked';
     const palette = resolveDeedCardPalette(deed.status);
@@ -267,9 +432,10 @@ export class DeedsScene extends Phaser.Scene {
     };
 
     // Card background — gold-tinted for unlocked, cool slate for locked.
-    track(this.add
+    const cardBg = this.add
       .rectangle(cx, cy, w, h, palette.bgColor, 0.92)
-      .setStrokeStyle(palette.strokeWidth, palette.strokeColor, palette.strokeAlpha));
+      .setStrokeStyle(palette.strokeWidth, palette.strokeColor, palette.strokeAlpha);
+    track(cardBg);
 
     // Top row: icon + title. Card-edge offsets scale with uiScale so the
     // scaled icon/title sit the same visual distance from the card border
@@ -383,5 +549,7 @@ export class DeedsScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setScale(uiScale));
     }
+
+    return cardBg;
   }
 }

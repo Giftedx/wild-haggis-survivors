@@ -16,6 +16,8 @@ import {
   type SceneReturnTarget,
 } from './returnTarget';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import {
   buildCaptureModeActions,
   buildSettingsInputDomFocusActions,
@@ -43,6 +45,11 @@ interface CaptureTarget {
  * `SettingsManager.update` so reloading the game picks up the change
  * immediately; the next `InputMapper.refresh()` in whichever scene takes
  * focus rebuilds the Phaser Key objects.
+ *
+ * T407 — `GamepadMenuNav` + hub keyboard nav mirror the DOM focus layer
+ * ordering from `buildSettingsInputDomFocusActions` (ghost hit rects sit
+ * above chips for highlight rings without clobbering chip strokes). No
+ * nav while a capture is active — the pad resolves binding capture directly.
  */
 export class SettingsInputScene extends Phaser.Scene {
   private settingsManager = getSettingsManager();
@@ -57,6 +64,10 @@ export class SettingsInputScene extends Phaser.Scene {
   /** T407 adoption #5 — DOM-visible focus mirror. Re-mounts on every
    *  scene.restart() since `create()` is the single seed point. */
   private domFocusLayer: DomFocusLayer | null = null;
+  private gamepadNav: GamepadMenuNav | null = null;
+  /** Same order as `buildSettingsInputDomFocusActions` — ghost rects for nav. */
+  private t407Entries: GamepadMenuEntry[] = [];
+  private hubKeyboardUnbind?: () => void;
 
   constructor() {
     super({ key: 'SettingsInput' });
@@ -70,6 +81,13 @@ export class SettingsInputScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const { uiScale, highContrastUi } = this.settingsManager.load();
     this.uiScale = uiScale;
+    this.hubKeyboardUnbind?.();
+    this.hubKeyboardUnbind = undefined;
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+    this.t407Entries = [];
     const palette = resolveSettingsPalette(highContrastUi);
 
     addSceneBackdrop(this);
@@ -116,13 +134,21 @@ export class SettingsInputScene extends Phaser.Scene {
     // Global keyboard capture for rebinds.
     this.input.keyboard?.on('keydown', this.onKeydown);
 
-    // T407 adoption #5 — DOM focus mirror. Re-installed every restart.
-    this.uninstallDomFocusLayer();
-    this.installDomFocusLayer();
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.uninstallDomFocusLayer();
-    });
+    // T407 — DOM focus mirror + gamepad / hub keyboard nav.
+    this.mountT407FocusStack();
+
+    this.events.off(Phaser.Scenes.Events.SHUTDOWN, this.handleSettingsInputShutdown, this);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.handleSettingsInputShutdown, this);
   }
+
+  private readonly handleSettingsInputShutdown = (): void => {
+    this.hubKeyboardUnbind?.();
+    this.hubKeyboardUnbind = undefined;
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+  };
 
   private renderActionRow(
     action: ActionKey,
@@ -211,7 +237,8 @@ export class SettingsInputScene extends Phaser.Scene {
     const chip = this.add
       .rectangle(cx, cy, w, chipH, capturing ? 0x6a4a2a : 0x2d3e5a, 1)
       .setStrokeStyle(1.5, capturing ? 0xffaa55 : 0x4a6a8a, 0.9)
-      .setInteractive({ useHandCursor: true });
+      .setInteractive({ useHandCursor: true })
+      .setDepth(1);
     chip.setScale(this.uiScale);
 
     const txt = this.add
@@ -222,11 +249,20 @@ export class SettingsInputScene extends Phaser.Scene {
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
-      .setScale(this.uiScale);
+      .setScale(this.uiScale)
+      .setDepth(4);
 
     chip.on('pointerdown', onClick);
     txt.setInteractive({ useHandCursor: true });
     txt.on('pointerdown', onClick);
+
+    const ring = 3;
+    const ghost = this.add
+      .rectangle(cx, cy, w + ring * 2, chipH + ring * 2, 0x000000, 0.0001)
+      .setStrokeStyle(0)
+      .setDepth(2);
+    ghost.setScale(this.uiScale);
+    this.t407Entries.push({ rect: ghost, activate: onClick });
   }
 
   private beginCapture(action: ActionKey, slot: RebindSlot, kind: CaptureKind): void {
@@ -262,6 +298,13 @@ export class SettingsInputScene extends Phaser.Scene {
     rect.setScale(this.uiScale);
     label.setScale(this.uiScale);
     rect.on('pointerdown', () => this.activateReset());
+
+    const ring = 3;
+    const ghost = this.add
+      .rectangle(rect.x, rect.y, rect.displayWidth + ring * 2, rect.displayHeight + ring * 2, 0x000000, 0.0001)
+      .setStrokeStyle(0)
+      .setDepth(rect.depth + 3);
+    this.t407Entries.push({ rect: ghost, activate: () => this.activateReset() });
   }
 
   private renderBackButton(y: number, uiScale: number): void {
@@ -279,6 +322,13 @@ export class SettingsInputScene extends Phaser.Scene {
     back.setScale(uiScale);
     backLabel.setScale(uiScale);
     back.on('pointerdown', () => this.activateBack());
+
+    const ring = 3;
+    const ghost = this.add
+      .rectangle(back.x, back.y, back.displayWidth + ring * 2, back.displayHeight + ring * 2, 0x000000, 0.0001)
+      .setStrokeStyle(0)
+      .setDepth(back.depth + 3);
+    this.t407Entries.push({ rect: ghost, activate: () => this.activateBack() });
   }
 
   /** Reset action shared by visible chip + DOM focus mirror. */
@@ -393,32 +443,38 @@ export class SettingsInputScene extends Phaser.Scene {
   }
 
   /**
-   * Mount the visually hidden DOM action mirror. When a capture is in
-   * flight the layer renders a single-action announcement so the screen
-   * reader hears the prompt; otherwise it renders the full row stack.
-   * The scene calls `scene.restart()` after every state change so this
-   * runs fresh on each render — no live `setActions` is needed.
+   * T407 — mount DOM focus mirror + `GamepadMenuNav` + hub keyboard nav.
+   * Capture mode mounts DOM announcement only (no menu nav — pad resolves
+   * binding capture in `update()`).
    */
-  private installDomFocusLayer(): void {
-    if (typeof document === 'undefined') return;
+  private mountT407FocusStack(): void {
+    this.hubKeyboardUnbind?.();
+    this.hubKeyboardUnbind = undefined;
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+
     const chrome = this.resolveChromeLabels();
     const labels = this.resolveActionLabels();
 
     if (this.capture) {
       const cap = this.capture;
-      this.domFocusLayer = createDomFocusLayer({
-        id: 'whs-settings-input-focus-layer',
-        label: t('ui.inputRebind.title'),
-        description: t('ui.inputRebind.subtitle'),
-        role: 'group',
-        actions: buildCaptureModeActions({
-          action: cap.action,
-          slot: cap.slot,
-          kind: cap.kind,
-          actionLabel: labels[cap.action],
-          chrome,
-        }),
-      });
+      if (typeof document !== 'undefined') {
+        this.domFocusLayer = createDomFocusLayer({
+          id: 'whs-settings-input-focus-layer',
+          label: t('ui.inputRebind.title'),
+          description: t('ui.inputRebind.subtitle'),
+          role: 'group',
+          actions: buildCaptureModeActions({
+            action: cap.action,
+            slot: cap.slot,
+            kind: cap.kind,
+            actionLabel: labels[cap.action],
+            chrome,
+          }),
+        });
+      }
       return;
     }
 
@@ -437,17 +493,28 @@ export class SettingsInputScene extends Phaser.Scene {
       onActivateBack: () => this.activateBack(),
     });
 
-    this.domFocusLayer = createDomFocusLayer({
-      id: 'whs-settings-input-focus-layer',
-      label: t('ui.inputRebind.title'),
-      description: t('ui.inputRebind.subtitle'),
-      role: 'group',
-      actions,
-    });
-  }
+    if (typeof document !== 'undefined') {
+      this.domFocusLayer = createDomFocusLayer({
+        id: 'whs-settings-input-focus-layer',
+        label: t('ui.inputRebind.title'),
+        description: t('ui.inputRebind.subtitle'),
+        role: 'group',
+        actions,
+        initialFocusIndex: 0,
+        onFocusIndexChange: (index) => {
+          this.gamepadNav?.syncExternalIndex(index);
+        },
+      });
+    }
 
-  private uninstallDomFocusLayer(): void {
-    this.domFocusLayer?.destroy();
-    this.domFocusLayer = null;
+    const entries = this.t407Entries.filter((e) => e.rect.active);
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => {
+        this.domFocusLayer?.setFocusedIndex(i);
+      },
+    });
+    this.domFocusLayer?.setFocusedIndex(this.gamepadNav.getIndex());
+
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav);
   }
 }

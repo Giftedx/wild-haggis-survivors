@@ -55,6 +55,9 @@ import {
   type SceneReturnData,
   type SceneReturnTarget,
 } from './returnTarget';
+import { createDomFocusLayer, type DomFocusAction, type DomFocusLayer } from '../ui/domFocusLayer';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
 
 // Repeated text styles inside this scene — pinned so the row section
 // header look stays in sync.
@@ -107,6 +110,17 @@ export class ChronicleScene extends Phaser.Scene {
   private runRowObjects: Phaser.GameObjects.GameObject[] = [];
   private history: RunHistoryEntry[] = [];
   private paginationNav: PaginationNavHandle = { destroy: () => {}, prevRect: null, nextRect: null };
+  private domFocusLayer: DomFocusLayer | null = null;
+  private gamepadNav: GamepadMenuNav | null = null;
+  private hubKeyboardUnbind?: () => void;
+  private chronicleEscHandler?: () => void;
+  private chronicleAlmanacNavRect: Phaser.GameObjects.Rectangle | null = null;
+  private chronicleBackRect: Phaser.GameObjects.Rectangle | null = null;
+  private chronicleRowNavHits: Array<{
+    rect: Phaser.GameObjects.Rectangle;
+    label: string;
+    entry: RunHistoryEntry;
+  }> = [];
   private returnTo: SceneReturnTarget = 'MainMenu';
 
   constructor() {
@@ -182,6 +196,12 @@ export class ChronicleScene extends Phaser.Scene {
     almanacLink.on('pointerover', () => almanacLink.setColor(COLORS_CSS.WHISKY_GOLD));
     almanacLink.on('pointerout', () => almanacLink.setColor(COLORS_CSS.TEXT_SUBTITLE));
     almanacLink.on('pointerdown', goAlmanac);
+    const almanacBounds = almanacLink.getBounds();
+    this.chronicleAlmanacNavRect = this.add
+      .rectangle(almanacBounds.centerX, almanacBounds.centerY, almanacBounds.width + 16, almanacBounds.height + 8, 0x000000, 0)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(80);
+    this.chronicleAlmanacNavRect.on('pointerdown', goAlmanac);
 
     // ── Lifetime panel ──
     const lifetimePanelY = 118;
@@ -352,18 +372,37 @@ export class ChronicleScene extends Phaser.Scene {
     const backY = height - 18;
     this.paginationY = Math.min(this.PAGINATION_Y, backY - 36);
 
-    this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
     const backBtn = createBackButton(this, {
       x: width / 2, y: backY, width: 180, height: 30,
       label: t('ui.chronicle.back'), fontSize: '14px', uiScale,
     });
+    backBtn.setDepth(90);
     const goBack = () => {
       audio.playClick();
       this.scene.start(this.returnTo);
     };
     backBtn.on('pointerdown', goBack);
+    this.chronicleBackRect = backBtn;
 
-    this.input.keyboard?.on('keydown-ESC', goBack);
+    this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
+
+    this.chronicleEscHandler = goBack;
+    this.input.keyboard?.on('keydown-ESC', this.chronicleEscHandler);
+
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav);
+
+    this.events.once('shutdown', () => {
+      this.hubKeyboardUnbind?.();
+      this.hubKeyboardUnbind = undefined;
+      this.gamepadNav?.destroy();
+      this.gamepadNav = null;
+      this.domFocusLayer?.destroy();
+      this.domFocusLayer = null;
+      if (this.chronicleEscHandler) {
+        this.input.keyboard?.off('keydown-ESC', this.chronicleEscHandler);
+        this.chronicleEscHandler = undefined;
+      }
+    });
 
     stopAmbientWindOnShutdown(this);
   }
@@ -408,6 +447,7 @@ export class ChronicleScene extends Phaser.Scene {
   }
 
   private renderRunsPage(startY: number, width: number, uiScale: number): void {
+    this.chronicleRowNavHits = [];
     for (const o of this.runRowObjects) o.destroy();
     this.runRowObjects = [];
 
@@ -427,6 +467,9 @@ export class ChronicleScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setScale(uiScale);
       this.runRowObjects.push(empty);
+      if (this.chronicleBackRect?.active) {
+        this.rebuildChronicleT407Nav(width, uiScale);
+      }
       return;
     }
 
@@ -680,6 +723,8 @@ export class ChronicleScene extends Phaser.Scene {
         });
         this.runRowObjects.push(watch);
       }
+
+      this.chronicleRowNavHits.push({ rect: rowBg, label: mainLine, entry });
     });
 
     this.paginationNav.destroy();
@@ -696,6 +741,132 @@ export class ChronicleScene extends Phaser.Scene {
         this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
       },
     );
+
+    if (this.chronicleBackRect?.active) {
+      this.rebuildChronicleT407Nav(width, uiScale);
+    }
+  }
+
+  /**
+   * T407 — rebuild gamepad highlight rects + DOM focus mirror after run rows
+   * or pagination change. Entry order: Almanac link, run rows, optional
+   * prev/next, Back.
+   */
+  private rebuildChronicleT407Nav(width: number, uiScale: number): void {
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+
+    const total = this.history.length;
+    const pState = paginationState(total, this.ROWS_PER_PAGE, this.page);
+    const nav = this.paginationNav;
+    const hasPageNav = pState.pageVisible && nav.prevRect != null && nav.nextRect != null;
+
+    const entries: GamepadMenuEntry[] = [];
+    const domRows: DomFocusAction[] = [];
+
+    if (this.chronicleAlmanacNavRect?.active) {
+      const act = () => {
+        audio.playClick();
+        this.scene.start('Almanac', returnTargetData(this.returnTo));
+      };
+      entries.push({ rect: this.chronicleAlmanacNavRect, activate: act });
+      domRows.push({
+        id: 'chronicle-almanac',
+        label: t('ui.chronicle.view_almanac'),
+        onActivate: act,
+      });
+    }
+
+    let runIdx = 0;
+    for (const hit of this.chronicleRowNavHits) {
+      const { entry } = hit;
+      const canRevisit =
+        (entry.replay != null && isReplayBlobAny(entry.replay)) ||
+        typeof entry.runSeed === 'number';
+      const activate = () => {
+        if (entry.replay != null && isReplayBlobAny(entry.replay)) {
+          this.watchReplay(entry.replay);
+        } else if (typeof entry.runSeed === 'number') {
+          this.rerunSeed(entry.runSeed, entry.variantKey, entry.curseKey);
+        }
+      };
+      entries.push({ rect: hit.rect, activate });
+      domRows.push({
+        id: `chronicle-run-${entry.timestamp}-${runIdx}`,
+        label: hit.label,
+        disabled: !canRevisit,
+        onActivate: () => {
+          if (!canRevisit) return;
+          activate();
+        },
+      });
+      runIdx += 1;
+    }
+
+    if (hasPageNav && nav.prevRect && nav.nextRect) {
+      const onPrev = () => {
+        const p = paginationState(total, this.ROWS_PER_PAGE, this.page);
+        if (!p.prevEnabled) return;
+        audio.playClick();
+        this.page = p.clampedPage - 1;
+        this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
+      };
+      const onNext = () => {
+        const p = paginationState(total, this.ROWS_PER_PAGE, this.page);
+        if (!p.nextEnabled) return;
+        audio.playClick();
+        this.page = p.clampedPage + 1;
+        this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
+      };
+      entries.push({ rect: nav.prevRect, activate: onPrev });
+      entries.push({ rect: nav.nextRect, activate: onNext });
+      domRows.push({
+        id: 'chronicle-page-prev',
+        label: t('ui.shop.prev'),
+        disabled: !pState.prevEnabled,
+        onActivate: onPrev,
+      });
+      domRows.push({
+        id: 'chronicle-page-next',
+        label: t('ui.shop.next'),
+        disabled: !pState.nextEnabled,
+        onActivate: onNext,
+      });
+    }
+
+    if (this.chronicleBackRect?.active) {
+      const goBack = () => {
+        audio.playClick();
+        this.scene.start(this.returnTo);
+      };
+      entries.push({ rect: this.chronicleBackRect, activate: goBack });
+      domRows.push({
+        id: 'chronicle-back',
+        label: t('ui.chronicle.back'),
+        onActivate: goBack,
+      });
+    }
+
+    if (entries.length === 0) return;
+
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-chronicle-focus-layer',
+      label: t('ui.chronicle.title'),
+      description: t('ui.chronicle.runs_heading'),
+      role: 'group',
+      actions: domRows,
+      initialFocusIndex: 0,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
+    });
+
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
+    });
+    this.domFocusLayer.setFocusedIndex(this.gamepadNav.getIndex());
   }
 
   private buildMilestoneLines(m: ReturnType<typeof computeMilestones>): string {

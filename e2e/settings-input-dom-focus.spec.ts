@@ -21,6 +21,11 @@ import { expect, test } from './fixtures';
  * sighted users so this is not a visual test. Capture activation goes
  * through the DOM button click path which the layer exposes; the real
  * key-press resolver is covered by `applyKeyRebind` unit tests.
+ *
+ * Scene-side T407 also wires `GamepadMenuNav` + `bindHubMenuKeyboardNav`
+ * in lockstep with the same action ordering (ghost focus rings + D-pad /
+ * arrow navigation) — not asserted here; covered by the Phaser scene
+ * wiring + `settingsInputDomFocusActions` unit tests.
  */
 test.describe('SettingsInputScene DOM focus mirror', () => {
   test('exposes per-slot rows and reflects capture-mode entry/cancel', async ({ page }) => {
