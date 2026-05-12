@@ -13,7 +13,7 @@ import {
   META_SHOP_LOCKED_PILL_COLOR,
 } from './metaShopRowState';
 import { paginationState } from '../ui/pagination';
-import { createPaginationNav } from '../ui/gamePagination';
+import { createPaginationNav, type PaginationNavHandle } from '../ui/gamePagination';
 import { playPurchaseBurst } from './purchaseBurst';
 import { clearGameObjects } from '../utils/clearGameObjects';
 import { createGameButton, setGameButtonDisabled } from '../ui/gameButton';
@@ -27,6 +27,7 @@ import { installShopBackdrop } from './installShopBackdrop';
 import { textStyle } from '../ui/typography';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
 import { buildMetaShopDomFocusActions } from './metaShopDomFocusActions';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -42,10 +43,11 @@ export class MetaShopScene extends Phaser.Scene {
   private killsText!: Phaser.GameObjects.Text;
   private backButton!: Phaser.GameObjects.Rectangle;
   private gamepadNav: GamepadMenuNav | null = null;
+  private hubKeyboardUnbind?: () => void;
   private page = 0;
   private readonly ROWS_PER_PAGE = 5;
   private pageText!: Phaser.GameObjects.Text;
-  private paginationNav: { destroy: () => void } = { destroy: () => {} };
+  private paginationNav: PaginationNavHandle = { destroy: () => {}, prevRect: null, nextRect: null };
 
   constructor() {
     super({ key: 'MetaShop' });
@@ -96,9 +98,12 @@ export class MetaShopScene extends Phaser.Scene {
     this.renderRows();
 
     this.installMetaShopDomFocusLayer();
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav);
 
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();
+      this.hubKeyboardUnbind?.();
+      this.hubKeyboardUnbind = undefined;
       this.uninstallMetaShopDomFocusLayer();
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
@@ -115,6 +120,9 @@ export class MetaShopScene extends Phaser.Scene {
       role: 'dialog',
       actions: this.buildMetaShopDomFocusActionList(),
       initialFocusIndex: 0,
+      onFocusIndexChange: (index) => {
+        this.gamepadNav?.syncExternalIndex(index);
+      },
     });
   }
 
@@ -236,6 +244,7 @@ export class MetaShopScene extends Phaser.Scene {
           textStyle('body', { fontSize: '14px', color: META_SHOP_OWNED_PILL_COLOR }),
         ).setOrigin(0.5);
         this.rowElements.push(maxLabel);
+        entries.push({ rect: rowBg, activate: () => undefined });
         return;
       }
 
@@ -244,6 +253,7 @@ export class MetaShopScene extends Phaser.Scene {
           textStyle('label', { color: META_SHOP_LOCKED_PILL_COLOR }),
         ).setOrigin(0.5);
         this.rowElements.push(lockLabel);
+        entries.push({ rect: rowBg, activate: () => undefined });
         return;
       }
 
@@ -258,23 +268,46 @@ export class MetaShopScene extends Phaser.Scene {
       });
       buyButton.setStrokeStyle(1, buyPalette.strokeColor, 1);
 
+      buyButton.on('pointerdown', () => this.tryBuy(key));
+      entries.push({ rect: buyButton, activate: () => this.tryBuy(key) });
       if (!canAfford) {
         setGameButtonDisabled({ rect: buyButton, label: buyText }, true, buyPalette.fillColor);
-      } else {
-        buyButton.on('pointerdown', () => this.tryBuy(key));
-        entries.push({ rect: buyButton, activate: () => this.tryBuy(key) });
       }
 
       this.rowElements.push(buyButton, buyText);
     });
 
+    if (pagination.pageVisible && this.paginationNav.prevRect && this.paginationNav.nextRect) {
+      entries.push({
+        rect: this.paginationNav.prevRect,
+        activate: () => {
+          const p = paginationState(allKeys.length, this.ROWS_PER_PAGE, this.page);
+          if (!p.prevEnabled) return;
+          this.page = p.clampedPage - 1;
+          this.renderRows();
+        },
+      });
+      entries.push({
+        rect: this.paginationNav.nextRect,
+        activate: () => {
+          const p = paginationState(allKeys.length, this.ROWS_PER_PAGE, this.page);
+          if (!p.nextEnabled) return;
+          this.page = p.clampedPage + 1;
+          this.renderRows();
+        },
+      });
+    }
+
     entries.push({
       rect: this.backButton,
       activate: clickToScene(this, 'MainMenu'),
     });
-    this.gamepadNav = new GamepadMenuNav(this, entries);
+    this.gamepadNav = new GamepadMenuNav(this, entries, {
+      onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
+    });
 
     this.refreshMetaShopDomActions();
+    this.domFocusLayer?.setFocusedIndex(this.gamepadNav.getIndex());
   }
 
   private tryBuy(key: MetaShopItemKey): void {

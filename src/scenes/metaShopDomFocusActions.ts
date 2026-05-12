@@ -12,7 +12,8 @@ import type { DomFocusAction } from '../ui/domFocusLayer';
  *
  * Pure helper for `createDomFocusLayer`. Phaser-free aside from `t()`.
  *
- * Row order matches `MetaShopScene.renderRows` slice order. When
+ * Row order matches `MetaShopScene.renderRows` / `GamepadMenuNav` entry order
+ * (page slice, optional prev/next, back). When
  * `pageNavVisible` is false (single page of items), Prev/Next actions are
  * omitted so the DOM layer matches `createPaginationNav`'s no-op layout.
  */

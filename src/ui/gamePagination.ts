@@ -3,6 +3,13 @@ import { paginationState } from './pagination';
 import { createGameButton } from './gameButton';
 import { textStyle } from './typography';
 
+/** Returned by `createPaginationNav` — wire rects into `GamepadMenuNav` (T407). */
+export interface PaginationNavHandle {
+  destroy: () => void;
+  prevRect: Phaser.GameObjects.Rectangle | null;
+  nextRect: Phaser.GameObjects.Rectangle | null;
+}
+
 /** Pure layout calculator — testable without Phaser. */
 export function buildPaginationLayout(totalItems: number, perPage: number, page: number) {
   return paginationState(totalItems, perPage, page);
@@ -10,7 +17,7 @@ export function buildPaginationLayout(totalItems: number, perPage: number, page:
 
 /**
  * Render a prev/page/next navigation row using tertiary-tier buttons.
- * Returns destroy function for cleanup.
+ * Returns a handle with `destroy` plus prev/next rects for `GamepadMenuNav` (T407).
  */
 export function createPaginationNav(
   scene: Phaser.Scene,
@@ -20,11 +27,11 @@ export function createPaginationNav(
   perPage: number,
   page: number,
   onPageChange: (newPage: number) => void,
-): { destroy: () => void } {
+): PaginationNavHandle {
   const state = paginationState(totalItems, perPage, page);
   const objects: Phaser.GameObjects.GameObject[] = [];
 
-  if (!state.pageVisible) return { destroy: () => {} };
+  if (!state.pageVisible) return { destroy: () => {}, prevRect: null, nextRect: null };
 
   // Prev button — tertiary tier, disabled if on first page
   const prevBtn = createGameButton(scene, {
@@ -58,5 +65,9 @@ export function createPaginationNav(
   }
   objects.push(nextBtn.rect, nextBtn.label);
 
-  return { destroy: () => objects.forEach((o) => o.destroy()) };
+  return {
+    destroy: () => objects.forEach((o) => o.destroy()),
+    prevRect: prevBtn.rect,
+    nextRect: nextBtn.rect,
+  };
 }

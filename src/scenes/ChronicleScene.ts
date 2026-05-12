@@ -37,7 +37,7 @@ import {
   resolveChronicleMilestonesDensityStyle,
 } from '../ui/chronicleAggregates';
 import { paginationState } from '../ui/pagination';
-import { createPaginationNav } from '../ui/gamePagination';
+import { createPaginationNav, type PaginationNavHandle } from '../ui/gamePagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 import { buildSporranPipsForChronicle } from './chronicleSporranPips';
@@ -106,7 +106,7 @@ export class ChronicleScene extends Phaser.Scene {
   private page = 0;
   private runRowObjects: Phaser.GameObjects.GameObject[] = [];
   private history: RunHistoryEntry[] = [];
-  private paginationNav: { destroy: () => void } = { destroy: () => {} };
+  private paginationNav: PaginationNavHandle = { destroy: () => {}, prevRect: null, nextRect: null };
   private returnTo: SceneReturnTarget = 'MainMenu';
 
   constructor() {
