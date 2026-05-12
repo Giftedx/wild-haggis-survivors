@@ -8,6 +8,7 @@ import {
   wrapLabeledDomFocusActions,
   type DomFocusLayer,
 } from '../ui/domFocusLayer';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
 import { loadSave } from '../utils/save';
@@ -52,7 +53,7 @@ export class MainMenuScene extends Phaser.Scene {
   private saveManager = new SaveManager();
   private gamepadNav: GamepadMenuNav | null = null;
   private domFocusLayer: DomFocusLayer | null = null;
-  private mainMenuKeyHandler?: (e: KeyboardEvent) => void;
+  private hubKeyboardUnbind?: () => void;
   /** All tweens attached to decoration — killed on scene shutdown. */
   private cozyTweenTargets: Phaser.GameObjects.GameObject[] = [];
 
@@ -761,42 +762,13 @@ export class MainMenuScene extends Phaser.Scene {
 
   private installMainMenuKeyboardShortcuts(): void {
     this.uninstallMainMenuKeyboardShortcuts();
-    const kb = this.input.keyboard;
-    if (!kb) return;
-    this.mainMenuKeyHandler = (e: KeyboardEvent) => {
-      const nav = this.gamepadNav;
-      if (!nav || nav.getEntryCount() === 0) return;
-      const n = nav.getEntryCount();
-      const digit = parseInt(e.key, 10);
-      if (Number.isFinite(digit) && digit >= 1 && digit <= n) {
-        e.preventDefault();
-        nav.activateIndex(digit - 1);
-        return;
-      }
-      if (
-        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-        || (e.key === 'Tab' && e.shiftKey)
-      ) {
-        e.preventDefault();
-        nav.step(-1);
-        return;
-      }
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
-        e.preventDefault();
-        nav.step(1);
-        return;
-      }
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      nav.activateCurrent();
-    };
-    kb.on('keydown', this.mainMenuKeyHandler);
+    if (!this.input.keyboard) return;
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav);
   }
 
   private uninstallMainMenuKeyboardShortcuts(): void {
-    if (!this.mainMenuKeyHandler) return;
-    this.input.keyboard?.off('keydown', this.mainMenuKeyHandler);
-    this.mainMenuKeyHandler = undefined;
+    this.hubKeyboardUnbind?.();
+    this.hubKeyboardUnbind = undefined;
   }
 
   /**

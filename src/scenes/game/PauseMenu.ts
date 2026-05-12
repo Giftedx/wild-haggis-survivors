@@ -10,6 +10,10 @@
  * Does NOT own the timeScale lock (timeManager handles that) or the
  * deferred-chest drain (GameScene keeps ownership of gameplay state).
  * This module is strictly display-object construction + teardown.
+ *
+ * T407 — Row focus: keyboard (↑↓ / Tab / Enter / 1–8) and gamepad (D-pad /
+ * stick + confirm) mirror the DOM focus layer; gold stroke on buttons,
+ * gold text tint on SFX/Music toggles, pointer-hover syncs the index.
  */
 import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../../config';

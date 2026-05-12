@@ -11,6 +11,7 @@ import {
   wrapLabeledDomFocusActions,
   type DomFocusLayer,
 } from '../ui/domFocusLayer';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
 import {
   DEFAULT_VARIANT_KEY,
   VARIANTS,
@@ -52,7 +53,7 @@ export class MenuScene extends Phaser.Scene {
   private highContrastUi = false;
   private gamepadNav: GamepadMenuNav | null = null;
   private domFocusLayer: DomFocusLayer | null = null;
-  private menuKeyHandler?: (e: KeyboardEvent) => void;
+  private hubKeyboardUnbind?: () => void;
   private playHit!: Phaser.GameObjects.Rectangle;
   private upgradesHit!: Phaser.GameObjects.Rectangle;
   private sfxHit!: Phaser.GameObjects.Rectangle;
@@ -634,43 +635,15 @@ export class MenuScene extends Phaser.Scene {
 
   private installMenuKeyboardShortcuts(): void {
     this.uninstallMenuKeyboardShortcuts();
-    const kb = this.input.keyboard;
-    if (!kb) return;
-    this.menuKeyHandler = (e: KeyboardEvent) => {
-      if (this.transitioning) return;
-      const nav = this.gamepadNav;
-      if (!nav || nav.getEntryCount() === 0) return;
-      const n = nav.getEntryCount();
-      const digit = parseInt(e.key, 10);
-      if (Number.isFinite(digit) && digit >= 1 && digit <= n) {
-        e.preventDefault();
-        nav.activateIndex(digit - 1);
-        return;
-      }
-      if (
-        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-        || (e.key === 'Tab' && e.shiftKey)
-      ) {
-        e.preventDefault();
-        nav.step(-1);
-        return;
-      }
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
-        e.preventDefault();
-        nav.step(1);
-        return;
-      }
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      nav.activateCurrent();
-    };
-    kb.on('keydown', this.menuKeyHandler);
+    if (!this.input.keyboard) return;
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav, {
+      isBlocked: () => this.transitioning,
+    });
   }
 
   private uninstallMenuKeyboardShortcuts(): void {
-    if (!this.menuKeyHandler) return;
-    this.input.keyboard?.off('keydown', this.menuKeyHandler);
-    this.menuKeyHandler = undefined;
+    this.hubKeyboardUnbind?.();
+    this.hubKeyboardUnbind = undefined;
   }
 
   private selectVariant(key: VariantKey): void {

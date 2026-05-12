@@ -27,6 +27,7 @@ import {
   wrapLabeledDomFocusActions,
   type DomFocusLayer,
 } from '../ui/domFocusLayer';
+import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
 import { audio } from '../systems/AudioSystem';
 import { SaveManager } from '../core/SaveManager';
 import { loadSave, writeSave } from '../utils/save';
@@ -113,9 +114,19 @@ export class CroftScene extends Phaser.Scene {
   private bookshelfHit: Phaser.GameObjects.Rectangle | null = null;
   private gamepadNav: GamepadMenuNav | null = null;
   private domFocusLayer: DomFocusLayer | null = null;
-  private croftKeyHandler?: (e: KeyboardEvent) => void;
+  private hubKeyboardUnbind?: () => void;
   private croftEscHandler?: () => void;
-  /** Bottom nav row — included after action column in gamepad / DOM order (T407). */
+  /**
+   * T407 — clickable companion rows (rect + row index + DOM id) for nav/DOM
+   * mirror. Cleared whenever the picker container is destroyed/rebuilt.
+   */
+  private companionPickerNavHits: Array<{
+    rect: Phaser.GameObjects.Rectangle;
+    rowIndex: number;
+    label: string;
+    domId: string;
+  }> = [];
+  /** Bottom nav row — after companion rows in gamepad / DOM order (T407). */
   private backNavRect: Phaser.GameObjects.Rectangle | null = null;
   private actionEntries: Array<{
     key: CroftActionKey;
@@ -148,6 +159,7 @@ export class CroftScene extends Phaser.Scene {
     // with a clean ref before `drawCompanionPicker` reassigns.
     this.companionPickerContainer?.destroy();
     this.companionPickerContainer = null;
+    this.companionPickerNavHits = [];
     this.granSprite?.destroy();
     this.granSprite = null;
     this.knittingTimer?.remove(false);
@@ -806,6 +818,7 @@ export class CroftScene extends Phaser.Scene {
       unlockedCompanions: save.livingWorldUnlocks.unlockedCompanions,
       selectedCompanion: save.livingWorldUnlocks.selectedCompanion,
     });
+    this.companionPickerNavHits = [];
 
     // Sit the picker to the LEFT of the Living Moor panel so they
     // share the lower-right corner without overlap. Narrow viewports
@@ -870,6 +883,15 @@ export class CroftScene extends Phaser.Scene {
           this.handleCompanionPickerClick(i);
         });
         panel.add(hit);
+        const domId = row.kind === 'opt_out'
+          ? 'croft-companion-opt-out'
+          : `croft-companion-${row.key}`;
+        this.companionPickerNavHits.push({
+          rect: hit,
+          rowIndex: i,
+          label: t(row.displayNameKey),
+          domId,
+        });
       }
     });
 
@@ -877,6 +899,7 @@ export class CroftScene extends Phaser.Scene {
     // is owned by `companionPickerContainer` so a click-to-redraw
     // cycle never strands a destroyed reference in the scene-wide
     // placeholder list. Scene `create()` destroys it directly.
+    this.refreshCroftGamepadNav();
   }
 
   /** Pure-data colour helper so unit tests can grow it later if needed. */
@@ -975,12 +998,12 @@ export class CroftScene extends Phaser.Scene {
       this.actionEntries.push({ key: action.key, rect, label: t(action.i18n) });
     });
 
-    // H1 M3 T23 + T407 — first pass: gamepad / DOM over visible actions only.
-    // `drawBack` appends the back row and calls `refreshCroftGamepadNav` again.
+    // H1 M3 T23 + T407 — gamepad / DOM: actions, then companion picker rows,
+    // then back (`drawCompanionPicker` / `drawBack` each refresh this list).
     this.refreshCroftGamepadNav();
   }
 
-  /** Rebuilds D-pad nav + DOM mirror from `actionEntries` + optional `backNavRect`. */
+  /** Rebuilds D-pad nav + DOM mirror from actions, companion rows, and back. */
   private refreshCroftGamepadNav(): void {
     this.domFocusLayer?.destroy();
     this.domFocusLayer = null;
@@ -1000,6 +1023,11 @@ export class CroftScene extends Phaser.Scene {
     for (const e of this.actionEntries) {
       push(e.rect, { id: `croft-action-${e.key}`, label: e.label }, () => {
         this.handleAction(e.key);
+      });
+    }
+    for (const h of this.companionPickerNavHits) {
+      push(h.rect, { id: h.domId, label: h.label }, () => {
+        this.handleCompanionPickerClick(h.rowIndex);
       });
     }
     if (this.backNavRect) {
@@ -1033,43 +1061,15 @@ export class CroftScene extends Phaser.Scene {
 
   private installCroftKeyboardShortcuts(): void {
     this.uninstallCroftKeyboardShortcuts();
-    const kb = this.input.keyboard;
-    if (!kb) return;
-    this.croftKeyHandler = (e: KeyboardEvent) => {
-      if (this.transitioning) return;
-      const nav = this.gamepadNav;
-      if (!nav || nav.getEntryCount() === 0) return;
-      const n = nav.getEntryCount();
-      const digit = parseInt(e.key, 10);
-      if (Number.isFinite(digit) && digit >= 1 && digit <= n) {
-        e.preventDefault();
-        nav.activateIndex(digit - 1);
-        return;
-      }
-      if (
-        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-        || (e.key === 'Tab' && e.shiftKey)
-      ) {
-        e.preventDefault();
-        nav.step(-1);
-        return;
-      }
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
-        e.preventDefault();
-        nav.step(1);
-        return;
-      }
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      nav.activateCurrent();
-    };
-    kb.on('keydown', this.croftKeyHandler);
+    if (!this.input.keyboard) return;
+    this.hubKeyboardUnbind = bindHubMenuKeyboardNav(this, () => this.gamepadNav, {
+      isBlocked: () => this.transitioning,
+    });
   }
 
   private uninstallCroftKeyboardShortcuts(): void {
-    if (!this.croftKeyHandler) return;
-    this.input.keyboard?.off('keydown', this.croftKeyHandler);
-    this.croftKeyHandler = undefined;
+    this.hubKeyboardUnbind?.();
+    this.hubKeyboardUnbind = undefined;
   }
 
   private resolveActionLayout(actionCount: number): {

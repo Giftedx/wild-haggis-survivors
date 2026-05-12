@@ -6,7 +6,7 @@ import { expect, test } from './fixtures';
  */
 
 test.describe('CroftScene DOM focus mirror', () => {
-  test('mounts croft focus layer with action + back data-focus-id buttons', async ({ page }) => {
+  test('mounts croft focus layer with actions, companion opt-out, and back', async ({ page }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
@@ -38,6 +38,7 @@ test.describe('CroftScene DOM focus mirror', () => {
     await expect(layer).toBeAttached({ timeout: 5_000 });
 
     await expect(layer.locator('button[data-focus-id="croft-action-start_run"]')).toBeAttached();
+    await expect(layer.locator('button[data-focus-id="croft-companion-opt-out"]')).toBeAttached();
     await expect(layer.locator('button[data-focus-id="croft-back"]')).toBeAttached();
 
     const startBtn = layer.locator('button[data-focus-id="croft-action-start_run"]');
