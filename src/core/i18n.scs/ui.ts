@@ -1893,6 +1893,43 @@ export const ui = {
         c: 'Auld stories said tha cloot did somethin\'. Now I ken whit.',
       },
     },
+    // ── Cailleach Gauntlet (V2 of The Moor Remembers). SCS overlay for
+    //    cailleach_gauntlet pool. Edge tone with grave bites on the
+    //    lit/spawn beats. Scots conventions: `seiven` for seven,
+    //    `auld wifie` for the crone, `haar` for sea-fog.
+    cailleach_gauntlet: {
+      // Structural fallback (untagged) — see EN comment.
+      a: 'Tha muntain notices.',
+      b: 'Somethin is bein coontit.',
+      armed: {
+        a: 'Seiven stanes. Seiven names. Tha muntain notices.',
+        b: 'I\'ve coontit ower high. Somethin\'s coontin back.',
+        c: 'Tha cairns ar quait noo. That\'s tha wrang kin o quait.',
+        d: 'Tha Cailleach disnae like a cliver haggis.',
+      },
+      candles_lit: {
+        a: 'Seiven caunles. Seiven memories. Tha Cailleach is cawed.',
+        b: 'Tha ring\'s lit. Nae backin oot.',
+        c: 'I\'ve a meenit. Mibbe less.',
+        d: 'Caunles dinnae warn. They mark.',
+      },
+      cailleach_spawned: {
+        a: 'She walks oot o tha haar. Staff first. Een last.',
+        b: 'Tha auld wifie is here. Mind yer manners.',
+        c: 'Winter is a wumman. She\'s come fer tha coont.',
+      },
+      cailleach_down: {
+        a: 'Tha croon is mine. Winter blinkit.',
+        b: 'Seiven stanes gowd. Seiven names louder.',
+        c: 'I\'ll cairry her croon saft. She earnt tha cost.',
+        d: 'Tha Cailleach gaed hame. Sae can I.',
+      },
+      cailleach_dominant: {
+        a: 'Tha Cailleach claimed tha caunles. No tha stanes.',
+        b: 'Snuffed oot. Tha cairns bide.',
+        c: 'Tha muntain wins this nicht.',
+      },
+    },
     // ── Cairn Walkover ("The Moor Remembers"). SCS overlay for cairn_walkover.
     //    Hearth register, light Scots. `yon/noo/muir/aneath/wha/auld/mair`
     //    per Phase B conventions. The grandfather voice uses elder-Scots

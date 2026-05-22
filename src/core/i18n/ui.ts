@@ -2461,6 +2461,49 @@ export const ui = {
      *    grandfather_complete — after the 25th grandfather leaf is revealed
      *  Hearth tone throughout: quiet, awed, never boastful. The moor speaks;
      *  the haggis only listens. Banter pool priority 34. */
+    /** The Moor Remembers V2 (Cailleach Gauntlet). Five tag sub-pools
+     *  mark the gauntlet's beats: 7th touch arms it (armed), 14:00
+     *  candle-ring lights (candles_lit), 15:00 boss appears
+     *  (cailleach_spawned), Cailleach falls (cailleach_down), Cailleach
+     *  wins (cailleach_dominant). Edge tone throughout; the haggis is
+     *  bracing herself for a folkloric reckoning, not boasting. Pool
+     *  priority 95 — above beithir_sting (90), below boss_warn (100).
+     *  Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md. */
+    cailleach_gauntlet: {
+      // Structural fallback (untagged) — keeps the every-pool-≥-2-keys
+      // + globally-unique-keys fences honest. In practice the
+      // scheduler always routes through a tagged sub-pool.
+      a: 'The mountain notices.',
+      b: 'Something is being counted.',
+      armed: {
+        a: 'Seven stones. Seven names. The mountain notices.',
+        b: 'I\'ve counted too high. Something\'s counting back.',
+        c: 'The cairns are quiet noo. That\'s the wrang kind o\' quiet.',
+        d: 'The Cailleach disnae like a clever haggis.',
+      },
+      candles_lit: {
+        a: 'Seven candles. Seven memories. The Cailleach is called.',
+        b: 'The ring\'s lit. Nae backin oot.',
+        c: 'I\'ve a minute. Maybe less.',
+        d: 'Candles dinnae warn. They mark.',
+      },
+      cailleach_spawned: {
+        a: 'She walks oot o\' the haar. Staff first. Eyes last.',
+        b: 'The auld wife is here. Mind yer manners.',
+        c: 'Winter is a woman. She\'s come for the count.',
+      },
+      cailleach_down: {
+        a: 'The crown is mine. Winter blinked.',
+        b: 'Seven stones gold. Seven names louder.',
+        c: 'I\'ll carry her crown soft. She earned the cost.',
+        d: 'The Cailleach went hame. So can I.',
+      },
+      cailleach_dominant: {
+        a: 'The Cailleach claimed the candles. No\' the stones.',
+        b: 'Snuffed oot. The cairns abide.',
+        c: 'The mountain wins this nicht.',
+      },
+    },
     cairn_walkover: {
       past_self_first: {
         a: 'That stone wisnae here yesterday. It is now.',

@@ -82,6 +82,14 @@ export type BanterContext =
   // `grandfather_complete` (after the 25th leaf is revealed). Hearth tone;
   // the moor speaks back through stones the player once placed.
   | 'cairn_walkover'
+  // The Moor Remembers V2 — Cailleach Gauntlet beats. Sub-pool tags
+  // `armed` / `candles_lit` / `cailleach_spawned` / `cailleach_down` /
+  // `cailleach_dominant`. Priority 95 sits above beithir_sting (90)
+  // and below boss_warn (100) so the gauntlet's own beats win over
+  // ambient threat lines but yield to a normal route-boss warning
+  // firing same-tick. Hearth tone bites toward grave on the lit/spawn
+  // beats — the ring is intentionally heavy.
+  | 'cailleach_gauntlet'
   // DESIGN_IDEAS §1 Taxman Grudge Ledger — fires once at run-end victory
   // (the Taxman is the final boss; only victory routes reach his
   // closing word). Sub-pool tags = grudge verdicts: coward | bruiser |
@@ -1496,6 +1504,50 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     //   grandfather_complete — fires once after the 25th grandfather leaf
     // Hearth tone throughout: the haggis is quiet, a little awed, never
     // boastful. The moor is doing the speaking — the haggis is only the ear.
+    context: 'cailleach_gauntlet',
+    tone: 'edge',
+    priority: 95,
+    rare: true,
+    // Default `keys` are structural fallbacks — used only if a tag
+    // isn't supplied (shouldn't happen in practice; the scheduler
+    // always routes through a sub-pool). Two distinct leaves keep the
+    // every-pool-≥-2-keys + globally-unique-keys fences honest.
+    keys: [
+      'ui.banter.cailleach_gauntlet.a',
+      'ui.banter.cailleach_gauntlet.b',
+    ],
+    keysByTag: {
+      armed: [
+        'ui.banter.cailleach_gauntlet.armed.a',
+        'ui.banter.cailleach_gauntlet.armed.b',
+        'ui.banter.cailleach_gauntlet.armed.c',
+        'ui.banter.cailleach_gauntlet.armed.d',
+      ],
+      candles_lit: [
+        'ui.banter.cailleach_gauntlet.candles_lit.a',
+        'ui.banter.cailleach_gauntlet.candles_lit.b',
+        'ui.banter.cailleach_gauntlet.candles_lit.c',
+        'ui.banter.cailleach_gauntlet.candles_lit.d',
+      ],
+      cailleach_spawned: [
+        'ui.banter.cailleach_gauntlet.cailleach_spawned.a',
+        'ui.banter.cailleach_gauntlet.cailleach_spawned.b',
+        'ui.banter.cailleach_gauntlet.cailleach_spawned.c',
+      ],
+      cailleach_down: [
+        'ui.banter.cailleach_gauntlet.cailleach_down.a',
+        'ui.banter.cailleach_gauntlet.cailleach_down.b',
+        'ui.banter.cailleach_gauntlet.cailleach_down.c',
+        'ui.banter.cailleach_gauntlet.cailleach_down.d',
+      ],
+      cailleach_dominant: [
+        'ui.banter.cailleach_gauntlet.cailleach_dominant.a',
+        'ui.banter.cailleach_gauntlet.cailleach_dominant.b',
+        'ui.banter.cailleach_gauntlet.cailleach_dominant.c',
+      ],
+    },
+  },
+  {
     context: 'cairn_walkover',
     tone: 'hearth',
     priority: 34,

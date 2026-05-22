@@ -53,6 +53,8 @@ describe('BANTER_POOLS structure', () => {
     'clootie_wager',
     // "The Moor Remembers" — Cairn of Echoes walkover (past-self + grandfather sub-pools)
     'cairn_walkover',
+    // V2 — Cailleach Gauntlet (armed / candles_lit / cailleach_spawned / cailleach_down / cailleach_dominant)
+    'cailleach_gauntlet',
     // DESIGN_IDEAS §1 — Taxman Grudge Ledger run-end verdict line
     'taxman_grudge',
     // DESIGN_IDEAS §13 — Lemmings Easter Egg cliff-edge parade trigger
