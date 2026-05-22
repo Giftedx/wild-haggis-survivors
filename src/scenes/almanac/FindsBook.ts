@@ -25,6 +25,7 @@ const CATEGORY_TINT: Record<FindEntryVM['category'], number> = {
   passive: 0x4caa6a,    // moss green — passive items
   permanent: 0x8a6cd6,  // amethyst — between-run upgrades
   relic: 0xffb060,      // reliquary toast colour
+  lore: 0x7ca4c0,       // haar blue — Old Drover whisper arc
 };
 
 const CATEGORY_TINT_DIM = 0x2a3550;

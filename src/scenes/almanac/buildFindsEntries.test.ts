@@ -11,14 +11,15 @@ import { PERMANENT_UPGRADES } from '../../data/permanentUpgrades';
 import { RELIQUARY_CURIOS } from '../../scenes/game/reliquary';
 
 describe('buildFindsEntries', () => {
-  it('yields one entry per acquirable thing across all five categories', () => {
+  it('yields one entry per acquirable thing across all six categories', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog());
     const expectedCount =
       Object.keys(WEAPON_DEFS).length +
       EVOLUTION_RECIPES.length +
       PASSIVE_CARDS.length +
       PERMANENT_UPGRADES.length +
-      RELIQUARY_CURIOS.length;
+      RELIQUARY_CURIOS.length +
+      25; // old drover lore arc
     expect(entries.length).toBe(expectedCount);
   });
 
@@ -79,6 +80,64 @@ describe('buildFindsEntries', () => {
     const tc = entries.find((e) => e.key === 'thistle_crown')!;
     expect(ts.category).toBe('weapon');
     expect(tc.category).toBe('passive');
+  });
+});
+
+describe('Old Drover entry — The Moor Remembers reveal arc', () => {
+  it('renders 25 lore entries with acquired=false default state when 0 revealed', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0);
+    const droverEntries = entries.filter((e) => e.key.startsWith('old_drover_'));
+    expect(droverEntries).toHaveLength(25);
+    expect(droverEntries.every((e) => e.acquired === false)).toBe(true);
+  });
+
+  it('unlocks revealed entries in narrative order when 7 revealed', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 7);
+    const droverEntries = entries.filter((e) => e.key.startsWith('old_drover_'));
+    const unlocked = droverEntries.filter((e) => e.acquired);
+    const locked = droverEntries.filter((e) => !e.acquired);
+    expect(unlocked).toHaveLength(7);
+    expect(locked).toHaveLength(18);
+    expect(droverEntries[0].acquired).toBe(true);   // old_drover_01 unlocked
+    expect(droverEntries[6].acquired).toBe(true);   // old_drover_07 unlocked
+    expect(droverEntries[7].acquired).toBe(false);  // old_drover_08 locked
+  });
+
+  it('marks all 25 acquired when count is 25', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 25);
+    const droverEntries = entries.filter((e) => e.key.startsWith('old_drover_'));
+    expect(droverEntries.every((e) => e.acquired === true)).toBe(true);
+  });
+
+  it('uses ui.cairn.grandfather.NN as both nameKey and descKey', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 1);
+    const first = entries.find((e) => e.key === 'old_drover_01')!;
+    expect(first).toBeDefined();
+    expect(first.nameKey).toBe('ui.cairn.grandfather.01');
+    expect(first.descKey).toBe('ui.cairn.grandfather.01');
+  });
+
+  it('has category lore for all drover entries', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0);
+    const droverEntries = entries.filter((e) => e.key.startsWith('old_drover_'));
+    expect(droverEntries.every((e) => e.category === 'lore')).toBe(true);
+  });
+
+  it('appears after relics in the category ordering', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 1);
+    const lastRelicIdx = entries.reduce(
+      (max, e, i) => (e.category === 'relic' ? i : max),
+      -1,
+    );
+    const firstDroverIdx = entries.findIndex((e) => e.key === 'old_drover_01');
+    expect(firstDroverIdx).toBeGreaterThan(lastRelicIdx);
+  });
+
+  it('defaults to 0 revealed when second arg is omitted (backward compat)', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog());
+    const droverEntries = entries.filter((e) => e.key.startsWith('old_drover_'));
+    expect(droverEntries).toHaveLength(25);
+    expect(droverEntries.every((e) => e.acquired === false)).toBe(true);
   });
 });
 

@@ -21,7 +21,7 @@ import { EVOLUTION_RECIPES } from '../../core/BalanceConfig';
 import { PERMANENT_UPGRADES } from '../../data/permanentUpgrades';
 import { RELIQUARY_CURIOS } from '../../scenes/game/reliquary';
 
-export type FindCategory = 'weapon' | 'evolution' | 'passive' | 'permanent' | 'relic';
+export type FindCategory = 'weapon' | 'evolution' | 'passive' | 'permanent' | 'relic' | 'lore';
 
 export interface FindEntryVM {
   readonly key: string;
@@ -39,17 +39,20 @@ const CATEGORY_ORDER: readonly FindCategory[] = [
   'passive',
   'permanent',
   'relic',
+  'lore',
 ];
 
-export function buildFindsEntries(log: DiscoveryLog): FindEntryVM[] {
+const OLD_DROVER_SLOTS = 25;
+
+export function buildFindsEntries(log: DiscoveryLog, oldDroverRevealedCount = 0): FindEntryVM[] {
   const out: FindEntryVM[] = [];
   for (const cat of CATEGORY_ORDER) {
-    out.push(...collectCategory(cat, log));
+    out.push(...collectCategory(cat, log, oldDroverRevealedCount));
   }
   return out;
 }
 
-function collectCategory(category: FindCategory, log: DiscoveryLog): FindEntryVM[] {
+function collectCategory(category: FindCategory, log: DiscoveryLog, oldDroverRevealedCount: number): FindEntryVM[] {
   switch (category) {
     case 'weapon':
       return Object.values(WEAPON_DEFS).map((w) =>
@@ -74,7 +77,39 @@ function collectCategory(category: FindCategory, log: DiscoveryLog): FindEntryVM
       return RELIQUARY_CURIOS.map((c) =>
         toEntry(c.id, 'relic', c.titleKey, c.descKey, log),
       );
+    case 'lore':
+      return buildOldDroverEntries(oldDroverRevealedCount);
   }
+}
+
+/**
+ * T11 — The Moor Remembers: Old Drover reveal arc.
+ *
+ * Emits 25 flat `FindEntryVM` lore entries (old_drover_01 → old_drover_25).
+ * Each entry is acquired once its slot number is within the revealed count
+ * (cairn interactions increment the count in SaveManager). The nameKey and
+ * descKey both point at the same i18n leaf so the expanded panel shows the
+ * grandfather whisper text as both title and body.
+ *
+ * Rendering of locked entries follows the existing unknown-find silhouette
+ * path in buildFindDetail — no special-casing needed in FindsBook.
+ */
+function buildOldDroverEntries(oldDroverRevealedCount: number): FindEntryVM[] {
+  return Array.from({ length: OLD_DROVER_SLOTS }, (_, i) => {
+    const slot = i + 1;
+    const padded = String(slot).padStart(2, '0');
+    const i18nKey = `ui.cairn.grandfather.${padded}`;
+    const revealed = slot <= oldDroverRevealedCount;
+    return {
+      key: `old_drover_${padded}`,
+      category: 'lore' as const,
+      nameKey: i18nKey,
+      descKey: i18nKey,
+      acquired: revealed,
+      acquireCount: revealed ? 1 : 0,
+      firstAcquiredAt: null,
+    };
+  });
 }
 
 function toEntry(
