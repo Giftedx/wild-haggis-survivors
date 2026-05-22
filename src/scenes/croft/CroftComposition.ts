@@ -102,13 +102,13 @@ export function layoutCroft(input: CroftLayoutInput): CroftLayout {
   if (narrow) {
     return {
       center: { x: cx, y: cy },
-      gran: { x: cx + width * 0.12, y: height * 0.565 },
-      hearth: { x: cx - width * 0.10, y: height * 0.555 },
+      gran: { x: cx + width * 0.13, y: height * 0.555 },
+      hearth: { x: cx - width * 0.04, y: height * 0.55 },
       mantelpiece: {
-        x: cx - width * 0.25,
-        y: height * 0.35,
-        w: width * 0.5,
-        h: height * 0.055,
+        x: width * 0.33,
+        y: height * 0.36,
+        w: width * 0.34,
+        h: height * 0.04,
       },
       photoWall: {
         x: width * 0.66,
@@ -119,15 +119,15 @@ export function layoutCroft(input: CroftLayoutInput): CroftLayout {
       drove: {
         x: width * 0.10,
         y: height * 0.39,
-        w: width * 0.36,
+        w: width * 0.34,
         h: height * 0.08,
       },
       bookshelf: { x: width * 0.80, y: height * 0.54 },
       wireless: { x: width * 0.73, y: height * 0.37 },
       windowView: {
-        x: width * 0.08,
+        x: width * 0.075,
         y: height * 0.205,
-        w: width * 0.38,
+        w: width * 0.34,
         h: height * 0.22,
       },
       table: { x: width * 0.58, y: height * 0.665 },
@@ -154,10 +154,10 @@ export function layoutCroft(input: CroftLayoutInput): CroftLayout {
     // Hearth is central enough to warm the whole composition.
     hearth: { x: cx - width * 0.055, y: height * 0.53 },
     mantelpiece: {
-      x: cx - width * 0.19,
+      x: cx - width * 0.165,
       y: height * 0.315,
-      w: width * 0.31,
-      h: height * 0.06,
+      w: width * 0.22,
+      h: height * 0.035,
     },
     // Photo wall on the right interior wall, inside the room frame and
     // clear of the action board.
@@ -242,6 +242,7 @@ export const CROFT_I18N_KEYS = [
   'ui.croft.title',
   'ui.croft.subtitle',
   'ui.croft.gran_greet',
+  'ui.croft.mobile_hint',
   'ui.croft.back',
   'ui.croft.actions.start_run',
   'ui.croft.actions.shop',

@@ -94,6 +94,7 @@ export const ui = {
     title: 'GRAN\'S CROFT',
     subtitle: 'Hearth, kettle, an tha kindness o tha stove.',
     gran_greet: 'Come awa in — tha kettle\'s on.',
+    mobile_hint: 'Rest a breath. Oot when yer ready.',
     back: 'BACK TAE THA DOOR',
     actions: {
       start_run: 'OOT THA DOOR',

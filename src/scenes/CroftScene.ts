@@ -60,6 +60,19 @@ import {
 } from './croft/companionPicker';
 import { setSelectedCompanion } from '../utils/save/bumpers';
 
+const CROFT_MOBILE_WIDTH = 600;
+const CROFT_PANEL_COLLAPSE_WIDTH = 760;
+const CROFT_COMPANION_PANEL_W = 240;
+const CROFT_LIVING_WORLD_PANEL_W = 330;
+const CROFT_LEDGER_FILL = 0x24170f;
+const CROFT_LEDGER_FRAME = 0x6a3d1d;
+const CROFT_LEDGER_PIN = 0xd6a650;
+const CROFT_ACTION_PRIMARY_FILL = 0x8a4a20;
+const CROFT_ACTION_PRIMARY_HOVER = 0xa85f28;
+const CROFT_ACTION_SECONDARY_FILL = 0x3a332e;
+const CROFT_ACTION_SECONDARY_HOVER = 0x514237;
+const CROFT_ACTION_TEXT = '#fff3d2';
+
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
  * player's progress (boss trophies, route polaroids, variant drove,
@@ -234,22 +247,24 @@ export class CroftScene extends Phaser.Scene {
     addSceneBackdrop(this);
     addAmberHeaderWash(this);
 
-    const isMobileCroft = this.scale.width < 600;
-    this.drawInterior(layout, { includePhotoWall: !isMobileCroft });
+    // Photo wall + wall keepsakes share the right-edge column with the
+    // action board (desktop position is width-88). Collapsing the
+    // companion picker + Living Moor panels at CROFT_PANEL_COLLAPSE_WIDTH
+    // leaves the board in its desktop slot at tablet sizes; the photo
+    // wall then sits right under it. Gate both on the panel threshold so
+    // the board reads cleanly through the tablet band — polaroids only
+    // appear when there's actual room beside the board.
+    const narrowPanels = this.scale.width < CROFT_PANEL_COLLAPSE_WIDTH;
+    this.drawInterior(layout, { includePhotoWall: !narrowPanels });
     this.drawComposition(layout, highContrastUi);
     this.drawMantelpiece(layout);
-    // P1.7 — below 600 px the right-edge action button column overlaps the
-    // photo wall (buttons run from width-168 to width-8; wall sits at
-    // 0.62w..0.82w, which maps to 242-320 on a 390 viewport). Hide the
-    // decorative wall on mobile so the buttons read cleanly. Polaroids are
-    // ambient flavor — desktop / tablet keep them.
-    if (!isMobileCroft) this.drawPhotoWall(layout);
+    if (!narrowPanels) this.drawPhotoWall(layout);
     this.drawDroveWindow(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
     this.drawVisitors(layout);
     this.drawWarmth(layout);
-    this.drawKeepsakes(layout, { includeWallKeepsakes: !isMobileCroft });
+    this.drawKeepsakes(layout, { includeWallKeepsakes: !narrowPanels });
     this.drawSeasonal(layout);
     this.drawBookshelfHit(layout);
     this.drawHeader(width);
@@ -676,7 +691,7 @@ export class CroftScene extends Phaser.Scene {
    * beasties are seen (chip would only nag).
    */
   private drawBookshelfHit(layout: CroftLayout): void {
-    const isMobileCroft = this.scale.width < 600;
+    const isMobileCroft = this.scale.width < CROFT_MOBILE_WIDTH;
     const hitW = isMobileCroft ? 64 : 88;
     const hitH = isMobileCroft ? 104 : 136;
     const hit = this.add
@@ -716,21 +731,20 @@ export class CroftScene extends Phaser.Scene {
    * `deriveLivingWorldTrackContextFromSave` — no extra persistence.
    */
   private drawLivingWorldPanel(layout: CroftLayout): void {
-    const narrow = this.scale.width < 600;
+    const narrow = this.scale.width < CROFT_PANEL_COLLAPSE_WIDTH;
+    if (narrow) return;
     const save = loadSave();
     const lwCtx = deriveLivingWorldTrackContextFromSave(save);
     const tracks = buildLivingWorldTracks(lwCtx);
     const summary = livingWorldTracksSummary(tracks);
-    const x = narrow ? this.scale.width * 0.5 : Math.max(168, layout.windowView.x + layout.windowView.w * 0.44);
-    const y = narrow ? this.scale.height - 148 : Math.min(this.scale.height - 118, layout.rug.y + layout.rug.h * 0.34);
-    const w = narrow ? Math.min(this.scale.width - 24, 340) : 330;
-    const h = narrow ? 118 : 136;
+    const companionX = Math.max(40, layout.windowView.x + layout.windowView.w * 0.12);
+    const x = companionX + CROFT_COMPANION_PANEL_W / 2 + CROFT_LIVING_WORLD_PANEL_W / 2 + 18;
+    const y = Math.min(this.scale.height - 108, layout.rug.y + layout.rug.h * 0.25);
+    const w = CROFT_LIVING_WORLD_PANEL_W;
+    const h = 126;
 
     const panel = this.add.container(x, y).setDepth(74);
-    const bg = this.add
-      .rectangle(0, 0, w, h, 0x1f1712, 0.72)
-      .setStrokeStyle(2, 0xd6a650, 0.78)
-      .setOrigin(0.5);
+    this.addCroftLedgerBacking(panel, w, h);
     const title = this.add
       .text(
         -w / 2 + 12,
@@ -756,9 +770,9 @@ export class CroftScene extends Phaser.Scene {
         textStyle('small', { color: COLORS_CSS.WHISKY_GOLD, align: 'right' }),
       )
       .setOrigin(1, 0);
-    panel.add([bg, title, subtitle, liveChip]);
+    panel.add([title, subtitle, liveChip]);
 
-    const visibleTracks = narrow ? tracks.slice(0, 3) : tracks.slice(0, 4);
+    const visibleTracks = tracks.slice(0, 4);
     visibleTracks.forEach((entry, i) => {
       const rowY = -h / 2 + 56 + i * 18;
       const statusKey = entry.status === 'shipped'
@@ -793,6 +807,33 @@ export class CroftScene extends Phaser.Scene {
     this.placeholders.push(panel);
   }
 
+  private addCroftLedgerBacking(
+    panel: Phaser.GameObjects.Container,
+    w: number,
+    h: number,
+  ): void {
+    const bg = this.add.graphics();
+    bg.fillStyle(0x000000, 0.24);
+    bg.fillRoundedRect(-w / 2 + 4, -h / 2 + 5, w, h, 5);
+    bg.fillStyle(0x120b07, 0.92);
+    bg.fillRoundedRect(-w / 2, -h / 2, w, h, 5);
+    bg.fillStyle(CROFT_LEDGER_FRAME, 0.82);
+    bg.fillRoundedRect(-w / 2 + 3, -h / 2 + 3, w - 6, h - 6, 4);
+    bg.fillStyle(CROFT_LEDGER_FILL, 0.78);
+    bg.fillRoundedRect(-w / 2 + 7, -h / 2 + 8, w - 14, h - 16, 3);
+    bg.fillStyle(0x8a5a2e, 0.38);
+    bg.fillRect(-w / 2 + 10, -h / 2 + 11, w - 20, 2);
+    bg.lineStyle(1, CROFT_LEDGER_PIN, 0.26);
+    bg.lineBetween(-w / 2 + 13, -h / 2 + 31, w / 2 - 13, -h / 2 + 31);
+    bg.fillStyle(CROFT_LEDGER_PIN, 0.9);
+    bg.fillCircle(-w / 2 + 14, -h / 2 + 14, 2.4);
+    bg.fillCircle(w / 2 - 14, -h / 2 + 14, 2.4);
+    bg.fillStyle(0x000000, 0.24);
+    bg.fillCircle(-w / 2 + 14, -h / 2 + 15, 1.5);
+    bg.fillCircle(w / 2 - 14, -h / 2 + 15, 1.5);
+    panel.add(bg);
+  }
+
   /**
    * Wild Living World Phase 2 — Croft companion picker panel.
    *
@@ -821,27 +862,23 @@ export class CroftScene extends Phaser.Scene {
     this.companionPickerNavHits = [];
 
     // Sit the picker to the LEFT of the Living Moor panel so they
-    // share the lower-right corner without overlap. Narrow viewports
-    // collapse below the Living Moor panel.
-    const narrow = this.scale.width < 600;
-    const w = narrow ? Math.min(this.scale.width - 24, 280) : 240;
-    const h = narrow ? 124 : 156;
-    const x = narrow ? this.scale.width * 0.5 : Math.max(40, layout.windowView.x + layout.windowView.w * 0.12);
-    const y = narrow
-      ? this.scale.height - 24
-      : Math.min(this.scale.height - 116, layout.rug.y + layout.rug.h * 0.34);
+    // share the lower-left corner without overlap. Narrow viewports
+    // keep only the primary action board visible.
+    const narrow = this.scale.width < CROFT_PANEL_COLLAPSE_WIDTH;
+    if (narrow) return;
+    const w = CROFT_COMPANION_PANEL_W;
+    const h = 144;
+    const x = Math.max(40, layout.windowView.x + layout.windowView.w * 0.12);
+    const y = Math.min(this.scale.height - 104, layout.rug.y + layout.rug.h * 0.25);
 
     const panel = this.add.container(x, y).setDepth(74);
     this.companionPickerContainer = panel;
-    const bg = this.add
-      .rectangle(0, 0, w, h, 0x1f1712, 0.78)
-      .setStrokeStyle(2, 0xd6a650, 0.78)
-      .setOrigin(0.5);
+    this.addCroftLedgerBacking(panel, w, h);
     const title = this.add
       .text(-w / 2 + 12, -h / 2 + 10, t('ui.croft.livingWorld.picker.title'),
         textStyle('label', { color: COLORS_CSS.WHISKY_GOLD, align: 'left' }))
       .setOrigin(0, 0);
-    panel.add([bg, title]);
+    panel.add(title);
 
     // Row stack — companion rows + opt-out at the bottom.
     rows.forEach((row, i) => {
@@ -946,19 +983,21 @@ export class CroftScene extends Phaser.Scene {
   }
 
   private drawHeader(width: number): void {
+    const narrow = width < CROFT_MOBILE_WIDTH;
     const title = this.add
-      .text(width / 2, 50, t('ui.croft.title'), sceneHeaderTextStyle(COLORS_CSS.WHISKY_GOLD))
+      .text(width / 2, narrow ? 42 : 50, t('ui.croft.title'), sceneHeaderTextStyle(COLORS_CSS.WHISKY_GOLD))
       .setOrigin(0.5)
       .setDepth(82);
     const subtitle = this.add
-      .text(width / 2, 90, t('ui.croft.subtitle'), sceneSubtitleTextStyle(COLORS_CSS.WARM_TAN, width))
+      .text(width / 2, narrow ? 86 : 90, t('ui.croft.subtitle'), sceneSubtitleTextStyle(COLORS_CSS.WARM_TAN, width))
       .setOrigin(0.5)
       .setDepth(82);
-    const greet = this.add
-      .text(width / 2, 118, t('ui.croft.gran_greet'), sceneSubtitleTextStyle(COLORS_CSS.DUSTY_TAN, width))
+    const hintKey = narrow ? 'ui.croft.mobile_hint' : 'ui.croft.gran_greet';
+    const hint = this.add
+      .text(width / 2, narrow ? 116 : 118, t(hintKey), sceneSubtitleTextStyle(COLORS_CSS.DUSTY_TAN, width))
       .setOrigin(0.5)
       .setDepth(82);
-    this.placeholders.push(title, subtitle, greet);
+    this.placeholders.push(title, subtitle, hint);
   }
 
   /**
@@ -989,6 +1028,9 @@ export class CroftScene extends Phaser.Scene {
         height: actionLayout.buttonH,
         label: t(action.i18n),
         tier: action.tier,
+        fillOverride: action.tier === 'primary' ? CROFT_ACTION_PRIMARY_FILL : CROFT_ACTION_SECONDARY_FILL,
+        hoverOverride: action.tier === 'primary' ? CROFT_ACTION_PRIMARY_HOVER : CROFT_ACTION_SECONDARY_HOVER,
+        textColorOverride: CROFT_ACTION_TEXT,
         ...(actionLayout.fontSize ? { fontSize: actionLayout.fontSize } : {}),
       });
       rect.setDepth(82);
@@ -1082,28 +1124,42 @@ export class CroftScene extends Phaser.Scene {
     board: { x: number; y: number; w: number; h: number };
   } {
     const { width, height } = this.scale;
-    const isMobileCroft = width < 600;
-    const buttonW = isMobileCroft ? Math.min(226, width - 56) : 160;
-    const buttonH = isMobileCroft ? 42 : 40;
-    const gapY = isMobileCroft ? 48 : 52;
+    const isMobileCroft = width < CROFT_MOBILE_WIDTH;
+    const buttonW = isMobileCroft ? Math.min(236, width - 44) : 160;
+    const buttonH = isMobileCroft ? 38 : 40;
+    const gapY = isMobileCroft ? 43 : 52;
     const count = Math.max(1, actionCount);
     const totalSpan = buttonH + gapY * (count - 1);
     const x = isMobileCroft ? width / 2 : width - 88;
-    const baseY = isMobileCroft
-      ? Math.max(height * 0.69, height - 86 - totalSpan + buttonH / 2)
-      : Math.max(176, height * 0.34);
     const boardW = buttonW + (isMobileCroft ? 24 : 28);
     const boardH = totalSpan + (isMobileCroft ? 30 : 34);
+    if (isMobileCroft) {
+      const boardY = Math.max(0, height - 58 - boardH);
+      return {
+        x,
+        baseY: boardY + 15 + buttonH / 2,
+        gapY,
+        buttonW,
+        buttonH,
+        fontSize: '15px',
+        board: {
+          x: x - boardW / 2,
+          y: boardY,
+          w: boardW,
+          h: boardH,
+        },
+      };
+    }
+    const baseY = Math.max(176, height * 0.34);
     return {
       x,
       baseY,
       gapY,
       buttonW,
       buttonH,
-      fontSize: isMobileCroft ? '16px' : undefined,
       board: {
         x: x - boardW / 2,
-        y: baseY - buttonH / 2 - (isMobileCroft ? 14 : 16),
+        y: baseY - buttonH / 2 - 16,
         w: boardW,
         h: boardH,
       },

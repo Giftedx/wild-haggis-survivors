@@ -112,6 +112,8 @@ export const ui = {
     subtitle: 'Hearth, kettle, and the kindness o\' the stove.',
     /** Gran's opening greeting when the scene fades in. Still Game hearth. */
     gran_greet: 'Come awa in — the kettle\'s on.',
+    /** Mobile Croft header hint — replaces Gran's longer desktop greeting where vertical space is tight. */
+    mobile_hint: 'Rest a breath. Oot when ye\'re ready.',
     /** Back button — exits the croft back to the loadout screen. "Ben" is Scots for inward, so we stay outward-facing with "the door". */
     back: 'BACK TAE THE DOOR',
     actions: {

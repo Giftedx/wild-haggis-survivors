@@ -25,6 +25,7 @@ const STONE_MID = 0x4a4a50;
 const STONE_LIGHT = 0x8a8a90;
 const WHISKY = 0xc8a040;
 const WHISKY_LIGHT = 0xffc840;
+const CREAM = 0xd6b878;
 const HEATHER = 0x8060a0;
 const HEATHER_LIGHT = 0xb090d0;
 const LOCH = 0x2a4a6a;
@@ -47,6 +48,7 @@ export function drawCroftInterior(
   const floorBottom = compact ? height * 0.725 : height * 0.91;
 
   drawRoomEnvelope(g, left, right, top, wallBottom, floorBottom, compact);
+  drawRoomLightWeave(g, layout, left, right, wallBottom, floorBottom, compact);
   drawDoor(g, left, wallBottom, compact);
   drawWindowBay(g, layout.windowView, compact);
   drawHearthAlcove(g, layout, wallBottom, compact);
@@ -117,25 +119,34 @@ function drawRoomEnvelope(
   g.fillRect(left + 2, top + 2, w - 4, wallBottom - top - 3);
   g.fillStyle(PLASTER_MID, 1);
   g.fillRect(left + 4, top + 5, w - 8, wallBottom - top - 8);
+  g.fillStyle(WHISKY_LIGHT, 0.055);
+  g.fillEllipse(left + w * 0.54, top + (wallBottom - top) * 0.58, w * 0.78, (wallBottom - top) * 0.72);
   g.fillStyle(PLASTER_LIGHT, 0.12);
   for (let y = top + 18; y < wallBottom - 16; y += compact ? 34 : 42) {
     g.fillRect(left + 8, y, w - 16, 1);
   }
+  g.fillStyle(PEAT_DARK, 0.18);
+  g.fillRect(left + 5, wallBottom - (compact ? 54 : 72), w - 10, compact ? 51 : 69);
+  g.fillStyle(WOOD_LIGHT, 0.16);
+  g.fillRect(left + 8, wallBottom - (compact ? 51 : 69), w - 16, 2);
 
   // Timber ceiling and side posts.
   drawBeam(g, left - 3, top - 7, w + 6, 12, true);
   drawBeam(g, left - 3, wallBottom - 8, w + 6, 14, true);
   drawBeam(g, left - 5, top - 3, 12, wallBottom - top + 5, false);
   drawBeam(g, right - 7, top - 3, 12, wallBottom - top + 5, false);
-  const beamCount = compact ? 3 : 7;
+  const beamCount = compact ? 3 : 6;
   for (let i = 1; i <= beamCount; i++) {
     const x = left + (w / (beamCount + 1)) * i;
-    drawBeam(g, x - 3, top - 2, 6, wallBottom - top - 6, false, 0.28);
+    drawBeam(g, x - 2, top - 2, 4, wallBottom - top - 6, false, 0.2);
   }
 
   // Hearth glow across the wall.
-  g.fillStyle(WHISKY_LIGHT, 0.075);
-  g.fillEllipse(left + w * 0.52, wallBottom - (wallBottom - top) * 0.28, w * 0.38, (wallBottom - top) * 0.5);
+  g.fillStyle(WHISKY_LIGHT, 0.11);
+  g.fillEllipse(left + w * 0.48, wallBottom - (wallBottom - top) * 0.24, w * 0.34, (wallBottom - top) * 0.42);
+  g.fillStyle(INK, 0.16);
+  g.fillRect(left + 2, top + 2, 8, floorBottom - top - 4);
+  g.fillRect(right - 10, top + 2, 8, floorBottom - top - 4);
 
   // Flagstone floor.
   g.fillStyle(INK, 1);
@@ -156,6 +167,44 @@ function drawRoomEnvelope(
   }
   g.fillStyle(WHISKY_LIGHT, 0.045);
   g.fillEllipse(left + w * 0.58, wallBottom + (floorBottom - wallBottom) * 0.34, w * 0.46, floorBottom - wallBottom);
+}
+
+function drawRoomLightWeave(
+  g: Phaser.GameObjects.Graphics,
+  layout: CroftLayout,
+  left: number,
+  right: number,
+  wallBottom: number,
+  floorBottom: number,
+  compact: boolean,
+): void {
+  const roomW = right - left;
+  const floorH = floorBottom - wallBottom;
+  const hearthX = layout.hearth.x;
+  const windowX = layout.windowView.x + layout.windowView.w * 0.68;
+  const windowY = layout.windowView.y + layout.windowView.h * 0.96;
+
+  g.fillStyle(WHISKY_LIGHT, 0.045);
+  g.fillTriangle(
+    windowX,
+    windowY,
+    layout.table.x - (compact ? 58 : 112),
+    floorBottom - (compact ? 18 : 34),
+    layout.table.x + (compact ? 44 : 78),
+    floorBottom - (compact ? 18 : 34),
+  );
+
+  g.fillStyle(WHISKY_LIGHT, 0.07);
+  g.fillEllipse(hearthX + roomW * 0.025, wallBottom + floorH * 0.37, roomW * 0.33, floorH * 0.82);
+  g.fillStyle(WHISKY, 0.04);
+  g.fillEllipse(layout.gran.x - roomW * 0.03, layout.gran.y + floorH * 0.08, roomW * 0.25, floorH * 0.42);
+
+  const shadowAlpha = compact ? 0.18 : 0.22;
+  g.fillStyle(INK, shadowAlpha);
+  g.fillEllipse(layout.hearth.x, layout.hearth.y + (compact ? 24 : 34), compact ? 82 : 118, compact ? 15 : 22);
+  g.fillEllipse(layout.gran.x + (compact ? 2 : 6), layout.gran.y + (compact ? 42 : 60), compact ? 92 : 126, compact ? 18 : 26);
+  g.fillEllipse(layout.table.x, layout.table.y + (compact ? 19 : 27), compact ? 82 : 118, compact ? 14 : 20);
+  g.fillEllipse(layout.weans.x, layout.weans.y + (compact ? 15 : 22), compact ? 86 : 124, compact ? 12 : 18);
 }
 
 function drawBeam(
@@ -284,33 +333,55 @@ function drawHearthAlcove(
 ): void {
   const cx = layout.hearth.x;
   const hearthY = layout.hearth.y;
-  const w = compact ? layout.center.x * 0.58 : layout.center.x * 0.34;
-  const top = layout.mantelpiece.y - (compact ? 22 : 28);
-  const bottom = wallBottom + (compact ? 12 : 18);
+  const w = compact ? Math.max(92, layout.center.x * 0.45) : Math.max(170, layout.center.x * 0.21);
+  const top = layout.mantelpiece.y - (compact ? 12 : 16);
+  const bottom = wallBottom + (compact ? 8 : 12);
   const x = cx - w / 2;
 
-  // Chimney breast and stone surround.
   g.fillStyle(INK, 0.35);
-  g.fillRect(x + 5, top + 5, w, bottom - top);
+  g.fillRoundedRect(x + 5, top + 5, w, bottom - top, 6);
   g.fillStyle(INK, 1);
-  g.fillRect(x, top, w, bottom - top);
-  g.fillStyle(STONE_DARK, 1);
-  g.fillRect(x + 3, top + 3, w - 6, bottom - top - 6);
-  const stone = compact ? 16 : 22;
-  for (let yy = top + 6; yy < bottom - 5; yy += stone) {
-    for (let xx = x + 6 + ((Math.floor((yy - top) / stone) % 2) * stone * 0.5); xx < x + w - 8; xx += stone) {
-      g.fillStyle(STONE_MID, 1);
-      g.fillRect(xx, yy, Math.min(stone - 3, x + w - xx - 8), stone - 4);
-      g.fillStyle(STONE_LIGHT, 0.28);
-      g.fillRect(xx + 1, yy + 1, Math.min(stone - 5, x + w - xx - 10), 1);
-    }
-  }
+  g.fillRoundedRect(x, top, w, bottom - top, 6);
+  g.fillStyle(WOOD_DARK, 1);
+  g.fillRoundedRect(x + 3, top + 3, w - 6, bottom - top - 6, 5);
+  g.fillStyle(PLASTER_MID, 0.98);
+  g.fillRoundedRect(x + 7, top + 8, w - 14, bottom - top - 17, 4);
+  g.fillStyle(PLASTER_LIGHT, 0.18);
+  g.fillEllipse(cx - w * 0.08, top + (bottom - top) * 0.33, w * 0.54, (bottom - top) * 0.42);
+  g.fillStyle(PEAT_SHADOW, 0.2);
+  g.fillRect(x + 10, top + (bottom - top) * 0.50, w - 20, 1);
+  g.fillStyle(WHISKY_LIGHT, 0.13);
+  g.fillEllipse(cx, hearthY - 8, w * 0.62, (bottom - top) * 0.42);
 
   // Fire opening, sized to frame the existing animated hearth sprite.
-  const openW = compact ? 74 : 96;
-  const openH = compact ? 62 : 76;
+  const openW = compact ? 68 : 88;
+  const openH = compact ? 56 : 66;
   const ox = cx - openW / 2;
   const oy = hearthY - openH * 0.48;
+  const surroundX = ox - (compact ? 10 : 14);
+  const surroundY = oy - (compact ? 10 : 13);
+  const surroundW = openW + (compact ? 20 : 28);
+  const surroundH = openH + (compact ? 22 : 30);
+  g.fillStyle(STONE_DARK, 1);
+  g.fillRect(surroundX - (compact ? 9 : 12), surroundY + 5, compact ? 8 : 10, surroundH - 8);
+  g.fillRect(surroundX + surroundW + (compact ? 1 : 2), surroundY + 5, compact ? 8 : 10, surroundH - 8);
+  g.fillStyle(STONE_LIGHT, 0.28);
+  g.fillRect(surroundX - (compact ? 7 : 10), surroundY + 7, 1, surroundH - 12);
+  g.fillRect(surroundX + surroundW + (compact ? 3 : 4), surroundY + 7, 1, surroundH - 12);
+  g.fillStyle(INK, 1);
+  g.fillRoundedRect(surroundX, surroundY, surroundW, surroundH, 5);
+  g.fillStyle(STONE_DARK, 1);
+  g.fillRoundedRect(surroundX + 2, surroundY + 2, surroundW - 4, surroundH - 4, 4);
+  const stone = compact ? 14 : 18;
+  for (let yy = surroundY + 4; yy < surroundY + surroundH - 5; yy += stone) {
+    const row = Math.floor((yy - surroundY) / stone);
+    for (let xx = surroundX + 5 + (row % 2) * stone * 0.45; xx < surroundX + surroundW - 8; xx += stone) {
+      g.fillStyle(STONE_MID, 1);
+      g.fillRect(xx, yy, Math.min(stone - 3, surroundX + surroundW - xx - 7), stone - 4);
+      g.fillStyle(STONE_LIGHT, 0.3);
+      g.fillRect(xx + 1, yy + 1, Math.min(stone - 5, surroundX + surroundW - xx - 9), 1);
+    }
+  }
   g.fillStyle(INK, 1);
   g.fillRoundedRect(ox, oy, openW, openH, 4);
   g.fillStyle(0x1a0804, 1);
@@ -318,10 +389,34 @@ function drawHearthAlcove(
   g.fillStyle(WHISKY_LIGHT, 0.18);
   g.fillEllipse(cx, hearthY - 4, openW * 0.76, openH * 0.58);
 
+  g.fillStyle(PEAT_DARK, 1);
+  g.fillRoundedRect(cx - openW * 0.32, oy + openH * 0.70, openW * 0.64, openH * 0.16, 3);
+  g.fillStyle(WHISKY, 0.86);
+  g.fillEllipse(cx - openW * 0.12, oy + openH * 0.72, openW * 0.20, openH * 0.34);
+  g.fillStyle(WHISKY_LIGHT, 0.74);
+  g.fillEllipse(cx + openW * 0.10, oy + openH * 0.68, openW * 0.16, openH * 0.28);
+
   // Mantel shelf and small stone lip.
-  drawBeam(g, x - 8, layout.mantelpiece.y - 5, w + 16, compact ? 13 : 16, true);
+  drawBeam(g, x - 8, layout.mantelpiece.y - 4, w + 16, compact ? 10 : 12, true);
+  drawMantelTidy(g, cx, layout.mantelpiece.y - (compact ? 12 : 15), compact);
   g.fillStyle(STONE_LIGHT, 0.8);
   g.fillRect(ox - 8, oy + openH - 2, openW + 16, 5);
+}
+
+function drawMantelTidy(g: Phaser.GameObjects.Graphics, cx: number, y: number, compact: boolean): void {
+  const s = compact ? 0.78 : 1;
+  g.fillStyle(INK, 0.55);
+  g.fillRect(cx - 30 * s, y + 13 * s, 60 * s, 2 * s);
+  g.fillStyle(CREAM, 0.88);
+  g.fillRoundedRect(cx - 25 * s, y + 6 * s, 12 * s, 10 * s, 2 * s);
+  g.fillStyle(WHISKY_LIGHT, 0.82);
+  g.fillEllipse(cx - 19 * s, y + 4 * s, 4 * s, 7 * s);
+  g.fillStyle(HEATHER, 0.95);
+  g.fillEllipse(cx + 18 * s, y + 12 * s, 16 * s, 8 * s);
+  g.fillStyle(GREEN, 0.95);
+  g.fillRect(cx + 17 * s, y + 2 * s, 1.4 * s, 14 * s);
+  g.fillStyle(WHISKY, 0.9);
+  g.fillCircle(cx + 32 * s, y + 12 * s, 3 * s);
 }
 
 function drawPhotoWallBacking(
@@ -419,15 +514,29 @@ function drawRug(
   g.fillEllipse(x + w / 2 + 2, y + h * 0.58 + 4, w * 0.96, h * 1.05);
   g.fillStyle(INK, 1);
   g.fillEllipse(x + w / 2, y + h * 0.52, w, h);
-  g.fillStyle(HEATHER, 1);
+  g.fillStyle(PEAT_DARK, 1);
   g.fillEllipse(x + w / 2, y + h * 0.50, w - 4, h - 4);
-  g.fillStyle(PEAT_DARK, 0.75);
-  g.fillRect(x + w * 0.08, y + h * 0.44, w * 0.84, compact ? 4 : 6);
-  g.fillStyle(TARTAN_RED, 0.72);
-  g.fillRect(x + w * 0.18, y + h * 0.25, compact ? 4 : 6, h * 0.48);
-  g.fillRect(x + w * 0.72, y + h * 0.25, compact ? 4 : 6, h * 0.48);
-  g.fillStyle(WHISKY, 0.75);
-  g.fillRect(x + w * 0.10, y + h * 0.56, w * 0.8, compact ? 2 : 3);
+  g.fillStyle(HEATHER, 1);
+  g.fillEllipse(x + w / 2, y + h * 0.49, w - 10, h - 8);
+  g.fillStyle(HEATHER_LIGHT, 0.2);
+  g.fillEllipse(x + w / 2 - w * 0.08, y + h * 0.42, w * 0.44, h * 0.34);
+
+  const stripeH = compact ? 3 : 5;
+  const stripeW = compact ? 3 : 5;
+  g.fillStyle(PEAT_DARK, 0.78);
+  g.fillRect(x + w * 0.08, y + h * 0.42, w * 0.84, stripeH);
+  g.fillRect(x + w * 0.08, y + h * 0.57, w * 0.84, Math.max(2, stripeH - 1));
+  g.fillStyle(TARTAN_RED, 0.78);
+  g.fillRect(x + w * 0.18, y + h * 0.24, stripeW, h * 0.50);
+  g.fillRect(x + w * 0.70, y + h * 0.24, stripeW, h * 0.50);
+  g.fillStyle(WHISKY, 0.78);
+  g.fillRect(x + w * 0.10, y + h * 0.51, w * 0.8, Math.max(2, stripeH - 2));
+  g.fillRect(x + w * 0.36, y + h * 0.28, Math.max(2, stripeW - 1), h * 0.44);
+  g.fillStyle(CREAM, 0.48);
+  for (let i = 0; i < 7; i++) {
+    const fringeX = x + w * (0.16 + i * 0.11);
+    g.fillRect(fringeX, y + h * 0.79, 2, compact ? 4 : 6);
+  }
 }
 
 function drawTable(g: Phaser.GameObjects.Graphics, cx: number, cy: number, compact: boolean): void {
@@ -443,6 +552,12 @@ function drawTable(g: Phaser.GameObjects.Graphics, cx: number, cy: number, compa
   g.fillEllipse(cx - 1, cy - 2, w - 8, h - 8);
   g.fillStyle(WOOD_LIGHT, 0.55);
   g.fillEllipse(cx - w * 0.12, cy - h * 0.22, w * 0.36, h * 0.25);
+  g.fillStyle(CREAM, 0.7);
+  g.fillEllipse(cx, cy - h * 0.07, w * 0.44, h * 0.32);
+  g.fillStyle(HEATHER, 0.5);
+  g.fillRect(cx - w * 0.22, cy - h * 0.10, w * 0.44, Math.max(2, compact ? 3 : 4));
+  g.fillStyle(WHISKY_LIGHT, 0.35);
+  g.fillEllipse(cx + w * 0.20, cy - h * 0.22, w * 0.22, h * 0.16);
   for (const dx of [-0.34, 0.34]) {
     g.fillStyle(INK, 1);
     g.fillRect(cx + w * dx - 2, cy + h * 0.28, 5, compact ? 21 : 28);
@@ -476,4 +591,17 @@ function drawHousePlantsAndNeedles(g: Phaser.GameObjects.Graphics, layout: Croft
   g.lineStyle(Math.max(1, s), WHISKY, 1);
   g.lineBetween(kx + 4 * s, ky - 4 * s, kx + 17 * s, ky - 17 * s);
   g.lineBetween(kx + 8 * s, ky - 3 * s, kx + 21 * s, ky - 14 * s);
+
+  const px = layout.hearth.x - 72 * s;
+  const py = layout.hearth.y + 42 * s;
+  g.fillStyle(INK, 0.42);
+  g.fillEllipse(px, py + 7 * s, 32 * s, 7 * s);
+  g.fillStyle(WOOD_DARK, 1);
+  g.fillRoundedRect(px - 14 * s, py - 7 * s, 28 * s, 14 * s, 3 * s);
+  g.fillStyle(WOOD_LIGHT, 0.58);
+  g.fillRect(px - 11 * s, py - 4 * s, 22 * s, 2 * s);
+  g.fillStyle(PEAT_SHADOW, 1);
+  for (const dx of [-8, -2, 5]) {
+    g.fillEllipse(px + dx * s, py - 7 * s, 9 * s, 4 * s);
+  }
 }
