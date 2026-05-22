@@ -100,6 +100,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     getLemmingsEasterEgg: () => scene.lemmingsEasterEgg,
     getAncestralEcho: () => scene.ancestralEcho,
     setAncestralEcho: (v) => { scene.ancestralEcho = v; },
+    getCairnOfEchoesScheduler: () => scene.cairnOfEchoesScheduler ?? null,
     getRelicSlotUI: () => scene.relicSlotUI,
     getRelicEffectDriver: () => scene.relicEffectDriver,
     relicOrchestrator: scene.relicOrchestrator,

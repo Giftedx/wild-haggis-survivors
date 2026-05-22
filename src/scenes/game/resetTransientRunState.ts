@@ -60,6 +60,7 @@ import type { LemmingsEasterEgg } from './lemmingsEasterEgg';
 import type { StandingStones } from './standingStones';
 import type { Reliquary } from './reliquary';
 import type { AncestralEcho } from './ancestralEcho';
+import type { CairnOfEchoesScheduler } from './CairnOfEchoesScheduler';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import { createRNG, randomSeed, type RNG as RngType } from '../../utils/rng';
 import { clearGrudgeLedger, type GrudgeLedgerState } from '../../entities/grudgeLedger';
@@ -102,6 +103,12 @@ export interface ResetTransientRunStateDeps {
   clootieTree: ClootieTree | null;
   lemmingsEasterEgg: LemmingsEasterEgg | null;
   ancestralEcho: AncestralEcho | null;
+  /**
+   * The Moor Remembers — previous run's scheduler (null on the first
+   * create() pass). `destroy()` is hook-driven so sprites/tweens release
+   * cleanly before the next create() rebuilds the scheduler.
+   */
+  cairnOfEchoesScheduler: CairnOfEchoesScheduler | null;
   relicSlotUI: RelicSlotUI | null;
   /** Taxman Grudge Ledger — cleared in-place between runs so the weapon
    *  listener's captured ref stays live. */
@@ -246,6 +253,12 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   deps.setLemmingsEasterEgg(null);
   deps.ancestralEcho?.destroy();
   deps.setAncestralEcho(null);
+  // The Moor Remembers — release the prior run's scheduler so its
+  // sprite refs + per-cairn touched set don't bleed into the next run.
+  // The scheduler is rebuilt later in create() (after the cairnStacking
+  // ctor); the field nullability is honoured by `!`-asserted field +
+  // null-check in `getCairnOfEchoesScheduler()`.
+  deps.cairnOfEchoesScheduler?.destroy();
   deps.relicSlotUI?.destroy();
   deps.setRelicSlotUI(null);
   deps.musicStateScratch.bossActive = false;

@@ -139,6 +139,13 @@ export interface InstallReplayRecordingInput {
    * Curse / clean / resumed runs.
    */
   sporranPicks?: readonly string[];
+  /**
+   * The Moor Remembers (spec 2026-05-22) — snapshot of the meta-save
+   * cairn list at run-start. Captured into the v3 blob so replays use
+   * this array instead of the live save (which may FIFO-rotate between
+   * record and replay). Empty for fresh saves with no death history.
+   */
+  cairns?: readonly import('../../utils/save/fallenCairns').FallenCairn[];
 }
 
 export interface InstallReplayRecordingResult {
@@ -169,6 +176,7 @@ export function installReplayRecording(
           curseKey: input.curseKey ?? undefined,
           composedStats: captureComposedStats(input.composedStats),
           sporranPicks: input.sporranPicks,
+          cairns: input.cairns,
         })
       : null;
 

@@ -51,6 +51,15 @@ export class Minimap {
    * calling setBiomeManager again from GameScene.
    */
   private biomeManager: BiomeManager | null = null;
+  /**
+   * The Moor Remembers — dim slate pixels at every loaded Cairn-of-Echoes
+   * coord. Assigned per-frame from `CairnOfEchoesScheduler.getMinimapMarkers()`
+   * by the runtime tick hook; defaults to empty so a scene without the
+   * scheduler renders nothing. Visual cue is intentionally muted so cairns
+   * read as ambient (one-pixel marker, 0.4 alpha) and do not compete with
+   * the boss / elite / pickup vocabulary above.
+   */
+  cairnMarkers: ReadonlyArray<{ x: number; y: number }> = [];
 
   private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
     const { x, y, width, height, zoom } = getCameraViewport(this.scene);
@@ -119,6 +128,19 @@ export class Minimap {
         this.gfx.fillStyle(tint, 0.35);
         this.gfx.fillRect(mapX + gx * cellW, mapY + gy * cellH, cellW + 0.5, cellH + 0.5);
       });
+    }
+
+    // Cairn-of-Echoes (The Moor Remembers spec 2026-05-22) — dim slate
+    // pixels at every past-self death coord. Drawn below the enemy /
+    // boss / chest vocabulary so they read as moor ambience and never
+    // compete for the player's attention with combat-critical markers.
+    if (this.cairnMarkers.length > 0) {
+      this.gfx.fillStyle(0x3a4148, 0.4);
+      for (const m of this.cairnMarkers) {
+        const mx = Phaser.Math.Clamp(mapX + m.x * scaleX, mapX, mapX + this.SIZE);
+        const my = Phaser.Math.Clamp(mapY + m.y * scaleY, mapY, mapY + this.SIZE);
+        this.gfx.fillRect(mx, my, 1, 1);
+      }
     }
 
     // Enemy dots — render every active enemy. Previous implementation

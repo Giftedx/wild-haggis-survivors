@@ -65,6 +65,7 @@ import type { Reliquary } from './reliquary';
 import type { ClootieTree } from './clootieTree';
 import type { LemmingsEasterEgg } from './lemmingsEasterEgg';
 import type { AncestralEcho } from './ancestralEcho';
+import type { CairnOfEchoesScheduler } from './CairnOfEchoesScheduler';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import type { RelicOrchestrator } from './RelicOrchestrator';
 import type { RNG } from '../../utils/rng';
@@ -117,6 +118,13 @@ export interface TickFrameWorldDeps {
   getAncestralEcho: () => AncestralEcho | null;
   /** Setter for the `null` write when the ancestral echo resolves. */
   setAncestralEcho: (v: AncestralEcho | null) => void;
+  /**
+   * The Moor Remembers — persistent cross-run cairn scheduler. Ticked
+   * once per frame here so culling + walk-over detection sit inside
+   * the post-pause-gate window per CLAUDE.md new-mechanic safety
+   * pattern (d). Null between runs and during early scene boot.
+   */
+  getCairnOfEchoesScheduler: () => CairnOfEchoesScheduler | null;
   /** Lazy — destroyed + nulled between runs. */
   getRelicSlotUI: () => RelicSlotUI | null;
   /** Driver lives on the orchestrator (non-null in active runs) and is
@@ -246,6 +254,20 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   if (echo) {
     const resolved = echo.tick(scaledDelta);
     if (resolved) deps.setAncestralEcho(null);
+  }
+
+  // The Moor Remembers (spec 2026-05-22) — tick the persistent cairn
+  // scheduler. Sits after the pause-gate (handled by the outer caller)
+  // per CLAUDE.md new-mechanic safety pattern (d). The scheduler's
+  // walk-over detection is once-per-cairn-per-run; sprite culling is
+  // per-frame (cheap O(n) over loaded cairns ≤ 50). Minimap markers
+  // are refreshed inline so the dim-slate pixels track FIFO rotation
+  // mid-run when a fresh cairn settles via `addCairn`.
+  const cairnSched = deps.getCairnOfEchoesScheduler();
+  if (cairnSched) {
+    cairnSched.tick(scaledDelta, deps.player.x, deps.player.y);
+    const mm = deps.getMinimap();
+    if (mm) mm.cairnMarkers = cairnSched.getMinimapMarkers();
   }
 
   // Pass player facing — own concern, kept out of the multiplier fold.

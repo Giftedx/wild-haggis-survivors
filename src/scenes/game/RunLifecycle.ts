@@ -37,6 +37,7 @@ import {
   fireDailyFirstClearBanter,
   fireFirstNewVariantUnlockBanter,
 } from './firstTimeBanters';
+import type { FallenCairn, InheritedStatKey } from '../../utils/save/fallenCairns';
 
 export interface RunLifecycleHooks {
   getPlayer(): Player;
@@ -128,6 +129,22 @@ export interface RunLifecycleHooks {
    * victory.
    */
   isDailyRun(): boolean;
+
+  /**
+   * The Moor Remembers (spec 2026-05-22) — variant key the player was
+   * running this attempt, used as `FallenCairn.variantKey` so the
+   * future-run whisper picker can route to a variant-specific past-self
+   * line. Reads `GameScene.activeVariant.key`.
+   */
+  getActiveVariantKey(): string;
+
+  /**
+   * The Moor Remembers — read which stat the past-self leveled most
+   * heavily this run, to drive the +1 % inherited buff on future
+   * walk-overs. v1 heuristic returns `'damage'`; a richer signal can
+   * land in v2 without re-touching this contract.
+   */
+  pickInheritedStat(): InheritedStatKey;
 }
 
 export class RunLifecycle {
@@ -479,6 +496,29 @@ export class RunLifecycle {
       // already has its own ceremony + chronicle-wipe on death).
       if (!this.hooks.isIronmoorRun()) {
         recordLastDeath(px, py);
+        // The Moor Remembers (spec 2026-05-22) — persist a FallenCairn
+        // alongside the lastDeath spot so future runs render a permanent
+        // candle at this coord (capped + FIFO-rotated by the helper).
+        // Reuses the `deathCause.tag` already classified above to keep
+        // the cairn's `cause` aligned with the death_reflection / Burns
+        // coda routing. Same ironmoor exemption: permadeath mode owns
+        // its own chronicle / ceremony, no cross-run cairn artefact.
+        const cairn: FallenCairn = {
+          x: px,
+          y: py,
+          cause: deathCause.tag,
+          variantKey: this.hooks.getActiveVariantKey(),
+          timeSurvivedMs: Math.floor(
+            this.hooks.getSpawnSystem().getGameTimeSec() * 1000,
+          ),
+          inheritedStat: this.hooks.pickInheritedStat(),
+          savedAt: Date.now(),
+        };
+        try {
+          this.hooks.getSaveManager().recordFallenCairn(cairn);
+        } catch {
+          /* best-effort — save failures are surfaced by emitSaveFailure */
+        }
       }
 
       // W66 Ironmoor chronicle wipe. Permadeath: when the player dies with

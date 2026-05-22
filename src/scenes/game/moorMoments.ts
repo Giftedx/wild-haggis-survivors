@@ -74,6 +74,16 @@ export interface MoorMomentsContext {
   activeVariant: VariantDef;
   discoveryRunId: () => string;
   caption: (id: string, message: string, tint?: string, durationMs?: number) => void;
+  /**
+   * The Moor Remembers — optional handoff. Fired when the 30 s
+   * AncestralEcho ghost expires WITHOUT being touched, so the caller
+   * can register the just-settled ghost with the live
+   * `CairnOfEchoesScheduler` (the cairn record itself was already
+   * persisted at death time; this hook only lights up the in-scene
+   * sprite for the rest of this run). `x` / `y` are the death-spot
+   * the echo lived at. Absent for runs without the scheduler wired.
+   */
+  onEchoSettle?: (x: number, y: number) => void;
 }
 
 /**
@@ -115,12 +125,14 @@ export function trySpawnAncestralEcho(
   try {
     const save = loadSave();
     if (!save.lastDeath || !isLastDeathFresh(save.lastDeath)) return null;
+    const echoX = save.lastDeath.x;
+    const echoY = save.lastDeath.y;
     const echo = new AncestralEcho({
       scene: ctx.scene,
       player: ctx.player,
       textureKey: ctx.activeVariant.textureKey,
-      echoX: save.lastDeath.x,
-      echoY: save.lastDeath.y,
+      echoX,
+      echoY,
       onTouch: () => {
         ctx.runScore.addBossGold(ECHO_GOLD_REWARD);
         ctx.player.heal(ECHO_HEAL_REWARD);
@@ -133,6 +145,13 @@ export function trySpawnAncestralEcho(
         // guard), so no extra throttle needed.
         ctx.banter?.request('burns_citation', { tag: 'lineage_moment' });
       },
+      // The Moor Remembers (spec 2026-05-22) — when the 30 s ghost
+      // expires without being touched, the prior death's cairn record
+      // (already persisted on death) materialises in the live
+      // scheduler so the player sees the candle settle into stone for
+      // the rest of this run. No-op when the caller didn't wire the
+      // hook (older scenes / tests that pre-date the scheduler).
+      onSettle: ctx.onEchoSettle ? () => ctx.onEchoSettle!(echoX, echoY) : undefined,
     });
     echo.spawn();
     ctx.juice.showToast(t('ui.ancestralEcho.announce_toast'), '#b0d4ff');

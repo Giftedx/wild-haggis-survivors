@@ -110,6 +110,18 @@ export interface InstallRunFlowOpts {
   onActComplete(actN: 1 | 2): void;
   isIronmoorRun(): boolean;
   isDailyRun(): boolean;
+  /**
+   * The Moor Remembers (spec 2026-05-22) — variant the haggis was
+   * running, recorded on the FallenCairn so future runs can route to
+   * a variant-specific past-self whisper line.
+   */
+  getActiveVariantKey(): string;
+  /**
+   * The Moor Remembers — pick the stat the past-self was strongest in.
+   * Drives the +1 % inherited buff on future walk-overs. v1 returns a
+   * safe default; v2 can read upgrade history without rewiring this seam.
+   */
+  pickInheritedStat(): import('../../utils/save/fallenCairns').InheritedStatKey;
 }
 
 export interface InstallRunFlowResult {
@@ -187,6 +199,8 @@ export function installRunFlow(opts: InstallRunFlowOpts): InstallRunFlowResult {
     onActComplete: opts.onActComplete,
     isIronmoorRun: opts.isIronmoorRun,
     isDailyRun: opts.isDailyRun,
+    getActiveVariantKey: opts.getActiveVariantKey,
+    pickInheritedStat: opts.pickInheritedStat,
   };
   const runLifecycle = new RunLifecycle(opts.scene, runLifecycleHooks);
 

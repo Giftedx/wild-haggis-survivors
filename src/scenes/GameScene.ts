@@ -28,6 +28,7 @@ import {
   recordRun, loadSave,
   bumpBanterHeard,
   bumpBossKillCount, bumpCairnBlessing, bumpCursedVictoryByBoss,
+  bumpAncestralEchoesTouched,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { GameMusicState } from '../systems/music/ProceduralMusicEngine';
@@ -88,6 +89,13 @@ import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
 import type { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { CairnStackingScheduler } from './game/CairnStackingScheduler';
+import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
+import type { WhisperResult } from './game/cairnOfEchoesWhisper';
+import {
+  CAIRN_INHERITED_BUFF_PCT,
+  type FallenCairn,
+  type InheritedStatKey,
+} from '../utils/save/fallenCairns';
 import { installRunBookkeeping } from './game/installRunBookkeeping';
 import {
   type MoorMomentsState,
@@ -513,6 +521,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private moorMoments!: MoorMomentScheduler;
   private cairnStacking!: CairnStackingScheduler;
+  /**
+   * The Moor Remembers (spec 2026-05-22) — orchestrates persistent
+   * past-self cairns loaded from `whs_meta_save.fallenCairns`. Created
+   * in `create()` after the cairnStacking ctor, ticked from
+   * `tickFrameWorld` after the pause-gate. Sister to `cairnStacking`.
+   */
+  cairnOfEchoesScheduler!: CairnOfEchoesScheduler;
+  /**
+   * Live sprite refs keyed by FallenCairn identity so the scheduler's
+   * `onSpriteCreate` / `onSpriteDestroy` callbacks can find and tween
+   * the right sprite. Cleared in `resetTransientRunState` (the
+   * scheduler.destroy path runs each create()).
+   */
+  private cairnSprites = new Map<FallenCairn, Phaser.GameObjects.Sprite>();
+  /**
+   * True until the first cairn is touched this run — routes the first
+   * past-self walk-over banter to `past_self_first` (a slightly more
+   * acknowledging line), subsequent touches to `past_self`. Reset to
+   * true on each `create()` pass.
+   */
+  private firstCairnTouchedThisRun = true;
   floraScatter: FloraScatter | null = null;
   wildlifeSystem: WildlifeSystem | null = null;
   mistLayer: MistLayer | null = null;
@@ -604,6 +633,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       clootieTree: this.clootieTree,
       lemmingsEasterEgg: this.lemmingsEasterEgg,
       ancestralEcho: this.ancestralEcho,
+      cairnOfEchoesScheduler: this.cairnOfEchoesScheduler ?? null,
       relicSlotUI: this.relicSlotUI,
       grudgeLedger: this.grudgeLedger,
       livingWorldDirector: this.livingWorldDirector,
@@ -869,6 +899,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       curseKey: this.activeCurseKey,
       composedStats,
       sporranPicks: this.committedSporranIds,
+      // The Moor Remembers (spec 2026-05-22) — snapshot meta-save
+      // cairns at run-start so replay reproduces the same moor even
+      // after live FIFO rotation. Reads the same source as the live
+      // CairnOfEchoesScheduler.load() path (consistent with T1).
+      cairns: this.metaSaveManager.getFallenCairns(),
     }));
     const spawnPx = resumeRun
       ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
@@ -1405,6 +1440,35 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     this.cairnStacking.reset();
 
+    // The Moor Remembers (spec 2026-05-22) — persistent cross-run cairns.
+    // Sister to cairnStacking but the source of truth is meta save, not
+    // a per-run RNG roll. Replay branch pulls cairns from the recorded
+    // blob so a run captured before a FIFO rotation still sees the same
+    // moor (T1 contract — `pendingReplay.cairns` if v3+, else fall
+    // through to live meta).
+    const replayCairns =
+      this.pendingReplay
+        ? ((this.pendingReplay as { cairns?: FallenCairn[] }).cairns ?? [])
+        : null;
+    this.firstCairnTouchedThisRun = true;
+    this.cairnSprites.clear();
+    this.cairnOfEchoesScheduler = new CairnOfEchoesScheduler({
+      getCairns: () =>
+        replayCairns !== null ? replayCairns : this.metaSaveManager.getFallenCairns(),
+      // runRng.next() — replay-deterministic seeded sample.
+      getRngSample: () => this.runRng.next(),
+      // First-touch-ever heuristic: the lifetime `ancestralEchoesTouched`
+      // counter lives on the gameplay save (loadSave) per spec §4.4 ("the
+      // cairn IS the persistent echo"), so first-touch = counter === 0.
+      isFirstDeathTouchEver: () => (loadSave().ancestralEchoesTouched ?? 0) === 0,
+      getOldDroverRevealedCount: () => this.metaSaveManager.getOldDroverRevealedCount(),
+      onWalkOver: ({ cairn, whisper }) => this.handleCairnWalkOver(cairn, whisper),
+      onSpriteCreate: (cairn) => this.spawnCairnSprite(cairn),
+      onSpriteDestroy: (cairn) => this.destroyCairnSprite(cairn),
+    });
+    this.cairnOfEchoesScheduler.reset();
+    this.cairnOfEchoesScheduler.load();
+
     // Lemmings Easter Egg (DESIGN_IDEAS §13) — cliff-edge parade homage
     // to DMA Design / Dundee 1991. Always-on per-run orchestrator; idle
     // 90 s in coastal biome triggers the once-per-variant parade. Pure
@@ -1507,6 +1571,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onActComplete: (actN) => this.launchActIntermission(actN),
       isIronmoorRun: () => this.activeIronmoorRun,
       isDailyRun: () => this.runIsDaily,
+      // The Moor Remembers (spec 2026-05-22) — `getActiveVariantKey`
+      // stamps the FallenCairn so future runs route to the variant-
+      // specific past-self whisper; `pickInheritedStat` is the v1
+      // safe-default heuristic (a richer signal can land in v2 without
+      // re-touching the hook seam).
+      getActiveVariantKey: () => this.activeVariant?.key ?? 'classic',
+      pickInheritedStat: (): InheritedStatKey => 'damage',
     }));
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
@@ -1700,6 +1771,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       activeVariant: this.activeVariant,
       discoveryRunId: () => this.discoveryRunId(),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+      // The Moor Remembers — 30 s echo expiry settles into a permanent
+      // cairn for the rest of this run. The death-spot's cairn record
+      // is already persisted (RunLifecycle wrote it on the prior death).
+      onEchoSettle: (x, y) => this.settleEchoIntoCairn(x, y),
     };
   }
 
@@ -1901,6 +1976,139 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   requestBanter(context: BanterContext, tag?: string): void {
     this.banter?.request(context, tag ? { tag } : undefined);
+  }
+
+  // ── The Moor Remembers (spec 2026-05-22) ──────────────────────────
+  // CairnOfEchoes sprite + walk-over wiring. The scheduler is hook-
+  // driven so it stays Phaser-free + unit-testable; the methods below
+  // own the live sprite refs + side effects.
+
+  /**
+   * Create the small stacked-stones sprite for a cairn that just entered
+   * render range. Soft candle-flicker tween unless `reduceFlashing` is
+   * enabled. Texture is `textures.exists()`-guarded so unit-test stubs
+   * that skip BootScene baking don't render a magenta placeholder.
+   */
+  private spawnCairnSprite(cairn: FallenCairn): void {
+    if (this.cairnSprites.has(cairn)) return;
+    if (!this.textures.exists('cairn_of_echoes')) return;
+    const sprite = this.add
+      .sprite(cairn.x, cairn.y, 'cairn_of_echoes')
+      .setDepth(5)
+      .setScale(0.85);
+    const settings = this.settingsManager.load();
+    if (!settings.reduceFlashing) {
+      this.tweens.add({
+        targets: sprite,
+        alpha: { from: 0.65, to: 1.0 },
+        duration: 1400,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    } else {
+      sprite.setAlpha(0.85);
+    }
+    this.cairnSprites.set(cairn, sprite);
+  }
+
+  /**
+   * Release the sprite when the player walks beyond render radius. Tween
+   * is killed before destroy so a yoyo timing-window doesn't write to a
+   * destroyed target.
+   */
+  private destroyCairnSprite(cairn: FallenCairn): void {
+    const sprite = this.cairnSprites.get(cairn);
+    if (sprite) {
+      this.tweens.killTweensOf(sprite);
+      sprite.destroy();
+      this.cairnSprites.delete(cairn);
+    }
+  }
+
+  /**
+   * Walk-over handler. Routes the whisper (past-self or grandfather) to
+   * audio + caption + floating buff text + banter sub-pool + the
+   * Achievement counter. The +1 % inherited buff is applied to the live
+   * Player; channel routing lives in `Player.applyInheritedCairnBuff`.
+   */
+  private handleCairnWalkOver(cairn: FallenCairn, whisper: WhisperResult): void {
+    // Audio — seed by the cairn's savedAt so a given cairn always whispers
+    // the same way (T1 determinism). Grandfather branch also advances the
+    // Old Drover reveal counter.
+    if (whisper.kind === 'past_self') {
+      audio.playCairnPastSelfWhisper(cairn.savedAt);
+    } else {
+      audio.playCairnGrandfatherWhisper(cairn.savedAt);
+      try {
+        this.metaSaveManager.incrementOldDroverRevealed();
+      } catch {
+        /* best-effort */
+      }
+    }
+
+    // Caption — the i18nKey is replay-deterministic from `pickWhisper`.
+    this.caption('cairn_walkover', t(whisper.i18nKey), '#a8c4dc', 4000);
+
+    // Floating buff text — slate-blue +1 % marker that rises from the
+    // cairn coord. Pulled from the shared FloatTextPool so combat / pickup
+    // feedback channels don't compete for the same slots.
+    const buffText = this.floatTextPool.acquire(
+      cairn.x,
+      cairn.y - 24,
+      `+1% ${cairn.inheritedStat}`,
+      '#a8c4dc',
+      '14px',
+      85,
+    );
+    if (buffText) {
+      this.tweens.add({
+        targets: buffText,
+        y: buffText.y - 22,
+        alpha: 0,
+        duration: 1100,
+        ease: 'Sine.easeOut',
+        onComplete: () => {
+          buffText.setVisible(false);
+        },
+      });
+    }
+
+    // Apply the inherited buff to the live Player. Channel mapping +
+    // multiplier folding lives on the Player side.
+    this.player?.applyInheritedCairnBuff(cairn.inheritedStat, CAIRN_INHERITED_BUFF_PCT);
+
+    // Banter — pick sub-pool by whisper kind + this-run-touched flag.
+    const subPool: string =
+      whisper.kind === 'grandfather' && whisper.leafIndex === 25
+        ? 'grandfather_complete'
+        : whisper.kind === 'grandfather' && whisper.leafIndex === 1
+          ? 'grandfather_first'
+          : whisper.kind === 'grandfather'
+            ? 'grandfather_revealed'
+            : this.firstCairnTouchedThisRun
+              ? 'past_self_first'
+              : 'past_self';
+    this.banter?.request('cairn_walkover', { tag: subPool });
+    this.firstCairnTouchedThisRun = false;
+
+    // Lifetime touch counter — shared with AncestralEcho per spec §4.4
+    // ("the cairn IS the persistent echo"). Bump is best-effort.
+    try {
+      bumpAncestralEchoesTouched();
+    } catch {
+      /* best-effort */
+    }
+  }
+
+  /** Handoff for the 30 s AncestralEcho ghost when it expires untouched. */
+  private settleEchoIntoCairn(spotX: number, spotY: number): void {
+    // The death record was already persisted at death time; here we
+    // only light up the in-scene sprite for the rest of THIS run.
+    const cairn = this.metaSaveManager
+      .getFallenCairns()
+      .find((c) => Math.abs(c.x - spotX) < 1 && Math.abs(c.y - spotY) < 1);
+    if (cairn) this.cairnOfEchoesScheduler.addCairn(cairn);
   }
 
   getCurrentBiomeId(): BiomeId | null {

@@ -1729,6 +1729,58 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.bonusCooldownReduction = 1 - (1 - this.bonusCooldownReduction) * (1 - fraction);
   }
 
+  /**
+   * The Moor Remembers — apply a small inherited buff (default +1 %)
+   * from a walked-over Cairn-of-Echoes. Routes the cairn's
+   * `inheritedStat` to the matching existing Player bonus channel,
+   * matching the additive-multiplier shape of the sister
+   * `addDamageMultiplier` / `addCritChance` / `addCooldownReduction`
+   * setters. Spec: `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`.
+   *
+   * - `damage` → folds into `bonusDamageMultiplier` (no recalc needed —
+   *   the read path multiplies live each frame in `getDamageMultiplier`).
+   * - `speed` → adds `pct * runBaseSpeed` to `bonusSpeed`, then recalc.
+   * - `pickupRadius` → adds `pct * runBasePickup` to `bonusPickupRadius`.
+   * - `critChance` → adds `pct` as an additive crit-chance bonus.
+   * - `cooldown` → folds into `bonusCooldownReduction` via the same
+   *    multiplicative-stacking formula as `addCooldownReduction`.
+   * - `driftResist` → folds into `bonusDriftReduction` via the same
+   *    multiplicative-stacking formula as `reduceDrift`.
+   *
+   * `recalcStats()` only runs for channels that influence pre-baked
+   * fields (speed / drift / pickup) — multiplier channels are read
+   * live by the systems that consume them.
+   */
+  applyInheritedCairnBuff(
+    stat: 'damage' | 'speed' | 'pickupRadius' | 'critChance' | 'cooldown' | 'driftResist',
+    pct: number,
+  ): void {
+    if (!Number.isFinite(pct) || pct <= 0) return;
+    switch (stat) {
+      case 'damage':
+        this.bonusDamageMultiplier += pct;
+        break;
+      case 'speed':
+        this.bonusSpeed += this.runBaseSpeed * pct;
+        this.recalcStats();
+        break;
+      case 'pickupRadius':
+        this.bonusPickupRadius += this.runBasePickup * pct;
+        this.recalcStats();
+        break;
+      case 'critChance':
+        this.bonusCritChance += pct;
+        break;
+      case 'cooldown':
+        this.bonusCooldownReduction = 1 - (1 - this.bonusCooldownReduction) * (1 - pct);
+        break;
+      case 'driftResist':
+        this.bonusDriftReduction = 1 - (1 - this.bonusDriftReduction) * (1 - pct);
+        this.recalcStats();
+        break;
+    }
+  }
+
   /** Tick HP regeneration — call each frame with delta in ms */
   tickRegen(delta: number): void {
     if (this.hpRegen <= 0 || this.hp >= this.getMaxHp()) return;

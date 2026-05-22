@@ -1490,6 +1490,13 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     tone: 'hearth',
     priority: 34,
     rare: true,
+    // The default `keys` array doubles as the `past_self` fallback —
+    // BanterSystem.pickKey routes an unknown tag through here, and the
+    // GameScene wire passes tag `'past_self'` for subsequent walk-overs
+    // (the sub-pool entry is therefore intentionally absent below so
+    // it falls through to these defaults — avoids duplicating leaves
+    // across `keys` and `keysByTag.past_self` per the pool-key-
+    // uniqueness invariant in `BanterSystem.test.ts`).
     keys: [
       'ui.banter.cairn_walkover.past_self.a',
       'ui.banter.cairn_walkover.past_self.b',
@@ -1498,10 +1505,6 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       past_self_first: [
         'ui.banter.cairn_walkover.past_self_first.a',
         'ui.banter.cairn_walkover.past_self_first.b',
-      ],
-      past_self: [
-        'ui.banter.cairn_walkover.past_self.a',
-        'ui.banter.cairn_walkover.past_self.b',
       ],
       grandfather_first: [
         'ui.banter.cairn_walkover.grandfather_first.a',

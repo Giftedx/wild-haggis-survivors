@@ -11,6 +11,7 @@ import type { EliteAffixId } from '../data/eliteAffixes';
 import type { HazardKey } from '../data/hazards';
 import { getAudioContext, getOutputNode, runWhenAudioActivated } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
+import { playGrandfatherWhisper, playPastSelfWhisper } from './audio/cairnWhisper';
 import { musicEngine } from './music/ProceduralMusicEngine';
 import { clamp01 } from '../utils/math';
 
@@ -880,6 +881,32 @@ export class AudioSystem {
       osc.start(ns);
       osc.stop(ns + 0.16);
     }
+  }
+
+  /**
+   * Cairn-of-Echoes whisper (past-self) — routes the procedural
+   * `playPastSelfWhisper` synth through the SFX masterGain so the
+   * cairn walk-over reads as part of the SFX bed alongside the
+   * existing `playEchoTouch`. Seed is the cairn's `savedAt` so a
+   * given cairn always whispers the same way (T1 determinism).
+   */
+  playCairnPastSelfWhisper(seed: number): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    playPastSelfWhisper(ctx, seed, this.masterGain);
+  }
+
+  /**
+   * Cairn-of-Echoes whisper (grandfather) — sister to
+   * `playCairnPastSelfWhisper`, lower fundamental + slower cadence
+   * so the elder voice reads as distinct from the haggis's voice.
+   */
+  playCairnGrandfatherWhisper(seed: number): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    playGrandfatherWhisper(ctx, seed, this.masterGain);
   }
 
   /**
