@@ -3,7 +3,6 @@ import {
   advanceGauntlet,
   computeCandleRing,
   initialGauntletState,
-  GAUNTLET_TOUCH_THRESHOLD,
   GAUNTLET_CANDLE_TIME_MS,
   GAUNTLET_BOSS_TIME_MS,
   GAUNTLET_CANDLE_RING_RADIUS_PX,

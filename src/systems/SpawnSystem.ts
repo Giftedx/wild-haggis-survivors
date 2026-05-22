@@ -440,12 +440,30 @@ export class SpawnSystem {
 
   private checkBossSpawns(playerX: number, playerY: number): void {
     for (const boss of BOSSES) {
+      // V2 (Cailleach Gauntlet) — manualSpawn bosses are excluded from
+      // the time-based path; they spawn via `spawnBossManually`.
+      if (boss.manualSpawn) continue;
       if (this.spawnedBossKeys.has(boss.key)) continue;
       if (this.gameTimeSec < boss.spawnTimeSec) continue;
       if (this.bossSpawnScheduled.has(boss.key)) continue;
       this.bossSpawnScheduled.add(boss.key);
       this.spawnBoss(boss, playerX, playerY);
     }
+  }
+
+  /**
+   * V2 (Cailleach Gauntlet) — manual boss spawn entry point. Called by
+   * `CailleachGauntletScheduler` when the gauntlet enters the 'engaged'
+   * phase at 15:00. Bypasses the time-based eligibility checks; just
+   * runs the standard `spawnBoss` body and returns the spawned Enemy
+   * (the gauntlet scheduler holds the ref to read its dead flag).
+   */
+  spawnBossManually(bossKey: string, playerX: number, playerY: number): void {
+    const boss = BOSSES.find((b) => b.key === bossKey);
+    if (!boss) return;
+    if (this.spawnedBossKeys.has(boss.key)) return;
+    this.bossSpawnScheduled.add(boss.key);
+    this.spawnBoss(boss, playerX, playerY);
   }
 
   /**
@@ -469,7 +487,10 @@ export class SpawnSystem {
       this.isBossActive(),
     );
     if (!sched.due) return;
-    const candidates = BOSSES.filter(b => b.key !== BALANCE.run.FINAL_BOSS_KEY);
+    // V2 — exclude manual-spawn bosses (Cailleach Gauntlet) from the
+    // post-bell recurring respawn pool. The gauntlet boss is gated on
+    // a separate condition (7 cairns touched), not the cadence.
+    const candidates = BOSSES.filter(b => b.key !== BALANCE.run.FINAL_BOSS_KEY && !b.manualSpawn);
     if (candidates.length === 0) return;
     const rng = this.scene.getRunRng();
     const boss = candidates[rng.int(0, candidates.length - 1)];
@@ -1055,6 +1076,10 @@ export class SpawnSystem {
       }
     } else {
       for (const b of BOSSES) {
+        // V2 — manualSpawn bosses (Cailleach Gauntlet) have negative
+        // spawnTimeSec sentinels; never seed them as "already spawned"
+        // on resume.
+        if (b.manualSpawn) continue;
         if (b.spawnTimeSec <= sec) this.spawnedBossKeys.add(b.key);
       }
     }
@@ -1062,6 +1087,7 @@ export class SpawnSystem {
       this.runWinFinaleStarted = true;
       this.regularSpawnsDisabled = true;
       for (const b of BOSSES) {
+        if (b.manualSpawn) continue;
         if (b.key !== BALANCE.run.FINAL_BOSS_KEY) {
           this.spawnedBossKeys.add(b.key);
         }

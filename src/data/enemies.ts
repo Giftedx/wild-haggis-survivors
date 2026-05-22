@@ -31,7 +31,14 @@ export type EnemyBehavior =
    * cancels the charge — the threat depends on letting all three
    * bays land.
    */
-  | 'three_bay';
+  | 'three_bay'
+  /**
+   * Wail — Cailleach Gauntlet boss (V2 of The Moor Remembers).
+   * Slow chase + ice-lance projectile every 4 s + one-shot 600 px
+   * radial slow-pulse at 50 % HP. Spec:
+   * `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+   */
+  | 'wail';
 
 export interface EnemyConfig {
   key: string;
@@ -655,6 +662,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   the_laird: 'The Laird',
   hunter_general: 'Haggis Hunter General',
   taxman: 'Taxman',
+  cailleach_boss: 'The Cailleach',
 };
 
 export function getEnemyDisplayName(key: string): string {
@@ -722,6 +730,12 @@ export interface BossConfig {
    *  `behaviorOverride === 'spawner'` — controls what the boss summons.
    *  Defaults to 'midge' on the Enemy side if omitted. */
   spawnerMinionKey?: string;
+  /**
+   * V2 (Cailleach Gauntlet) — when true, SpawnSystem skips this entry's
+   * time-based spawn path. The boss is spawned manually via
+   * `SpawnSystem.spawnBossManually` from the gauntlet scheduler.
+   */
+  manualSpawn?: boolean;
 }
 
 // Boss HP rebalanced ~×6 from launch values. Evolved weapon builds were
@@ -829,5 +843,25 @@ export const BOSSES: BossConfig[] = [
     damage: 50,
     xpValue: 200,
     scale: 3.0,
+  },
+  // V2 — Cailleach Gauntlet boss (Moor Remembers V2). Manual-spawn only;
+  // wakes via `SpawnSystem.spawnBossManually` from CailleachGauntletScheduler
+  // when 7 cairns have been walked over and game-time has crossed 15:00.
+  // The boss is the mythological figure — distinct from the `cailleach`
+  // playable variant which is a winter-themed haggis.
+  // Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+  {
+    key: 'cailleach_boss',
+    nameKey: 'boss.cailleach_boss.name',
+    warningKey: 'ui.bossWarning.cailleach_boss',
+    spawnTimeSec: -1,
+    manualSpawn: true,
+    texture: 'boss_cailleach',
+    speed: 60,
+    hp: 3400,
+    damage: 32,
+    xpValue: 80,
+    scale: 2.6,
+    behaviorOverride: 'wail',
   },
 ];
