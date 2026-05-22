@@ -30,7 +30,7 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: SETTINGS_STORAGE_KEY });
 
     meta.save({
-      saveVersion: 9,
+      saveVersion: 10,
       totalKillsSpent: 0,
       dailyChallenge: null,
       totalKills: 99,
@@ -48,6 +48,8 @@ describe('SettingsManager air-gap', () => {
       moorMomentsLifetime: 0,
       runHistory: [],
       codexCulledKeys: [],
+      fallenCairns: [],
+      oldDroverRevealedCount: 0,
     });
     settings.save({
       settingsVersion: 1,
@@ -101,7 +103,7 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 9,
+      saveVersion: 10,
       totalKillsSpent: 0,
       dailyChallenge: null,
       totalKills: 10,
@@ -119,6 +121,8 @@ describe('SettingsManager air-gap', () => {
       moorMomentsLifetime: 0,
       runHistory: [],
       codexCulledKeys: [],
+      fallenCairns: [],
+      oldDroverRevealedCount: 0,
     });
     settings.save({
       settingsVersion: 1,
@@ -167,7 +171,7 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 9,
+      saveVersion: 10,
       totalKillsSpent: 0,
       dailyChallenge: null,
       totalKills: 77,
@@ -185,6 +189,8 @@ describe('SettingsManager air-gap', () => {
       moorMomentsLifetime: 0,
       runHistory: [],
       codexCulledKeys: [],
+      fallenCairns: [],
+      oldDroverRevealedCount: 0,
     });
     settings.save({
       settingsVersion: 1,

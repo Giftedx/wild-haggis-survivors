@@ -24,7 +24,7 @@ describe('AchievementManager', () => {
     storage = new MemoryStorage();
     save = new SaveManager({ storage, key: 'ach_test' });
     save.save({
-      saveVersion: 9,
+      saveVersion: 10,
       totalKills: 0,
       totalKillsSpent: 0,
       dailyChallenge: null,
@@ -42,6 +42,8 @@ describe('AchievementManager', () => {
       moorMomentsLifetime: 0,
       runHistory: [],
       codexCulledKeys: [],
+      fallenCairns: [],
+      oldDroverRevealedCount: 0,
     });
     mgr = new AchievementManager(save);
     mgr.start();
@@ -268,7 +270,7 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
     storage = new MemoryStorage();
     save = new SaveManager({ storage, key: 'ach_test' });
     save.save({
-      saveVersion: 9,
+      saveVersion: 10,
       totalKills: 0,
       totalKillsSpent: 0,
       dailyChallenge: null,
@@ -286,6 +288,8 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
       moorMomentsLifetime: 0,
       runHistory: [],
       codexCulledKeys: [],
+      fallenCairns: [],
+      oldDroverRevealedCount: 0,
     });
 
     // Install an in-memory localStorage so loadSave/writeSave hit a

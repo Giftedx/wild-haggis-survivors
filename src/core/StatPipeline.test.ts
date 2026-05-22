@@ -6,7 +6,7 @@ import { BALANCE } from './BalanceConfig';
 import type { ISaveData } from './SaveManager';
 
 const pristine: ISaveData = {
-  saveVersion: 9,
+  saveVersion: 10,
   totalKills: 0,
   totalKillsSpent: 0,
   dailyChallenge: null,
@@ -24,6 +24,8 @@ const pristine: ISaveData = {
   moorMomentsLifetime: 0,
   runHistory: [],
   codexCulledKeys: [],
+  fallenCairns: [],
+  oldDroverRevealedCount: 0,
 };
 
 describe('stat pipeline: meta upgrades → ComposedPlayerStats', () => {

@@ -5,6 +5,7 @@ export type StorageLike = {
 };
 
 import { emitSaveFailure } from '../utils/saveFailure';
+import { recordFallenCairn, type FallenCairn } from '../utils/save/fallenCairns';
 
 export interface ISaveDataV1 {
   saveVersion: 1;
@@ -301,9 +302,41 @@ export interface ISaveDataV9 {
   codexCulledKeys: string[];
 }
 
-export type ISaveData = ISaveDataV9;
+/**
+ * V10 — The Moor Remembers (`docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`).
+ * Adds `fallenCairns` (cap 50, FIFO) — persistent cross-run death markers
+ * that materialise as Cairns-of-Echoes on future runs. Adds
+ * `oldDroverRevealedCount` — count of grandfather hints revealed (0..25),
+ * separate from the cairn array because it advances independently of
+ * cairn lifetime.
+ */
+export interface ISaveDataV10 {
+  saveVersion: 10;
+  totalKills: number;
+  totalKillsSpent: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+  unlockedAchievements: string[];
+  hasCompletedTutorial: boolean;
+  hasSeenDriftTutorial: boolean;
+  hasSeenEliteAffixTip: boolean;
+  hasSeenMoorMomentTip: boolean;
+  hasSeenCeilidhChainTip: boolean;
+  hasSeenStandingStonesTip: boolean;
+  hasSeenAncestralEchoTip: boolean;
+  moorMomentsLifetime: number;
+  runHistory: RunHistoryEntry[];
+  dailyChallenge: DailyChallengeState | null;
+  codexCulledKeys: string[];
+  fallenCairns: FallenCairn[];
+  /** 0..25 — count of grandfather hints revealed across all runs. */
+  oldDroverRevealedCount: number;
+}
 
-export const CURRENT_SAVE_VERSION = 9 as const;
+export type ISaveData = ISaveDataV10;
+
+export const CURRENT_SAVE_VERSION = 10 as const;
 
 export const MAX_RUN_HISTORY = 20;
 
@@ -326,6 +359,8 @@ const DEFAULT_SAVE: ISaveData = {
   runHistory: [],
   dailyChallenge: null,
   codexCulledKeys: [],
+  fallenCairns: [],
+  oldDroverRevealedCount: 0,
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -352,6 +387,35 @@ function coerceCodexCulledKeys(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   const raw = v.filter((x): x is string => typeof x === 'string' && x.length > 0);
   return [...new Set(raw)].sort();
+}
+
+function coerceFallenCairns(v: unknown): FallenCairn[] {
+  if (!Array.isArray(v)) return [];
+  const out: FallenCairn[] = [];
+  const ALLOWED_STATS: FallenCairn['inheritedStat'][] = [
+    'damage', 'speed', 'pickupRadius', 'critChance', 'cooldown', 'driftResist',
+  ];
+  for (const raw of v) {
+    if (typeof raw !== 'object' || raw === null) continue;
+    const o = raw as Record<string, unknown>;
+    if (typeof o.x !== 'number' || !Number.isFinite(o.x)) continue;
+    if (typeof o.y !== 'number' || !Number.isFinite(o.y)) continue;
+    const cause = typeof o.cause === 'string' ? o.cause : 'unknown';
+    const variantKey = typeof o.variantKey === 'string' && o.variantKey ? o.variantKey : 'classic';
+    const timeSurvivedMs = clampInt(o.timeSurvivedMs, 0);
+    const inheritedStatRaw = typeof o.inheritedStat === 'string' ? o.inheritedStat : 'damage';
+    const inheritedStat = ALLOWED_STATS.includes(inheritedStatRaw as FallenCairn['inheritedStat'])
+      ? (inheritedStatRaw as FallenCairn['inheritedStat'])
+      : 'damage';
+    const savedAt = clampInt(o.savedAt, 0);
+    out.push({ x: o.x, y: o.y, cause, variantKey, timeSurvivedMs, inheritedStat, savedAt });
+  }
+  return out;
+}
+
+function coerceOldDroverRevealedCount(v: unknown): number {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return 0;
+  return Math.min(25, Math.max(0, Math.floor(v)));
 }
 
 function toBool(v: unknown, fallback: boolean): boolean {
@@ -717,6 +781,8 @@ export class SaveManager {
     const hasSeenAncestralEchoTip = toBool(obj.hasSeenAncestralEchoTip, false);
     const moorMomentsLifetime = clampInt(obj.moorMomentsLifetime, 0);
     const codexCulledKeys = coerceCodexCulledKeys(obj.codexCulledKeys);
+    const fallenCairns = coerceFallenCairns(obj.fallenCairns);
+    const oldDroverRevealedCount = coerceOldDroverRevealedCount(obj.oldDroverRevealedCount);
 
     const runHistory = coerceRunHistory(obj.runHistory);
 
@@ -740,6 +806,8 @@ export class SaveManager {
         runHistory: [],
         dailyChallenge: null,
         codexCulledKeys: [],
+        fallenCairns: [],
+        oldDroverRevealedCount: 0,
       };
     }
 
@@ -763,6 +831,8 @@ export class SaveManager {
         runHistory: [],
         dailyChallenge: null,
         codexCulledKeys: [],
+        fallenCairns: [],
+        oldDroverRevealedCount: 0,
       };
     }
 
@@ -786,6 +856,8 @@ export class SaveManager {
         runHistory: [],
         dailyChallenge: null,
         codexCulledKeys: [],
+        fallenCairns: [],
+        oldDroverRevealedCount: 0,
       };
     }
 
@@ -809,6 +881,8 @@ export class SaveManager {
         runHistory: [],
         dailyChallenge: null,
         codexCulledKeys: [],
+        fallenCairns: [],
+        oldDroverRevealedCount: 0,
       };
     }
 
@@ -832,6 +906,8 @@ export class SaveManager {
         runHistory: [],
         dailyChallenge: null,
         codexCulledKeys: [],
+        fallenCairns: [],
+        oldDroverRevealedCount: 0,
       };
     }
 
@@ -858,6 +934,8 @@ export class SaveManager {
         runHistory,
         dailyChallenge: null,
         codexCulledKeys: [],
+        fallenCairns: [],
+        oldDroverRevealedCount: 0,
       };
     }
 
@@ -883,6 +961,8 @@ export class SaveManager {
         runHistory,
         dailyChallenge: null,
         codexCulledKeys: [],
+        fallenCairns: [],
+        oldDroverRevealedCount: 0,
       };
     }
 
@@ -905,7 +985,33 @@ export class SaveManager {
       runHistory,
       dailyChallenge: coerceDailyChallenge(obj.dailyChallenge),
       codexCulledKeys,
+      fallenCairns,
+      oldDroverRevealedCount,
     };
+  }
+
+  getFallenCairns(): FallenCairn[] {
+    return this.load().fallenCairns;
+  }
+
+  recordFallenCairn(cairn: FallenCairn): void {
+    this.update((cur) => ({
+      ...cur,
+      fallenCairns: recordFallenCairn(cur.fallenCairns, cairn),
+    }));
+  }
+
+  getOldDroverRevealedCount(): number {
+    return this.load().oldDroverRevealedCount;
+  }
+
+  incrementOldDroverRevealed(): number {
+    let next = 0;
+    this.update((cur) => {
+      next = Math.min(25, cur.oldDroverRevealedCount + 1);
+      return { ...cur, oldDroverRevealedCount: next };
+    });
+    return next;
   }
 }
 

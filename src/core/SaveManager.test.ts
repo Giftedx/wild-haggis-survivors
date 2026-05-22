@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SaveManager, type IRunState, type StorageLike } from './SaveManager';
 import { MemoryStorage } from '../test/MemoryStorage';
+import { type FallenCairn } from '../utils/save/fallenCairns';
 
 class ThrowingStorage implements StorageLike {
   private m = new Map<string, string>();
@@ -9,8 +10,8 @@ class ThrowingStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
-const defaultV9 = {
-  saveVersion: 9 as const,
+const defaultV10 = {
+  saveVersion: 10 as const,
   totalKills: 0,
   totalKillsSpent: 0,
   unlockedWeapons: [] as string[],
@@ -28,7 +29,12 @@ const defaultV9 = {
   runHistory: [] as import('./SaveManager').RunHistoryEntry[],
   dailyChallenge: null as import('./SaveManager').DailyChallengeState | null,
   codexCulledKeys: [] as string[],
+  fallenCairns: [] as FallenCairn[],
+  oldDroverRevealedCount: 0,
 };
+
+/** Alias kept for clarity in migration tests that seed v9 blobs. */
+const defaultV9 = defaultV10;
 
 const sampleRun = (): IRunState => ({
   gameTimeSec: 600,
@@ -62,7 +68,7 @@ const sampleRun = (): IRunState => ({
 });
 
 describe('SaveManager', () => {
-  it('saves and loads persisted meta progression (v9)', () => {
+  it('saves and loads persisted meta progression (v10)', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
 
@@ -76,7 +82,7 @@ describe('SaveManager', () => {
     });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(9);
+    expect(loaded.saveVersion).toBe(10);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
     expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
@@ -105,7 +111,7 @@ describe('SaveManager', () => {
     });
   });
 
-  it('migrates v8 JSON without codex field to v9 with empty codex', () => {
+  it('migrates v8 JSON without codex field to v10 with empty codex and cairns', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'k',
@@ -131,8 +137,10 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(9);
+    expect(loaded.saveVersion).toBe(10);
     expect(loaded.codexCulledKeys).toEqual([]);
+    expect(loaded.fallenCairns).toEqual([]);
+    expect(loaded.oldDroverRevealedCount).toBe(0);
   });
 
   it('migrates v2 JSON to current preserving upgrades', () => {
@@ -321,5 +329,151 @@ describe('SaveManager', () => {
     expect(loaded.unlockedUpgrades).toContain('dash_tier_1');
     expect(loaded.unlockedUpgrades).toContain('armor_tier_1');
     expect(loaded.totalKills).toBe(6000);
+  });
+});
+
+describe('SaveManager v9 → v10 migration', () => {
+  it('initialises fallenCairns + oldDroverRevealedCount on v9 → v10', () => {
+    const v9Blob = {
+      saveVersion: 9,
+      totalKills: 100,
+      totalKillsSpent: 50,
+      unlockedWeapons: ['bagpipes'],
+      unlockedUpgrades: [],
+      activeRun: null,
+      unlockedAchievements: [],
+      hasCompletedTutorial: true,
+      hasSeenDriftTutorial: true,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      hasSeenCeilidhChainTip: false,
+      hasSeenStandingStonesTip: false,
+      hasSeenAncestralEchoTip: false,
+      moorMomentsLifetime: 3,
+      runHistory: [],
+      dailyChallenge: null,
+      codexCulledKeys: ['gordon'],
+    };
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    store.set('whs_meta_save', JSON.stringify(v9Blob));
+    const loaded = sm.load();
+    expect(loaded.saveVersion).toBe(10);
+    expect(loaded.fallenCairns).toEqual([]);
+    expect(loaded.oldDroverRevealedCount).toBe(0);
+    expect(loaded.totalKills).toBe(100);
+    expect(loaded.codexCulledKeys).toEqual(['gordon']);
+  });
+
+  it('preserves fallenCairns array on v10 → v10 round-trip', () => {
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    const cairn: FallenCairn = {
+      x: 1200,
+      y: 800,
+      cause: 'enemy_contact',
+      variantKey: 'classic',
+      timeSurvivedMs: 60_000,
+      inheritedStat: 'damage',
+      savedAt: 1_700_000_000_000,
+    };
+    const v10Blob = {
+      ...sm.load(),
+      fallenCairns: [cairn],
+      oldDroverRevealedCount: 5,
+    };
+    sm.save(v10Blob);
+    const loaded = sm.load();
+    expect(loaded.fallenCairns).toHaveLength(1);
+    expect(loaded.fallenCairns[0]).toEqual(cairn);
+    expect(loaded.oldDroverRevealedCount).toBe(5);
+  });
+
+  it('coerces oldDroverRevealedCount to 0..25', () => {
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    const v10BlobOver = {
+      saveVersion: 10,
+      totalKills: 0,
+      totalKillsSpent: 0,
+      unlockedWeapons: [],
+      unlockedUpgrades: [],
+      activeRun: null,
+      unlockedAchievements: [],
+      hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      hasSeenCeilidhChainTip: false,
+      hasSeenStandingStonesTip: false,
+      hasSeenAncestralEchoTip: false,
+      moorMomentsLifetime: 0,
+      runHistory: [],
+      dailyChallenge: null,
+      codexCulledKeys: [],
+      fallenCairns: [],
+      oldDroverRevealedCount: 999,
+    };
+    store.set('whs_meta_save', JSON.stringify(v10BlobOver));
+    const loaded = sm.load();
+    expect(loaded.oldDroverRevealedCount).toBe(25);
+  });
+
+  it('clamps negative oldDroverRevealedCount to 0', () => {
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    const v10Blob = {
+      saveVersion: 10,
+      totalKills: 0,
+      totalKillsSpent: 0,
+      unlockedWeapons: [],
+      unlockedUpgrades: [],
+      activeRun: null,
+      unlockedAchievements: [],
+      hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      hasSeenCeilidhChainTip: false,
+      hasSeenStandingStonesTip: false,
+      hasSeenAncestralEchoTip: false,
+      moorMomentsLifetime: 0,
+      runHistory: [],
+      dailyChallenge: null,
+      codexCulledKeys: [],
+      fallenCairns: [],
+      oldDroverRevealedCount: -5,
+    };
+    store.set('whs_meta_save', JSON.stringify(v10Blob));
+    const loaded = sm.load();
+    expect(loaded.oldDroverRevealedCount).toBe(0);
   });
 });

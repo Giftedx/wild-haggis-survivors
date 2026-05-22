@@ -3,7 +3,7 @@ import { SaveManager, type ISaveData } from './SaveManager';
 import { tryPurchaseMetaUpgrade } from './MetaPurchase';
 
 const baseSave = (): ISaveData => ({
-  saveVersion: 9,
+  saveVersion: 10,
   totalKills: 100,
   totalKillsSpent: 0,
   dailyChallenge: null,
@@ -21,6 +21,8 @@ const baseSave = (): ISaveData => ({
   moorMomentsLifetime: 0,
   runHistory: [],
   codexCulledKeys: [],
+  fallenCairns: [],
+  oldDroverRevealedCount: 0,
 });
 
 describe('tryPurchaseMetaUpgrade', () => {

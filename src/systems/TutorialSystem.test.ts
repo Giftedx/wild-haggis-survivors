@@ -6,7 +6,7 @@ import { MemoryStorage } from '../test/MemoryStorage';
 
 function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
   return {
-    saveVersion: 9 as const,
+    saveVersion: 10 as const,
     totalKills: 0,
     totalKillsSpent: 0,
     dailyChallenge: null,
@@ -24,6 +24,8 @@ function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
     moorMomentsLifetime: 0,
     runHistory: [] as RunHistoryEntry[],
     codexCulledKeys: [] as string[],
+    fallenCairns: [],
+    oldDroverRevealedCount: 0,
     ...over,
   };
 }
