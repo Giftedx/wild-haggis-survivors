@@ -49,6 +49,13 @@ export interface AncestralEchoHooks {
   readonly echoY: number;
   /** Fires on touch — GameScene applies gold / heal / toast / caption. */
   onTouch(): void;
+  /**
+   * Optional — fires when the 30 s lifetime expires WITHOUT a touch.
+   * The Moor Remembers (spec 2026-05-22) uses this hook to settle the
+   * untouched ghost into a permanent Cairn-of-Echoes. Existing callers
+   * that don't pass `onSettle` keep the old fade-and-disappear behaviour.
+   */
+  onSettle?(): void;
 }
 
 /**
@@ -94,6 +101,7 @@ export class AncestralEcho {
     }
     this.lifetimeRemainingMs -= deltaMs;
     if (this.lifetimeRemainingMs <= 0) {
+      this.hooks.onSettle?.();
       this.fadeOut();
       return true;
     }

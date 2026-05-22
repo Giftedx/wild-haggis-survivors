@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  AncestralEcho,
   ECHO_GOLD_REWARD,
   ECHO_HEAL_REWARD,
   ECHO_LIFETIME_MS,
@@ -157,5 +158,100 @@ describe('Ancestral Echo i18n', () => {
       expect(t(key), `i18n missing for '${key}'`).not.toBe(key);
       expect(t(key).length).toBeGreaterThan(0);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AncestralEcho class — onSettle callback (The Moor Remembers, spec 2026-05-22)
+// ---------------------------------------------------------------------------
+
+import type Phaser from 'phaser';
+import type { Player } from '../../entities/Player';
+
+/** Minimal sprite stub — supports the chained builder calls from spawn(). */
+function makeSprite() {
+  const s = {
+    x: 0,
+    y: 0,
+    destroy: vi.fn(),
+    setDepth: vi.fn(),
+    setAlpha: vi.fn(),
+    setTint: vi.fn(),
+    setScale: vi.fn(),
+  };
+  // Return `this` from each builder so chaining works.
+  s.setDepth.mockReturnValue(s);
+  s.setAlpha.mockReturnValue(s);
+  s.setTint.mockReturnValue(s);
+  s.setScale.mockReturnValue(s);
+  return s;
+}
+
+/** Minimal Phaser.Scene stub — just enough for spawn() + tick(). */
+function makeScene() {
+  const tween = { stop: vi.fn() };
+  const sprite = makeSprite();
+  const scene = {
+    add: {
+      sprite: vi.fn().mockReturnValue(sprite),
+    },
+    tweens: {
+      add: vi.fn().mockReturnValue(tween),
+    },
+  } as unknown as Phaser.Scene;
+  return { scene, sprite, tween };
+}
+
+/** Player stub placed far from the echo so no accidental touch fires. */
+function makePlayer(x = 9999, y = 9999) {
+  return { x, y } as unknown as Player;
+}
+
+describe('AncestralEcho onSettle', () => {
+  it('fires onSettle when lifetime expires without a touch', () => {
+    const { scene } = makeScene();
+    const onSettle = vi.fn();
+    const onTouch = vi.fn();
+
+    const echo = new AncestralEcho({
+      scene,
+      player: makePlayer(),
+      textureKey: 'haggis_classic',
+      echoX: 100,
+      echoY: 100,
+      onTouch,
+      onSettle,
+    });
+
+    echo.spawn();
+    // Advance past the full lifetime in one tick — lifetime-expiry branch fires.
+    echo.tick(ECHO_LIFETIME_MS + 1);
+
+    expect(onSettle).toHaveBeenCalledOnce();
+    expect(onTouch).not.toHaveBeenCalled();
+  });
+
+  it('does NOT fire onSettle when touched', () => {
+    const { scene } = makeScene();
+    const onSettle = vi.fn();
+    const onTouch = vi.fn();
+
+    // Place player at the echo position to trigger a touch on the first tick.
+    const echo = new AncestralEcho({
+      scene,
+      player: makePlayer(100, 100),
+      textureKey: 'haggis_classic',
+      echoX: 100,
+      echoY: 100,
+      onTouch,
+      onSettle,
+    });
+
+    echo.spawn();
+    // First tick with player overlapping echo — touch path fires.
+    echo.tick(16);
+
+    expect(onTouch).toHaveBeenCalledOnce();
+    expect(onSettle).not.toHaveBeenCalled();
   });
 });
