@@ -33,7 +33,7 @@ export interface CairnOfEchoesSchedulerHooks {
 export class CairnOfEchoesScheduler {
   private cairns: FallenCairn[] = [];
   private rendered: Set<FallenCairn> = new Set();
-  private touchedThisRun: Set<FallenCairn> = new Set();
+  private touchedThisRun: FallenCairn[] = [];
 
   constructor(private readonly hooks: CairnOfEchoesSchedulerHooks) {}
 
@@ -42,10 +42,10 @@ export class CairnOfEchoesScheduler {
     this.cairns = [...this.hooks.getCairns()];
   }
 
-  /** Reset per-run state (touched set + rendered set). Call from `create()` before `load()`. */
+  /** Reset per-run state (touched list + rendered set). Call from `create()` before `load()`. */
   reset(): void {
     this.rendered.clear();
-    this.touchedThisRun.clear();
+    this.touchedThisRun.length = 0;
   }
 
   /**
@@ -83,10 +83,10 @@ export class CairnOfEchoesScheduler {
 
       if (
         inRender &&
-        !this.touchedThisRun.has(cairn) &&
+        !this.touchedThisRun.includes(cairn) &&
         distSq <= CAIRN_TOUCH_RADIUS_PX * CAIRN_TOUCH_RADIUS_PX
       ) {
-        this.touchedThisRun.add(cairn);
+        this.touchedThisRun.push(cairn);
         const whisper = pickWhisper({
           variantKey: cairn.variantKey,
           isFirstDeathTouchEver: this.hooks.isFirstDeathTouchEver(),
@@ -107,12 +107,26 @@ export class CairnOfEchoesScheduler {
       this.hooks.onSpriteDestroy(cairn);
     }
     this.rendered.clear();
-    this.touchedThisRun.clear();
+    this.touchedThisRun.length = 0;
     this.cairns = [];
   }
 
   /** Coordinates for all loaded cairns — fed to the minimap overlay. */
   getMinimapMarkers(): Array<{ x: number; y: number }> {
     return this.cairns.map((c) => ({ x: c.x, y: c.y }));
+  }
+
+  /**
+   * V2 (Cailleach Gauntlet) — read which cairns have been walked over
+   * this run, in touch order. The gauntlet state machine consumes this
+   * to count toward the 7-touch threshold.
+   */
+  getTouchedThisRun(): readonly FallenCairn[] {
+    return this.touchedThisRun;
+  }
+
+  /** V2 — full FallenCairn refs (not just coords) for state-coloured minimap. */
+  getMinimapCairns(): readonly FallenCairn[] {
+    return this.cairns;
   }
 }

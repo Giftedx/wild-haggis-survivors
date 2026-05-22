@@ -124,3 +124,29 @@ describe('CairnOfEchoesScheduler', () => {
     expect(markers).toEqual([{ x: 100, y: 100 }, { x: 500, y: 500 }]);
   });
 });
+
+describe('CairnOfEchoesScheduler.getTouchedThisRun', () => {
+  it('returns the cairns walked over this run in touch order', () => {
+    const c1 = makeCairn(100, 100, 1);
+    const c2 = makeCairn(150, 100, 2);
+    const scheduler = new CairnOfEchoesScheduler(buildHooks({ getCairns: () => [c1, c2] }));
+    scheduler.load();
+    scheduler.tick(0, 100, 100);
+    scheduler.tick(16, 150, 100);
+    expect(scheduler.getTouchedThisRun().map((c) => c.savedAt)).toEqual([1, 2]);
+  });
+
+  it('returns empty before any touches', () => {
+    const scheduler = new CairnOfEchoesScheduler(buildHooks());
+    expect(scheduler.getTouchedThisRun()).toEqual([]);
+  });
+
+  it('reset clears the touched list', () => {
+    const c1 = makeCairn(100, 100, 1);
+    const scheduler = new CairnOfEchoesScheduler(buildHooks({ getCairns: () => [c1] }));
+    scheduler.load();
+    scheduler.tick(0, 100, 100);
+    scheduler.reset();
+    expect(scheduler.getTouchedThisRun()).toEqual([]);
+  });
+});
