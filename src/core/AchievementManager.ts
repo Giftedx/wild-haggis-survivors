@@ -34,6 +34,10 @@ export class AchievementManager {
       globalEventBus.on('GLOBAL_RUN_TIME_SEC', (p) => this.onRunTime(p)),
       globalEventBus.on('GLOBAL_RUN_ENDED', (p) => this.onRunEnded(p)),
       globalEventBus.on('GLOBAL_WEAPON_EVOLVED', () => this.tryUnlock('ach_first_evolution')),
+      // V2 — Cailleach Gauntlet win. Fires on successful gauntlet
+      // resolution; unlock the achievement that gates the
+      // cailleach_mantle tartan.
+      globalEventBus.on('GLOBAL_CAILLEACH_GAUNTLET_WON', () => this.tryUnlock('ach_crown_the_cailleach')),
       globalEventBus.on('GLOBAL_MOOR_MOMENT', () => this.onMoorMoment()),
       globalEventBus.on('GLOBAL_COMBO_MILESTONE', (p) => this.onComboMilestone(p))
     );

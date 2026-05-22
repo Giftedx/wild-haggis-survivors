@@ -89,7 +89,9 @@ import { RunEndTickers } from './game/RunEndTickers';
 import type { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { CairnStackingScheduler } from './game/CairnStackingScheduler';
 import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
+import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
 import type { WhisperResult } from './game/cairnOfEchoesWhisper';
+import { globalEventBus } from '../core/GlobalEventBus';
 import {
   createCairnSpriteForScene,
   destroyCairnSpriteOnScene,
@@ -532,6 +534,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * `tickFrameWorld` after the pause-gate. Sister to `cairnStacking`.
    */
   cairnOfEchoesScheduler!: CairnOfEchoesScheduler;
+  /**
+   * V2 — Cailleach Gauntlet scheduler. Ticked in `tickFrameWorld`
+   * after the cairn scheduler. Fires hook callbacks on phase
+   * transitions: armed (7th cairn touched), candles_lit (14:00),
+   * cailleach_spawned (15:00), cailleach_down (win), cailleach_dominant
+   * (lose). Reset per-run in `resetTransientRunState`.
+   * Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
+   */
+  cailleachGauntletScheduler!: import('./game/CailleachGauntletScheduler').CailleachGauntletScheduler;
+  /** V2 — live candle sprites for the active gauntlet (lit/wreathed/extinguished). */
+  private gauntletCandleSprites: Phaser.GameObjects.Image[] = [];
+  /** V2 — ref to the spawned Cailleach Gauntlet boss (null when not engaged). */
+  private cailleachBossEnemy: Enemy | null = null;
+  // gauntletTouchedSavedAts is captured inside the scheduler callbacks
+  // (passed to markCairnsWreathed/markCairnsExtinguished); no scene-
+  // level field needed.
   /**
    * Live sprite refs keyed by FallenCairn identity so the scheduler's
    * `onSpriteCreate` / `onSpriteDestroy` callbacks can find and tween
@@ -1473,6 +1491,65 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.cairnOfEchoesScheduler.reset();
     this.cairnOfEchoesScheduler.load();
 
+    // V2 — Cailleach Gauntlet scheduler. Sister to cairn scheduler;
+    // reads touched-this-run count from it, fires win/lose hooks at
+    // resolution. Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md
+    {
+      this.destroyGauntletCandles();
+      this.gauntletCandleSprites = [];
+      this.cailleachBossEnemy = null;
+      this.cailleachGauntletScheduler = new CailleachGauntletScheduler({
+        getTouchedThisRun: () => this.cairnOfEchoesScheduler.getTouchedThisRun(),
+        getGameTimeMs: () => Math.floor(this.spawnSystem.getGameTimeSec() * 1000),
+        getPlayerPosition: () => ({ x: this.player?.x ?? 0, y: this.player?.y ?? 0 }),
+        isBossDead: () => this.cailleachBossEnemy !== null && !this.cailleachBossEnemy.active,
+        isPlayerDead: () => (this.player?.getHp() ?? 1) <= 0,
+        onArmed: () => {
+          this.banter?.request('cailleach_gauntlet', { tag: 'armed' });
+        },
+        onCandlesLit: ({ candleRing }) => {
+          this.spawnGauntletCandles(candleRing);
+          this.banter?.request('cailleach_gauntlet', { tag: 'candles_lit' });
+          this.caption('cailleach_gauntlet_candles', 'Seven candles lit.', '#b9d6f0', 4000);
+        },
+        onCailleachSpawned: ({ centerX, centerY }) => {
+          // SpawnSystem.spawnBossManually exists (V2 contract).
+          (this.spawnSystem as unknown as { spawnBossManually: (k: string, x: number, y: number) => void })
+            .spawnBossManually('cailleach_boss', centerX, centerY);
+          // Look up the spawned boss enemy by key (immediate scan; the
+          // spawnBossManually call has already added it to the group).
+          const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+          this.cailleachBossEnemy = enemies.find((e) => e.active && e.getEnemyKey() === 'cailleach_boss') ?? null;
+          this.banter?.request('cailleach_gauntlet', { tag: 'cailleach_spawned' });
+        },
+        onWin: ({ wreathedSavedAts }) => {
+          this.metaSaveManager.markCairnsWreathed(wreathedSavedAts);
+          // V2 — drop the Stormcrown relic at the boss's death location.
+          if (this.relicOrchestrator && this.cailleachBossEnemy) {
+            const bx = this.cailleachBossEnemy.x;
+            const by = this.cailleachBossEnemy.y;
+            try {
+              const orch = this.relicOrchestrator as unknown as {
+                dropRestrictedRelic?: (key: string, x: number, y: number) => void;
+              };
+              orch.dropRestrictedRelic?.('stormcrown', bx, by);
+            } catch { /* orchestrator not ready */ }
+          }
+          // Achievement unlock — routes through the standard
+          // AchievementManager via global event.
+          globalEventBus.emit('GLOBAL_CAILLEACH_GAUNTLET_WON', { wreathedSavedAts });
+          this.snuffGauntletCandles('wreathed');
+          this.banter?.request('cailleach_gauntlet', { tag: 'cailleach_down' });
+        },
+        onLose: ({ extinguishedSavedAts }) => {
+          this.metaSaveManager.markCairnsExtinguished(extinguishedSavedAts);
+          this.snuffGauntletCandles('extinguished');
+          this.banter?.request('cailleach_gauntlet', { tag: 'cailleach_dominant' });
+        },
+      });
+      this.cailleachGauntletScheduler.reset();
+    }
+
     // Lemmings Easter Egg (DESIGN_IDEAS §13) — cliff-edge parade homage
     // to DMA Design / Dundee 1991. Always-on per-run orchestrator; idle
     // 90 s in coastal biome triggers the once-per-variant parade. Pure
@@ -2033,6 +2110,43 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       .getFallenCairns()
       .find((c) => Math.abs(c.x - spotX) < 1 && Math.abs(c.y - spotY) < 1);
     if (cairn) this.cairnOfEchoesScheduler.addCairn(cairn);
+  }
+
+  // ── Cailleach Gauntlet (V2 of The Moor Remembers, 2026-05-22) ────
+  // Spawn candle ring at 14:00, Cailleach boss at 15:00. Win wreathes
+  // the 7 gauntlet cairns + drops Stormcrown + unlocks achievement.
+  // Lose extinguishes the candles (the cairns themselves abide).
+
+  /** V2 — fire candle sprites in a Callanish-circle ring. */
+  private spawnGauntletCandles(
+    ring: readonly { readonly x: number; readonly y: number }[],
+  ): void {
+    if (!this.textures.exists('fx_cailleach_candle_lit')) return;
+    for (const p of ring) {
+      const candle = this.add.image(p.x, p.y, 'fx_cailleach_candle_lit');
+      candle.setDepth(5);
+      candle.setScale(2);
+      this.gauntletCandleSprites.push(candle);
+    }
+  }
+
+  /** V2 — switch candle visuals on win (wreathed gold) or lose (extinguished). */
+  private snuffGauntletCandles(outcome: 'wreathed' | 'extinguished'): void {
+    const tex = outcome === 'wreathed'
+      ? 'fx_cailleach_candle_wreathed'
+      : 'fx_cailleach_candle_extinguished';
+    if (!this.textures.exists(tex)) return;
+    for (const candle of this.gauntletCandleSprites) {
+      candle.setTexture(tex);
+    }
+  }
+
+  /** V2 — fully tear down candle sprites (on scene reset / run end). */
+  private destroyGauntletCandles(): void {
+    for (const candle of this.gauntletCandleSprites) {
+      try { candle.destroy(); } catch { /* scene may have restarted */ }
+    }
+    this.gauntletCandleSprites = [];
   }
 
   getCurrentBiomeId(): BiomeId | null {

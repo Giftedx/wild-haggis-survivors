@@ -125,6 +125,13 @@ export interface TickFrameWorldDeps {
    * pattern (d). Null between runs and during early scene boot.
    */
   getCairnOfEchoesScheduler: () => CairnOfEchoesScheduler | null;
+  /**
+   * V2 — Cailleach Gauntlet scheduler. Ticked once per frame after the
+   * cairn scheduler so the gauntlet sees the cairn touch count this
+   * tick (otherwise the 7th touch wouldn't trigger until the NEXT
+   * frame). Null between runs and during early scene boot.
+   */
+  getCailleachGauntletScheduler: () => import('./CailleachGauntletScheduler').CailleachGauntletScheduler | null;
   /** Lazy — destroyed + nulled between runs. */
   getRelicSlotUI: () => RelicSlotUI | null;
   /** Driver lives on the orchestrator (non-null in active runs) and is
@@ -268,6 +275,13 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
     cairnSched.tick(scaledDelta, deps.player.x, deps.player.y);
     const mm = deps.getMinimap();
     if (mm) mm.cairnMarkers = cairnSched.getMinimapMarkers();
+  }
+  // V2 — Cailleach Gauntlet scheduler. Ticked AFTER the cairn
+  // scheduler so the touch count this tick is visible. The scheduler
+  // is hook-driven; transitions fire callbacks back to GameScene.
+  const gauntletSched = deps.getCailleachGauntletScheduler();
+  if (gauntletSched) {
+    gauntletSched.tick();
   }
 
   // Pass player facing — own concern, kept out of the multiplier fold.

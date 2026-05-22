@@ -157,6 +157,11 @@ export type CuSithBayPayload = {
   y: number;
 };
 
+export interface GlobalCailleachGauntletWonPayload {
+  /** Cairns wreathed by this gauntlet completion. */
+  readonly wreathedSavedAts: readonly number[];
+}
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -173,6 +178,8 @@ export type GlobalEvents = {
   GLOBAL_RELIC_PICKED: GlobalRelicPickedPayload;
   GLOBAL_SAVE_FAILED: GlobalSaveFailedPayload;
   CU_SITH_BAY: CuSithBayPayload;
+  /** V2 — Cailleach Gauntlet completed successfully. */
+  GLOBAL_CAILLEACH_GAUNTLET_WON: GlobalCailleachGauntletWonPayload;
   bossEnraged: string;
 };
 
