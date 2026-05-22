@@ -90,8 +90,8 @@ import type { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { CairnStackingScheduler } from './game/CairnStackingScheduler';
 import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
 import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
+import { installCailleachGauntlet } from './game/installCailleachGauntlet';
 import type { WhisperResult } from './game/cairnOfEchoesWhisper';
-import { globalEventBus } from '../core/GlobalEventBus';
 import {
   createCairnSpriteForScene,
   destroyCairnSpriteOnScene,
@@ -542,14 +542,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * (lose). Reset per-run in `resetTransientRunState`.
    * Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
    */
-  cailleachGauntletScheduler!: import('./game/CailleachGauntletScheduler').CailleachGauntletScheduler;
-  /** V2 — live candle sprites for the active gauntlet (lit/wreathed/extinguished). */
-  private gauntletCandleSprites: Phaser.GameObjects.Image[] = [];
-  /** V2 — ref to the spawned Cailleach Gauntlet boss (null when not engaged). */
-  private cailleachBossEnemy: Enemy | null = null;
-  // gauntletTouchedSavedAts is captured inside the scheduler callbacks
-  // (passed to markCairnsWreathed/markCairnsExtinguished); no scene-
-  // level field needed.
+  cailleachGauntletScheduler!: CailleachGauntletScheduler;
+  /** V2 — opaque teardown returned by `installCailleachGauntlet`. */
+  private gauntletTeardown: (() => void) | null = null;
   /**
    * Live sprite refs keyed by FallenCairn identity so the scheduler's
    * `onSpriteCreate` / `onSpriteDestroy` callbacks can find and tween
@@ -1493,56 +1488,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // V2 — Cailleach Gauntlet scheduler. Sister to cairn scheduler;
     // reads touched-this-run count from it, fires win/lose hooks at
-    // resolution. Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md
-    {
-      this.destroyGauntletCandles();
-      this.gauntletCandleSprites = [];
-      this.cailleachBossEnemy = null;
-      this.cailleachGauntletScheduler = new CailleachGauntletScheduler({
-        getTouchedThisRun: () => this.cairnOfEchoesScheduler.getTouchedThisRun(),
-        getGameTimeMs: () => Math.floor(this.spawnSystem.getGameTimeSec() * 1000),
-        getPlayerPosition: () => ({ x: this.player?.x ?? 0, y: this.player?.y ?? 0 }),
-        isBossDead: () => this.cailleachBossEnemy !== null && !this.cailleachBossEnemy.active,
-        isPlayerDead: () => (this.player?.getHp() ?? 1) <= 0,
-        onArmed: () => {
-          this.banter?.request('cailleach_gauntlet', { tag: 'armed' });
-        },
-        onCandlesLit: ({ candleRing }) => {
-          this.spawnGauntletCandles(candleRing);
-          this.banter?.request('cailleach_gauntlet', { tag: 'candles_lit' });
-          this.caption('cailleach_gauntlet_candles', 'Seven candles lit.', '#b9d6f0', 4000);
-        },
-        onCailleachSpawned: ({ centerX, centerY }) => {
-          // SpawnSystem.spawnBossManually exists (V2 contract).
-          (this.spawnSystem as unknown as { spawnBossManually: (k: string, x: number, y: number) => void })
-            .spawnBossManually('cailleach_boss', centerX, centerY);
-          // Look up the spawned boss enemy by key (immediate scan; the
-          // spawnBossManually call has already added it to the group).
-          const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
-          this.cailleachBossEnemy = enemies.find((e) => e.active && e.getEnemyKey() === 'cailleach_boss') ?? null;
-          this.banter?.request('cailleach_gauntlet', { tag: 'cailleach_spawned' });
-        },
-        onWin: ({ wreathedSavedAts }) => {
-          this.metaSaveManager.markCairnsWreathed(wreathedSavedAts);
-          // Stormcrown drop is handled by the existing boss-kill path:
-          // RelicSystem.rollDrop short-circuits to the restricted relic
-          // when bossKey === 'cailleach_boss'. EnemyKillHandler fires
-          // rollAndSpawn on the boss death event before the gauntlet's
-          // bossDead flag flips, so the relic is already in flight.
-          // Achievement unlock — routes through the standard
-          // AchievementManager via global event.
-          globalEventBus.emit('GLOBAL_CAILLEACH_GAUNTLET_WON', { wreathedSavedAts });
-          this.snuffGauntletCandles('wreathed');
-          this.banter?.request('cailleach_gauntlet', { tag: 'cailleach_down' });
-        },
-        onLose: ({ extinguishedSavedAts }) => {
-          this.metaSaveManager.markCairnsExtinguished(extinguishedSavedAts);
-          this.snuffGauntletCandles('extinguished');
-          this.banter?.request('cailleach_gauntlet', { tag: 'cailleach_dominant' });
-        },
-      });
-      this.cailleachGauntletScheduler.reset();
-    }
+    // resolution. Extracted to installCailleachGauntlet to keep
+    // GameScene under the 2200-LOC ceiling. Teardown closes over the
+    // candle sprites + boss ref the install owns.
+    if (this.gauntletTeardown) this.gauntletTeardown();
+    const gauntletInstall = installCailleachGauntlet({
+      scene: this,
+      getPlayer: () => this.player ?? null,
+      getSpawnSystem: () => this.spawnSystem,
+      getBanter: () => this.banter ?? null,
+      getCairnScheduler: () => this.cairnOfEchoesScheduler,
+      metaSaveManager: this.metaSaveManager,
+      caption: (id, message, color, durationMs) =>
+        this.caption(id, message, color, durationMs),
+    });
+    this.cailleachGauntletScheduler = gauntletInstall.scheduler;
+    this.gauntletTeardown = gauntletInstall.teardown;
 
     // Lemmings Easter Egg (DESIGN_IDEAS §13) — cliff-edge parade homage
     // to DMA Design / Dundee 1991. Always-on per-run orchestrator; idle
@@ -2106,42 +2067,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (cairn) this.cairnOfEchoesScheduler.addCairn(cairn);
   }
 
-  // ── Cailleach Gauntlet (V2 of The Moor Remembers, 2026-05-22) ────
-  // Spawn candle ring at 14:00, Cailleach boss at 15:00. Win wreathes
-  // the 7 gauntlet cairns + drops Stormcrown + unlocks achievement.
-  // Lose extinguishes the candles (the cairns themselves abide).
-
-  /** V2 — fire candle sprites in a Callanish-circle ring. */
-  private spawnGauntletCandles(
-    ring: readonly { readonly x: number; readonly y: number }[],
-  ): void {
-    if (!this.textures.exists('fx_cailleach_candle_lit')) return;
-    for (const p of ring) {
-      const candle = this.add.image(p.x, p.y, 'fx_cailleach_candle_lit');
-      candle.setDepth(5);
-      candle.setScale(2);
-      this.gauntletCandleSprites.push(candle);
-    }
-  }
-
-  /** V2 — switch candle visuals on win (wreathed gold) or lose (extinguished). */
-  private snuffGauntletCandles(outcome: 'wreathed' | 'extinguished'): void {
-    const tex = outcome === 'wreathed'
-      ? 'fx_cailleach_candle_wreathed'
-      : 'fx_cailleach_candle_extinguished';
-    if (!this.textures.exists(tex)) return;
-    for (const candle of this.gauntletCandleSprites) {
-      candle.setTexture(tex);
-    }
-  }
-
-  /** V2 — fully tear down candle sprites (on scene reset / run end). */
-  private destroyGauntletCandles(): void {
-    for (const candle of this.gauntletCandleSprites) {
-      try { candle.destroy(); } catch { /* scene may have restarted */ }
-    }
-    this.gauntletCandleSprites = [];
-  }
+  // V2 Cailleach Gauntlet glue lives in `installCailleachGauntlet`.
 
   getCurrentBiomeId(): BiomeId | null {
     if (!this.biomeController || !this.player) return null;

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **STATUS:** Open — implementation immediately after V1 ship (2026-05-22).
+> **STATUS: ✅ SHIPPED (2026-05-22)** — 16-task plan executed inline. Final commits: `95810e8` (fallenCairns helpers) → `5b4e7e9` (schema v10→v11) → `62fc7c1` (gauntlet state machine) → `55b7fdd` (cairn-scheduler getter) → `d897d2d` (gauntlet scheduler) → `abc966f` (cailleach_boss data + manualSpawn) → `739b8f8` (wail behaviour + ice lance) → `072d87f` (boss + candle sprites + boss i18n) → `d041806` (Stormcrown relic + restricted drop) → `688b52d` (WeaponSystem damage chain + freeze hook) → `e48d0d6` (cailleach_gauntlet banter pool) → `8823c2d` (achievement + tartan) → `8a5c85f` (GameScene wire + scheduler tick) → `575c8e9` (Stormcrown drop via rollDrop). 5563/5563 vitest pass; tsc --noEmit clean. E2E smoke + replay regression deferred to follow-up; helper + scheduler tests cover the gauntlet logic end-to-end.
 
 **Goal:** Ship V2 of The Moor Remembers: touching 7 cairns by 14:00 in one run lights a Callanish-circle of candles; Cailleach spawns at 15:00; win wreathes the 7 cairns + drops Stormcrown; lose extinguishes the candles. Spec: [`docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`](../specs/2026-05-22-moor-remembers-v2-design.md).
 

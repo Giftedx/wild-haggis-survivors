@@ -126,6 +126,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 | Cairn Stacking | `scenes/game/CairnStackingScheduler.ts` | Pickup → 3 stones → heal + magnet boon. |
 | Clootie Rag Wager | `entities/clootieRagWager.ts` + `scenes/game/clootieTree.ts` | 12% max-HP cost → run-long boon (wrath/patience/haste). Refs §22.4. |
 | Cairn-of-Echoes (The Moor Remembers) | `scenes/game/CairnOfEchoesScheduler.ts` + `utils/save/fallenCairns.ts` | Death → persistent meta-save cairn (cap 50, FIFO). Walk-over → past-self whisper + 1% inherited buff. 1% rare → grandfather voice unfolds 25-leaf Almanac arc. Schema v9→v10. Spec 2026-05-22. |
+| Cailleach Gauntlet (Moor Remembers V2) | `scenes/game/CailleachGauntletScheduler.ts` + `scenes/game/cailleachGauntlet.ts` | Touch 7 cairns by 14:00 → candle ring lights at 14:00, Cailleach boss (`cailleach_boss` with `wail` behaviour) spawns at 15:00. Win wreathes the 7 cairns (gold visual + doubled +2 % buff) + drops Stormcrown relic (restricted boss-key drop) + unlocks `cailleach_mantle` tartan. Lose extinguishes the candles (cairns abide). Schema v10→v11 adds per-cairn `wreathedAt` / `extinguishedAt` (wreath wins precedence over extinguish). Spec 2026-05-22 V2. |
 
 **Run-shape systems:**
 

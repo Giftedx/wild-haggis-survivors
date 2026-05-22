@@ -106,7 +106,7 @@ describe('CailleachGauntletScheduler', () => {
 
   it('fires onLose when player-dead in engaged phase', () => {
     const touched = Array.from({ length: 7 }, (_, i) => makeCairn(i + 1));
-    let gameTimeMs = GAUNTLET_BOSS_TIME_MS;
+    const gameTimeMs = GAUNTLET_BOSS_TIME_MS;
     let playerDead = false;
     const onLose = vi.fn();
     const scheduler = new CailleachGauntletScheduler(

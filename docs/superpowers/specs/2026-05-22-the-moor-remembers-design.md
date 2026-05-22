@@ -329,7 +329,7 @@ Estimated **+22 unit assertions**, **+1 e2e test**, **~8 KB bundle delta** (lore
 
 ### Deferred (V2 — earns its own spec)
 
-- **The Cailleach Gauntlet.** Touch 7 cairns in a single run = candles light at 14:00 in a Callanish-circle formation, Cailleach spawns at 15:00 as a secret boss regardless of route. Win → unlock **Stormcrown** relic (perma in pool) + **Cailleach's Mantle** cosmetic + grandfather Almanac page completes with one final entry. Lose → ALL cairns wipe (the moor forgets). Distinct enough to be its own celebration spec.
+- **The Cailleach Gauntlet** ✅ shipped 2026-05-22. Spec at [`2026-05-22-moor-remembers-v2-design.md`](2026-05-22-moor-remembers-v2-design.md). Diverges from the sketch above in one place: "ALL cairns wipe (the moor forgets)" softened to **extinguish the 7 gauntlet cairns** (their candles dim, but the cairns themselves abide). Rationale: wiping 50 cairns of player history on one death conflicts with the game's hearth-warm soul; the partial extinguish keeps loss meaningful without erasing the player's investment.
 - **Wreathed cairns for victories.** Distinct sprite variant for cairns left by victorious runs. Permanent slot exemption from FIFO rotation.
 - **Drover quests.** At 80% Old Drover lore revealed, the grandfather starts asking for things ("walk to the third loch in under 8:00"). Reward = next-tier inherited buff bracket.
 - **Seasonal cairn dressing.** During Samhain, cairns gain a soft purple-blue candle. During Hogmanay, a single sprig of heather. Pure cosmetic.
