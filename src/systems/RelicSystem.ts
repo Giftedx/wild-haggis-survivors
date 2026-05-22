@@ -24,6 +24,7 @@ import type { RNG } from '../utils/rng';
 import {
   bossGrantsRelic,
   pickRelicFromPool,
+  pickRestrictedRelicForBoss,
   rollChestOverrideOccurs,
   rollEliteDropOccurs,
 } from '../data/relicDrops';
@@ -137,6 +138,16 @@ export class RelicSystem {
   ): RelicDef | null {
     const occurs = this.dropOccurs(source, rng, opts);
     if (!occurs) return null;
+    // V2 — boss-key may match a `restrictedToBossKey` relic in the
+    // catalogue (Cailleach Gauntlet → Stormcrown). Short-circuit the
+    // open pool when so, never returning the restricted relic via the
+    // normal weighted path.
+    if (opts.bossKey) {
+      const restricted = pickRestrictedRelicForBoss(opts.bossKey);
+      if (restricted && !this.heldKeys().includes(restricted.key)) {
+        return restricted;
+      }
+    }
     return pickRelicFromPool(source, rng, this.heldKeys());
   }
 

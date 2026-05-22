@@ -1524,17 +1524,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         },
         onWin: ({ wreathedSavedAts }) => {
           this.metaSaveManager.markCairnsWreathed(wreathedSavedAts);
-          // V2 — drop the Stormcrown relic at the boss's death location.
-          if (this.relicOrchestrator && this.cailleachBossEnemy) {
-            const bx = this.cailleachBossEnemy.x;
-            const by = this.cailleachBossEnemy.y;
-            try {
-              const orch = this.relicOrchestrator as unknown as {
-                dropRestrictedRelic?: (key: string, x: number, y: number) => void;
-              };
-              orch.dropRestrictedRelic?.('stormcrown', bx, by);
-            } catch { /* orchestrator not ready */ }
-          }
+          // Stormcrown drop is handled by the existing boss-kill path:
+          // RelicSystem.rollDrop short-circuits to the restricted relic
+          // when bossKey === 'cailleach_boss'. EnemyKillHandler fires
+          // rollAndSpawn on the boss death event before the gauntlet's
+          // bossDead flag flips, so the relic is already in flight.
           // Achievement unlock — routes through the standard
           // AchievementManager via global event.
           globalEventBus.emit('GLOBAL_CAILLEACH_GAUNTLET_WON', { wreathedSavedAts });
