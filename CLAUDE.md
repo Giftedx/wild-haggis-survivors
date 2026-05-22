@@ -125,6 +125,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 | Reliquary | `scenes/game/Reliquary.ts` | First-tier landmark, original sister pattern. |
 | Cairn Stacking | `scenes/game/CairnStackingScheduler.ts` | Pickup → 3 stones → heal + magnet boon. |
 | Clootie Rag Wager | `entities/clootieRagWager.ts` + `scenes/game/clootieTree.ts` | 12% max-HP cost → run-long boon (wrath/patience/haste). Refs §22.4. |
+| Cairn-of-Echoes (The Moor Remembers) | `scenes/game/CairnOfEchoesScheduler.ts` + `utils/save/fallenCairns.ts` | Death → persistent meta-save cairn (cap 50, FIFO). Walk-over → past-self whisper + 1% inherited buff. 1% rare → grandfather voice unfolds 25-leaf Almanac arc. Schema v9→v10. Spec 2026-05-22. |
 
 **Run-shape systems:**
 
