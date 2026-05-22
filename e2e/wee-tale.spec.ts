@@ -240,4 +240,105 @@ test.describe('Wee Tales — run-end prose epitaph', () => {
     expect(tale!.line).toMatch(/Taxman/);
     expect(tale!.line).toMatch(/27:00/); // 1620 sec → mm:ss interpolation
   });
+
+  /**
+   * v2 — variant-voiced lines + `{name}` slot.
+   *
+   * Drive a Cailleach victory with three boss kills + a generated
+   * run-name. The picker's 4^specificity weighting routes the
+   * payload (`[victory, cailleach, has_name, taxman]` = tier-4) to
+   * `ui.weeTale.variant.cailleach.victory_taxman` decisively.
+   *
+   * Asserts:
+   *   - tale-key starts with `ui.weeTale.variant.cailleach.`
+   *   - rendered prose interpolates the run-name verbatim
+   */
+  test('renders a Cailleach-voiced victory line with {name} interpolated', async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        const raw = localStorage.getItem('whs_meta_save');
+        const existing = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+        localStorage.setItem('whs_meta_save', JSON.stringify({
+          ...existing,
+          saveVersion: 9,
+          hasCompletedTutorial: true,
+        }));
+      } catch { /* ignore */ }
+    });
+    await page.goto('/');
+    const canvas = page.locator('canvas[role="application"]');
+    await expect(canvas).toBeVisible({ timeout: 60_000 });
+    await canvas.click({ position: { x: 8, y: 8 } });
+
+    const ready = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: PhaserGameLike }).game;
+      if (!g) return false;
+      g.scene.start('GameOver', {
+        mode: 'victory',
+        isVictory: true,
+        summary: {
+          timeSurvivedSec: 1500,
+          enemiesKilled: 1100,
+          bossGold: 300,
+          coinGold: 800,
+          coinGoldSpent: 0,
+          bestCombo: 90,
+          victory: true,
+        },
+        runResult: { save: {}, goldEarned: 1100, newlyUnlockedVariants: [] },
+        xpLevel: 30,
+        bossKillCount: 3,
+        ownedPassiveCount: 5,
+        weaponCount: 6,
+        evolvedCount: 2,
+        buildSummary: 'Pibroch Blast / Whisky Glass',
+        variantLabel: 'Cailleach',
+        variantKey: 'cailleach',
+        weaponDamage: { pibroch_blast: 22_000 },
+        seedCode: 'TEST-CAILLEACH-V2',
+        runSeed: 0xCA11_EACE,
+        ironmoor: false,
+        isDaily: false,
+        bossKilledKeys: ['gordon', 'tour_bus', 'taxman'],
+        biomesVisited: ['bog', 'heather'],
+        name: 'Cailleach Bheag',
+      });
+      const deadline = Date.now() + 15_000;
+      while (Date.now() < deadline) {
+        if (g.scene.isActive('GameOver')) return true;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      return false;
+    });
+    expect(ready).toBe(true);
+    await page.waitForTimeout(1_400);
+
+    const tale = await page.evaluate(() => {
+      const g = (window as unknown as { game?: PhaserGameLike }).game;
+      if (!g) return null;
+      type TextLike = {
+        text?: string;
+        getData?: (k: string) => unknown;
+      };
+      const over = g.scene.getScene('GameOver') as { children?: { list?: TextLike[] } } | undefined;
+      const children = over?.children?.list ?? [];
+      const hit = children.find(
+        (c) => typeof c?.getData === 'function' && typeof c.getData('weeTaleKey') === 'string',
+      );
+      return hit
+        ? {
+            line: hit.text ?? '',
+            taleKey: hit.getData!('weeTaleKey') as string,
+          }
+        : null;
+    });
+    expect(tale, 'no wee-tale Text object found on GameOver').not.toBeNull();
+    // Tale must come from the Cailleach variant pool — any of the 4
+    // cailleach.* keys is acceptable, but the tier-4 taxman line
+    // should dominate the seeded sample.
+    expect(tale!.taleKey).toMatch(/^ui\.weeTale\.variant\.cailleach\./);
+    // {name} slot interpolated verbatim — the prose must contain the
+    // run-name we passed in the payload.
+    expect(tale!.line).toContain('Cailleach Bheag');
+  });
 });

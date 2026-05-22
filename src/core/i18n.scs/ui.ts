@@ -3059,6 +3059,7 @@ export const ui = {
       tour_bus: 'Tha tour bus cam roond tha bend at {time}. Heidlichts, then naethin.',
       taxman: 'Tha Taxman closed tha ledger at {time}. A debt cried but the wance.',
       taxman_postbell: 'Past tha bell-toll. Tha Taxman caught up at {time} — he aye dis, by-an-by.',
+      with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
     },
     victory: {
       fallback_a: 'Walked hame at {time}. Tha kettle wis oan.',
@@ -3068,6 +3069,33 @@ export const ui = {
       ironmoor: 'Ironmoor cleared at {time}. Wance wis aneuch — an wance is plenty.',
       taxman_kill: 'Steekit tha Taxman\'s ledger at {time}. He\'ll no forget; tha haggis winnae either.',
       three_bosses: 'Three boss-skulls in tha heather ahint. Hame at {time}, walkin licht.',
+      with_name_a: '{name} walked back oot. Tha moor lets some gang.',
+    },
+    variant: {
+      cailleach: {
+        death_baseline: 'Winter\'s patient, {name}. Ye werena.',
+        death_short: 'Tha mountain wis here afore {name}. An efter.',
+        victory_baseline: 'Ye did weel, {name}. Winter expects mair next time.',
+        victory_taxman: 'Tha taxman boued tae {name} at last. Even tha mountain blinkit.',
+      },
+      glaswegian: {
+        death_baseline: 'Aye, {name} swung haird. Swung haurder than tha moor wid let.',
+        death_short: '{name} didnae mak it past tha kerb. Git up. Try again.',
+        victory_baseline: 'Richt then. {name} walked it. Dinnae get a heid aboot it.',
+        victory_taxman: '{name} bested tha taxman. Even Glesga keeps a wee receipt.',
+      },
+      doric_quinie: {
+        death_baseline: 'Fit like, {name}? Awa hame nou. Tha sea minds its ain.',
+        death_long: '{name} hauded weel. Tha quinie\'s bonnet bides on tha hairbour wa\'.',
+        victory_baseline: 'Aye, {name}. Tha loons doun tha pier will hear o\' this ane.',
+        victory_epic: '{time} on tha moor, {name}. Tha smokie\'s still warm at tha kitchie.',
+      },
+      burns_wee_beastie: {
+        death_baseline: '"Wee, sleekit, cow\'rin, tim\'rous beastie" — an yet {name} ran. Aft tha heather, oot tha door.',
+        death_short: '"The best-laid schemes o\' mice an\' men gang aft a-gley." {name} kent it afore tha end.',
+        victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. Tha bard wid tip his bunnet.',
+        victory_epic: '{name} held tha moor fer {time}. Burns himsel wrote shorter lines.',
+      },
     },
   },
 } as const;

@@ -3820,6 +3820,8 @@ export const ui = {
       tour_bus: 'The tour bus came round the bend at {time}. Headlights, then nothing.',
       taxman: 'The Taxman closed the ledger at {time}. A debt only ever called once.',
       taxman_postbell: 'Past the bell-toll. The Taxman caught up at {time} — he always does, eventually.',
+      // v2 — universal {name}-bearing death line (tier-2).
+      with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -3831,6 +3833,38 @@ export const ui = {
       ironmoor: 'Ironmoor cleared at {time}. Once was enough — and once is plenty.',
       taxman_kill: 'Closed the Taxman\'s ledger at {time}. He won\'t forget; the haggis won\'t either.',
       three_bosses: 'Three boss-skulls in the heather behind. Home at {time}, walking light.',
+      // v2 — universal {name}-bearing victory line (tier-2).
+      with_name_a: '{name} walked back oot. The moor lets some go.',
+    },
+    // v2 — variant-voiced lines. Voice registers per
+    // `docs/VOICE_CARD.md` §"Variant-scoped voices".
+    variant: {
+      cailleach: {
+        death_baseline: 'Winter is patient, {name}. Ye werena.',
+        death_short: 'The mountain was here before {name}. And after.',
+        victory_baseline: 'Ye did well, {name}. Winter expects more next time.',
+        victory_taxman: 'The taxman bowed to {name} at last. Even the mountain blinked.',
+      },
+      glaswegian: {
+        death_baseline: 'Aye, {name} swung hard. Swung harder than the moor would let.',
+        death_short: '{name} didnae make it past the kerb. Get up. Try again.',
+        victory_baseline: 'Right then. {name} walked it. Dinnae get a heid aboot it.',
+        victory_taxman: '{name} bested the taxman. Even Glasgow keeps a wee receipt.',
+      },
+      doric_quinie: {
+        death_baseline: 'Fit like, {name}? Awa hame nou. The sea minds its ain.',
+        death_long: '{name} hauded weel. The quinie\'s bonnet bides on the harbour wa\'.',
+        victory_baseline: 'Aye, {name}. The loons doun the pier will hear o\' this ane.',
+        victory_epic: '{time} on the moor, {name}. The smokie\'s still warm at the kitchie.',
+      },
+      burns_wee_beastie: {
+        // Citations verbatim from Robert Burns — see
+        // `docs/C2_BURNS_PROVENANCE.md` for source attribution.
+        death_baseline: '"Wee, sleekit, cow\'rin, tim\'rous beastie" — and yet {name} ran. Aft the heather, oot the door.',
+        death_short: '"The best-laid schemes o\' mice an\' men gang aft a-gley." {name} kent it before the end.',
+        victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. The bard would tip his bonnet.',
+        victory_epic: '{name} held the moor for {time}. Burns himself wrote shorter lines.',
+      },
     },
   },
 } as const;

@@ -121,6 +121,10 @@ export function buildWeeTaleContextFromPayload(payload: GameOverPayload): WeeTal
     ironmoor: payload.ironmoor === true,
     curseKey: payload.curseKey,
     postBellSec: payload.postBellSec,
+    // v2 — thread the run name through so the picker can route to
+    // variant-voiced `{name}`-bearing templates. Empty / missing on
+    // legacy saves; the picker's `has_name` tag gate handles that.
+    runName: payload.name ?? undefined,
   };
 }
 

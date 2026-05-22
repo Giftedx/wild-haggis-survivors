@@ -202,3 +202,176 @@ describe('WEE_TALE_TEMPLATES catalogue', () => {
     expect(victoryFallbacks.length).toBeGreaterThan(0);
   });
 });
+
+/**
+ * v2 — variant-voiced lines + `{name}` slot.
+ *
+ * The closed `WeeTaleTag` union grew by one literal (`has_name`), the
+ * tagger fires it when `ctx.runName` is non-empty, and 18 new
+ * templates were appended to the catalogue (2 universal + 4 each for
+ * Cailleach / Glaswegian / Doric Quinie / Burns's Wee Beastie). The
+ * picker's `4^specificity` weighting routes name-bearing runs to the
+ * variant-voiced line over the no-name fallback automatically.
+ */
+describe('v2 — has_name tag', () => {
+  it('fires when runName is a non-empty string', () => {
+    expect(computeWeeTaleTags(ctx({ runName: 'Lachlan Beag' }))).toContain('has_name');
+  });
+
+  it('does not fire when runName is the empty string', () => {
+    expect(computeWeeTaleTags(ctx({ runName: '' }))).not.toContain('has_name');
+  });
+
+  it('does not fire when runName is missing entirely', () => {
+    expect(computeWeeTaleTags(ctx({}))).not.toContain('has_name');
+  });
+});
+
+describe('v2 — {name} slot', () => {
+  it('pickWeeTale populates params.name when runName is set', () => {
+    const pick = pickWeeTale(
+      ctx({ mode: 'victory', timeSurvivedSec: 600, runName: 'Cailleach Bheag' }),
+      0.5,
+    );
+    expect(pick).not.toBeNull();
+    expect(pick!.params.name).toBe('Cailleach Bheag');
+  });
+
+  it('pickWeeTale omits params.name when runName is empty', () => {
+    const pick = pickWeeTale(
+      ctx({ mode: 'victory', timeSurvivedSec: 600, runName: '' }),
+      0.5,
+    );
+    expect(pick).not.toBeNull();
+    expect(pick!.params.name).toBeUndefined();
+  });
+});
+
+describe('v2 — variant routing', () => {
+  function variantRoutesToOwnPool(variantKey: 'cailleach' | 'glaswegian' | 'doric_quinie' | 'burns_wee_beastie') {
+    const c = ctx({
+      mode: 'victory',
+      variantKey,
+      timeSurvivedSec: 600,
+      runName: 'Test Beastie',
+    });
+    let variantHits = 0;
+    const samples = 200;
+    for (let i = 0; i < samples; i++) {
+      const pick = pickWeeTale(c, (i + 0.5) / samples);
+      if (pick?.i18nKey.startsWith(`ui.weeTale.variant.${variantKey}.`)) variantHits++;
+    }
+    return { variantHits, samples };
+  }
+
+  it('routes Cailleach victory runs predominantly to Cailleach-voiced lines', () => {
+    const { variantHits, samples } = variantRoutesToOwnPool('cailleach');
+    // Tier-2 variant baseline (weight 16) beats tier-1 fallbacks (4)
+    // and ties with other tier-2 victory lines, but the variant filter
+    // prunes most of those. Expect a strong majority.
+    expect(variantHits).toBeGreaterThan(samples / 2);
+  });
+
+  it('routes Glaswegian victory runs predominantly to Glaswegian-voiced lines', () => {
+    const { variantHits, samples } = variantRoutesToOwnPool('glaswegian');
+    expect(variantHits).toBeGreaterThan(samples / 2);
+  });
+
+  it('routes Doric Quinie victory runs predominantly to Doric-voiced lines', () => {
+    const { variantHits, samples } = variantRoutesToOwnPool('doric_quinie');
+    expect(variantHits).toBeGreaterThan(samples / 2);
+  });
+
+  it('routes Burns\'s Wee Beastie victory runs predominantly to Burns-citational lines', () => {
+    const { variantHits, samples } = variantRoutesToOwnPool('burns_wee_beastie');
+    expect(variantHits).toBeGreaterThan(samples / 2);
+  });
+
+  it('Cailleach + Taxman victory routes to the tier-3 cailleach.victory_taxman line', () => {
+    // Use a Taxman-only boss roster so the tier-4 `three_bosses` line
+    // (which requires `gordon` + `tour_bus` + `taxman`) is out of the
+    // pool. That isolates the Cailleach variant line as the dominant
+    // tier-4 route and the assertion measures specificity weighting
+    // rather than competition between two correct tier-4 lines.
+    const c = ctx({
+      mode: 'victory',
+      variantKey: 'cailleach',
+      timeSurvivedSec: 1500,
+      bossesKilled: ['taxman'],
+      runName: 'Cailleach Bheag',
+    });
+    let taxmanLineHits = 0;
+    const samples = 200;
+    for (let i = 0; i < samples; i++) {
+      const pick = pickWeeTale(c, (i + 0.5) / samples);
+      if (pick?.i18nKey === 'ui.weeTale.variant.cailleach.victory_taxman') taxmanLineHits++;
+    }
+    // Tier-4 (cailleach + victory + has_name + taxman) at weight 256
+    // vs tier-3 cailleach baseline (64) + tier-2 with_name / epic /
+    // taxman_kill (16 each) + tier-1 fallbacks (4 each). The Cailleach
+    // taxman line should win a clear majority.
+    expect(taxmanLineHits).toBeGreaterThan(samples / 2);
+  });
+
+  it('Cailleach + three-boss victory splits between cailleach.victory_taxman and three_bosses (both tier-4)', () => {
+    // Documents the intended design: a Cailleach run that kills all
+    // three bosses has two correct tier-4 routes — the variant-voiced
+    // Cailleach Taxman line AND the generic three-boss accomplishment
+    // line. Both are good closers for that run; variety beats forced
+    // determinism. The picker splits the tier-4 weight between them.
+    const c = ctx({
+      mode: 'victory',
+      variantKey: 'cailleach',
+      timeSurvivedSec: 1500,
+      bossesKilled: ['gordon', 'tour_bus', 'taxman'],
+      runName: 'Cailleach Bheag',
+    });
+    let tier4Hits = 0;
+    const samples = 200;
+    for (let i = 0; i < samples; i++) {
+      const pick = pickWeeTale(c, (i + 0.5) / samples);
+      if (
+        pick?.i18nKey === 'ui.weeTale.variant.cailleach.victory_taxman'
+        || pick?.i18nKey === 'ui.weeTale.victory.three_bosses'
+      ) {
+        tier4Hits++;
+      }
+    }
+    // The two tier-4 lines together should dominate the pool — their
+    // combined weight (512) vs the next-best tier-3 (64) means tier-4
+    // wins the vast majority of picks.
+    expect(tier4Hits).toBeGreaterThan(samples * 0.7);
+  });
+
+  it('Burns citation templates never match a non-Burns variant', () => {
+    const c = ctx({
+      mode: 'death',
+      variantKey: 'classic',
+      bossesKilled: ['gordon'],
+      runName: 'Some Other Beastie',
+    });
+    const pool = weeTalePoolForContext(c);
+    expect(pool.every((t) => !t.key.startsWith('ui.weeTale.variant.burns_wee_beastie.'))).toBe(true);
+  });
+
+  it('universal {name} death line beats the no-name death fallback when runName is set', () => {
+    // Plain death run, generic context — only differentiator is runName.
+    const c = ctx({
+      mode: 'death',
+      variantKey: 'classic',
+      timeSurvivedSec: 400, // long-bucket, not short / epic
+      bossesKilled: [],
+      runName: 'Wee Test',
+    });
+    let withNameHits = 0;
+    const samples = 200;
+    for (let i = 0; i < samples; i++) {
+      const pick = pickWeeTale(c, (i + 0.5) / samples);
+      if (pick?.i18nKey === 'ui.weeTale.death.with_name_a') withNameHits++;
+    }
+    // tier-2 (death + has_name) at weight 16 vs three tier-1 death
+    // fallbacks at weight 4 each + tier-2 long_a (16). The with_name
+    // line should account for a clear plurality of picks.
+    expect(withNameHits).toBeGreaterThan(samples / 6);
+  });
+});

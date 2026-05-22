@@ -52,6 +52,14 @@ export interface WeeTaleContext {
   readonly curseKey?: string;
   /** Seconds spent past the 25-minute bell (post-bell endless tail). */
   readonly postBellSec?: number;
+  /**
+   * Procedurally generated haggis run-name (e.g. "Lachlan Beag"). Used
+   * for the `{name}` slot in variant-voiced templates and the tier-2
+   * universal lines. Empty / missing on legacy saves; the synthetic
+   * `has_name` tag gates which templates reference the slot, so an
+   * empty name never renders as a literal "{name}".
+   */
+  readonly runName?: string;
 }
 
 /**
@@ -71,6 +79,7 @@ export type WeeTaleTag =
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
+  | 'has_name'
   | VariantKey;
 
 export interface WeeTaleTemplate {
@@ -134,6 +143,12 @@ export function computeWeeTaleTags(ctx: WeeTaleContext): Set<WeeTaleTag> {
   if (ctx.ironmoor) tags.add('ironmoor');
   if (typeof ctx.curseKey === 'string' && ctx.curseKey.length > 0) tags.add('cursed');
   if (typeof ctx.postBellSec === 'number' && ctx.postBellSec > 0) tags.add('post_bell');
+  // Synthetic — gates templates that interpolate the `{name}` slot.
+  // Templates without `has_name` in their requires never see the slot,
+  // so an empty / missing runName never renders as literal "{name}".
+  if (typeof ctx.runName === 'string' && ctx.runName.length > 0) {
+    tags.add('has_name');
+  }
 
   // Variant — every run has exactly one. Direct add (the
   // VariantKey union is part of `WeeTaleTag`).
@@ -244,6 +259,9 @@ function buildTemplateParams(ctx: WeeTaleContext): Record<string, string | numbe
   if (ctx.deathSourceKey) {
     params.source = ctx.deathSourceKey;
   }
+  if (typeof ctx.runName === 'string' && ctx.runName.length > 0) {
+    params.name = ctx.runName;
+  }
   return params;
 }
 
@@ -294,4 +312,45 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.victory.ironmoor', requires: ['victory', 'ironmoor'] },
   { key: 'ui.weeTale.victory.taxman_kill', requires: ['victory', 'taxman'] },
   { key: 'ui.weeTale.victory.three_bosses', requires: ['victory', 'gordon', 'tour_bus', 'taxman'] },
+
+  // ── v2 — universal {name}-bearing lines (tier-2) ───────────────
+  // Picks ahead of the no-name fallbacks for any run that has a
+  // generated haggis name (every shipping run does; legacy saves
+  // without `name` collapse to the existing fallbacks above).
+  { key: 'ui.weeTale.death.with_name_a', requires: ['death', 'has_name'] },
+  { key: 'ui.weeTale.victory.with_name_a', requires: ['victory', 'has_name'] },
+
+  // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
+  // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".
+  // The mountain crone expects better of ye; she's never cruel.
+  { key: 'ui.weeTale.variant.cailleach.death_baseline', requires: ['death', 'cailleach', 'has_name'] },
+  { key: 'ui.weeTale.variant.cailleach.death_short', requires: ['death', 'cailleach', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.cailleach.victory_baseline', requires: ['victory', 'cailleach', 'has_name'] },
+  { key: 'ui.weeTale.variant.cailleach.victory_taxman', requires: ['victory', 'cailleach', 'has_name', 'taxman'] },
+
+  // ── v2 — Glaswegian (urban-aggressive, Limmy-bite) ─────────────
+  // Voice register per `docs/VOICE_CARD.md` §"Glaswegian (shipped)".
+  // Even Hearth lines have edge; the bite is affectionate.
+  { key: 'ui.weeTale.variant.glaswegian.death_baseline', requires: ['death', 'glaswegian', 'has_name'] },
+  { key: 'ui.weeTale.variant.glaswegian.death_short', requires: ['death', 'glaswegian', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.glaswegian.victory_baseline', requires: ['victory', 'glaswegian', 'has_name'] },
+  { key: 'ui.weeTale.variant.glaswegian.victory_taxman', requires: ['victory', 'glaswegian', 'has_name', 'taxman'] },
+
+  // ── v2 — Doric Quinie (Aberdeenshire fishing-village stoic) ────
+  // Voice register per `docs/VOICE_CARD.md` §"Doric / Aberdonian
+  // (candidate)". Sparing words; the sea minds its ain.
+  { key: 'ui.weeTale.variant.doric_quinie.death_baseline', requires: ['death', 'doric_quinie', 'has_name'] },
+  { key: 'ui.weeTale.variant.doric_quinie.death_long', requires: ['death', 'doric_quinie', 'has_name', 'long'] },
+  { key: 'ui.weeTale.variant.doric_quinie.victory_baseline', requires: ['victory', 'doric_quinie', 'has_name'] },
+  { key: 'ui.weeTale.variant.doric_quinie.victory_epic', requires: ['victory', 'doric_quinie', 'has_name', 'epic'] },
+
+  // ── v2 — Burns's Wee Beastie (citational) ──────────────────────
+  // Voice register per `docs/VOICE_CARD.md` §"Burns's voice
+  // (citational)" — every citation is verbatim Robert Burns,
+  // contextually justified by the variant choice. See
+  // `docs/C2_BURNS_PROVENANCE.md` for line provenance.
+  { key: 'ui.weeTale.variant.burns_wee_beastie.death_baseline', requires: ['death', 'burns_wee_beastie', 'has_name'] },
+  { key: 'ui.weeTale.variant.burns_wee_beastie.death_short', requires: ['death', 'burns_wee_beastie', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.burns_wee_beastie.victory_baseline', requires: ['victory', 'burns_wee_beastie', 'has_name'] },
+  { key: 'ui.weeTale.variant.burns_wee_beastie.victory_epic', requires: ['victory', 'burns_wee_beastie', 'has_name', 'epic'] },
 ] as const;

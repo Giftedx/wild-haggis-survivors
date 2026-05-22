@@ -226,3 +226,46 @@ Punctuation-only flags (F-Burns-1, F-Burns-2, F-Burns-4) are recorded but **not*
 19 Burns-anchored leaves audited. **16 verified verbatim or near-verbatim;** 3 (F-Burns-3, F-Burns-5, F-Burns-6) carry content drift from Kinsley and are corrected in this commit. 3 punctuation-only drifts (F-Burns-1, F-Burns-2, F-Burns-4) deferred to native-speaker review.
 
 Sub-task B status: **3 corrections shipped, 3 deferred to human review.**
+
+---
+
+## Wee Tales v2 — variant-voiced Burns citations (2026-05-22)
+
+Three new Burns citations land in `src/core/i18n/ui.ts` + `src/core/i18n.scs/ui.ts` under `ui.weeTale.variant.burns_wee_beastie.*`. Spec: `docs/superpowers/specs/2026-05-22-wee-tales-v2-design.md`. The wee-tale fires only when the player has elected the Burns's Wee Beastie variant — the variant choice IS the contextual justification per VOICE_CARD §Burns ("any Burns quotation must be contextually justified").
+
+### `ui.weeTale.variant.burns_wee_beastie.death_baseline`
+
+> "Wee, sleekit, cow'rin, tim'rous beastie" — and yet {name} ran. Aft the heather, oot the door.
+
+- **Claimed source:** "To a Mouse", line 1.
+- **Kinsley reference:** vol. I, poem 69, line 1. First published *Poems, Chiefly in the Scottish Dialect* (Kilmarnock edition, 1786).
+- **Verification:** verbatim against Kinsley. The four adjectives + "beastie" are Burns's exact opener (also shipped at `ui.banter.burns_citation.mouse_moment.a`).
+- **Sign-off:** **VERIFIED.**
+
+### `ui.weeTale.variant.burns_wee_beastie.death_short`
+
+> "The best-laid schemes o' mice an' men gang aft a-gley." {name} kent it before the end.
+
+- **Claimed source:** "To a Mouse", stanza 7, lines 39–40.
+- **Kinsley reference:** vol. I, poem 69, lines 39–40.
+- **Verification:** verbatim against Kinsley (same canonical text as `ui.banter.burns_citation.mouse_moment.b`, presented as a single-line citation rather than the linebreak form). The compression to a single line is a render choice for the wee-tale's italic-prose constraint, not a content drift.
+- **Sign-off:** **VERIFIED.**
+
+### `ui.weeTale.variant.burns_wee_beastie.victory_baseline`
+
+> "Fair fa' your honest, sonsie face," {name}. The bard would tip his bonnet.
+
+- **Claimed source:** "Address to a Haggis", line 1.
+- **Kinsley reference:** vol. I, poem 136, line 1.
+- **Verification:** verbatim against Kinsley (mirror of `ui.banter.burns_citation.a`). The comma after the citation is the wee-tale's sentence-flow punctuation, not Burns's text.
+- **Sign-off:** **VERIFIED.**
+
+### `ui.weeTale.variant.burns_wee_beastie.victory_epic`
+
+> {name} held the moor for {time}. Burns himself wrote shorter lines.
+
+- **Claimed source:** framing only — no Burns citation.
+- **Verification:** the line invokes Burns (named subject) but quotes no text. The "shorter lines" gag references Burns's brevity but does not paraphrase or cite. Safe.
+- **Sign-off:** **N/A — non-citation framing.**
+
+**Wee Tales v2 status: 3 verbatim citations + 1 non-citation framing line. All inherit verbatim text from previously-audited B1 Phase 4 banter citations; no new provenance liability introduced.**
