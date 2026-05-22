@@ -7,7 +7,7 @@
 | Initiative | Plan | Status |
 |---|---|---|
 | Sporran Deck Phase 0 (helper + 11-card pool) | [2026-05-09-sporran-deck-phase0.md](2026-05-09-sporran-deck-phase0.md) | ✅ SHIPPED 2026-05-09 |
-| The Moor Remembers V1 (cairns + grandfather voice) | [2026-05-22-the-moor-remembers.md](2026-05-22-the-moor-remembers.md) | In progress — implementation underway |
+| The Moor Remembers V1 (cairns + grandfather voice) | [2026-05-22-the-moor-remembers.md](2026-05-22-the-moor-remembers.md) | ✅ SHIPPED 2026-05-22 |
 
 ## Archived
 

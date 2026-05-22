@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-> **STATUS:** Draft — implementation immediately.
+> **STATUS: ✅ SHIPPED (2026-05-22)** — 15-task plan executed via subagent-driven dispatch. Final SHA at ship: `01feedc` (e2e); `4fb0015` (extraction); `48efe10` (scene wire); 5511/5511 vitest pass; npm run ci green (lint + tsc + vitest + build + bundle budget + flash budget + loc-report). Commits chain: `8a2d14f` → `0ccf043` → `73e26c2` → `4913412` → `1a735a6` → `e92060e` → `1611758` → `fb00f08` → `12505fc` → `80e1434` → `53f79d6` → `48efe10` → `4fb0015` → `325a547` → `01feedc`.
 
 **Goal:** Ship V1 of The Moor Remembers: every death becomes a persistent Cairn-of-Echoes saved to `whs_meta_save`. Walk-over fires a whispered past-self line + 1% inherited buff. Rare (1%) hidden grandfather voice unfolds a 25-leaf Almanac arc. Spec: [`docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`](../specs/2026-05-22-the-moor-remembers-design.md).
 
