@@ -15,6 +15,7 @@ import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { t } from '../core/i18n';
 import { loadSave } from '../utils/save';
 import { parseSharedRunUrl } from '../utils/sharedRunUrl';
+import { isSporranAutoRoute } from '../utils/sporranAutoRoute';
 import {
   bakeEnemyAtlas,
   bakeNonVariantAccessoryAtlas,
@@ -234,6 +235,43 @@ export class BootScene extends Phaser.Scene {
         });
         return;
       }
+    }
+
+    // Sporran-deck auto-route — `?sporran=1` skips the splash + menu and
+    // drops the recipient straight onto the SporranScene picker. Viral
+    // sister to the W82 shared-run path: a sharer can pre-deck a sporran
+    // for a friend without walking them through the curse/sporran fork.
+    // DESIGN_IDEAS §1 (Sporran Deck) v2 follow-up. Predicate lives in
+    // `src/utils/sporranAutoRoute.ts` so vitest can cover the parse
+    // rules without booting Phaser. Sporran's `commitPicks()` already
+    // does `scene.start('Game', { pickedSporranIds })`, so the run-start
+    // chain (Curse → Sporran → Game) collapses to (Sporran → Game). URL
+    // is scrubbed via history.replaceState before the start so a refresh
+    // lands on the menu, matching the shared-run path's URL hygiene.
+    //
+    // Why the explicit dynamic-import instead of `scene.start('Sporran')`:
+    // The lazy-scene loader (`lazyProductionScenes.ts`) defers the
+    // `start` op asynchronously while it dynamic-imports the scene class.
+    // From a CREATING-state scene (Boot.create) the SceneManager's queue
+    // processes the *paired* `stop Boot` op before the deferred `start
+    // Sporran` resolves, leaving the manager in a state where Sporran
+    // never transitions out of INIT. The shared-run path above avoids
+    // this because `Game` is pre-registered in `main.ts` config.scene.
+    // Awaiting the import + manual `scene.add` before `scene.start`
+    // races cleanly: Sporran is in the manager before its start op queues.
+    if (typeof window !== 'undefined' && isSporranAutoRoute(window.location.search)) {
+      try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
+      try {
+        window.history.replaceState({}, '', window.location.pathname);
+      } catch { /* ignore — best-effort URL hygiene */ }
+      void import('./SporranScene').then(({ SporranScene }) => {
+        const mgr = this.game.scene;
+        if (!mgr.getScene('Sporran')) {
+          mgr.add('Sporran', SporranScene, false);
+        }
+        this.scene.start('Sporran');
+      });
+      return;
     }
 
     const { width, height } = this.scale;
