@@ -2436,6 +2436,37 @@ export const ui = {
         c: 'Auld stories said the rag did somethin\'. Now I ken what.',
       },
     },
+    /** Cairn Walkover ("The Moor Remembers" feature). Fires when the player
+     *  steps over a Cairn of Echoes. Five sub-pool tags:
+     *    past_self_first    — first cairn touched this run
+     *    past_self          — subsequent cairn touches
+     *    grandfather_first  — first grandfather whisper ever (lifetime)
+     *    grandfather_revealed — subsequent grandfather whispers
+     *    grandfather_complete — after the 25th grandfather leaf is revealed
+     *  Hearth tone throughout: quiet, awed, never boastful. The moor speaks;
+     *  the haggis only listens. Banter pool priority 34. */
+    cairn_walkover: {
+      past_self_first: {
+        a: 'That stone wisnae here yesterday. It is now.',
+        b: 'My stone. Still standing.',
+      },
+      past_self: {
+        a: 'A wee thanks fae beneath.',
+        b: 'The moor keeps its count.',
+      },
+      grandfather_first: {
+        a: 'Who was that? That wisnae me.',
+        b: 'The stone spoke. Not my voice.',
+      },
+      grandfather_revealed: {
+        a: 'The old voice again. Listen.',
+        b: 'He kent more than he should.',
+      },
+      grandfather_complete: {
+        a: 'He is quiet now. The moor is mine.',
+        b: 'Twenty-five. He\'s said his piece.',
+      },
+    },
     /** Lemmings Easter Egg (DESIGN_IDEAS §13). Fires once when the cliff-
      *  edge parade triggers — a quiet hearth-toned toast riding under
      *  the OH NO! SFX. Pays affectionate tribute to DMA Design / Dundee

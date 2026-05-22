@@ -1879,6 +1879,32 @@ export const ui = {
         c: 'Auld stories said tha cloot did somethin\'. Now I ken whit.',
       },
     },
+    // ── Cairn Walkover ("The Moor Remembers"). SCS overlay for cairn_walkover.
+    //    Hearth register, light Scots. `yon/noo/muir/aneath/wha/auld/mair`
+    //    per Phase B conventions. The grandfather voice uses elder-Scots
+    //    register: `hark` for listen, `kent` / `noo` / `muir` throughout.
+    cairn_walkover: {
+      past_self_first: {
+        a: 'Yon stane wisnae here yesterday. It is noo.',
+        b: 'My stane. Still staundin.',
+      },
+      past_self: {
+        a: 'A wee thanks fae aneath.',
+        b: 'The muir keeps its count.',
+      },
+      grandfather_first: {
+        a: 'Wha wis that? That wisnae me.',
+        b: 'Tha stane spak. No my voice.',
+      },
+      grandfather_revealed: {
+        a: 'The auld voice again. Hark.',
+        b: 'He kent mair nor he should.',
+      },
+      grandfather_complete: {
+        a: 'He is quiet noo. The muir is mine.',
+        b: 'Five-an-twenty. He\'s said his piece.',
+      },
+    },
     // ── Lemmings Easter Egg (DESIGN_IDEAS §13). SCS overlay for
     //    lemmings_remember. Hearth tone — pleased, fond. Scots `mind`
     //    = "remember" (Doric / Highland-Scots holds tighter to it than

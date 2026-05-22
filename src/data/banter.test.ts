@@ -51,6 +51,8 @@ describe('BANTER_POOLS structure', () => {
     'shinty_parry',
     // DESIGN_IDEAS §1 — Clootie Rag Wager commit edge (walk-through trunk)
     'clootie_wager',
+    // "The Moor Remembers" — Cairn of Echoes walkover (past-self + grandfather sub-pools)
+    'cairn_walkover',
     // DESIGN_IDEAS §1 — Taxman Grudge Ledger run-end verdict line
     'taxman_grudge',
     // DESIGN_IDEAS §13 — Lemmings Easter Egg cliff-edge parade trigger

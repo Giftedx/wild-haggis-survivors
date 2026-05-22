@@ -75,6 +75,13 @@ export type BanterContext =
   // walked into the trunk and paid the HP cost). Sub-pool tag `bound`.
   // Hearth + grave register: ceremonial, the moment of supplication.
   | 'clootie_wager'
+  // "The Moor Remembers" — fires when the player steps over a Cairn of
+  // Echoes. Five sub-pool tags: `past_self_first` (first cairn this run),
+  // `past_self` (subsequent touches), `grandfather_first` (first lifetime
+  // grandfather whisper), `grandfather_revealed` (subsequent whispers),
+  // `grandfather_complete` (after the 25th leaf is revealed). Hearth tone;
+  // the moor speaks back through stones the player once placed.
+  | 'cairn_walkover'
   // DESIGN_IDEAS §1 Taxman Grudge Ledger — fires once at run-end victory
   // (the Taxman is the final boss; only victory routes reach his
   // closing word). Sub-pool tags = grudge verdicts: coward | bruiser |
@@ -1460,6 +1467,53 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.clootie_wager.bound_first.a',
         'ui.banter.clootie_wager.bound_first.b',
         'ui.banter.clootie_wager.bound_first.c',
+      ],
+    },
+  },
+  {
+    // Cairn Walkover ("The Moor Remembers" feature). Fires when the player
+    // steps over a Cairn of Echoes. Priority 34 sits just above clootie_wager
+    // (33): the walkover is a *discovery* beat — the moor speaking back
+    // through a player-placed stone — rather than a deliberate trade, so it
+    // takes a half-rung of precedence in same-tick arbitration. Still well
+    // below the moor-event band (35+) so environmental events continue to
+    // dominate; Reliquary (45) and above remain unaffected. Five sub-pool
+    // tags map to the narrative beats in the feature spec:
+    //   past_self_first    — first cairn touched this run (fresh discovery)
+    //   past_self          — subsequent cairn touches (familiar rite)
+    //   grandfather_first  — first grandfather whisper ever heard (lifetime)
+    //   grandfather_revealed — subsequent grandfather whispers
+    //   grandfather_complete — fires once after the 25th grandfather leaf
+    // Hearth tone throughout: the haggis is quiet, a little awed, never
+    // boastful. The moor is doing the speaking — the haggis is only the ear.
+    context: 'cairn_walkover',
+    tone: 'hearth',
+    priority: 34,
+    rare: true,
+    keys: [
+      'ui.banter.cairn_walkover.past_self.a',
+      'ui.banter.cairn_walkover.past_self.b',
+    ],
+    keysByTag: {
+      past_self_first: [
+        'ui.banter.cairn_walkover.past_self_first.a',
+        'ui.banter.cairn_walkover.past_self_first.b',
+      ],
+      past_self: [
+        'ui.banter.cairn_walkover.past_self.a',
+        'ui.banter.cairn_walkover.past_self.b',
+      ],
+      grandfather_first: [
+        'ui.banter.cairn_walkover.grandfather_first.a',
+        'ui.banter.cairn_walkover.grandfather_first.b',
+      ],
+      grandfather_revealed: [
+        'ui.banter.cairn_walkover.grandfather_revealed.a',
+        'ui.banter.cairn_walkover.grandfather_revealed.b',
+      ],
+      grandfather_complete: [
+        'ui.banter.cairn_walkover.grandfather_complete.a',
+        'ui.banter.cairn_walkover.grandfather_complete.b',
       ],
     },
   },
