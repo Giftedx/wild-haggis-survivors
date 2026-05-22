@@ -89,4 +89,9 @@ export const relics = {
     effect: '+50% XP from all sources. Boss HP +15%.',
     flavour: 'A splinter the size of a thumbnail. Nobody noticed it missing.',
   },
+  stormcrown: {
+    name: 'Stormcrown',
+    effect: '+18% damage. 6% chance on crit to freeze for 0.5s.',
+    flavour: 'Worn by the haggis who outlasted the winter that walks. The frost is no longer hers; it is yours, and it remembers her name.',
+  },
 } as const;

@@ -6,6 +6,7 @@ import {
   RELIC_CHEST_OVERRIDE_CHANCE,
   RELIC_BOSS_GUARANTEED_SOURCES,
   pickRelicFromPool,
+  pickRestrictedRelicForBoss,
   rollEliteDropOccurs,
   rollChestOverrideOccurs,
   bossGrantsRelic,
@@ -20,9 +21,9 @@ describe('relicDrops — constants', () => {
     expect(RELIC_CHEST_OVERRIDE_CHANCE).toBe(0.25);
   });
 
-  it('boss guaranteed-drop whitelist matches spec §2 (Tier-2+ only, gordon excluded)', () => {
+  it('boss guaranteed-drop whitelist matches spec §2 (Tier-2+ only, gordon excluded; cailleach_boss added V2)', () => {
     expect(RELIC_BOSS_GUARANTEED_SOURCES).toEqual(
-      new Set(['tour_bus', 'the_laird', 'hunter_general', 'taxman']),
+      new Set(['tour_bus', 'the_laird', 'hunter_general', 'taxman', 'cailleach_boss']),
     );
     expect(RELIC_BOSS_GUARANTEED_SOURCES.has('gordon')).toBe(false);
   });
@@ -167,6 +168,33 @@ describe('pickRelicFromPool — weighted rarity + drop-affinity', () => {
       const bargain = pickRelicFromPool('bargain', rng, []);
       expect(bargain).not.toBeNull();
       expect(bargain!.dropAffinity.includes('bargain')).toBe(true);
+    }
+  });
+});
+
+describe('pickRestrictedRelicForBoss — V2 Cailleach Gauntlet', () => {
+  it('returns Stormcrown for cailleach_boss', () => {
+    const def = pickRestrictedRelicForBoss('cailleach_boss');
+    expect(def?.key).toBe('stormcrown');
+  });
+
+  it('returns null for non-restricted bosses', () => {
+    expect(pickRestrictedRelicForBoss('gordon')).toBeNull();
+    expect(pickRestrictedRelicForBoss('tour_bus')).toBeNull();
+    expect(pickRestrictedRelicForBoss('taxman')).toBeNull();
+  });
+
+  it('returns null for unknown boss keys', () => {
+    expect(pickRestrictedRelicForBoss('not_a_boss')).toBeNull();
+  });
+});
+
+describe('pickRelicFromPool — restricted exclusion (V2)', () => {
+  it('never returns Stormcrown for a tour_bus boss kill', () => {
+    const rng = createRNG(0x1234);
+    for (let i = 0; i < 100; i++) {
+      const def = pickRelicFromPool('boss', rng, []);
+      expect(def?.key).not.toBe('stormcrown');
     }
   });
 });

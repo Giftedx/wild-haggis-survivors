@@ -33,13 +33,35 @@ export const RELIC_CHEST_OVERRIDE_CHANCE = 0.25;
  * Boss keys that guarantee a Relic drop. Spec §2 names the four
  * Tier-2+ bosses; Gordon is Tier-1 and deliberately excluded so the
  * first Act doesn't flood the early run with Relics.
+ *
+ * V2 (2026-05-22) — `cailleach_boss` added as guaranteed since the
+ * Cailleach Gauntlet costs the player 7 cairn-touches; the reward
+ * must land.
  */
 export const RELIC_BOSS_GUARANTEED_SOURCES: ReadonlySet<string> = new Set([
   'tour_bus',
   'the_laird',
   'hunter_general',
   'taxman',
+  'cailleach_boss',
 ]);
+
+/**
+ * V2 — for bosses with a `restrictedToBossKey`-matching relic in the
+ * catalogue, return that relic def directly (skipping the pool roll).
+ * Returns null if the boss has no restricted relic, falling back to
+ * the normal pool path. Used by the relic-drop call site to ensure
+ * the Cailleach Gauntlet always drops Stormcrown specifically.
+ */
+export function pickRestrictedRelicForBoss(bossKey: string): RelicDef | null {
+  for (const key of RELIC_KEYS) {
+    const def = RELICS[key];
+    if (def.restrictedToBossKey === bossKey) {
+      return def;
+    }
+  }
+  return null;
+}
 
 /** Ordered rarity tiers for the weighted pool. */
 const RARITY_TIERS: readonly RelicRarity[] = ['common', 'uncommon', 'rare'];
@@ -99,6 +121,9 @@ export function pickRelicFromPool(
     const def = RELICS[key];
     if (held.has(key)) continue;
     if (!def.dropAffinity.includes(source)) continue;
+    // V2 — restricted relics never appear in the open pool; they
+    // drop only through `pickRestrictedRelicForBoss`.
+    if (def.restrictedToBossKey) continue;
     byRarity[def.rarity].push(def);
   }
 

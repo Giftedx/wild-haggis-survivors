@@ -359,4 +359,40 @@ export function bakeRelicIcons(scene: Phaser.Scene): void {
     g.lineBetween(12, 17, 20, 15);
     g.lineBetween(14, 21, 18, 11);
   });
+
+  // V2 — Stormcrown: frost-blue ringed crown, three peaks + glint.
+  // Cailleach Gauntlet drop. Spec
+  // `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+  bake(scene, 'relic_stormcrown', (g) => {
+    glow(g, 0xb9d6f0);
+    // Crown band (outline + fill)
+    g.fillStyle(0x0a141c, 1);
+    g.fillRect(6, 19, 20, 5);
+    g.fillStyle(0x3c4a5a, 1);
+    g.fillRect(7, 20, 18, 3);
+    g.fillStyle(0xb9d6f0, 1);
+    g.fillRect(7, 21, 18, 1);
+
+    // Three peaks (jagged ice spires — left taller, asymmetric)
+    g.fillStyle(0x0a141c, 1);
+    g.fillTriangle(7, 19, 11, 7, 14, 19);
+    g.fillTriangle(13, 19, 17, 3, 21, 19);
+    g.fillTriangle(20, 19, 24, 9, 26, 19);
+    g.fillStyle(0xb9d6f0, 1);
+    g.fillTriangle(8, 19, 11, 9, 13, 19);
+    g.fillTriangle(14, 19, 17, 5, 20, 19);
+    g.fillTriangle(21, 19, 24, 11, 25, 19);
+
+    // Frost-white peak highlights
+    g.fillStyle(0xe8f5ff, 0.85);
+    g.fillTriangle(10, 18, 11, 10, 12, 18);
+    g.fillTriangle(16, 18, 17, 6, 18, 18);
+    g.fillTriangle(23, 18, 24, 12, 25, 18);
+
+    // Centre glint (ice-bright pinpoint)
+    g.fillStyle(0xe8f5ff, 1);
+    g.fillCircle(17, 12, 1.2);
+    g.fillStyle(0xfaffff, 0.95);
+    g.fillCircle(17, 12, 0.5);
+  });
 }

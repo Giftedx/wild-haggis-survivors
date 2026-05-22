@@ -361,3 +361,29 @@ export function activateFingalsHorn(state: FingalsHornState): FingalsHornResult 
   if (state.used) return { fired: false, state };
   return { fired: true, state: { used: true } };
 }
+
+// ── stormcrown ─────────────────────────────────────────────────────
+// V2 (Cailleach Gauntlet) — drops only from cailleach_boss kill.
+// +18 % weapon damage + 6 % chance on crit to freeze for 0.5 s.
+// Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
+
+export const STORMCROWN_DAMAGE_MULT = 1.18;
+export const STORMCROWN_FREEZE_CHANCE = 0.06;
+export const STORMCROWN_FREEZE_DURATION_MS = 500;
+
+export function applyStormcrownDamage(baseDamage: number): number {
+  return baseDamage * STORMCROWN_DAMAGE_MULT;
+}
+
+/**
+ * V2 — Stormcrown's on-crit freeze proc. 6 % chance per crit; 500 ms
+ * freeze. Caller threads the crit flag and the run RNG so the proc is
+ * replay-deterministic (no wall-clock / unseeded randomness).
+ */
+export function rollStormcrownFreeze(
+  rng: { bool(p: number): boolean },
+  isCrit: boolean,
+): boolean {
+  if (!isCrit) return false;
+  return rng.bool(STORMCROWN_FREEZE_CHANCE);
+}

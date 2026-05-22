@@ -17,6 +17,10 @@ import {
   applyStoneOfDestinyBossHp,
   applyStoneOfDestinyXp,
   activateFingalsHorn,
+  applyStormcrownDamage,
+  rollStormcrownFreeze,
+  STORMCROWN_FREEZE_CHANCE,
+  STORMCROWN_FREEZE_DURATION_MS,
   initialBronzeClaspState,
   initialClootieRagState,
   initialFingalsHornState,
@@ -363,5 +367,29 @@ describe('fingals_horn', () => {
   it('summon constants are reasonable (3 Fianna, 10s)', () => {
     expect(FINGALS_HORN_SUMMON_COUNT).toBe(3);
     expect(FINGALS_HORN_SUMMON_DURATION_MS).toBe(10_000);
+  });
+});
+
+describe('Stormcrown effect helpers (V2)', () => {
+  it('applyStormcrownDamage scales base damage by +18 %', () => {
+    expect(applyStormcrownDamage(100)).toBeCloseTo(118);
+    expect(applyStormcrownDamage(50)).toBeCloseTo(59);
+  });
+
+  it('rollStormcrownFreeze only fires on crit', () => {
+    const alwaysTrue = { bool: () => true };
+    expect(rollStormcrownFreeze(alwaysTrue, false)).toBe(false);
+    expect(rollStormcrownFreeze(alwaysTrue, true)).toBe(true);
+  });
+
+  it('rollStormcrownFreeze respects the 6 % chance', () => {
+    const probe: number[] = [];
+    const rng = { bool: (p: number) => { probe.push(p); return false; } };
+    rollStormcrownFreeze(rng, true);
+    expect(probe[0]).toBeCloseTo(STORMCROWN_FREEZE_CHANCE);
+  });
+
+  it('exposes a 500 ms freeze duration constant', () => {
+    expect(STORMCROWN_FREEZE_DURATION_MS).toBe(500);
   });
 });

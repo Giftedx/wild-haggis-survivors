@@ -41,10 +41,11 @@ export type RelicKey =
   | 'clootie_rag'
   | 'fishermens_net'
   | 'midgie_repellent'
-  // Rare (3)
+  // Rare (4 — Stormcrown added 2026-05-22 as Cailleach Gauntlet drop)
   | 'grans_teapot'
   | 'fingals_horn'
-  | 'stone_of_destiny_shard';
+  | 'stone_of_destiny_shard'
+  | 'stormcrown';
 
 export interface RelicDef {
   readonly key: RelicKey;
@@ -63,6 +64,11 @@ export interface RelicDef {
   readonly dropAffinity: readonly RelicDropSource[];
   /** True if the relic has a manual activation (e.g. sporran menu). */
   readonly activate?: boolean;
+  /**
+   * V2 (Cailleach Gauntlet) — when set, this relic ONLY drops from a
+   * kill of this boss key. Excluded from the general drop pool.
+   */
+  readonly restrictedToBossKey?: string;
 }
 
 /**
@@ -268,6 +274,20 @@ export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
     iconSprite: 'relic_destiny_shard',
     particleColour: 0xd8c88c, // sandstone
     dropAffinity: ['boss'],
+  },
+  // V2 (Cailleach Gauntlet) — restricted-drop relic. Only drops from
+  // cailleach_boss; never appears in the general boss pool.
+  // Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md
+  stormcrown: {
+    key: 'stormcrown',
+    rarity: 'rare',
+    nameKey: 'relics.stormcrown.name',
+    effectKey: 'relics.stormcrown.effect',
+    flavourKey: 'relics.stormcrown.flavour',
+    iconSprite: 'relic_stormcrown',
+    particleColour: 0xb9d6f0, // frost-blue
+    dropAffinity: ['boss'],
+    restrictedToBossKey: 'cailleach_boss',
   },
 };
 

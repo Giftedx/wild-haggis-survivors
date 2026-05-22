@@ -41,6 +41,7 @@ import {
   applySporranOfHolding,
   applyStoneOfDestinyBossHp,
   applyStoneOfDestinyXp,
+  applyStormcrownDamage,
   applyWhiskyDramActivation,
   initialBronzeClaspState,
   initialCairnStoneState,
@@ -52,9 +53,11 @@ import {
   noteClootieRagDamageTaken,
   noteGransTeapotDamageTaken,
   resolveCairnStoneOnHeatherKill,
+  rollStormcrownFreeze,
   tickGransTeapot,
   FINGALS_HORN_SUMMON_COUNT,
   FINGALS_HORN_SUMMON_DURATION_MS,
+  STORMCROWN_FREEZE_DURATION_MS,
   type BronzeClaspState,
   type CairnStoneState,
   type ClootieRagState,
@@ -322,6 +325,31 @@ export class RelicEffectDriver {
       durationMs: FINGALS_HORN_SUMMON_DURATION_MS,
     };
   }
+
+  // ── Stormcrown (V2 Cailleach Gauntlet) ──────────────────────────
+
+  /** V2 — Stormcrown +18 % weapon damage. */
+  modifyStormcrownDamage(baseDamage: number): number {
+    return this.isHolding('stormcrown')
+      ? applyStormcrownDamage(baseDamage)
+      : baseDamage;
+  }
+
+  /**
+   * V2 — Stormcrown 6 % on-crit freeze proc. Returns true iff freeze
+   * should fire. Caller threads the run RNG so the proc is replay-
+   * deterministic.
+   */
+  tryStormcrownFreeze(
+    rng: { bool(p: number): boolean },
+    isCrit: boolean,
+  ): boolean {
+    if (!this.isHolding('stormcrown')) return false;
+    return rollStormcrownFreeze(rng, isCrit);
+  }
+
+  /** Stormcrown freeze duration (read from the effect helpers). */
+  readonly stormcrownFreezeDurationMs = STORMCROWN_FREEZE_DURATION_MS;
 
   /** Reset every per-run scratch state — called on scene restart. */
   reset(): void {

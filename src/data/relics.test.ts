@@ -66,10 +66,10 @@ describe('RELICS — Task 2: 7 uncommon relics', () => {
   });
 });
 
-describe('RELICS — Task 3: 3 rare relics', () => {
-  it('has exactly 3 rare relics', () => {
+describe('RELICS — Task 3: 4 rare relics (3 + Stormcrown V2)', () => {
+  it('has exactly 4 rare relics (Stormcrown added 2026-05-22)', () => {
     const rares = RELIC_KEYS.filter((k) => RELICS[k].rarity === 'rare');
-    expect(rares).toHaveLength(3);
+    expect(rares).toHaveLength(4);
   });
 
   it('expected rare keys are present and include boss-drop affinity', () => {
@@ -77,6 +77,7 @@ describe('RELICS — Task 3: 3 rare relics', () => {
       'grans_teapot',
       'fingals_horn',
       'stone_of_destiny_shard',
+      'stormcrown',
     ];
     for (const k of expected) {
       expect(RELICS[k]).toBeDefined();
@@ -92,8 +93,8 @@ describe('RELICS — Task 3: 3 rare relics', () => {
 });
 
 describe('RELICS — Task 4: rarity distribution', () => {
-  it('has 18 relics total split 8 common / 7 uncommon / 3 rare', () => {
-    expect(RELIC_KEYS).toHaveLength(18);
+  it('has 19 relics total split 8 common / 7 uncommon / 4 rare', () => {
+    expect(RELIC_KEYS).toHaveLength(19);
     const counts: Record<RelicRarity, number> = RELIC_KEYS.reduce(
       (acc, k) => {
         acc[RELICS[k].rarity] += 1;
@@ -101,7 +102,7 @@ describe('RELICS — Task 4: rarity distribution', () => {
       },
       { common: 0, uncommon: 0, rare: 0 } as Record<RelicRarity, number>
     );
-    expect(counts).toEqual({ common: 8, uncommon: 7, rare: 3 });
+    expect(counts).toEqual({ common: 8, uncommon: 7, rare: 4 });
   });
 
   it('drop-pool weights are 50/35/15 and sum to 100', () => {
