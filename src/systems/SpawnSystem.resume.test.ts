@@ -77,7 +77,10 @@ describe('SpawnSystem.applyResumeTime', () => {
   });
 
   it('marks past bosses as spawned when no explicit keys given', () => {
-    const earlyBosses = BOSSES.filter(b => b.spawnTimeSec <= 300);
+    // V2 — exclude manualSpawn bosses (Cailleach Gauntlet) which use a
+    // -1 sentinel; they never seed the spawnedBossKeys set on resume
+    // because the gauntlet trigger lives outside the time-based path.
+    const earlyBosses = BOSSES.filter(b => !b.manualSpawn && b.spawnTimeSec <= 300);
     ss.applyResumeTime(300);
     for (const b of earlyBosses) {
       expect(ss.getSpawnedBossKeys()).toContain(b.key);

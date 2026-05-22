@@ -214,6 +214,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.taxman.b',
         'ui.banter.boss_warn.taxman.c',
       ],
+      cailleach_boss: [
+        'ui.banter.boss_warn.cailleach_boss.a',
+        'ui.banter.boss_warn.cailleach_boss.b',
+        'ui.banter.boss_warn.cailleach_boss.c',
+      ],
     },
   },
   {
@@ -375,6 +380,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.taxman.a',
         'ui.banter.boss_down.taxman.b',
         'ui.banter.boss_down.taxman.c',
+      ],
+      cailleach_boss: [
+        'ui.banter.boss_down.cailleach_boss.a',
+        'ui.banter.boss_down.cailleach_boss.b',
+        'ui.banter.boss_down.cailleach_boss.c',
       ],
     },
   },

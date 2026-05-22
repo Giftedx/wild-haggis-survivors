@@ -16,6 +16,7 @@ import { bakeBossTourBus } from './tourBus';
 import { bakeBossLaird } from './laird';
 import { bakeBossHunterGeneral } from './hunterGeneral';
 import { bakeBossTaxman } from './taxman';
+import { bakeBossCailleach } from './cailleachBoss';
 import { bakeBossArenaProps } from './arenaProps';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
@@ -29,5 +30,7 @@ export function bakeBosses(scene: Phaser.Scene): void {
   bakeBossLaird(scene);
   bakeBossHunterGeneral(scene);
   bakeBossTaxman(scene);
+  // V2 — Cailleach Gauntlet boss; manual-spawn only (no auto-time slot).
+  bakeBossCailleach(scene);
   bakeBossArenaProps(scene);
 }

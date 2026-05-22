@@ -767,6 +767,7 @@ export const ui = {
     the_laird: 'Tha Laird strides oot — mind yer manners an yer hide.',
     hunter_general: 'Tha Hunter-General — an they\'ve brought pals.',
     taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
+    cailleach_boss: 'THA CAILLEACH WALKS — winter answers whit ye cried.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
@@ -797,6 +798,7 @@ export const ui = {
     boss_killed_the_laird: 'Tha Laird\'s on his erse! Yer bum\'s oot tha windae, pal!',
     boss_killed_hunter_general: 'Hunter-General floored! Tak yer medals an yer pith helmet!',
     boss_killed_taxman: 'THA TAXMAN IS DOON! Tax-free zone declared!',
+    boss_killed_cailleach_boss: 'Tha Cailleach is doon! Stormcrown is yours.',
     boss_killed_generic: 'Boss doon! Get it richt round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it richt round them!',
@@ -943,6 +945,12 @@ export const ui = {
         a: 'Tha Taxman\'s here. An he\'s no takin council tax.',
         b: 'Bureaucrat wi a scythe. Pure nichtmare fuel.',
         c: 'Final demand. Broon envelope, black cloak.',
+      },
+      // V2 — Cailleach Gauntlet. Winter hersel walks oot o tha haar.
+      cailleach_boss: {
+        a: 'She walks oot o tha haar. Staff first. Een last.',
+        b: 'Tha auld wifie is here. Mind yer manners.',
+        c: 'Winter is a wumman. She\'s come fer tha coont.',
       },
     },
     low_hp: {
@@ -1091,6 +1099,12 @@ export const ui = {
         a: 'Taxman took a loss fer wance.',
         b: 'Daith\'s back oan tha books.',
         c: 'Owes us naethin. We owe him naethin. Sortit.',
+      },
+      // V2 — Cailleach Gauntlet, victory beat. Tha winter blinkit.
+      cailleach_boss: {
+        a: 'Tha croon is mine. Winter blinkit.',
+        b: 'Seiven stanes gowd. Seiven names louder.',
+        c: 'I\'ll cairry her croon saft. She earnt tha cost.',
       },
     },
     weapon_evolve: {

@@ -123,4 +123,7 @@ export const beastie = {
   taxman: {
     lore: 'Tha final boss. Tha Excise Office weirin a face. Haes a stamp; tha stamp\'s aulder nor tha kingdom. Aince ye face it, tha run is ower either way — defeated or paid.',
   },
+  cailleach_boss: {
+    lore: 'Tha Cailleach Bheur — winter hersel, mountain-shaper, blue-faced crone. Walks in deer-form some seasons; in cailleach-shape whan tha year turns. Answers only whan seiven cairns hae been coontit — an whan she walks, she walks fer the coonter.',
+  },
 } as const;

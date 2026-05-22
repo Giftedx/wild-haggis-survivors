@@ -41,6 +41,7 @@ import { bakeEliteTelegraphs } from './eliteTelegraphs';
 import { bakeHeartPulse } from './heartPulse';
 import { bakeComboChevron } from './comboChevron';
 import { bakeLemming } from './lemming';
+import { bakeCailleachCandles } from './cailleachCandle';
 
 export function bakeFx(scene: Phaser.Scene): void {
   bakeEntityShadow(scene);
@@ -73,4 +74,6 @@ export function bakeFx(scene: Phaser.Scene): void {
   bakeHeartPulse(scene);
   bakeComboChevron(scene);
   bakeLemming(scene);
+  // V2 (Cailleach Gauntlet) — 3 candle variants (lit / wreathed / extinguished).
+  bakeCailleachCandles(scene);
 }

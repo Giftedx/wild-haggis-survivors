@@ -123,4 +123,7 @@ export const beastie = {
   taxman: {
     lore: 'The final boss. The Excise Office wearing a face. Has a stamp; the stamp\'s older than the kingdom. Once you face it, the run is over either way — defeated or paid.',
   },
+  cailleach_boss: {
+    lore: 'The Cailleach Bheur — winter herself, mountain-shaper, blue-faced crone. Walks in deer-form some seasons; in cailleach-shape when the year turns. Answers only when seven cairns have been counted — and when she walks, she walks for the counter.',
+  },
 } as const;

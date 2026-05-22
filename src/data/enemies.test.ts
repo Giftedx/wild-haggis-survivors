@@ -67,6 +67,9 @@ describe('BOSSES', () => {
   it('every boss has positive HP and spawn time', () => {
     for (const boss of BOSSES) {
       expect(boss.hp, `${boss.key} has non-positive HP`).toBeGreaterThan(0);
+      // V2 — manualSpawn bosses (Cailleach Gauntlet) use a -1 sentinel
+      // since they don't ride the time-based spawn path.
+      if (boss.manualSpawn) continue;
       expect(boss.spawnTimeSec, `${boss.key} has non-positive spawnTimeSec`).toBeGreaterThanOrEqual(0);
     }
   });

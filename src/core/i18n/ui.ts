@@ -1176,6 +1176,8 @@ export const ui = {
     the_laird: 'The Laird strides oot — mind yir manners and yir hide.',
     hunter_general: "The Hunter-General — and they've brought pals.",
     taxman: "The Taxman's here — and he's no' takin' a cheque.",
+    /** V2 — Cailleach Gauntlet boss walks the moor. */
+    cailleach_boss: 'THE CAILLEACH WALKS — winter answers what ye called.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a chest and let it loose!',
@@ -1213,6 +1215,7 @@ export const ui = {
     boss_killed_the_laird: 'The Laird\'s on his erse! Yer bum\'s oot the windae, pal!',
     boss_killed_hunter_general: 'Hunter-General floored! Take yir medals and yir pith helmet!',
     boss_killed_taxman: 'THE TAXMAN IS DOON! Tax-free zone declared!',
+    boss_killed_cailleach_boss: 'The Cailleach is doon! Stormcrown is yours.',
     boss_killed_generic: 'Boss doon! Get it right round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it right round them!',
@@ -1480,6 +1483,13 @@ export const ui = {
         b: 'Bureaucrat wi\' a scythe. Pure nightmare fuel.',
         c: 'Final demand. Brown envelope, black cloak.',
       },
+      // V2 — Cailleach Gauntlet. Winter herself walks oot of the haar.
+      // The fiddlers are gone; this is the goddess, no\' the queen.
+      cailleach_boss: {
+        a: 'She walks oot o\' the haar. Staff first. Eyes last.',
+        b: 'The auld wife is here. Mind yer manners.',
+        c: 'Winter is a woman. She\'s come for the count.',
+      },
     },
     low_hp: {
       a: 'Yer on the last shred, wee yin.',
@@ -1633,6 +1643,12 @@ export const ui = {
         a: 'Taxman took a loss fer once.',
         b: 'Death\'s back oan the books.',
         c: 'Owes us nothin\'. We owe him nothin\'. Sorted.',
+      },
+      // V2 — Cailleach Gauntlet, victory beat. The winter blinked.
+      cailleach_boss: {
+        a: 'The crown is mine. Winter blinked.',
+        b: 'Seven stones gold. Seven names louder.',
+        c: 'I\'ll carry her crown soft. She earned the cost.',
       },
     },
     weapon_evolve: {
