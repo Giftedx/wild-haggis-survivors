@@ -110,6 +110,8 @@ export interface TartanSignature {
   cursed?: boolean;
   /** True when the player survived past the Bell (Taxman kill). */
   postBell?: boolean;
+  /** V2 — true when the player won the Cailleach Gauntlet this run. */
+  cailleachGauntletWon?: boolean;
 }
 
 /** Pick the dominant weapon key from a weapon-damage record. */

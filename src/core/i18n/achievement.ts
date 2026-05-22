@@ -111,4 +111,8 @@ export const achievement = {
     title: 'Earned When the Bard Is Honoured',
     description: 'Won a run wi\' all {count} legends forged. Burns smiles.',
   },
+  ach_crown_the_cailleach: {
+    title: 'Crown the Cailleach',
+    description: 'Survived the Cailleach Gauntlet. The winter blinked.',
+  },
 } as const;

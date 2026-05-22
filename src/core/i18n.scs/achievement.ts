@@ -111,4 +111,8 @@ export const achievement = {
     title: 'Earnt Whan Tha Baird Is Honoured',
     description: 'Wan a run wi aw {count} legends forged. Burns smiles.',
   },
+  ach_crown_the_cailleach: {
+    title: 'Croon tha Cailleach',
+    description: 'Lasted tha Cailleach Gauntlet. Tha winter blinkit.',
+  },
 } as const;

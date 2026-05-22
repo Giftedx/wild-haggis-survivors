@@ -225,6 +225,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_doric_unlock',
   'ach_peerie_unlock',
   'ach_burns_beastie_unlock',
+  'ach_crown_the_cailleach',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */

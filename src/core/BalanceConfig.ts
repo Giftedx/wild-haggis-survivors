@@ -405,7 +405,8 @@ export type AchievementId =
   | 'ach_cailleach_unlock'
   | 'ach_doric_unlock'
   | 'ach_peerie_unlock'
-  | 'ach_burns_beastie_unlock';
+  | 'ach_burns_beastie_unlock'
+  | 'ach_crown_the_cailleach';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -527,6 +528,12 @@ export const ACHIEVEMENT_DEFS: Record<
     titleKey: 'achievement.ach_burns_beastie_unlock.title',
     descriptionKey: 'achievement.ach_burns_beastie_unlock.description',
     descriptionVars: { count: BURNS_EVOLUTION_THRESHOLD },
+  },
+  // V2 — Cailleach Gauntlet win. Survive 7 cairns + the Cailleach
+  // herself. Drops Stormcrown + unlocks Cailleach's Mantle tartan.
+  ach_crown_the_cailleach: {
+    titleKey: 'achievement.ach_crown_the_cailleach.title',
+    descriptionKey: 'achievement.ach_crown_the_cailleach.description',
   },
 };
 

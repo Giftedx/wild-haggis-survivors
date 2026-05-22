@@ -83,9 +83,33 @@ const TAXMAN_RECKONING: AuthoredTartan = {
   priority: 40,
 };
 
+/**
+ * V2 — Cailleach's Mantle. Won the Cailleach Gauntlet (7 cairn touches
+ * + Cailleach defeated). Winter-frost palette: pale ice warp, slate
+ * blue secondary, deep slate base, bone-bronze accent — the colours
+ * of the goddess the haggis bested. Priority 80 sits below Ironmoor
+ * Crown (100) but above Cursed Triumph (60) — the gauntlet is harder
+ * than a curse, gentler than Ironmoor.
+ */
+const CAILLEACH_MANTLE: AuthoredTartan = {
+  id: 'cailleach_mantle',
+  profile: {
+    base: '#0a141c',
+    primary: '#e8f0f5',
+    secondary: '#3c4a5a',
+    accent: '#d8c8a0',
+  },
+  matches: (sig) =>
+    sig.victory === true
+    && sig.cailleachGauntletWon === true
+    && sig.ironmoor !== true,
+  priority: 80,
+};
+
 /** Ordered registry — exported for tests + future gallery UI. */
 export const AUTHORED_TARTANS: readonly AuthoredTartan[] = [
   IRONMOOR_CROWN,
+  CAILLEACH_MANTLE,
   CURSED_TRIUMPH,
   TAXMAN_RECKONING,
 ];
