@@ -10,8 +10,8 @@ class ThrowingStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
-const defaultV10 = {
-  saveVersion: 10 as const,
+const defaultV11 = {
+  saveVersion: 11 as const,
   totalKills: 0,
   totalKillsSpent: 0,
   unlockedWeapons: [] as string[],
@@ -33,8 +33,8 @@ const defaultV10 = {
   oldDroverRevealedCount: 0,
 };
 
-/** Alias kept for clarity in migration tests that seed v9 blobs. */
-const defaultV9 = defaultV10;
+/** Alias kept for clarity in migration tests that seed earlier blobs. */
+const defaultV9 = defaultV11;
 
 const sampleRun = (): IRunState => ({
   gameTimeSec: 600,
@@ -82,7 +82,7 @@ describe('SaveManager', () => {
     });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(10);
+    expect(loaded.saveVersion).toBe(11);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
     expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
@@ -137,7 +137,7 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(10);
+    expect(loaded.saveVersion).toBe(11);
     expect(loaded.codexCulledKeys).toEqual([]);
     expect(loaded.fallenCairns).toEqual([]);
     expect(loaded.oldDroverRevealedCount).toBe(0);
@@ -365,7 +365,7 @@ describe('SaveManager v9 → v10 migration', () => {
     });
     store.set('whs_meta_save', JSON.stringify(v9Blob));
     const loaded = sm.load();
-    expect(loaded.saveVersion).toBe(10);
+    expect(loaded.saveVersion).toBe(11);
     expect(loaded.fallenCairns).toEqual([]);
     expect(loaded.oldDroverRevealedCount).toBe(0);
     expect(loaded.totalKills).toBe(100);
@@ -475,5 +475,100 @@ describe('SaveManager v9 → v10 migration', () => {
     store.set('whs_meta_save', JSON.stringify(v10Blob));
     const loaded = sm.load();
     expect(loaded.oldDroverRevealedCount).toBe(0);
+  });
+});
+
+describe('SaveManager v10 → v11 migration', () => {
+  it('migrates a v10 blob to v11 preserving cairns', () => {
+    const v10Cairn = {
+      x: 100, y: 200, cause: 'enemy_contact', variantKey: 'classic',
+      timeSurvivedMs: 60_000, inheritedStat: 'damage', savedAt: 42,
+    };
+    const v10Blob = { ...defaultV9, saveVersion: 10, fallenCairns: [v10Cairn] };
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    store.set('whs_meta_save', JSON.stringify(v10Blob));
+    const loaded = sm.load();
+    expect(loaded.saveVersion).toBe(11);
+    expect(loaded.fallenCairns).toHaveLength(1);
+    expect(loaded.fallenCairns[0].savedAt).toBe(42);
+    expect(loaded.fallenCairns[0].wreathedAt).toBeUndefined();
+    expect(loaded.fallenCairns[0].extinguishedAt).toBeUndefined();
+  });
+
+  it('round-trips v11 wreathedAt + extinguishedAt fields', () => {
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    const cairnWreathed: FallenCairn = {
+      x: 0, y: 0, cause: 'enemy_contact', variantKey: 'classic',
+      timeSurvivedMs: 1, inheritedStat: 'damage', savedAt: 1,
+      wreathedAt: 9999,
+    };
+    const cairnExtinguished: FallenCairn = {
+      x: 0, y: 0, cause: 'enemy_contact', variantKey: 'classic',
+      timeSurvivedMs: 1, inheritedStat: 'damage', savedAt: 2,
+      extinguishedAt: 8888,
+    };
+    const blob = { ...sm.load(), fallenCairns: [cairnWreathed, cairnExtinguished] };
+    sm.save(blob);
+    const loaded = sm.load();
+    expect(loaded.fallenCairns[0].wreathedAt).toBe(9999);
+    expect(loaded.fallenCairns[1].extinguishedAt).toBe(8888);
+  });
+});
+
+describe('SaveManager mark methods', () => {
+  it('markCairnsWreathed routes through markWreathed and persists', () => {
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    const cairn: FallenCairn = {
+      x: 0, y: 0, cause: 'enemy_contact', variantKey: 'classic',
+      timeSurvivedMs: 1, inheritedStat: 'damage', savedAt: 42,
+    };
+    sm.recordFallenCairn(cairn);
+    sm.markCairnsWreathed([42], 12345);
+    expect(sm.getFallenCairns()[0].wreathedAt).toBe(12345);
+  });
+
+  it('markCairnsExtinguished respects wreath precedence', () => {
+    const store = new Map<string, string>();
+    const sm = new SaveManager({
+      key: 'whs_meta_save',
+      storage: {
+        getItem: (k) => store.get(k) ?? null,
+        setItem: (k, v) => { store.set(k, v); },
+        removeItem: (k) => { store.delete(k); },
+      },
+    });
+    const cairn: FallenCairn = {
+      x: 0, y: 0, cause: 'enemy_contact', variantKey: 'classic',
+      timeSurvivedMs: 1, inheritedStat: 'damage', savedAt: 42,
+    };
+    sm.recordFallenCairn(cairn);
+    sm.markCairnsWreathed([42], 100);
+    sm.markCairnsExtinguished([42], 200);
+    expect(sm.getFallenCairns()[0].wreathedAt).toBe(100);
+    expect(sm.getFallenCairns()[0].extinguishedAt).toBeUndefined();
   });
 });

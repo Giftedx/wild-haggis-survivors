@@ -6,7 +6,7 @@ import { BALANCE } from './BalanceConfig';
 import type { ISaveData } from './SaveManager';
 
 const pristine: ISaveData = {
-  saveVersion: 10,
+  saveVersion: 11,
   totalKills: 0,
   totalKillsSpent: 0,
   dailyChallenge: null,

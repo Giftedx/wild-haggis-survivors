@@ -3,7 +3,7 @@ import { SaveManager, type ISaveData } from './SaveManager';
 import { tryPurchaseMetaUpgrade } from './MetaPurchase';
 
 const baseSave = (): ISaveData => ({
-  saveVersion: 10,
+  saveVersion: 11,
   totalKills: 100,
   totalKillsSpent: 0,
   dailyChallenge: null,

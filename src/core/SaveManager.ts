@@ -5,7 +5,7 @@ export type StorageLike = {
 };
 
 import { emitSaveFailure } from '../utils/saveFailure';
-import { recordFallenCairn, type FallenCairn } from '../utils/save/fallenCairns';
+import { recordFallenCairn, markWreathed, markExtinguished, type FallenCairn } from '../utils/save/fallenCairns';
 
 export interface ISaveDataV1 {
   saveVersion: 1;
@@ -334,9 +334,19 @@ export interface ISaveDataV10 {
   oldDroverRevealedCount: number;
 }
 
-export type ISaveData = ISaveDataV10;
+/**
+ * V11 — Moor Remembers V2 (`docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`).
+ * Per-cairn state via the optional `wreathedAt` / `extinguishedAt` fields
+ * on `FallenCairn`. No top-level fields added; the data delta lives in
+ * the cairn records themselves.
+ */
+export interface ISaveDataV11 extends Omit<ISaveDataV10, 'saveVersion'> {
+  saveVersion: 11;
+}
 
-export const CURRENT_SAVE_VERSION = 10 as const;
+export type ISaveData = ISaveDataV11;
+
+export const CURRENT_SAVE_VERSION = 11 as const;
 
 export const MAX_RUN_HISTORY = 20;
 
@@ -408,7 +418,21 @@ function coerceFallenCairns(v: unknown): FallenCairn[] {
       ? (inheritedStatRaw as FallenCairn['inheritedStat'])
       : 'damage';
     const savedAt = clampInt(o.savedAt, 0);
-    out.push({ x: o.x, y: o.y, cause, variantKey, timeSurvivedMs, inheritedStat, savedAt });
+    const cairn: FallenCairn = { x: o.x, y: o.y, cause, variantKey, timeSurvivedMs, inheritedStat, savedAt };
+    // V11 — optional per-cairn state. Absent on v10 records (load as undefined).
+    const wreathedAt = typeof o.wreathedAt === 'number' && Number.isFinite(o.wreathedAt)
+      ? clampInt(o.wreathedAt, 0)
+      : undefined;
+    const extinguishedAt = typeof o.extinguishedAt === 'number' && Number.isFinite(o.extinguishedAt)
+      ? clampInt(o.extinguishedAt, 0)
+      : undefined;
+    if (wreathedAt !== undefined && wreathedAt > 0) {
+      out.push({ ...cairn, wreathedAt });
+    } else if (extinguishedAt !== undefined && extinguishedAt > 0) {
+      out.push({ ...cairn, extinguishedAt });
+    } else {
+      out.push(cairn);
+    }
   }
   return out;
 }
@@ -1012,6 +1036,22 @@ export class SaveManager {
       return { ...cur, oldDroverRevealedCount: next };
     });
     return next;
+  }
+
+  /** V2 — mark the named cairns as wreathed (successful Cailleach Gauntlet). */
+  markCairnsWreathed(savedAts: readonly number[], now: number = Date.now()): void {
+    this.update((cur) => ({
+      ...cur,
+      fallenCairns: markWreathed(cur.fallenCairns, savedAts, now),
+    }));
+  }
+
+  /** V2 — mark the named cairns as extinguished (failed Cailleach Gauntlet). */
+  markCairnsExtinguished(savedAts: readonly number[], now: number = Date.now()): void {
+    this.update((cur) => ({
+      ...cur,
+      fallenCairns: markExtinguished(cur.fallenCairns, savedAts, now),
+    }));
   }
 }
 
