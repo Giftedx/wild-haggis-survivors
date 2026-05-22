@@ -18,6 +18,7 @@ import {
 } from '../data/eliteAffixes';
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 import { isDiveOffscreen } from './isDiveOffscreen';
+import { simulateWailBehaviour, WAIL_PULSE_RADIUS_PX, WAIL_PULSE_DAMAGE, type WailState } from './wailBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -123,6 +124,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    *  4 = post-charge cooldown / chase fallback.
    */
   private threeBayStage: 0 | 1 | 2 | 3 | 4 = 0;
+  /** V2 — Cailleach Gauntlet boss state (only used when behavior === 'wail'). */
+  private wailState: WailState = { msSinceLastLance: 0, hasWailed: false };
   /** Countdown ms within the current three-bay stage. */
   private threeBayTimerMs: number = 0;
   /** Charge target locked at start of stage 3. */
@@ -629,6 +632,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'three_bay':
         this.behaviorThreeBay(targetX, targetY, delta);
         break;
+      case 'wail':
+        this.behaviorWail(targetX, targetY, delta);
+        break;
     }
   }
 
@@ -785,6 +791,103 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     )) {
       this.die();
     }
+  }
+
+  /**
+   * V2 — Cailleach Gauntlet boss behaviour. Slow chase + 4 s ice-lance
+   * cadence + one-shot 600 px radial slow pulse at 50 % HP. Pure helper
+   * (`wailBehaviour.ts`) drives the decision; this method handles the
+   * scene-side effects (chase velocity, projectile spawn, pulse VFX).
+   *
+   * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+   */
+  private behaviorWail(tx: number, ty: number, delta: number): void {
+    // Default chase movement.
+    this.behaviorChase(tx, ty);
+
+    const hpPct = this.maxHp > 0 ? this.hp / this.maxHp : 1.0;
+    const next = simulateWailBehaviour(this.wailState, { deltaMs: delta, hpPct });
+    this.wailState = next;
+
+    if (next.shouldFireLance) {
+      this.fireIceLance(tx, ty);
+    }
+    if (next.shouldFireWail) {
+      this.fireWailPulse();
+    }
+  }
+
+  /**
+   * V2 — Cailleach's ice-lance projectile. Mirrors `fireNet` shape but
+   * with a frost-blue tint and the wail-tuned damage (18) + slow on hit
+   * (player.applyNetSlow). The standard Shinty Parry hook (`tryParry
+   * Projectile`) negates the lance if the player has an active parry
+   * window — sister to net/fang.
+   */
+  private fireIceLance(tx: number, ty: number): void {
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const speed = 320;
+
+    const lance = this.scene.add.circle(this.x, this.y, 6, 0xb9d6f0, 0.95);
+    this.scene.physics.add.existing(lance);
+    const body = lance.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+
+    let hit = false;
+    const spawnedPlayer = this.ctx.getPlayer();
+
+    const cleanup = () => {
+      if (hit) return;
+      hit = true;
+      try {
+        this.scene.physics.world.removeCollider(overlapRef);
+        if (lance.active) lance.destroy();
+      } catch { /* scene may have restarted */ }
+    };
+
+    const overlapRef = this.scene.physics.add.overlap(lance, spawnedPlayer, () => {
+      if (hit) return;
+      cleanup();
+      const currentPlayer = this.ctx.getPlayer();
+      if (currentPlayer !== spawnedPlayer) return;
+      if (currentPlayer.tryParryProjectile()) return;
+      currentPlayer.takeDamage(18);
+      currentPlayer.applyNetSlow(1200);
+    });
+
+    // Auto-cleanup after 2 seconds if it misses
+    this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
+  }
+
+  /**
+   * V2 — Cailleach's "Blue Hag's Wail" radial slow pulse. Single-shot
+   * at 50 % HP. 600 px radius around the boss; if the player is
+   * inside, applies 30 damage + 2 s net slow (existing slow channel).
+   * Visual: an expanding frost-blue ring sketched on the scene.
+   */
+  private fireWailPulse(): void {
+    const player = this.ctx.getPlayer();
+    const dx = player.x - this.x;
+    const dy = player.y - this.y;
+    if (dx * dx + dy * dy <= WAIL_PULSE_RADIUS_PX * WAIL_PULSE_RADIUS_PX) {
+      // Hazard immunity respected via the existing damage path.
+      player.takeDamage(WAIL_PULSE_DAMAGE);
+      player.applyNetSlow(2000);
+    }
+
+    // Visual: expanding ring. Cheap circle that scales up + alpha 0
+    // over 500 ms. Guarded against missing scene tween on test stubs.
+    try {
+      const ring = this.scene.add.circle(this.x, this.y, 16, 0xb9d6f0, 0.0);
+      ring.setStrokeStyle(4, 0xe8f5ff, 0.9);
+      this.scene.tweens.add({
+        targets: ring,
+        radius: WAIL_PULSE_RADIUS_PX,
+        alpha: { from: 0.9, to: 0 },
+        duration: 500,
+        onComplete: () => ring.destroy(),
+      });
+    } catch { /* test stubs without tweens */ }
   }
 
   private behaviorRanged(tx: number, ty: number, delta: number): void {
