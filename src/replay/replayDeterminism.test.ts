@@ -26,6 +26,11 @@ import {
   REPLAY_BLOB_V2_VERSION,
 } from './replayBlobV2';
 import { ReplayRecorder } from './ReplayRecorder';
+import {
+  deserializeReplayV3,
+  serializeReplayV3,
+  REPLAY_BLOB_V3_VERSION,
+} from './replayBlobV3';
 import { createRNG, type RNG } from '../utils/rng';
 import { captureComposedStats } from './composedStatsSnapshot';
 import { BALANCE } from '../core/BalanceConfig';
@@ -34,6 +39,7 @@ import {
   pickInitialOrbitAngle,
   pickSpawnerMinionAngle,
 } from '../entities/enemyAngleSeed';
+import type { FallenCairn } from '../utils/save/fallenCairns';
 
 function scriptedBlob() {
   const blob = createEmptyReplayBlobV2({
@@ -242,5 +248,144 @@ describe('replay determinism', () => {
     expect(b.advanceFrame()).toBeNull();
     expect(a.isExhausted()).toBe(true);
     expect(b.isExhausted()).toBe(true);
+  });
+});
+
+describe('replay determinism — Moor Remembers cairn payload (T12)', () => {
+  const cairnA: FallenCairn = {
+    x: 100,
+    y: 200,
+    cause: 'enemy_contact',
+    variantKey: 'classic',
+    timeSurvivedMs: 60_000,
+    inheritedStat: 'damage',
+    savedAt: 1_000_000,
+  };
+  const cairnB: FallenCairn = {
+    x: 300,
+    y: 400,
+    cause: 'hazard',
+    variantKey: 'glaswegian',
+    timeSurvivedMs: 120_000,
+    inheritedStat: 'speed',
+    savedAt: 2_000_000,
+  };
+
+  it('recorder carries cairns snapshot into the v3 blob', () => {
+    const rec = new ReplayRecorder({
+      build: 'whs-test',
+      seed: 77,
+      variantKey: 'classic',
+      cairns: [cairnA, cairnB],
+    });
+    const blob = rec.finalize();
+    expect(blob.version).toBe(REPLAY_BLOB_V3_VERSION);
+    const v3 = blob as { cairns?: FallenCairn[] };
+    expect(v3.cairns).toHaveLength(2);
+    expect(v3.cairns?.[0]).toEqual(cairnA);
+    expect(v3.cairns?.[1]).toEqual(cairnB);
+  });
+
+  it('recorded cairns survive FIFO rotation in the live save (key regression)', () => {
+    // Build a payload with cairns A + B. The live meta-save might later
+    // FIFO-rotate cairnA out, but the replay blob still carries it.
+    const rec = new ReplayRecorder({
+      build: 'whs-test',
+      seed: 99,
+      variantKey: 'classic',
+      cairns: [cairnA, cairnB],
+    });
+    rec.pushFrame({ dtMs: 16, dx: 1, dy: 0, dash: false, menu: false });
+    const blob = rec.finalize();
+
+    // Serialize → deserialize (simulates localStorage round-trip).
+    const raw = serializeReplayV3(blob as Parameters<typeof serializeReplayV3>[0]);
+    const restored = deserializeReplayV3(raw);
+
+    expect(restored).not.toBeNull();
+    // Regardless of what the live meta-save contains, the deserialized blob
+    // retains both cairns from the original run-start snapshot.
+    expect(restored!.cairns).toHaveLength(2);
+    expect(restored!.cairns?.[0]).toEqual(cairnA);
+    expect(restored!.cairns?.[1]).toEqual(cairnB);
+  });
+
+  it('recorder with no cairns stays v1 (no false upgrade)', () => {
+    const rec = new ReplayRecorder({ build: 'whs-test', seed: 1, variantKey: 'classic' });
+    expect(rec.finalize().version).toBe(1);
+  });
+
+  it('recorder with empty cairns array stays v1', () => {
+    const rec = new ReplayRecorder({
+      build: 'whs-test',
+      seed: 1,
+      variantKey: 'classic',
+      cairns: [],
+    });
+    expect(rec.finalize().version).toBe(1);
+  });
+
+  it('cairns round-trip through serialize/deserialize with full fidelity', () => {
+    const src = {
+      version: REPLAY_BLOB_V3_VERSION as typeof REPLAY_BLOB_V3_VERSION,
+      build: 'whs-test',
+      seed: 42,
+      variantKey: 'classic',
+      frameCount: 0,
+      frames: [],
+      cairns: [cairnA, cairnB],
+    };
+    const back = deserializeReplayV3(serializeReplayV3(src));
+    expect(back?.cairns).toEqual([cairnA, cairnB]);
+  });
+
+  it('malformed cairn entries are dropped at deserialize', () => {
+    const raw = JSON.stringify({
+      version: REPLAY_BLOB_V3_VERSION,
+      build: 'whs-test',
+      seed: 42,
+      variantKey: 'classic',
+      frameCount: 0,
+      frames: [],
+      cairns: [
+        cairnA,
+        { x: 'bad', y: 100, cause: 'c', variantKey: 'v', timeSurvivedMs: 0, inheritedStat: 'damage', savedAt: 1 },
+        null,
+        { x: 50, y: 50 }, // missing required fields
+        cairnB,
+      ],
+    });
+    const blob = deserializeReplayV3(raw);
+    // Only cairnA and cairnB are valid — the two malformed entries are dropped.
+    expect(blob?.cairns).toHaveLength(2);
+    expect(blob?.cairns?.[0]).toEqual(cairnA);
+    expect(blob?.cairns?.[1]).toEqual(cairnB);
+  });
+
+  it('absent cairns deserializes to undefined (back-compat with pre-T12 blobs)', () => {
+    const raw = JSON.stringify({
+      version: REPLAY_BLOB_V3_VERSION,
+      build: 'whs-test',
+      seed: 42,
+      variantKey: 'classic',
+      frameCount: 0,
+      frames: [],
+    });
+    expect(deserializeReplayV3(raw)?.cairns).toBeUndefined();
+  });
+
+  it('finalize emits independent copies — mutating the returned blob does not leak', () => {
+    const rec = new ReplayRecorder({
+      build: 'whs-test',
+      seed: 5,
+      variantKey: 'classic',
+      cairns: [cairnA],
+    });
+    const blobA = rec.finalize() as { cairns?: FallenCairn[] };
+    blobA.cairns!.push(cairnB);
+    const blobB = rec.finalize() as { cairns?: FallenCairn[] };
+    // Internal snapshot is independent; second finalize still has only cairnA.
+    expect(blobB.cairns).toHaveLength(1);
+    expect(blobB.cairns?.[0]).toEqual(cairnA);
   });
 });

@@ -34,6 +34,7 @@ import {
   isComposedStatsSnapshot,
   type ComposedStatsSnapshot,
 } from './composedStatsSnapshot';
+import type { FallenCairn } from '../utils/save/fallenCairns';
 
 export const REPLAY_BLOB_V3_VERSION = 3 as const;
 
@@ -48,6 +49,18 @@ export interface ReplayBlobV3Meta extends ReplayBlobV2Meta {
    * never crashes playback.
    */
   sporranPicks?: string[];
+  /**
+   * T12 — The Moor Remembers cairn list captured at run-start.
+   *
+   * Replays read THIS snapshot, NOT the live meta-save list, so cairns
+   * that have since been FIFO-rotated out of `whs_meta_save.fallenCairns`
+   * still replay correctly. CairnOfEchoesScheduler receives these via
+   * the `getCairns` hook injected by GameScene (wired in T10).
+   *
+   * TODO(T10): GameScene.create() — pass `blob.cairns ?? []` to
+   * CairnOfEchoesScheduler when constructing in replay mode.
+   */
+  cairns?: FallenCairn[];
 }
 
 export interface ReplayBlobV3 extends ReplayBlobV3Meta {
@@ -67,6 +80,7 @@ export function createEmptyReplayBlobV3(meta: ReplayBlobV3Meta): ReplayBlobV3 {
     composedStats: meta.composedStats,
     nodeOutcomes: meta.nodeOutcomes,
     sporranPicks: meta.sporranPicks,
+    cairns: meta.cairns,
     frameCount: 0,
     frames: [],
   };
@@ -94,6 +108,7 @@ export function deserializeReplayV3(raw: string): ReplayBlobV3 | null {
   const sporranPicks = Array.isArray(parsed.sporranPicks)
     ? coerceSporranPicks(parsed.sporranPicks)
     : undefined;
+  const cairns = Array.isArray(parsed.cairns) ? coerceCairns(parsed.cairns) : undefined;
 
   return {
     version: REPLAY_BLOB_V3_VERSION,
@@ -105,6 +120,7 @@ export function deserializeReplayV3(raw: string): ReplayBlobV3 | null {
     composedStats,
     nodeOutcomes,
     sporranPicks,
+    cairns,
   };
 }
 
@@ -182,6 +198,39 @@ function coerceNodeOutcomes(arr: unknown[]): NodeOutcome[] | undefined {
     } else {
       out.push({ nodeKey, visitedAtGameTimeSec });
     }
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+/**
+ * T12 — coerce FallenCairn entries from the persisted blob.
+ * Drops malformed entries (non-object, missing required numeric coords or
+ * string fields) so a corrupted entry never crashes a stored replay.
+ * Returns `undefined` when the array is absent or fully-invalid so the
+ * field stays absent on the deserialized shape (back-compat with pre-T12
+ * v3 blobs); CairnOfEchoesScheduler treats a missing field as an empty
+ * list (wired in T10).
+ */
+function coerceCairns(arr: unknown[]): FallenCairn[] | undefined {
+  const out: FallenCairn[] = [];
+  for (const raw of arr) {
+    if (!isRecord(raw)) continue;
+    if (typeof raw.x !== 'number' || !Number.isFinite(raw.x)) continue;
+    if (typeof raw.y !== 'number' || !Number.isFinite(raw.y)) continue;
+    if (typeof raw.cause !== 'string' || !raw.cause) continue;
+    if (typeof raw.variantKey !== 'string' || !raw.variantKey) continue;
+    if (typeof raw.timeSurvivedMs !== 'number' || !Number.isFinite(raw.timeSurvivedMs)) continue;
+    if (typeof raw.inheritedStat !== 'string' || !raw.inheritedStat) continue;
+    if (typeof raw.savedAt !== 'number' || !Number.isFinite(raw.savedAt)) continue;
+    out.push({
+      x: raw.x,
+      y: raw.y,
+      cause: raw.cause as string,
+      variantKey: raw.variantKey as string,
+      timeSurvivedMs: raw.timeSurvivedMs,
+      inheritedStat: raw.inheritedStat as FallenCairn['inheritedStat'],
+      savedAt: raw.savedAt,
+    });
   }
   return out.length > 0 ? out : undefined;
 }

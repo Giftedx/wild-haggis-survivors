@@ -32,6 +32,7 @@ import {
 import type { ComposedStatsSnapshot } from './composedStatsSnapshot';
 import type { RoutePick } from '../data/routes';
 import type { NodeOutcome } from '../data/nodeTypes';
+import type { FallenCairn } from '../utils/save/fallenCairns';
 
 /** Extended meta accepted at construction. v2 / v3 fields are optional. */
 export interface ReplayRecorderMeta extends ReplayBlobMeta {
@@ -48,6 +49,16 @@ export interface ReplayRecorderMeta extends ReplayBlobMeta {
    * run-start.
    */
   sporranPicks?: readonly string[];
+  /**
+   * T12 — The Moor Remembers cairn list captured at run-start (snapshot
+   * of `saveManager.getFallenCairns()`). Stored in the v3 blob payload
+   * so replays read this array rather than the live meta-save, preserving
+   * the T1 determinism contract across FIFO rotations.
+   *
+   * TODO(T10): GameScene.create() reads `blob.cairns ?? []` and passes
+   * it to CairnOfEchoesScheduler when constructing in replay mode.
+   */
+  cairns?: readonly FallenCairn[];
 }
 
 /**
@@ -66,6 +77,7 @@ export const REPLAY_RECORDER_FRAME_CAP = 90_000;
 export class ReplayRecorder {
   private readonly meta: ReplayRecorderMeta;
   private readonly sporranPicks: readonly string[];
+  private readonly cairns: readonly FallenCairn[];
   private frames: ReplayFrame[] = [];
   private routes: RoutePick[] = [];
   private nodeOutcomes: NodeOutcome[] = [];
@@ -85,6 +97,10 @@ export class ReplayRecorder {
     this.sporranPicks = meta.sporranPicks
       ? meta.sporranPicks.filter((id): id is string => typeof id === 'string' && id.length > 0)
       : [];
+    // Snapshot cairns at construction. The live meta-save may FIFO-rotate
+    // these out between now and replay time; the payload copy ensures
+    // replays see the same world the original run saw (T1 contract).
+    this.cairns = meta.cairns ? [...meta.cairns] : [];
   }
 
   /** Push a single frame; values are clamped by the schema. */
@@ -151,9 +167,9 @@ export class ReplayRecorder {
     );
   }
 
-  /** True when captured node outcomes OR sporran picks require a v3 blob. */
+  /** True when captured node outcomes, sporran picks, or cairns require a v3 blob. */
   private needsV3(): boolean {
-    return this.nodeOutcomes.length > 0 || this.sporranPicks.length > 0;
+    return this.nodeOutcomes.length > 0 || this.sporranPicks.length > 0 || this.cairns.length > 0;
   }
 
   /**
@@ -196,6 +212,7 @@ export class ReplayRecorder {
       composedStats: this.meta.composedStats,
       nodeOutcomes: this.nodeOutcomes.length > 0 ? this.nodeOutcomes.slice() : undefined,
       sporranPicks: this.sporranPicks.length > 0 ? this.sporranPicks.slice() : undefined,
+      cairns: this.cairns.length > 0 ? [...this.cairns] : undefined,
     });
     blob.frames = this.frames.slice();
     blob.frameCount = blob.frames.length;
