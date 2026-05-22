@@ -28,7 +28,6 @@ import {
   recordRun, loadSave,
   bumpBanterHeard,
   bumpBossKillCount, bumpCairnBlessing, bumpCursedVictoryByBoss,
-  bumpAncestralEchoesTouched,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { GameMusicState } from '../systems/music/ProceduralMusicEngine';
@@ -92,7 +91,12 @@ import { CairnStackingScheduler } from './game/CairnStackingScheduler';
 import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
 import type { WhisperResult } from './game/cairnOfEchoesWhisper';
 import {
-  CAIRN_INHERITED_BUFF_PCT,
+  createCairnSpriteForScene,
+  destroyCairnSpriteOnScene,
+  handleCairnWalkOverOnScene,
+  type CairnSceneWireDeps,
+} from './game/cairnOfEchoesSceneWire';
+import {
   type FallenCairn,
   type InheritedStatKey,
 } from '../utils/save/fallenCairns';
@@ -1983,122 +1987,42 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   // driven so it stays Phaser-free + unit-testable; the methods below
   // own the live sprite refs + side effects.
 
-  /**
-   * Create the small stacked-stones sprite for a cairn that just entered
-   * render range. Soft candle-flicker tween unless `reduceFlashing` is
-   * enabled. Texture is `textures.exists()`-guarded so unit-test stubs
-   * that skip BootScene baking don't render a magenta placeholder.
-   */
-  private spawnCairnSprite(cairn: FallenCairn): void {
-    if (this.cairnSprites.has(cairn)) return;
-    if (!this.textures.exists('cairn_of_echoes')) return;
-    const sprite = this.add
-      .sprite(cairn.x, cairn.y, 'cairn_of_echoes')
-      .setDepth(5)
-      .setScale(0.85);
-    const settings = this.settingsManager.load();
-    if (!settings.reduceFlashing) {
-      this.tweens.add({
-        targets: sprite,
-        alpha: { from: 0.65, to: 1.0 },
-        duration: 1400,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
-      });
-    } else {
-      sprite.setAlpha(0.85);
-    }
-    this.cairnSprites.set(cairn, sprite);
+  /** Bundle the scene-bound refs the cairn wire needs. Built per call so
+   *  late-init systems (banter) are picked up after they're attached. */
+  private cairnWireDeps(): CairnSceneWireDeps {
+    return {
+      scene: this,
+      player: this.player ?? null,
+      banter: this.banter ?? null,
+      metaSaveManager: this.metaSaveManager,
+      floatTextPool: this.floatTextPool,
+      settingsManager: this.settingsManager,
+      caption: (id, message, color, durationMs) =>
+        this.caption(id, message, color, durationMs),
+    };
   }
 
-  /**
-   * Release the sprite when the player walks beyond render radius. Tween
-   * is killed before destroy so a yoyo timing-window doesn't write to a
-   * destroyed target.
-   */
+  private spawnCairnSprite(cairn: FallenCairn): void {
+    if (this.cairnSprites.has(cairn)) return;
+    const sprite = createCairnSpriteForScene(this.cairnWireDeps(), cairn);
+    if (sprite) this.cairnSprites.set(cairn, sprite);
+  }
+
   private destroyCairnSprite(cairn: FallenCairn): void {
     const sprite = this.cairnSprites.get(cairn);
     if (sprite) {
-      this.tweens.killTweensOf(sprite);
-      sprite.destroy();
+      destroyCairnSpriteOnScene(this.cairnWireDeps(), sprite);
       this.cairnSprites.delete(cairn);
     }
   }
 
-  /**
-   * Walk-over handler. Routes the whisper (past-self or grandfather) to
-   * audio + caption + floating buff text + banter sub-pool + the
-   * Achievement counter. The +1 % inherited buff is applied to the live
-   * Player; channel routing lives in `Player.applyInheritedCairnBuff`.
-   */
   private handleCairnWalkOver(cairn: FallenCairn, whisper: WhisperResult): void {
-    // Audio — seed by the cairn's savedAt so a given cairn always whispers
-    // the same way (T1 determinism). Grandfather branch also advances the
-    // Old Drover reveal counter.
-    if (whisper.kind === 'past_self') {
-      audio.playCairnPastSelfWhisper(cairn.savedAt);
-    } else {
-      audio.playCairnGrandfatherWhisper(cairn.savedAt);
-      try {
-        this.metaSaveManager.incrementOldDroverRevealed();
-      } catch {
-        /* best-effort */
-      }
-    }
-
-    // Caption — the i18nKey is replay-deterministic from `pickWhisper`.
-    this.caption('cairn_walkover', t(whisper.i18nKey), '#a8c4dc', 4000);
-
-    // Floating buff text — slate-blue +1 % marker that rises from the
-    // cairn coord. Pulled from the shared FloatTextPool so combat / pickup
-    // feedback channels don't compete for the same slots.
-    const buffText = this.floatTextPool.acquire(
-      cairn.x,
-      cairn.y - 24,
-      `+1% ${cairn.inheritedStat}`,
-      '#a8c4dc',
-      '14px',
-      85,
-    );
-    if (buffText) {
-      this.tweens.add({
-        targets: buffText,
-        y: buffText.y - 22,
-        alpha: 0,
-        duration: 1100,
-        ease: 'Sine.easeOut',
-        onComplete: () => {
-          buffText.setVisible(false);
-        },
-      });
-    }
-
-    // Apply the inherited buff to the live Player. Channel mapping +
-    // multiplier folding lives on the Player side.
-    this.player?.applyInheritedCairnBuff(cairn.inheritedStat, CAIRN_INHERITED_BUFF_PCT);
-
-    // Banter — pick sub-pool by whisper kind + this-run-touched flag.
-    const subPool: string =
-      whisper.kind === 'grandfather' && whisper.leafIndex === 25
-        ? 'grandfather_complete'
-        : whisper.kind === 'grandfather' && whisper.leafIndex === 1
-          ? 'grandfather_first'
-          : whisper.kind === 'grandfather'
-            ? 'grandfather_revealed'
-            : this.firstCairnTouchedThisRun
-              ? 'past_self_first'
-              : 'past_self';
-    this.banter?.request('cairn_walkover', { tag: subPool });
-    this.firstCairnTouchedThisRun = false;
-
-    // Lifetime touch counter — shared with AncestralEcho per spec §4.4
-    // ("the cairn IS the persistent echo"). Bump is best-effort.
-    try {
-      bumpAncestralEchoesTouched();
-    } catch {
-      /* best-effort */
-    }
+    handleCairnWalkOverOnScene(this.cairnWireDeps(), cairn, whisper, {
+      firstThisRun: this.firstCairnTouchedThisRun,
+      setFirstThisRun: (v) => {
+        this.firstCairnTouchedThisRun = v;
+      },
+    });
   }
 
   /** Handoff for the 30 s AncestralEcho ghost when it expires untouched. */
