@@ -377,6 +377,13 @@ export const ui = {
       cailleach_whisper: { label: 'Cailleach\'s Whisper', hint: 'Fires when the Winter Queen leans in close.' },
       seasonal_event: { label: 'Feast-Day', hint: 'Fires when a feast-day touches the moor.' },
     },
+    /** T7 — Old Drover Almanac entry. Hearth voice; surfaced in FindsBook (T11). */
+    oldDrover: {
+      title: 'The Old Drover',
+      intro: 'There is another voice in the moor. Listen for him.',
+      locked: '???',
+      complete: 'He is quiet now. The moor is yours.',
+    },
     back: 'BACK',
   },
   loadout: {
@@ -1285,6 +1292,49 @@ export const ui = {
     /** Third stone — the boon fires. Toast lands first, caption sits longer for ceremony. */
     boon_toast: 'The cairn stands. The moor minds ye now.',
     boon_caption: 'Cairn\'s Blessing — fully mended, the moor draws the gleanings closer.',
+    /**
+     * T7 — Cairn-of-Echoes whispers (distinct from Cairn Stacking above).
+     * A spectral cairn marks the player's last-death location; touching it
+     * surfaces a whisper from the player's past self or — once enough cairns
+     * are stacked — from the Old Drover (grandfather voice).
+     */
+    whisper: {
+      past_self: {
+        first_death: "That's me, down there.",
+        classic: 'Walked too far past the loch.',
+        cailleach: "Winter took its own.",
+        glaswegian: 'Got cocky. Got got.',
+        doric_quinie: "Awa wi' the haar.",
+        burns_wee_beastie: 'Wee, sleekit, and stilled.',
+      },
+    },
+    grandfather: {
+      '01': "Hark, wee one. Stack the stones high enough and ye'll wake the Cailleach hersel'.",
+      '02': "Yer grandmother's husband walked here every nicht for fifty years. She'll no have told ye.",
+      '03': "Beneath the third loch, a thing the salt water fears. Mind ye dinna find it.",
+      '04': "Some o' these stones are mine. Stacked them wi' frozen hands.",
+      '05': "The Taxman came for me last. Came for everyone, in the end.",
+      '06': "Yer Gran burned my pipes when I went. Said the moor had earned them.",
+      '07': "Every cairn ye walk past was a man's last thought.",
+      '08': "The Cailleach watches yer drift. She drifted, too, in her time.",
+      '09': "I knew the each-uisge by name. Ye willnae.",
+      '10': "Heather burns slow. So does grief.",
+      '11': "Mind the fairy mounds. They mind ye.",
+      '12': "I stacked one cairn for every season I walked. Forty-three, that wis.",
+      '13': "Yer grandmother sings to the moor still. Listen for her in the wind.",
+      '14': "The drovers' roads run under the new roads. We're still walkin' them.",
+      '15': "Nicnevin's hounds remember a kindness. Try it some time.",
+      '16': "There's a stone near the western burn that hums when the gloamin's right.",
+      '17': "Burns kent the moor better than any man I met. Better than me.",
+      '18': "The Laird's no a man. Mind that.",
+      '19': "I died on a Tuesday. Just so ye know what day to fear.",
+      '20': "Yer Gran cried for a week. Then she stopped. The moor goes on.",
+      '21': "Ye'll meet the Taxman. He'll smile. Smile back, then strike.",
+      '22': "The Stoor Worm sleeps under Orkney. Dinna wake it.",
+      '23': "Three lochs deep, three lochs cold, three lochs old. Ye'll know the third.",
+      '24': "I'm proud o' ye, wee one. I wish I'd said so when I could.",
+      '25': "When ye've walked enough, I'll be quiet. And the moor'll be yours.",
+    },
   },
   /**
    * Moor moments — timed hearth beats mid-run (caption + toast + small gift).
