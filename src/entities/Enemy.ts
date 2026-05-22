@@ -264,7 +264,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Size hitbox based on texture. Bigger sprites (BootScene v2) bumped most
     // canvases by ~1.5×, so radii here bump proportionally. Offset math uses
     // this.width/this.height so it tracks whichever texture is assigned.
-    const r = config.key === 'tour_bus' ? 42
+    const r = (config.key === 'tour_bus' || config.key === 'boss_tour_bus' || config.texture === 'boss_tour_bus') ? 42
       : config.key === 'gordon' ? 30
       : config.key === 'the_laird' ? 28
       : config.key === 'hunter_general' ? 28
