@@ -4,7 +4,7 @@ A handcrafted, Highland-at-dusk, Scots-tinted bullet-heaven. You play a wild hag
 
 Built with **Phaser 4** + **TypeScript** + **Vite**. Every sprite is drawn in code at boot — there are no external image assets.
 
-> **New here?** Start with [`docs/INDEX.md`](docs/INDEX.md). Then read [`docs/PRD.md`](docs/PRD.md) for the live snapshot, [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md) for the tone north star, and [`AGENTS.md`](AGENTS.md) (or [`CLAUDE.md`](CLAUDE.md)) for the AI/contributor working agreement.
+> **New here?** Start with [`docs/INDEX.md`](docs/INDEX.md). Then read [`docs/PRD.md`](docs/PRD.md) for the live snapshot and [`AGENTS.md`](AGENTS.md) (or [`CLAUDE.md`](CLAUDE.md)) for the AI/contributor working agreement.
 
 ---
 
@@ -62,9 +62,9 @@ For deeper detail read [`CLAUDE.md`](CLAUDE.md) (architecture quick map + Phaser
     ├── DOC_CONVENTIONS.md            Filename rules, STATUS markers, where new docs go
     ├── OPEN_QUESTIONS.md             Stakeholder decisions blocking work
     ├── PRD.md                        Live product snapshot + flagship status table
-    ├── DESIGN_SOUL.md                Soul charter, weave matrix, tonal spectrum, Soul Check
+    ├── DESIGN_SOUL.md                Soul charter principles + a11y matrix
     ├── VOICE_CARD.md                 Two-register voice (Hearth + Edge), variants, Burns
-    ├── ART_STYLE_BIBLE.md            Palette anchors, tonal palettes, signature motifs
+    ├── ART_STYLE_BIBLE.md            Palette anchors, signature motifs, silhouette test
     ├── DESIGN_IDEAS.md               Active sketchpad (not a roadmap)
     ├── BANTER_AUTHORING.md           Recipe doc for adding banter leaves
     ├── HUGE_INITIATIVES_MASTER_PLAN.md  Flagship roster (with shipped strikethroughs)
@@ -99,11 +99,12 @@ If asked to do so, comply but call out the consequences (huge diffs, slow clones
 
 This is a solo-dev project. The conventions, voice, and tone matter as much as the code:
 
-1. **Read [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md)** before changing player-facing copy, VFX, audio, or UI flow.
-2. **Cite research** in PRs. Feel changes cite [`docs/research/GAME_FEEL_RESEARCH.md`](docs/research/GAME_FEEL_RESEARCH.md); content cites the relevant Scottish doc; audio/shader cites [`docs/research/MUSIC_ART_TECH_RESEARCH.md`](docs/research/MUSIC_ART_TECH_RESEARCH.md).
-3. **Pass the Soul Check** — six pre-ship questions in [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md) §"Soul Check".
+1. **Read [`AGENTS.md`](AGENTS.md) and [`CONTRIBUTING.md`](CONTRIBUTING.md)** for the working agreement and engineering bar.
+2. **Player-facing tone** → [`docs/VOICE_CARD.md`](docs/VOICE_CARD.md). **Visuals** → [`docs/ART_STYLE_BIBLE.md`](docs/ART_STYLE_BIBLE.md). **Soul charter & a11y matrix** → [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md).
+3. **Pre-ship question:** *can a real human play this change without a contributor walking them through it?* (CONTRIBUTING.md headline).
 4. **Conventional Commits** — `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`. Examples in `git log`.
 5. **Don't break the parity fences** — adding a banter leaf without a Scots translation fails CI.
+6. **Cite research only when load-bearing.** The eight docs in [`docs/research/`](docs/research/) are reference material; link from a spec or PR when it genuinely helps a reader, not as ceremony.
 
 ---
 

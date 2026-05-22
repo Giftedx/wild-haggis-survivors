@@ -485,9 +485,9 @@ export class JuiceSystem {
         const msg = t('ui.game.combo_50');
         this.showToast(msg, TOAST_COLORS.reward);
         this.scene.caption(`combo_50`, msg, TOAST_COLORS.reward);
-        // Rest beat — Great Moment Recipe (DESIGN_SOUL.md). Major milestone
-        // gets a brief breath so the moment lands; guard inside slowMotion
-        // skips overlap with boss-kill slow-mo. Skipped at 11 (too frequent).
+        // Rest beat after a major milestone — a brief breath so the moment
+        // lands; guard inside slowMotion skips overlap with boss-kill slow-mo.
+        // Skipped at 11 (too frequent).
         this.slowMotion(220);
       } else if (this.comboCount === 100) {
         const msg = t('ui.game.combo_100');

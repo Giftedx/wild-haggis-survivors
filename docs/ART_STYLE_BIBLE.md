@@ -38,9 +38,9 @@ Curated from the existing sprite hex inventory. Canonical source: `src/art/palet
 
 ---
 
-## Tonal palette map
+## Palette routing by scene mood
 
-Every biome, scene, and moment sits within one of the five tonal registers from `DESIGN_SOUL.md`. Each register modulates the base palette in specific ways — *it doesn't replace* the canonical hex values, it *biases* them.
+Five mood-keyed palette presets for picking colour when authoring a new scene, sprite, or moment. Each preset biases the canonical hex anchors above — it doesn't replace them.
 
 ### Hearth palette (warm, welcoming)
 
@@ -92,7 +92,7 @@ Glasgow Close biome, urban ghaist encounters, Buckfast ned incidents, Edinburgh 
 - **Saturation:** selectively high (neon over grey).
 - **Thistle accent:** spray-painted, tartan-outlined.
 
-**Rule.** A single scene sits in one palette. Transitions between registers use *haar* or *a kept-silence beat + camera reset* — not hard cuts.
+A single scene sits in one preset. Transitions use *haar* or *a kept-silence beat + camera reset* — not hard cuts.
 
 ---
 

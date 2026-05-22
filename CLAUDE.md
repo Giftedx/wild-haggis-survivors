@@ -12,19 +12,19 @@ Read it before non-trivial work. Trade-offs declared via the template, not burie
 
 Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Phaser 4** and **TypeScript**, bundled with **Vite**. The player controls a wild haggis with a unique "drift" mechanic (clockwise rotation bias on movement due to uneven legs) while fighting waves of Scottish-themed enemies.
 
-**Tone & UX north star**: `docs/DESIGN_SOUL.md` (Soul charter, weave matrix, tonal spectrum, Great Moment Recipe, Warmth Audit, Soul Check, shipping objectives).
+**Player-facing tone & visuals**: `docs/DESIGN_SOUL.md` (soul charter principles + a11y matrix), `docs/VOICE_CARD.md` (Hearth + Edge registers, Do/Don't, vocabulary), `docs/ART_STYLE_BIBLE.md` (palette hex, signature motifs, silhouette test).
 
-**Companion docs**: `AGENTS.md` (cross-agent conventions), `docs/PRD.md`, `docs/VOICE_CARD.md` (voice registers, variant voices, Do/Don't examples), `docs/ART_STYLE_BIBLE.md` (palette anchors, tonal palette map, signature motifs), `docs/DESIGN_IDEAS.md` (active sketchpad). Multi-session work lives in `docs/superpowers/specs/` (design specs) and `docs/superpowers/plans/` (execution plans).
+**Companion docs**: `AGENTS.md` (cross-agent conventions), `docs/PRD.md`, `docs/DESIGN_IDEAS.md` (active sketchpad), `docs/BANTER_AUTHORING.md` (banter recipes). Multi-session work lives in `docs/superpowers/specs/` (design specs) and `docs/superpowers/plans/` (execution plans).
 
-**Research foundation** (`docs/research/`): eight deep reference docs the Soul Charter, Voice Card, and Art Style Bible all draw from. Consult before writing specs/plans for new systems:
+**Research reference** (`docs/research/`): eight deep docs (~150k words) you can consult when a design genuinely benefits from one. Not a citation mandate.
 - `ROGUELITE_RESEARCH.md` — 25 games deconstructed; structural patterns; WHS gap analysis.
 - `SCOTTISH_RESEARCH.md` — gazetteer-style Scottish content (folklore, geography, history, culture).
 - `SCOTTISH_RESEARCH_DEEP.md` — comprehensive Scottish reference (25 parts, ~28k words).
-- `GAME_FEEL_RESEARCH.md` — feel canon (Nijman/Sakurai/Thorson/Korb); moment anatomy; technical toolkit.
-- `MUSIC_ART_TECH_RESEARCH.md` — Phaser 3 + Web Audio + WebGL technical layer; procedural music; shaders.
-- `ACCESSIBILITY_RESEARCH.md` — accessibility engineering playbook; photosensitivity, colorblind, motor, cognitive; WHS audit.
-- `CULTURAL_SENSITIVITIES_RESEARCH.md` — ethics reference for Scottish content; Gaelic/Scots, Highland Clearances, Culloden, trademark, political framing.
-- `NARRATIVE_RESEARCH.md` — roguelite storytelling patterns (Hades, Hollow Knight, Dark Souls, Inscryption); loop-native narrative craft.
+- `GAME_FEEL_RESEARCH.md` — feel canon; moment anatomy; technical toolkit.
+- `MUSIC_ART_TECH_RESEARCH.md` — Phaser + Web Audio + WebGL; procedural music; shaders.
+- `ACCESSIBILITY_RESEARCH.md` — a11y engineering playbook.
+- `CULTURAL_SENSITIVITIES_RESEARCH.md` — ethics reference for Scottish content.
+- `NARRATIVE_RESEARCH.md` — roguelite storytelling patterns; loop-native narrative craft.
 
 ## Commands
 
@@ -181,16 +181,8 @@ Pixel art mode enabled (`pixelArt: true`, `roundPixels: true`, no antialiasing).
 - **Stale callback guards**: `setTimeout`/`delayedCall` callbacks from a prior run can fire after scene restart (same instance reused). Guard with reference identity checks (capture object ref at creation, compare to current before acting).
 - **New-system safety pattern checklist**: When authoring a new system that touches existing gameplay surfaces, match these sibling patterns or break the contract: (a) damage paths must respect player hazard immunity — use `isPlayerHazardImmune(postHitIframed, dashInvincible, hazardLeaping, assistInvincible)` from `src/systems/isPlayerHazardImmune.ts` rather than inlining the OR chain. Both HazardZones and HazardsSystem now share this predicate; pre-2026-04-28 they drifted (HazardsSystem missed post-hit iframes + Assist Mode); (b) any spawn position that affects game state must use seeded `runRng` not `Math.random()` for T1 replay determinism (ADR-0002 Phase 3, see `feedback_test_runner_vs_tsc.md`); (c) every `scene.add.image`/`sprite` should be `textures.exists()`-guarded so unit-test stubs that skip BootScene baking don't render the magenta missing-texture placeholder; (d) per-frame `update(delta)` calls must sit AFTER `GameScene.ts:1713` `isGameplayPaused()` early-return so pause-aware systems aren't ticked during level-up / intermission.
 
-## Soul checks & Feel Pass (before shipping player-facing work)
+## Before shipping player-facing work
 
-Technical correctness is necessary but not sufficient. Every player-facing change should also pass a lightweight design review:
+The headline question in [`CONTRIBUTING.md`](CONTRIBUTING.md) is the filter: *can a real human play this change without a contributor walking them through it?* If yes, ship. If no, fix the legibility first.
 
-- **Run the Soul Check** from `docs/DESIGN_SOUL.md` — six quick questions on warmth, clarity, tone, voice, moment-stack, kindness.
-- **Cite relevant research** in the PR/spec. If the change touches feel (VFX, SFX, hit-stop, camera), cite `GAME_FEEL_RESEARCH.md` sections. If it's content (new enemy, weapon, biome, event), cite the relevant Scottish doc. If it's audio or shader-level, cite `MUSIC_ART_TECH_RESEARCH.md`.
-- **Voice check** — if the change ships copy, run it past `docs/VOICE_CARD.md`. Does it sit in Hearth or Edge? Does it avoid the anti-patterns?
-- **Palette check** — if the change ships visuals, confirm it sits in one of the five tonal palettes from `docs/ART_STYLE_BIBLE.md` (Hearth/Wild/Fey/Grave/Wild Comedy).
-- **Moment check** — if the change is a "moment" (evolution pickup, boss kill, act complete, first-time event), verify it covers the 7-ingredient Great Moment Recipe.
-
-None of this replaces shipping discipline (`npm test`, `npm run build`). It augments it. The masterpiece bar requires both.
-
-The Soul check is the **player-facing** filter; [`CONTRIBUTING.md`](CONTRIBUTING.md) is the **engineering** filter. Player-facing changes pass both. Pure-engine changes pass `CONTRIBUTING.md` alone.
+New copy → match the register in [`docs/VOICE_CARD.md`](docs/VOICE_CARD.md). New sprite work → palette and silhouette guidance in [`docs/ART_STYLE_BIBLE.md`](docs/ART_STYLE_BIBLE.md). Both lead with concrete examples — use them at the site of work, not as ceremonial gates.

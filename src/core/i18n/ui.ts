@@ -2493,8 +2493,8 @@ export const ui = {
     },
     // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder
     //    warmth *about* the run. Keep lines short and tender. Never
-    //    shaming, especially in the defeat sub-pool (per DESIGN_SOUL
-    //    Warmth Audit). Generic pool is the fallback when no tag is
+    //    shaming, especially in the defeat sub-pool. Generic pool is
+    //    the fallback when no tag is
     //    passed; tagged sub-pools cover the four spec §3 triggers:
     //    run_start, run_end_victory, run_end_defeat, moor_moment,
     //    seasonal_event.
@@ -3311,8 +3311,8 @@ export const ui = {
         b: 'We clamb the hill thegither, / An\' monie a canty day, John.',
       },
     },
-    // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
-    //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match
+    // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed,
+    //    never shaming. Tagged sub-pools match
     //    `DeathCauseTag` keys from `src/core/deathCauseClassifier.ts`.
     //    Never shaming — name the cause gently, offer a soft takeaway
     //    where natural, avoid duplicating the game-over screen's

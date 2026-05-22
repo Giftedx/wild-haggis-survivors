@@ -1643,7 +1643,7 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     // stays authored for future wiring (post-bell death, future
     // post-mortem pane, etc).
     //
-    // Voice register: Hearth, warmly-framed per DESIGN_SOUL §Warmth Audit.
+    // Voice register: Hearth, warmly-framed.
     // Never shaming. Each cause-tag line gently names what happened and
     // (where natural) offers a soft takeaway without duplicating the
     // game-over screen's `formatDeathInsightLine` tip.

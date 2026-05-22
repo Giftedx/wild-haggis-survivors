@@ -22,23 +22,10 @@ Before claiming anything is “fixed” or “done”, run at least `npm test` a
 **Windows / Git:** If almost every file shows as modified but diffs are only `100755` ↔ `100644`, run `git config core.filemode false` in the repo root (local setting).
 
 ## Player experience & tone
-- **Soul charter & UX weave**: `docs/DESIGN_SOUL.md` — handcrafted warmth, compassionate failure, celebratory progression, haggis fantasy at the center; **tonal spectrum** (Hearth/Wild/Fey/Grave/Wild Comedy), **Great Moment Recipe** (7-ingredient moment stack), **Warmth Audit** (cold-vs-warm diagnostic), **Soul Check** (pre-ship 6-question gate). Use when changing menus, HUD, toasts, game-over, or copy.
-- **Voice**: `docs/VOICE_CARD.md` — two-register voice (Hearth + Edge), variant-scoped voices (Cailleach, Hebridean, Doric, Gran, Burns-citational), regional vocabulary, Do/Don't rewrites, voice-switching triggers. Every new copy line should reference this.
-- **Visual direction**: `docs/ART_STYLE_BIBLE.md` — palette anchors, tonal palette map (per-biome palettes), signature motifs (thistle, haar), silhouette-first test, inspiration wall.
-- **Active sketchpad**: `docs/DESIGN_IDEAS.md` — not a roadmap; live ideas corpus with shipped markers.
 
-### Research foundation (`docs/research/`)
-Eight deep reference docs that back the above. Consult before speccing, planning, or shipping any new player-facing system:
-- `ROGUELITE_RESEARCH.md` — 25 canonical roguelites; structural patterns; WHS gap analysis + tiered opportunities.
-- `SCOTTISH_RESEARCH.md` — gazetteer of Scottish folklore, geography, history, culture; immediate content-mining section.
-- `SCOTTISH_RESEARCH_DEEP.md` — comprehensive Scottish encyclopaedia (25 parts including deep haggis lore, dialects, clans, Scottish games industry).
-- `GAME_FEEL_RESEARCH.md` — the craft layer. Nijman/Sakurai/Thorson/Korb canon. Moment anatomy. 100+ WHS-specific opportunities tagged by effort/impact.
-- `MUSIC_ART_TECH_RESEARCH.md` — technical layer. Phaser 4 pipelines (the research doc itself was authored against Phaser 3 conventions; treat the rendering / pipeline notes as ports — see `docs/superpowers/plans/` for Phaser 4 migration history), Web Audio scheduling, GLSL shaders, procedural music, AI-era tooling.
-- `ACCESSIBILITY_RESEARCH.md` — accessibility engineering playbook; photosensitivity, colorblind, motor, cognitive; WHS audit + testing.
-- `CULTURAL_SENSITIVITIES_RESEARCH.md` — Scottish-content ethics reference; Gaelic/Scots, Highland Clearances, Culloden, trademarks, political framing.
-- `NARRATIVE_RESEARCH.md` — roguelite storytelling (Hades, Hollow Knight, Dark Souls, Inscryption); loop-native narrative craft.
+Player-facing copy & tone → [`docs/VOICE_CARD.md`](docs/VOICE_CARD.md). Visuals → [`docs/ART_STYLE_BIBLE.md`](docs/ART_STYLE_BIBLE.md). Soul charter principles + accessibility matrix → [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md). Live ideas sketchpad → [`docs/DESIGN_IDEAS.md`](docs/DESIGN_IDEAS.md). Banter recipes → [`docs/BANTER_AUTHORING.md`](docs/BANTER_AUTHORING.md).
 
-**Spec/PR discipline:** cite relevant research sections in design docs and PRs. Kept the knowledge graph alive; saved rediscovery time.
+Eight deep reference docs at [`docs/research/`](docs/research/) (~150k words: roguelite patterns, Scottish content ×2, game feel, music/art tech, accessibility, cultural sensitivities, narrative). Consult when designing a system that benefits from it. No mandatory citation — link from a spec or PR only when the reference is genuinely load-bearing.
 
 ## Architecture quick map
 - **Scenes**: `src/scenes/BootScene.ts` → `MenuScene.ts` → `GameScene.ts` → `ShopScene.ts`. `ActIntermissionScene.ts` is a paired modal for W2 Moor Road between-act route picks.
@@ -80,17 +67,9 @@ If you are asked to commit `node_modules/` or `dist/`, do it, but call out the c
 - Keep balance changes in data/config files when possible.
 - Avoid new cross-system reach-through (`as any` to access scene internals). Prefer explicit, typed interfaces passed into systems/entities.
 
-### Soul-charter check (for player-facing changes)
-Before merging any change that touches visuals, copy, audio, pacing, or player feedback:
+### Player-facing changes
 
-1. **Warmth** — does it feel like the game is on the player's side? (see Warmth Audit in `DESIGN_SOUL.md`).
-2. **Clarity** — first-time parsing within 3 seconds?
-3. **Tone** — sits deliberately within one of the five registers (Hearth/Wild/Fey/Grave/Wild Comedy)?
-4. **Voice** — any copy matches `VOICE_CARD.md` register and avoids anti-patterns?
-5. **Moment stack** — if it's a "moment" (boss kill, evolution, level-up, etc.), does it cover the 7-ingredient Great Moment Recipe?
-6. **Kindness** — failures feel supportive; successes feel earned?
-
-The Soul check is the **player-facing** filter. [`CONTRIBUTING.md`](CONTRIBUTING.md) is the **engineering** filter. Player-facing changes pass both; pure-engine changes pass `CONTRIBUTING.md` alone. Both surface trade-offs through their declaration templates rather than burying them — a "no" answer isn't a block, it's a documented trade-off.
+Ask the headline question from [`CONTRIBUTING.md`](CONTRIBUTING.md): *can a real human play this change without a contributor walking them through it?* If no, fix the legibility before shipping. That covers warmth, clarity, tone, voice, and pacing in one filter.
 
 ## Commit conventions
 - Follow existing commit style (examples in `git log`): `fix: ...`, `feat: ...`, `refactor: ...`, `docs: ...`, `chore: ...`

@@ -104,7 +104,7 @@ If you can't fill all four cleanly, the trade-off isn't ready — keep working.
 - [`README.md`](README.md) — entry point + commands.
 - [`AGENTS.md`](AGENTS.md) — agent working agreement (this doc supersedes the older "QUALITY_BAR" framing it cited).
 - [`CLAUDE.md`](CLAUDE.md) — Phaser 4 gotchas + architecture quick-map + `### Key Mechanics` index.
-- [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md) — player-facing tone filter (Soul Check); parallel to this doc, not subordinate.
+- [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md) — soul charter principles + accessibility matrix; parallel to this doc, not subordinate.
 - [`docs/REVIEW.md`](docs/REVIEW.md) — adversarial audit, 2026-05-10. Open issues from C1-C7 + S1-S8 are the queue.
 - [`docs/PRD.md`](docs/PRD.md) — what's shipped + what's open.
 - [`docs/INDEX.md`](docs/INDEX.md) — top-level docs map.

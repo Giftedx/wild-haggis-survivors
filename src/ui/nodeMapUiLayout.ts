@@ -9,8 +9,7 @@ import type { NodeMapState } from '../systems/NodeMapSystem';
 import type { NodeType } from '../data/nodeTypes';
 
 /**
- * Per-type icon fill colour. Palettes map to the five tonal registers in
- * `docs/ART_STYLE_BIBLE.md §Tonal palette map`:
+ * Per-type icon fill colour. Palettes pulled from `docs/ART_STYLE_BIBLE.md`:
  *   - encounter → Wild (steel)
  *   - shrine    → Fey (pale violet)
  *   - wee_trader→ Wild Comedy (sodium amber)

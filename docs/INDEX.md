@@ -51,15 +51,15 @@ Concrete examples of design-intent vetoes that exist today:
 
 ## Design canon (north stars — root level)
 
-Every player-facing change should pass the Soul Check + voice + art + research grounding. These are the foundational docs and stay at the root because CLAUDE.md cites them as primary refs.
+Player-facing changes should match the project's voice and visual direction. These are the foundational docs and stay at the root because CLAUDE.md cites them as primary refs.
 
 | File | Purpose |
 |---|---|
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | **The working agreement for AI agents.** One headline question + CI gates + cross-cutting chains + sacred invariants. Read first. |
 | [PRD.md](PRD.md) | Product roadmap / flagship table — dated **Current Snapshot** header at top of file (update when reality shifts). |
-| [DESIGN_SOUL.md](DESIGN_SOUL.md) | Soul charter, weave matrix, tonal spectrum, Great Moment Recipe, Soul Check |
+| [DESIGN_SOUL.md](DESIGN_SOUL.md) | Soul charter principles + accessibility matrix |
 | [VOICE_CARD.md](VOICE_CARD.md) | Hearth + Edge registers, variant voices, Burns guidance, Do/Don't examples |
-| [ART_STYLE_BIBLE.md](ART_STYLE_BIBLE.md) | Palette anchors, tonal palette map, signature motifs |
+| [ART_STYLE_BIBLE.md](ART_STYLE_BIBLE.md) | Palette anchors, signature motifs, silhouette test |
 | [DESIGN_IDEAS.md](DESIGN_IDEAS.md) | Sketchpad — ideas not yet flagship-scoped |
 | [BANTER_AUTHORING.md](BANTER_AUTHORING.md) | Recipe doc for adding banter leaves |
 | [HUGE_INITIATIVES_MASTER_PLAN.md](HUGE_INITIATIVES_MASTER_PLAN.md) | Flagship roster; partially live — uses strikethrough for shipped rows. **2026-05-09 — polish phase declared:** no flagship currently picked (see [PRD.md](PRD.md) §"Next flagship slot" + [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q8). |
