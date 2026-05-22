@@ -364,6 +364,19 @@ export class WeaponSystem {
     | ((damage: number, nowMs: number, isElite: boolean, velocityDotTowardPlayer: number) => number)
     | null = null;
 
+  /**
+   * V2 (Cailleach Gauntlet) — on-hit hook for the Stormcrown freeze
+   * proc. Fired once per dealDamageToEnemy call AFTER damage is
+   * applied but BEFORE the kill-event branch, so a fatal hit still
+   * gets to roll the freeze (and a frozen-but-killed enemy reads as
+   * the relic doing its work). Caller wires this to
+   * `driver.tryStormcrownFreeze(rng, isCrit) ? enemy.applyFreeze(...) : null`.
+   */
+  setStormcrownOnHitHook(fn: ((enemy: Enemy, isCrit: boolean) => void) | null): void {
+    this.stormcrownOnHitHook = fn;
+  }
+  private stormcrownOnHitHook: ((enemy: Enemy, isCrit: boolean) => void) | null = null;
+
   update(delta: number, playerX: number, playerY: number): void {
     this.frameCounter++;
     this.cachePlayerX = playerX;
@@ -1637,6 +1650,14 @@ export class WeaponSystem {
       finalDamage = Math.max(0, Math.ceil(finalDamage));
     }
     this.events.emit('damageDealt', enemy.x, enemy.y, finalDamage, isCrit, weaponKey);
+    // V2 — Stormcrown freeze proc fires after damage logs so the
+    // visual chain reads consistently (hit → freeze tint), and
+    // before takeDamage so a fatal crit still gets to register the
+    // proc (the relic's identity is "winter remembers" — applying
+    // ice even on a kill is the point).
+    if (this.stormcrownOnHitHook) {
+      this.stormcrownOnHitHook(enemy, isCrit);
+    }
     const wasBoss = enemy.isBoss();
     const wasElite = enemy.isElite();
     const killed = enemy.takeDamage(finalDamage);

@@ -73,7 +73,23 @@ export function installCoreCombatSystems(
     const afterFisher = driver.modifyFishermensNetDamage(afterElite, velocityDot);
     const beatMs = musicEngine.getMsSinceLastQuarterNote();
     const periodMs = musicEngine.getQuarterNotePeriodMs();
-    return driver.modifyBodhranBeatDamage(afterFisher, beatMs, periodMs);
+    const afterBodhran = driver.modifyBodhranBeatDamage(afterFisher, beatMs, periodMs);
+    // V2 (Cailleach Gauntlet) — Stormcrown +18 % generic damage rides
+    // at the tail of the chain so it composes on top of every other
+    // relic effect. Identity when Stormcrown is not held.
+    return driver.modifyStormcrownDamage(afterBodhran);
+  });
+  // V2 — Stormcrown's on-crit freeze proc. Listens after the damage
+  // chain; rolls 6 % freeze on crit hits, applies Enemy.applyFreeze
+  // for 500 ms. RNG threaded through scene.getRunRng() so the proc
+  // is replay-deterministic.
+  weaponSystem.setStormcrownOnHitHook((enemy, isCrit) => {
+    const driver = opts.getRelicEffectDriver()!;
+    const rng = opts.scene.getRunRng();
+    if (driver.tryStormcrownFreeze(rng, isCrit)) {
+      // Enemy.applyFreeze(durationSec, slowMul): 0 slow = full freeze
+      enemy.applyFreeze(driver.stormcrownFreezeDurationMs / 1000, 0);
+    }
   });
   const xpSystem = new XPSystem(opts.scene);
   Enemy.refreshSettings();
