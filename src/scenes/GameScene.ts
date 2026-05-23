@@ -27,7 +27,7 @@ import type { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave,
   bumpBanterHeard,
-  bumpBossKillCount, bumpCairnBlessing, bumpCursedVictoryByBoss,
+  bumpBossKillCount, bumpCursedVictoryByBoss,
   unlockCompanion,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -95,6 +95,10 @@ import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
 import { installCailleachGauntlet } from './game/installCailleachGauntlet';
 import { EngineerTurretSystem } from './game/EngineerTurretSystem';
 import { TuftedFamiliarSystem } from './game/TuftedFamiliarSystem';
+import { installVariantCompanions } from './game/installVariantCompanions';
+import { installCairnSystems } from './game/installCairnSystems';
+import { installLemmingsEasterEgg } from './game/installLemmingsEasterEgg';
+import { installCompanionSystem } from './game/installCompanionSystem';
 import type { WhisperResult } from './game/cairnOfEchoesWhisper';
 import {
   createCairnSpriteForScene,
@@ -127,8 +131,7 @@ import { RunActState } from './game/RunActState';
 import { StandingStones } from './game/standingStones';
 import { Reliquary } from './game/reliquary';
 import { ClootieTree } from './game/clootieTree';
-import { LemmingsEasterEgg } from './game/lemmingsEasterEgg';
-import { bumpLemmingsSeenForVariant } from '../utils/save';
+import type { LemmingsEasterEgg } from './game/lemmingsEasterEgg';
 import { AncestralEcho } from './game/ancestralEcho';
 import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
 import type { RoutePick, RouteResumeContext } from '../data/routes';
@@ -1004,7 +1007,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.cameras.main.setZoom(1.3);
     this.cameras.main.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
 
-    // Phase 5 Bucket 6 partial — HazardZones reset/construct/spawn bundled.
     this.hazardZones = installHazardZones({
       scene: this,
       prior: this.hazardZones,
@@ -1022,7 +1024,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       tryMoorMercyLuck: (hp) => this.tryMoorMercyLuck(hp),
     });
 
-    // Phase 5 Bucket 6 partial — core combat systems bundled.
     ({
       statusFxPool: this.statusFxPool,
       spawnSystem: this.spawnSystem,
@@ -1238,21 +1239,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runPersistence.applyResume(resumeRun);
     }
 
-    // T131 save-failure listener now installed via wireSceneEventBus
-    // alongside the rest of the run-scoped global-bus subscriptions
-    // (this.eventBusDispose lifecycle); see call below.
-
-    // Upgrade card UI
     this.upgradeUI = new UpgradeCardsUI(this, (card) => this.levelUpFlow.apply(card), this.updateTickers);
     this.upgradeUI.setRerollCallback(() => this.levelUpFlow.reroll());
     this.upgradeUI.setVariantKey(this.activeVariant.key);
 
-    // Phase 5 Bucket 7 finish — combat cascade install. Builds
-    // EnemyKillHandler + WeaponSystem listeners + XPSystem listeners +
-    // PlayerHitResolver and registers the player↔enemy overlap. Lazy
-    // getters preserve the wire-before-construct contract for juice /
-    // hud / banter / pickupSpawner / levelUpFlow (all constructed
-    // below).
     ({ playerEnemyCollider: this.playerEnemyCollider } = installCombatCollisions({
       scene: this,
       player: this.player,
@@ -1402,10 +1392,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         });
       });
     }
-    // B1 Phase 2 + E1 M2 T9/T10 — Gran's opening wink, Burns Night
-    // stinger swap, and Burns Night haggis-platter spawn schedule.
-    // Extracted to runStartCeremony.ts (T401) so the gating + scheduling
-    // contract is testable without booting Phaser.
     installRunStartCeremony({
       isReplayPlayback: !!this.replayInput,
       isResume: !!resumeRun,
@@ -1419,8 +1405,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       banter: this.banter,
       audio,
     });
-    // Phase 5 Bucket 10 partial — runtime ambient + pickup install.
-    // Stop prior-run instances first (scene reuse on retry).
     this.weather?.stop();
     this.hazards?.stop();
     ({
@@ -1456,41 +1440,26 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onHazardsShutdown: () => { this.hazards = null; },
     }));
 
-    // Wild Living World — companion system. Construction is cheap (no
-    // sprite yet); `whistleCall` allocates the sprite + tween. Tied
-    // into the director so its update tick runs after the pause guard
-    // and `notify` fans moments to listeners. A short delayed call
-    // brings the sheepdog into the run so the first frame doesn't
-    // already have an ally on screen (gives the run identity toast a
-    // moment to read first).
     this.companionSystem?.destroy();
-    this.companionSystem = new CompanionSystem({
+    this.companionSystem = installCompanionSystem({
       scene: this,
       getPlayer: () => this.player,
+      director: this.livingWorldDirector,
+      isReplayInput: !!this.replayInput,
+      scheduleDelay: (ms, cb) => { this.time.delayedCall(ms, cb); },
+      getCurrentSystem: () => this.companionSystem,
     });
-    this.companionSystem.attachDirector(this.livingWorldDirector);
-    if (!this.replayInput) {
-      // Wild Living World Phase 2 — Croft picker selection drives the
-      // whistle-call. `selectedCompanion === null` is the explicit
-      // opt-out and skips the call entirely; any other unlocked key
-      // gets whistled in after the run-intro toast settles.
-      const sys = this.companionSystem;
-      const selected = loadSave().livingWorldUnlocks.selectedCompanion;
-      if (selected) {
-        this.time.delayedCall(2400, () => {
-          if (!sys || sys !== this.companionSystem) return;
-          sys.whistleCall(selected);
-        });
-      }
-    }
 
-    // Cairn Stacking scheduler (DESIGN_IDEAS §1) — three highland-stone
-    // pickups across the run, third collect fires the Cairn's Blessing
-    // (full heal + 8 s magnet pulse). In-line ctor here (not in
-    // installRunBookkeeping) because the spawn hook needs `pickupSpawner`,
-    // which is built one block above.
-    this.cairnStacking = new CairnStackingScheduler({
-      getRunRng: () => this.runRng,
+    const replayCairns =
+      this.pendingReplay
+        ? ((this.pendingReplay as { cairns?: FallenCairn[] }).cairns ?? [])
+        : null;
+    this.firstCairnTouchedThisRun = true;
+    this.cairnSprites.clear();
+    ({ cairnStacking: this.cairnStacking,
+      cairnOfEchoesScheduler: this.cairnOfEchoesScheduler,
+    } = installCairnSystems({
+      getRng: () => this.runRng,
       getPlayer: () => this.player,
       getVictoryPending: () => this.runScore.victoryPending,
       getJuice: () => this.juice,
@@ -1499,7 +1468,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.pickupSpawner.spawnCairnStone(onCollect, onExpired);
       },
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-      bumpCairnBlessing: () => bumpCairnBlessing(),
       openCairnBoonPicker: (options, onPick) => {
         this.timeManager.request('CAIRN_BOON', { pausePhysics: true, timeScale: 0 });
         this.scene.launch(CairnBoonPickerScene.KEY, {
@@ -1510,48 +1478,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           },
         });
       },
-    });
-    this.cairnStacking.reset();
-    // Restore partial cairn-stack progress from a mid-run save. Called
-    // after reset() so snapshot values overwrite the zeroed defaults.
-    // Not piped through RunPersistenceBridge.applyResume — that fires
-    // before cairnStacking exists in create()'s lifecycle.
-    if (resumeRun) {
-      this.cairnStacking.restoreFromSnapshot({
+      cairnResume: resumeRun ? {
         stoneCount: resumeRun.cairnStackCount ?? 0,
         spawnedCount: resumeRun.cairnSpawnedCount ?? 0,
         nextSpawnAtSec: resumeRun.cairnNextSpawnAtSec,
-      });
-    }
-
-    // The Moor Remembers (spec 2026-05-22) — persistent cross-run cairns.
-    // Sister to cairnStacking but the source of truth is meta save, not
-    // a per-run RNG roll. Replay branch pulls cairns from the recorded
-    // blob so a run captured before a FIFO rotation still sees the same
-    // moor (T1 contract — `pendingReplay.cairns` if v3+, else fall
-    // through to live meta).
-    const replayCairns =
-      this.pendingReplay
-        ? ((this.pendingReplay as { cairns?: FallenCairn[] }).cairns ?? [])
-        : null;
-    this.firstCairnTouchedThisRun = true;
-    this.cairnSprites.clear();
-    this.cairnOfEchoesScheduler = new CairnOfEchoesScheduler({
+      } : null,
       getCairns: () =>
         replayCairns !== null ? replayCairns : this.metaSaveManager.getFallenCairns(),
-      // runRng.next() — replay-deterministic seeded sample.
       getRngSample: () => this.runRng.next(),
-      // First-touch-ever heuristic: the lifetime `ancestralEchoesTouched`
-      // counter lives on the gameplay save (loadSave) per spec §4.4 ("the
-      // cairn IS the persistent echo"), so first-touch = counter === 0.
-      isFirstDeathTouchEver: () => (loadSave().ancestralEchoesTouched ?? 0) === 0,
       getOldDroverRevealedCount: () => this.metaSaveManager.getOldDroverRevealedCount(),
       onWalkOver: ({ cairn, whisper }) => this.handleCairnWalkOver(cairn, whisper),
       onSpriteCreate: (cairn) => this.spawnCairnSprite(cairn),
       onSpriteDestroy: (cairn) => this.destroyCairnSprite(cairn),
-    });
-    this.cairnOfEchoesScheduler.reset();
-    this.cairnOfEchoesScheduler.load();
+    }));
 
     // V2 — Cailleach Gauntlet scheduler. Sister to cairn scheduler;
     // reads touched-this-run count from it, fires win/lose hooks at
@@ -1573,83 +1512,31 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.cailleachGauntletScheduler = gauntletInstall.scheduler;
     this.gauntletTeardown = gauntletInstall.teardown;
 
-    // Engineer variant — place the cairn-turret 80 px to the right of the
-    // player spawn so it's visible but not on top of the haggis. The system
-    // is only created when the active variant is engineer; all other variants
-    // leave `engineerTurretSystem` null and tickFrameWorld no-ops.
-    this.engineerTurretSystem = null;
     this.engineerTurretSprite?.destroy();
-    this.engineerTurretSprite = null;
-    if (selectedVariant.modifiers.engineerTurret) {
-      this.engineerTurretSystem = new EngineerTurretSystem({
-        getIsVictoryPending: () => this.runScore.victoryPending,
-        fireTurretShot: (fromX, fromY, damageMul) =>
-          this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),
-        spawnTurretSprite: (x, y) => {
-          if (!this.textures.exists('engineer_turret')) return;
-          this.engineerTurretSprite = this.add.image(x, y, 'engineer_turret');
-          this.engineerTurretSprite.setDepth(1);
-        },
-      });
-      this.engineerTurretSystem.place(spawnPx + 80, spawnPy);
-    }
-
-    // Tufted variant — spawn the wee pup 50 px behind the player so the
-    // companion is visible from the first frame. The pup follows and fires
-    // independently; `tuftedFamiliarSystem` is null for all other variants.
-    this.tuftedFamiliarSystem = null;
     this.tuftedPupSprite?.destroy();
-    this.tuftedPupSprite = null;
-    if (selectedVariant.modifiers.tuftedFamiliar) {
-      this.tuftedFamiliarSystem = new TuftedFamiliarSystem({
-        getIsVictoryPending: () => this.runScore.victoryPending,
-        getPlayerPosition: () => ({ x: this.player.x, y: this.player.y }),
-        firePupShot: (fromX, fromY, damageMul) =>
-          this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),
-        movePupSprite: (x, y) => {
-          if (this.tuftedPupSprite) {
-            this.tuftedPupSprite.setPosition(x, y);
-          }
-        },
-        spawnPupSprite: (x, y) => {
-          if (!this.textures.exists('tufted_pup')) return;
-          this.tuftedPupSprite = this.add.image(x, y, 'tufted_pup');
-          this.tuftedPupSprite.setDepth(1);
-        },
-      });
-      this.tuftedFamiliarSystem.place(spawnPx - 50, spawnPy);
-    }
-
-    // Lemmings Easter Egg (DESIGN_IDEAS §13) — cliff-edge parade homage
-    // to DMA Design / Dundee 1991. Always-on per-run orchestrator; idle
-    // 90 s in coastal biome triggers the once-per-variant parade. Pure
-    // cosmetic. In-line ctor here (after banter init upstream and the
-    // pickupSpawner block) so all deps are resolved.
-    this.lemmingsEasterEgg = new LemmingsEasterEgg({
+    ({
+      engineerTurretSystem: this.engineerTurretSystem,
+      engineerTurretSprite: this.engineerTurretSprite,
+      tuftedFamiliarSystem: this.tuftedFamiliarSystem,
+      tuftedPupSprite: this.tuftedPupSprite,
+    } = installVariantCompanions({
       scene: this,
-      getPlayerXY: () => ({ x: this.player.x, y: this.player.y }),
+      hasEngineerTurret: !!selectedVariant.modifiers.engineerTurret,
+      hasTuftedFamiliar: !!selectedVariant.modifiers.tuftedFamiliar,
+      spawnPx,
+      spawnPy,
+      getIsVictoryPending: () => this.runScore.victoryPending,
+      getPlayerPosition: () => ({ x: this.player.x, y: this.player.y }),
+      fireTurretShot: (fromX, fromY, damageMul) =>
+        this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),
+    }));
+
+    this.lemmingsEasterEgg = installLemmingsEasterEgg({
+      scene: this,
+      getPlayer: () => this.player,
       getActiveVariantKey: () => this.activeVariant.key,
       getCurrentBiomeId: () => this.getCurrentBiomeId(),
-      // "Still" threshold — 8 px/s lets drag-decay below player intent
-      // count as still without forcing absolute zero. Player input
-      // resumes ticking the trigger to 0 the moment movement intent
-      // drives velocity above the threshold.
-      isPlayerStill: () => {
-        const body = this.player.body as Phaser.Physics.Arcade.Body | null;
-        const vx = body?.velocity.x ?? 0;
-        const vy = body?.velocity.y ?? 0;
-        return Math.hypot(vx, vy) < 8;
-      },
-      hasVariantSeen: (key) => {
-        try {
-          return loadSave().lemmingsSeenForVariant.includes(key);
-        } catch {
-          return false;
-        }
-      },
-      persistVariantSeen: (key) => bumpLemmingsSeenForVariant(key),
       requestBanter: () => this.requestBanter('lemmings_remember'),
-      playSfx: () => audio.playLemmingsOhNo(),
     });
 
     // Phase 5 Bucket 6 partial — LevelUpFlow + RunLifecycle ctors bundled.
