@@ -77,6 +77,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Tam-o'-Shanter — midnight-blue field (Alloway Kirk by dark), grey-mare stripe,
   // whisky-lamp amber accent. Burns Night in a bonnet.
   tam_o_shanter: { field: 0x1e3a6a, fieldDark: 0x10203c, stripe: 0x7a9ab8, accent: 0xf0c828 },
+  // The Engineer — dark pewter field, copper-rivet stripe,
+  // workshop-iron accent. Not a dress tartan; a working one.
+  engineer:      { field: 0x304040, fieldDark: 0x1e2828, stripe: 0xc8780a, accent: 0x6a8080 },
 };
 
 /**

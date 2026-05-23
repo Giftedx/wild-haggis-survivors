@@ -71,6 +71,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   the_pict:      { base: '#3a1c08', primary: '#6e3a10' }, // dark ochre + warpaint-red
   jacobite:      { base: '#1a2848', primary: '#c04030' }, // Jacobite navy + Stuart crimson
   tam_o_shanter: { base: '#10203c', primary: '#3a5890' }, // Alloway midnight + bonnet blue
+  engineer:      { base: '#1e2828', primary: '#c8780a' }, // workshop pewter + copper rivet
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

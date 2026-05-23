@@ -396,6 +396,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.tam_o_shanter.c',
         'ui.banter.low_hp.tam_o_shanter.d',
       ],
+      engineer: [
+        'ui.banter.low_hp.engineer.a',
+        'ui.banter.low_hp.engineer.b',
+        'ui.banter.low_hp.engineer.c',
+        'ui.banter.low_hp.engineer.d',
+      ],
     },
   },
   {
@@ -782,6 +788,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.tam_o_shanter.c',
         'ui.banter.level_up.tam_o_shanter.d',
       ],
+      engineer: [
+        'ui.banter.level_up.engineer.a',
+        'ui.banter.level_up.engineer.b',
+        'ui.banter.level_up.engineer.c',
+        'ui.banter.level_up.engineer.d',
+      ],
     },
   },
   {
@@ -949,6 +961,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.tam_o_shanter.b',
         'ui.banter.first_blood.tam_o_shanter.c',
         'ui.banter.first_blood.tam_o_shanter.d',
+      ],
+      engineer: [
+        'ui.banter.first_blood.engineer.a',
+        'ui.banter.first_blood.engineer.b',
+        'ui.banter.first_blood.engineer.c',
+        'ui.banter.first_blood.engineer.d',
       ],
     },
   },
@@ -1119,6 +1137,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.tam_o_shanter.c',
         'ui.banter.kill_streak.tam_o_shanter.d',
       ],
+      engineer: [
+        'ui.banter.kill_streak.engineer.a',
+        'ui.banter.kill_streak.engineer.b',
+        'ui.banter.kill_streak.engineer.c',
+        'ui.banter.kill_streak.engineer.d',
+      ],
     },
   },
   {
@@ -1286,6 +1310,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.tam_o_shanter.b',
         'ui.banter.recover.tam_o_shanter.c',
         'ui.banter.recover.tam_o_shanter.d',
+      ],
+      engineer: [
+        'ui.banter.recover.engineer.a',
+        'ui.banter.recover.engineer.b',
+        'ui.banter.recover.engineer.c',
+        'ui.banter.recover.engineer.d',
       ],
     },
   },
@@ -1640,6 +1670,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.tam_o_shanter.b',
         'ui.banter.idle.tam_o_shanter.c',
         'ui.banter.idle.tam_o_shanter.d',
+      ],
+      engineer: [
+        'ui.banter.idle.engineer.a',
+        'ui.banter.idle.engineer.b',
+        'ui.banter.idle.engineer.c',
+        'ui.banter.idle.engineer.d',
       ],
     },
   },

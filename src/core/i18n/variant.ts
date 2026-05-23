@@ -133,6 +133,11 @@ export const variant = {
     flavor: 'Fast as Meg, brave as whisky. The bard wrote him; the moor runs him noo. Weel done, Cutty-sark — but dinnae shout it.',
     lore: '"Kings may be blest, but Tam was glorious, O\'er a\' the ills o\' life victorious!" Burns wrote the ride; this haggis rides it every run. Fast, reckless, half a dram past wise. The bonnet tilts left. The drift tilts worse. The moor between here and the Brig o\' Doon is the only question.',
   },
+  engineer: {
+    name: 'The Engineer',
+    flavor: 'Built the cairn before the run. Watt measured. Telford bridged. This haggis shoots twice.',
+    lore: 'Scotland gave the world the steam engine, the telephone, and the adhesive postage stamp. This haggis studied under all three traditions. It stacks one cairn-turret per run — no more, no less — and that stone fires faithfully until the last enemy falls. The haggis is slower for the tools it carries. The turret does not care.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

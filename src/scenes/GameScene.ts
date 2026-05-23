@@ -93,6 +93,7 @@ import { CairnBoonPickerScene } from './CairnBoonPickerScene';
 import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
 import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
 import { installCailleachGauntlet } from './game/installCailleachGauntlet';
+import { EngineerTurretSystem } from './game/EngineerTurretSystem';
 import type { WhisperResult } from './game/cairnOfEchoesWhisper';
 import {
   createCairnSpriteForScene,
@@ -555,6 +556,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   cailleachGauntletScheduler!: CailleachGauntletScheduler;
   /** V2 — opaque teardown returned by `installCailleachGauntlet`. */
   private gauntletTeardown: (() => void) | null = null;
+  /** Engineer variant turret — null when variant is not engineer. */
+  engineerTurretSystem: EngineerTurretSystem | null = null;
+  /** Turret sprite — held here so resetTransientRunState can destroy it. */
+  private engineerTurretSprite: Phaser.GameObjects.Image | null = null;
   /**
    * Live sprite refs keyed by FallenCairn identity so the scheduler's
    * `onSpriteCreate` / `onSpriteDestroy` callbacks can find and tween
@@ -1562,6 +1567,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     this.cailleachGauntletScheduler = gauntletInstall.scheduler;
     this.gauntletTeardown = gauntletInstall.teardown;
+
+    // Engineer variant — place the cairn-turret 80 px to the right of the
+    // player spawn so it's visible but not on top of the haggis. The system
+    // is only created when the active variant is engineer; all other variants
+    // leave `engineerTurretSystem` null and tickFrameWorld no-ops.
+    this.engineerTurretSystem = null;
+    this.engineerTurretSprite?.destroy();
+    this.engineerTurretSprite = null;
+    if (selectedVariant.modifiers.engineerTurret) {
+      this.engineerTurretSystem = new EngineerTurretSystem({
+        getIsVictoryPending: () => this.victoryPending,
+        fireTurretShot: (fromX, fromY, damageMul) =>
+          this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),
+        spawnTurretSprite: (x, y) => {
+          if (!this.textures.exists('engineer_turret')) return;
+          this.engineerTurretSprite = this.add.image(x, y, 'engineer_turret');
+          this.engineerTurretSprite.setDepth(1);
+        },
+      });
+      this.engineerTurretSystem.place(spawnPx + 80, spawnPy);
+    }
 
     // Lemmings Easter Egg (DESIGN_IDEAS §13) — cliff-edge parade homage
     // to DMA Design / Dundee 1991. Always-on per-run orchestrator; idle

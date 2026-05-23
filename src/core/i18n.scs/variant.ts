@@ -114,6 +114,11 @@ export const variant = {
     flavor: 'Fleet as Meg, brave as whusky. Tha bard writ him; tha muir rins him noo. Weel duin, Cutty-sark — but dinnae cry it oot.',
     lore: '"Kings may be blest, but Tam wis glorious, O\'er a\' tha ills o\' life victorious!" Burns writ tha ride; this haggis rides it ilka run. Fleet, reckless, hauf a dram past wise. Tha bonnet tilts left. Tha drift tilts waur. Tha muir atween here an tha Brig o\' Doon is tha anely question.',
   },
+  engineer: {
+    name: 'Tha Engineer',
+    flavor: 'Built tha cairn afore tha run. Watt measured. Telford bridged. This haggis shoots twice.',
+    lore: 'Scotland gied tha warld tha steam engine, tha telephone, an tha adhesive stamp. This haggis studied unner a\' three traditions. It stacks wan cairn-turret per run — nae mair, nae less — an yon stane fires faithfully til tha last enemy faws. Tha haggis is slower for tha tools it cairries. Tha turret disnae care.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

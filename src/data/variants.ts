@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite' | 'tam_o_shanter';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite' | 'tam_o_shanter' | 'engineer';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -84,6 +84,14 @@ export interface VariantModifier {
    * via Player.isFloraPlaidActive().
    */
   floraPlaidPeriodic?: boolean;
+  /**
+   * The Engineer variant — places a single cairn-turret at run start that
+   * fires the main weapon at 50% damage on a fixed 1200 ms cadence.
+   * The turret is stationary; the haggis moves but the cairn stays.
+   * Wired in GameScene via EngineerTurretSystem; EngineerTurretSystem
+   * calls WeaponSystem.fireTurretShot(x, y, 0.5) on its own clock.
+   */
+  engineerTurret?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -147,7 +155,8 @@ export type HaggisAccentStyle =
   | 'grans_best'
   | 'the_pict'
   | 'jacobite'
-  | 'tam_o_shanter';
+  | 'tam_o_shanter'
+  | 'engineer';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -928,6 +937,37 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x3a5890,       // bonnet blue
         snout: 0x7a9ab8,     // grey mare — Meg's colour
         accent: 0xf0c828,    // whisky-lamp amber — the pub lantern
+      },
+    },
+  },
+  {
+    // The Engineer — Scots industrial tradition (Watt, Telford, Rennie).
+    // Places a cairn-turret at run start that fires the main weapon at
+    // 50% damage from a fixed world position. The haggis moves; the cairn
+    // does not. Slower (carries tools), lighter frame (-20 HP), but the
+    // turret covers the flank all run long.
+    // Palette: dark pewter body, copper-rivet accent — the colour of the
+    // workshop, not the moor.
+    // Unlock: 15 victories — the highest gate. Earned, not gifted.
+    key: 'engineer',
+    nameKey: 'variant.engineer.name',
+    flavorKey: 'variant.engineer.flavor',
+    textureKey: 'haggis_engineer',
+    modifiers: {
+      moveSpeedPct: -0.10,
+      maxHpFlat: -20,
+      engineerTurret: true,
+    },
+    unlock: { type: 'victories', required: 15 },
+    appearance: {
+      accentStyle: 'engineer',
+      palette: {
+        outline: 0x0e1010,
+        bodyDark: 0x1e2828,
+        bodyLight: 0x304040,
+        fur: 0x4a5c5c,       // pewter-grey — workshop iron
+        snout: 0x6a8080,     // worn metal — time on the tools
+        accent: 0xc8780a,    // copper rivet — the engineer's mark
       },
     },
   },

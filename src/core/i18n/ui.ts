@@ -1379,6 +1379,7 @@ export const ui = {
         the_pict: 'A haggis fell here. The stone marks it. As always.',
         jacobite: 'A haggis fell here. The plaid could not hold forever.',
         tam_o_shanter: 'A haggis fell here. Near enough the Brig o\' Doon.',
+        engineer: 'A haggis fell here. The turret still stands.',
       },
     },
     grandfather: {
@@ -1725,6 +1726,12 @@ export const ui = {
         b: 'Weel done, Cutty-sark — nae, dinnae say it. Just run.',
         c: 'The witches are gaining. The bridge is the anely answer.',
         d: 'Faster. The running water saves ye. Find it.',
+      },
+      engineer: {
+        a: 'The turret is still firing. I am still moving. Both acceptable.',
+        b: 'Structural integrity compromised. Continue anyway.',
+        c: 'The cairn holds. So will I. Probably.',
+        d: 'Watt\'s engine ran on pressure too.',
       },
     },
     boss_down: {
@@ -2083,6 +2090,12 @@ export const ui = {
         c: 'O\'er a\' the ills o\' life victorious — that\'s the bard\'s line. That\'s mine tae.',
         d: 'Meg wid\'ve galloped harder. Keep up.',
       },
+      engineer: {
+        a: 'Spec updated. Output increased.',
+        b: 'Improvement logged. Telford would nod.',
+        c: 'The drawings are getting better. So is the haggis.',
+        d: 'Watt improved the engine fourteen times. This is one.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2243,6 +2256,12 @@ export const ui = {
         b: 'The witches stirred at that. Good.',
         c: 'Weel aimed, ya beauty. The bard wid approve.',
         d: 'First blood, and the bonnet\'s still on.',
+      },
+      engineer: {
+        a: 'First target acquired. Turret agrees.',
+        b: 'The cairn fired first. I\'ll take the credit.',
+        c: 'One down. The mechanism is satisfied.',
+        d: 'First contact. The specifications were correct.',
       },
     },
     kill_streak: {
@@ -2406,6 +2425,12 @@ export const ui = {
         c: 'The bonnet\'s low, the speed is high, the streak is growin\'.',
         d: 'Meg wid\'ve kept up. Barely.',
       },
+      engineer: {
+        a: 'Throughput satisfactory. Streak logged.',
+        b: 'Two shooters running. The moor cannat keep up.',
+        c: 'Sequential elimination. The mechanism is efficient today.',
+        d: 'Rennie would have called this good load-bearing.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2566,6 +2591,12 @@ export const ui = {
         b: 'The Brig o\' Doon\'s behind me noo. Breathe.',
         c: 'Running water saved him. Speed saves me.',
         d: 'Tam survived worse — just. So did I.',
+      },
+      engineer: {
+        a: 'Damage assessed. Repairs in progress. Turret unaffected.',
+        b: 'The mechanism bent. It did not break.',
+        c: 'Back within tolerances. The cairn never stopped.',
+        d: 'Telford rebuilt the bridge three times. This is once.',
       },
     },
     biome_change: {
@@ -3285,6 +3316,12 @@ export const ui = {
         c: 'Alloway Kirk is quiet the nicht. For noo.',
         d: 'The bonnet sits true. The drift says otherwise.',
       },
+      engineer: {
+        a: 'The turret fires without me. It always does.',
+        b: 'Watt\'s kettle worked without him watching. So does the cairn.',
+        c: 'The mechanism runs. I observe. Both are useful.',
+        d: 'A still haggis is a haggis reviewing the drawings.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3844,6 +3881,11 @@ export const ui = {
         // 10 victories. Voice: edge, Burns-citational, delighted.
         a: 'Ten victories. Tam o\' Shanter mounts up — fast as Meg, reckless as the bard, the bonnet on at a gallop. "Kings may be blest, but Tam was glorious."',
         b: 'Ye won ten times. The pub at Ayr sends ye off. The moor between here and the Brig o\' Doon is yours.',
+      },
+      variant_engineer_unlocked: {
+        // 15 victories. Voice: dry, technical, quietly proud.
+        a: 'Fifteen victories. The Engineer places the cairn — Watt measured, Telford bridged, Rennie spanned. This haggis builds. Then it goes to war.',
+        b: 'Ye won fifteen times. The turret is stacked. The mechanism is armed. Two shooters on the moor.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4620,6 +4662,12 @@ export const ui = {
         death_short: '{name}. The bonnet rolled on.',
         victory_baseline: '{name} made it ower the brig. The witches couldnae follow. Meg wid\'ve been proud.',
         victory_taxman: 'The Taxman tried tae stop {name} on the Alloway road. Tam was faster. Tam\'s aye faster.',
+      },
+      engineer: {
+        death_baseline: '{name} fell. The turret kept firing. That\'s the mechanism: it doesn\'t care.',
+        death_short: '{name}. The cairn stands. The barrel cools.',
+        victory_baseline: '{name} built once and won. Watt would have improved the design for the next run.',
+        victory_taxman: 'The Taxman faced {name} and a cairn-turret. Two shooters. One ledger. Settled.',
       },
     },
   },

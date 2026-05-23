@@ -66,6 +66,7 @@ import type { ClootieTree } from './clootieTree';
 import type { LemmingsEasterEgg } from './lemmingsEasterEgg';
 import type { AncestralEcho } from './ancestralEcho';
 import type { CairnOfEchoesScheduler } from './CairnOfEchoesScheduler';
+import type { EngineerTurretSystem } from './EngineerTurretSystem';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import type { RelicOrchestrator } from './RelicOrchestrator';
 import type { RNG } from '../../utils/rng';
@@ -133,6 +134,8 @@ export interface TickFrameWorldDeps {
    * frame). Null between runs and during early scene boot.
    */
   getCailleachGauntletScheduler: () => import('./CailleachGauntletScheduler').CailleachGauntletScheduler | null;
+  /** Engineer variant — null when variant is not engineer. */
+  getEngineerTurretSystem: () => EngineerTurretSystem | null;
   /** Lazy — destroyed + nulled between runs. */
   getRelicSlotUI: () => RelicSlotUI | null;
   /** Driver lives on the orchestrator (non-null in active runs) and is
@@ -285,6 +288,11 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   if (gauntletSched) {
     gauntletSched.tick();
   }
+
+  // Engineer variant — tick turret AFTER gauntlet so all cairn/boss state
+  // is settled for this frame before the turret fires.
+  const engineerTurret = deps.getEngineerTurretSystem();
+  if (engineerTurret) engineerTurret.tick(scaledDelta);
 
   // Pass player facing — own concern, kept out of the multiplier fold.
   // Always read from `player.rotation` (persists when stationary) so

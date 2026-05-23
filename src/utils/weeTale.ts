@@ -477,4 +477,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.tam_o_shanter.death_short', requires: ['death', 'tam_o_shanter', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.tam_o_shanter.victory_baseline', requires: ['victory', 'tam_o_shanter', 'has_name'] },
   { key: 'ui.weeTale.variant.tam_o_shanter.victory_taxman', requires: ['victory', 'tam_o_shanter', 'has_name', 'taxman'] },
+  // The Engineer — Scotland's great builders; the turret; two shooters on the moor.
+  { key: 'ui.weeTale.variant.engineer.death_baseline', requires: ['death', 'engineer', 'has_name'] },
+  { key: 'ui.weeTale.variant.engineer.death_short', requires: ['death', 'engineer', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.engineer.victory_baseline', requires: ['victory', 'engineer', 'has_name'] },
+  { key: 'ui.weeTale.variant.engineer.victory_taxman', requires: ['victory', 'engineer', 'has_name', 'taxman'] },
 ] as const;

@@ -1873,6 +1873,45 @@ export class WeaponSystem {
     return this.weapons.some(w => w.config.key === key);
   }
 
+  /**
+   * Engineer variant — fire the first weapon from a fixed turret position.
+   * Targets the enemy closest to (fromX, fromY), not the player. Only fires
+   * for projectile / piercing behaviors (skip AoE / sweep / pulse weapons).
+   * Damage is scaled by damageMul (0.5 = 50%).
+   */
+  fireTurretShot(fromX: number, fromY: number, damageMul: number): void {
+    if (this.destroyed || this.weapons.length === 0) return;
+    const w = this.weapons[0];
+    const b = w.config.behavior;
+    if (b !== 'projectile' && b !== 'piercing') return;
+    const texture = b === 'piercing' ? 'caber' : 'thistle';
+    const target = this.findClosestEnemyToPos(fromX, fromY, w.config.range);
+    if (!target) return;
+    const proj = this.getProjectile(texture);
+    if (!proj) return;
+    const { damage, isCrit } = this.effectiveDamage(w);
+    proj.fire(fromX, fromY, target.x, target.y, w.config.projectileSpeed, Math.ceil(damage * damageMul), w.pierce, w.config.range, isCrit);
+    proj.setWeaponKey(w.config.key);
+    proj.setPibrochAligned(false);
+    this.applyProjectileVisual(proj, texture);
+  }
+
+  /** Find the closest active enemy to an arbitrary world position — used by
+   *  the Engineer turret which doesn't sit at the player's location. */
+  private findClosestEnemyToPos(fromX: number, fromY: number, maxRange: number): Enemy | null {
+    const maxRangeSq = maxRange * maxRange;
+    const children = this.enemyGroup.getChildren() as Enemy[];
+    let best: Enemy | null = null;
+    let bestDistSq = maxRangeSq;
+    for (const e of children) {
+      if (!e.active) continue;
+      const dx = e.x - fromX, dy = e.y - fromY;
+      const dSq = dx * dx + dy * dy;
+      if (dSq < bestDistSq) { bestDistSq = dSq; best = e; }
+    }
+    return best;
+  }
+
   /** Replace loadout from a saved run (default starter is restored if list is empty). */
   replaceWeaponsFromRun(
     slots: { key: string; level: number; evolved: boolean; evolutionKey: string }[]

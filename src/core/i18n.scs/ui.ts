@@ -905,6 +905,7 @@ export const ui = {
         the_pict: 'A haggis fell here. Tha stane marks it. As aye.',
         jacobite: 'A haggis fell here. Tha plaid couldna haud forever.',
         tam_o_shanter: 'A haggis fell here. Near enough tha Brig o\' Doon.',
+        engineer: 'A haggis fell here. Tha turret still stands.',
       },
     },
     grandfather: {
@@ -1175,6 +1176,12 @@ export const ui = {
         b: 'Weel duin, Cutty-sark — nae, dinnae say it. Jist run.',
         c: 'Tha witches are gainin. Tha brig is tha anely answer.',
         d: 'Faster. Rinnin watter saves ye. Find it.',
+      },
+      engineer: {
+        a: 'Tha turret is still firin. Ah\'m still muivin. Baith acceptable.',
+        b: 'Structural integrity compromised. Continue onywye.',
+        c: 'Tha cairn hauds. Sae will Ah. Probably.',
+        d: 'Watt\'s engine ran on pressure tae.',
       },
     },
     boss_down: {
@@ -1530,6 +1537,12 @@ export const ui = {
         c: 'O\'er a\' tha ills o\' life victorious — that\'s tha bard\'s line. That\'s mine tae.',
         d: 'Meg wid\'ve galloped harder. Keep up.',
       },
+      engineer: {
+        a: 'Spec updated. Output increased.',
+        b: 'Improvement logged. Telford wid nod.',
+        c: 'Tha drawin\'s gettin better. Sae is tha haggis.',
+        d: 'Watt improved tha engine fourteen times. This is ane.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1690,6 +1703,12 @@ export const ui = {
         b: 'Tha witches stirred at that. Guid.',
         c: 'Weel aimed, ya beauty. Tha bard wid approve.',
         d: 'First bluid, an tha bonnet\'s still on.',
+      },
+      engineer: {
+        a: 'First target acquired. Turret agrees.',
+        b: 'Tha cairn fired first. Ah\'ll tak tha credit.',
+        c: 'Ane doon. Tha mechanism is satisfied.',
+        d: 'First contact. Tha specifications were correct.',
       },
     },
     kill_streak: {
@@ -1853,6 +1872,12 @@ export const ui = {
         c: 'Tha bonnet\'s low, tha speed is high, tha streak\'s growin.',
         d: 'Meg wid\'ve kept up. Barely.',
       },
+      engineer: {
+        a: 'Throughput satisfactory. Streak logged.',
+        b: 'Twa shooters rinnin. Tha muir cannat keep up.',
+        c: 'Sequential elimination. Tha mechanism is efficient tha day.',
+        d: 'Rennie wid hae cawed this guid load-bearin.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -2013,6 +2038,12 @@ export const ui = {
         b: 'Tha Brig o\' Doon\'s ahint me noo. Braith.',
         c: 'Rinnin watter saved him. Speed saves me.',
         d: 'Tam survived worse — just. Sae did I.',
+      },
+      engineer: {
+        a: 'Damage assessed. Repairs in progress. Turret unaffected.',
+        b: 'Tha mechanism bent. It did no brek.',
+        c: 'Back within tolerances. Tha cairn never stapped.',
+        d: 'Telford rebuilt tha brig three times. This is ance.',
       },
     },
     biome_change: {
@@ -2684,6 +2715,12 @@ export const ui = {
         c: 'Alloway Kirk is quate tha nicht. For noo.',
         d: 'Tha bonnet sits true. Tha drift says itherweys.',
       },
+      engineer: {
+        a: 'Tha turret fires wioot me. It aye does.',
+        b: 'Watt\'s kettle worked wioot him watchin. Sae does tha cairn.',
+        c: 'Tha mechanism rins. Ah observe. Baith are yaisefu.',
+        d: 'A still haggis is a haggis reviewin tha drawin\'s.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -3185,6 +3222,10 @@ export const ui = {
       variant_tam_o_shanter_unlocked: {
         a: 'Ten victories. Tam o\' Shanter mounts up — fleet as Meg, reckless as tha bard, tha bonnet on at a gallop. "Kings may be blest, but Tam wis glorious."',
         b: 'Ye won ten times. Tha pub at Ayr sends ye aff. Tha muir atween here an tha Brig o\' Doon is yours.',
+      },
+      variant_engineer_unlocked: {
+        a: 'Fifteen victories. Tha Engineer places tha cairn — Watt measured, Telford bridged, Rennie spanned. This haggis builds. Then it gaes tae war.',
+        b: 'Ye won fifteen times. Tha turret is stacked. Tha mechanism is airmed. Twa shooters on tha muir.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3799,6 +3840,12 @@ export const ui = {
         death_short: '{name}. Tha bonnet rolled on.',
         victory_baseline: '{name} made it ower tha brig. Tha witches couldna follow. Meg wid\'ve been proud.',
         victory_taxman: 'Tha Taxman tried tae stap {name} on tha Alloway stretch. Tam wis faster. Tam\'s aye faster.',
+      },
+      engineer: {
+        death_baseline: '{name} fell. Tha turret kept firin. That\'s tha mechanism: it disnae care.',
+        death_short: '{name}. Tha cairn staunds. Tha barrel cools.',
+        victory_baseline: '{name} built ance an won. Watt wid hae improved tha design for tha next run.',
+        victory_taxman: 'Tha Taxman faced {name} an a cairn-turret. Twa shooters. Wan ledger. Settled.',
       },
     },
   },
