@@ -1582,7 +1582,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.engineerTurretSprite = null;
     if (selectedVariant.modifiers.engineerTurret) {
       this.engineerTurretSystem = new EngineerTurretSystem({
-        getIsVictoryPending: () => this.victoryPending,
+        getIsVictoryPending: () => this.runScore.victoryPending,
         fireTurretShot: (fromX, fromY, damageMul) =>
           this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),
         spawnTurretSprite: (x, y) => {
@@ -1602,7 +1602,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.tuftedPupSprite = null;
     if (selectedVariant.modifiers.tuftedFamiliar) {
       this.tuftedFamiliarSystem = new TuftedFamiliarSystem({
-        getIsVictoryPending: () => this.victoryPending,
+        getIsVictoryPending: () => this.runScore.victoryPending,
         getPlayerPosition: () => ({ x: this.player.x, y: this.player.y }),
         firePupShot: (fromX, fromY, damageMul) =>
           this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),

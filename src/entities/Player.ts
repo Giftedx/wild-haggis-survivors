@@ -44,6 +44,7 @@ import {
   type WhiskyBreathState,
   createWhiskyBreathState,
   tickWhiskyBreath,
+  STACKS_MAX,
 } from './whiskyBreath';
 import {
   type Stance,
