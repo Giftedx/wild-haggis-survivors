@@ -462,4 +462,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.grans_best.death_short', requires: ['death', 'grans_best', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.grans_best.victory_baseline', requires: ['victory', 'grans_best', 'has_name'] },
   { key: 'ui.weeTale.variant.grans_best.victory_taxman', requires: ['victory', 'grans_best', 'has_name', 'taxman'] },
+  // The Pict — ancient warrior; no shop, relies on the moor's drops.
+  { key: 'ui.weeTale.variant.the_pict.death_baseline', requires: ['death', 'the_pict', 'has_name'] },
+  { key: 'ui.weeTale.variant.the_pict.death_short', requires: ['death', 'the_pict', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.the_pict.victory_baseline', requires: ['victory', 'the_pict', 'has_name'] },
+  { key: 'ui.weeTale.variant.the_pict.victory_taxman', requires: ['victory', 'the_pict', 'has_name', 'taxman'] },
 ] as const;

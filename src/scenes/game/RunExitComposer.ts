@@ -165,6 +165,7 @@ export class RunExitComposer {
       ...(h.isIronmoorRun() ? { ironmoor: true } : {}),
       ...(h.getSecondsPastBell() > 0 ? { postBellSec: Math.floor(h.getSecondsPastBell()) } : {}),
       curseKey: h.getActiveCurseKey() ?? undefined,
+      ...(h.getActiveVariant().modifiers.noShopAccess ? { noShopAccess: true } : {}),
       deathCause,
       name: h.getRunName(),
       // T402 — only attach run-identity radiator fields when the hook is

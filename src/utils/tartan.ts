@@ -68,6 +68,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   hebridean:     { base: '#1a3a4a', primary: '#6a9878' }, // deep Minch-blue + machair kelp-green
   iron_brew:     { base: '#8a2800', primary: '#ff6820' }, // deep rust + Irn-Bru orange
   grans_best:    { base: '#5a1028', primary: '#8a3048' }, // deep burgundy + warm rose
+  the_pict:      { base: '#3a1c08', primary: '#6e3a10' }, // dark ochre + warpaint-red
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

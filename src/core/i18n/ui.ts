@@ -463,6 +463,8 @@ export const ui = {
     gold_breakdown: 'Time {timeGold}  |  Kills {killGold}  |  Boss {bossGold}  |  Coins {coinGold}',
     play_again: 'PLAY AGAIN',
     upgrades: 'GOLD SHOP',
+    /** Locked variant of the Gold Shop button — shown when the active variant blocks shop access. */
+    upgrades_locked: 'NAE SHOP',
     /** "Back to the hub" — post-T9 leads to CroftScene, not MainMenu. Hearth voice. */
     menu: 'TAE GRAN\'S',
     damage_summary: 'Kills {kills}  ·  Time {time}  ·  Gold +{gold}',
@@ -1374,6 +1376,7 @@ export const ui = {
         hebridean: 'A haggis fell here, on the machair.',
         iron_brew: 'A haggis fell here. Got back up three times first.',
         grans_best: 'A haggis fell here. Gran would have had words.',
+        the_pict: 'A haggis fell here. The stone marks it. As always.',
       },
     },
     grandfather: {
@@ -1702,6 +1705,12 @@ export const ui = {
         b: 'Low HP. Good. That\'s when we hit hardest.',
         c: 'Dinnae ye dare die gentle, hen.',
         d: 'This is Gran\'s territory. The low end. Hold on.',
+      },
+      the_pict: {
+        a: 'Deid is a manner o\' speakin\'. Still standin\'.',
+        b: 'The stone disna bleed. Neither dae I.',
+        c: 'Aye battered. Aye here.',
+        d: 'The Pict disna flee. Backs tae the bedrock, face tae the moor.',
       },
     },
     boss_down: {
@@ -2042,6 +2051,12 @@ export const ui = {
         c: 'Ye\'re getting there, hen. Keep it tidy.',
         d: 'Gran\'s nod. That\'s the highest honour.',
       },
+      the_pict: {
+        a: 'Another notch in the stone.',
+        b: 'The knotwork grows anither loop.',
+        c: 'Aye — that ane goes intae the carving.',
+        d: 'Strength handed doon fae the bedrock itsel.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2184,6 +2199,12 @@ export const ui = {
         b: 'That\'s the opener. Nae sentimentality.',
         c: 'First blood — Gran approves. She disnae say so.',
         d: 'One doon. Gran\'s already moved on tae the next.',
+      },
+      the_pict: {
+        a: 'First blood on the moor. The stone is satisfied.',
+        b: 'Aye. There it is. The carving begins.',
+        c: 'Nae gold tae be had. Jist this. Guid enough.',
+        d: 'The Pict marks the first kill. As always.',
       },
     },
     kill_streak: {
@@ -2329,6 +2350,12 @@ export const ui = {
         c: 'Streak on. Gran\'s tallying.',
         d: 'That\'s the low-HP fury. Gran named it.',
       },
+      the_pict: {
+        a: 'Three — the column needs three.',
+        b: 'The beast-panel fills itsel.',
+        c: 'Aye — the knotwork is talkin noo.',
+        d: 'Woad-marked an unstoppable.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2471,6 +2498,12 @@ export const ui = {
         b: 'Recovered. The bonus waits if ye need it again.',
         c: 'Colour back in the cheeks. Gran\'s satisfied.',
         d: 'Still here. Gran\'s still watching.',
+      },
+      the_pict: {
+        a: 'The moor forgets naethin. Neither dae I.',
+        b: 'Back tae the bedrock. Back tae it.',
+        c: 'Dinnae mistake breathin for weakness.',
+        d: 'Still carved. Still here.',
       },
     },
     biome_change: {
@@ -3172,6 +3205,12 @@ export const ui = {
         c: 'She never rests. Neither should ye.',
         d: 'Gran watches every run. She\'s seen worse. She\'s seen ye.',
       },
+      the_pict: {
+        a: 'The stone is patient. Sae am I.',
+        b: 'The Pict waits. The moor kens.',
+        c: 'Woad disna wash aff easy.',
+        d: 'They carved because they had time. I dae the same.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3716,6 +3755,11 @@ export const ui = {
         // 5 victories. Voice: hearth, dry, fond.
         a: 'Five victories. Gran\'s Best emerges — fiercer at the low end, and she\'s been watching the whole time.',
         b: 'Gran\'s nod granted. Gran\'s Best haggis takes the field. Skirl of approval.',
+      },
+      variant_the_pict_unlocked: {
+        // 3 no-heal victories. Voice: hearth, ancient, spare.
+        a: 'Three runs, nae healer touched. The Pict steps oot o\' the stone — woad-marked, moor-rooted, disna deal in gold.',
+        b: 'The old ane wakes. The Pict: carved in stone, painted in woad, nae interest in the shop.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4474,6 +4518,12 @@ export const ui = {
         death_short: '{name}. Gran\'s seen worse runs. Not many.',
         victory_baseline: '{name} got fierce at the low end and kept swinging. Gran expected nothing less.',
         victory_taxman: 'The Taxman met {name} on a low-HP rage. Gran was watching from somewhere.',
+      },
+      the_pict: {
+        death_baseline: '{name} fell on the moor. The Pict carries nae gold — only marks in stone.',
+        death_short: '{name}. The knotwork still hauds.',
+        victory_baseline: '{name} carved it oot. The moor kens wha won, even wi nae gold tae show.',
+        victory_taxman: 'The Taxman had gold. The Pict had stone. The stone lasts.',
       },
     },
   },

@@ -118,6 +118,11 @@ export const variant = {
     flavor: 'Nearly deid an\' fiercer for it. Gran\'s watching. She approves.',
     lore: 'Gran\'s Best is not her finest hour. It\'s her finest threat. The old haggis with the bad hip and the sharper tongue — lower the HP, the harder she swings. "Ye dinnae need two working legs tae skelp something," she has been heard tae say. The skirl of her patience running out carries further than any bagpipe.',
   },
+  the_pict: {
+    name: 'The Pict',
+    flavor: 'Aye, afore the Romans. Woad an stane an moor. Nae gold — glories are carved, no bought.',
+    lore: 'They left their marks in stone, not in books. The knotwork is their language; the beast-columns their boast. No crown, no chronicle — only the moor and what they cut into its bedrock. They never needed the shop. They still don\'t.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

@@ -378,6 +378,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.grans_best.c',
         'ui.banter.low_hp.grans_best.d',
       ],
+      the_pict: [
+        'ui.banter.low_hp.the_pict.a',
+        'ui.banter.low_hp.the_pict.b',
+        'ui.banter.low_hp.the_pict.c',
+        'ui.banter.low_hp.the_pict.d',
+      ],
     },
   },
   {
@@ -746,6 +752,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.grans_best.c',
         'ui.banter.level_up.grans_best.d',
       ],
+      the_pict: [
+        'ui.banter.level_up.the_pict.a',
+        'ui.banter.level_up.the_pict.b',
+        'ui.banter.level_up.the_pict.c',
+        'ui.banter.level_up.the_pict.d',
+      ],
     },
   },
   {
@@ -895,6 +907,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.grans_best.b',
         'ui.banter.first_blood.grans_best.c',
         'ui.banter.first_blood.grans_best.d',
+      ],
+      the_pict: [
+        'ui.banter.first_blood.the_pict.a',
+        'ui.banter.first_blood.the_pict.b',
+        'ui.banter.first_blood.the_pict.c',
+        'ui.banter.first_blood.the_pict.d',
       ],
     },
   },
@@ -1047,6 +1065,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.grans_best.c',
         'ui.banter.kill_streak.grans_best.d',
       ],
+      the_pict: [
+        'ui.banter.kill_streak.the_pict.a',
+        'ui.banter.kill_streak.the_pict.b',
+        'ui.banter.kill_streak.the_pict.c',
+        'ui.banter.kill_streak.the_pict.d',
+      ],
     },
   },
   {
@@ -1196,6 +1220,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.grans_best.b',
         'ui.banter.recover.grans_best.c',
         'ui.banter.recover.grans_best.d',
+      ],
+      the_pict: [
+        'ui.banter.recover.the_pict.a',
+        'ui.banter.recover.the_pict.b',
+        'ui.banter.recover.the_pict.c',
+        'ui.banter.recover.the_pict.d',
       ],
     },
   },
@@ -1532,6 +1562,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.grans_best.b',
         'ui.banter.idle.grans_best.c',
         'ui.banter.idle.grans_best.d',
+      ],
+      the_pict: [
+        'ui.banter.idle.the_pict.a',
+        'ui.banter.idle.the_pict.b',
+        'ui.banter.idle.the_pict.c',
+        'ui.banter.idle.the_pict.d',
       ],
     },
   },

@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -70,6 +70,13 @@ export interface VariantModifier {
    * voice (hearth register) sounds throughout the run via banter pools.
    */
   granBestLowHpBonus?: boolean;
+  /**
+   * The Pict variant — blocks the Gold Shop button on the game-over screen.
+   * The Pict relies on what falls in battle; they deal in deeds, not gold.
+   * Checked in RunExitComposer → GameOverPayload.noShopAccess and rendered
+   * as a greyed-out locked button in renderGameOverActionRow.
+   */
+  noShopAccess?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -130,7 +137,8 @@ export type HaggisAccentStyle =
   | 'orcadian'
   | 'hebridean'
   | 'iron_brew'
-  | 'grans_best';
+  | 'grans_best'
+  | 'the_pict';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -818,6 +826,37 @@ export const VARIANTS: VariantDef[] = [
         fur: 0xc8a060,   // warm cream-gold — Gran's oatmeal
         snout: 0xe8d0a8, // pale oatmeal
         accent: 0x4a6840, // sage-green — knitting wool
+      },
+    },
+  },
+  {
+    // The Pict — ancient Caledonian warrior. Stone-carver, woad-painted,
+    // moor-rooted. Afore the Romans, afore the clans. They left marks in
+    // stone, not in books. The beast-columns are their boast; the knotwork
+    // their language. Never needed the shop. Still don't.
+    // Stats: tanky warrior (+20 HP), hard-striking (+15% dmg), slow (-8%).
+    // Special: noShopAccess — the Gold Shop is locked on game-over.
+    // Unlock: 3 runs without healing — the Pict kept their own counsel.
+    key: 'the_pict',
+    nameKey: 'variant.the_pict.name',
+    flavorKey: 'variant.the_pict.flavor',
+    textureKey: 'haggis_the_pict',
+    modifiers: {
+      maxHpFlat: 20,
+      damagePct: 0.15,
+      moveSpeedPct: -0.08,
+      noShopAccess: true,
+    },
+    unlock: { type: 'runs_without_healing', required: 3 },
+    appearance: {
+      accentStyle: 'the_pict',
+      palette: {
+        outline: 0x1a0e08,
+        bodyDark: 0x3a1c08,
+        bodyLight: 0x6e3a10,
+        fur: 0x8a5020,    // ochre warpaint
+        snout: 0xb07840,  // weathered ochre
+        accent: 0x2a4a6a, // woad blue-grey
       },
     },
   },

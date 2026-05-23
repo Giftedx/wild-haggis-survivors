@@ -70,6 +70,8 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Gran's Best Haggis — deep burgundy field, sage-green stripe,
   // cream-gold accent. Hearth colours; the armchair tartan.
   grans_best:   { field: 0x8a3048, fieldDark: 0x5a1028, stripe: 0x4a6840, accent: 0xc8a060 },
+  // The Pict — ochre-red field (warpaint), woad-blue stripe, dark-stone accent.
+  the_pict:     { field: 0x6e3a10, fieldDark: 0x3a1c08, stripe: 0x2a4a6a, accent: 0x8a5020 },
 };
 
 /**

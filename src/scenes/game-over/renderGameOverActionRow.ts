@@ -85,7 +85,9 @@ export function renderGameOverActionRow(
     // still carries the original curse for masochist re-attempts.
     scene.scene.start('Curse');
   };
+  const shopLocked = !!payload.noShopAccess;
   const onGoldShop = () => {
+    if (shopLocked) return;
     audio.playClick();
     musicEngine.stop();
     scene.scene.start('Shop');
@@ -98,7 +100,14 @@ export function renderGameOverActionRow(
   };
 
   createResultActionButton(scene, focusController, panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, actionButtonUiScale, onPlayAgain);
-  createResultActionButton(scene, focusController, panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, actionButtonUiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
+  createResultActionButton(
+    scene, focusController, panelCenterX, buttonsY, actionBtnW, 42,
+    shopLocked ? t('ui.gameOver.upgrades_locked') : t('ui.gameOver.upgrades'),
+    'secondary', 1300, actionButtonUiScale, onGoldShop,
+    shopLocked
+      ? { fillOverride: 0x444444, hoverOverride: 0x444444, textColorOverride: '#888888' }
+      : { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK },
+  );
   createResultActionButton(scene, focusController, panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, actionButtonUiScale, onTaeGran);
 
   focusController.seedFocusFromActions();

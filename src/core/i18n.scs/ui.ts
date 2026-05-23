@@ -277,6 +277,7 @@ export const ui = {
     curse_chip: 'Bore tha {curse} — +{pct}% gold',
     play_again: 'AT IT AGAIN',
     upgrades: 'GOLD SHOP',
+    upgrades_locked: 'NAE SHOP',
     menu: 'TAE GRAN\'S',
     next_tip: 'FER THA NEXT RUN',
     new_best: 'YA DANCER!',
@@ -901,6 +902,7 @@ export const ui = {
         hebridean: 'A haggis fell here, on tha machair.',
         iron_brew: 'A haggis fell here. Got back up three times first.',
         grans_best: 'A haggis fell here. Gran wid hae had words.',
+        the_pict: 'A haggis fell here. Tha stane marks it. As aye.',
       },
     },
     grandfather: {
@@ -1153,6 +1155,12 @@ export const ui = {
         b: 'Low HP. Guid. That\'s when we hit hardest.',
         c: 'Dinnae ye dare die gentle, hen.',
         d: 'This is Gran\'s territory. Tha low end. Haud on.',
+      },
+      the_pict: {
+        a: 'Deid is a manner o speakin. Still staunnin.',
+        b: 'Tha stane disna bleed. Neither dae I.',
+        c: 'Aye battered. Aye here.',
+        d: 'Tha Pict disna flee. Backs tae tha bedrock, face tae tha muir.',
       },
     },
     boss_down: {
@@ -1490,6 +1498,12 @@ export const ui = {
         c: 'Ye\'re gettin there, hen. Keep it tidy.',
         d: 'Gran\'s nod. That\'s tha highest honour.',
       },
+      the_pict: {
+        a: 'Anither notch in tha stane.',
+        b: 'Tha knotwork grows anither loop.',
+        c: 'Aye — that ane gaes intae tha carvin.',
+        d: 'Strength haundit doon fae tha bedrock itsel.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1632,6 +1646,12 @@ export const ui = {
         b: 'That\'s tha opener. Nae sentimentality.',
         c: 'First bluid — Gran approves. She disnae say sae.',
         d: 'Ane doon. Gran\'s already muved on tae tha next.',
+      },
+      the_pict: {
+        a: 'First bluid on tha muir. Tha stane is satisfied.',
+        b: 'Aye. There it is. Tha carvin begins.',
+        c: 'Nae gowd tae be had. Jist this. Guid enough.',
+        d: 'Tha Pict marks tha first kill. As aye.',
       },
     },
     kill_streak: {
@@ -1777,6 +1797,12 @@ export const ui = {
         c: 'Streak on. Gran\'s tallyin.',
         d: 'That\'s tha low-HP fury. Gran named it.',
       },
+      the_pict: {
+        a: 'Three — tha column needs three.',
+        b: 'Tha beast-panel fills itsel.',
+        c: 'Aye — tha knotwork is talkin noo.',
+        d: 'Woad-marked an unstoppable.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1919,6 +1945,12 @@ export const ui = {
         b: 'Recovered. Tha bonus waits if ye need it again.',
         c: 'Colour back in tha cheeks. Gran\'s satisfied.',
         d: 'Still here. Gran\'s still watchin.',
+      },
+      the_pict: {
+        a: 'Tha muir forgets naethin. Neither dae I.',
+        b: 'Back tae tha bedrock. Back tae it.',
+        c: 'Dinnae mistake breathin fer weakness.',
+        d: 'Still carvit. Still here.',
       },
     },
     biome_change: {
@@ -2572,6 +2604,12 @@ export const ui = {
         c: 'She never rests. Neither should ye.',
         d: 'Gran watches ivvery run. She\'s seen worse. She\'s seen ye.',
       },
+      the_pict: {
+        a: 'Tha stane is patient. Sae am I.',
+        b: 'Tha Pict waits. Tha muir kens.',
+        c: 'Woad disna wash aff easy.',
+        d: 'They carvit acause they had time. I dae tha same.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -3061,6 +3099,10 @@ export const ui = {
       variant_grans_best_unlocked: {
         a: 'Five victories. Gran\'s Best emerges — fiercer at tha low end, an she\'s been watchin tha hale time.',
         b: 'Gran\'s nod granted. Gran\'s Best haggis taks tha field. Skirl o approval.',
+      },
+      variant_the_pict_unlocked: {
+        a: 'Three runs, nae healer touched. Tha Pict steps oot o tha stane — woad-marked, muir-rooted, disna deal in gowd.',
+        b: 'Tha auld ane waukens. Tha Pict: carvit in stane, painted in woad, nae interest in tha shop.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3657,6 +3699,12 @@ export const ui = {
         death_short: '{name}. Gran\'s seen worse runs. No mony.',
         victory_baseline: '{name} got fierce at tha low end an kept swingin. Gran expectit naethin less.',
         victory_taxman: 'Tha Taxman met {name} on a low-HP rage. Gran wis watchin fae somewhere.',
+      },
+      the_pict: {
+        death_baseline: '{name} fell on tha muir. Tha Pict cairries nae gowd — anely marks in stane.',
+        death_short: '{name}. Tha knotwork still hauds.',
+        victory_baseline: '{name} carvit it oot. Tha muir kens wha won, even wi nae gowd tae shaw.',
+        victory_taxman: 'Tha Taxman had gowd. Tha Pict had stane. Tha stane lasts.',
       },
     },
   },

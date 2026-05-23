@@ -99,6 +99,11 @@ export const variant = {
     flavor: 'Nearly deid an fiercer for it. Gran\'s watchin. She approves.',
     lore: 'Gran\'s Best isnae her finest hour. It\'s her finest threat. Tha auld haggis wi tha bad hip an tha sharper tongue — lower tha HP, tha harder she swings. "Ye dinnae need twa workin legs tae skelp somethin," she haes been heard tae say. Tha skirl o her patience runnin oot cairries further than ony pipes.',
   },
+  the_pict: {
+    name: 'The Pict',
+    flavor: 'Aye, afore tha Romans. Woad an stane an muir. Nae gowd — glories are carvit, no bocht.',
+    lore: 'They left thair marks in stane, no in buiks. Tha knotwork is thair leid; tha beast-columns thair vaunt. Nae crown, nae chronicle — anely tha muir an whit they cut intae its bedrock. They nivver needit tha shop. They still dinnae.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

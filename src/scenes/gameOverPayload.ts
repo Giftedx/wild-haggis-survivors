@@ -37,6 +37,11 @@ export interface GameOverPayload {
   deathCause?: DeathCause;
   /** Curse key active for the run — drives the Game Over curse chip. */
   curseKey?: string;
+  /**
+   * The Pict variant — blocks the Gold Shop button on the result screen.
+   * The Pict relies on in-run loot; they deal in deeds, not golden haggis.
+   */
+  noShopAccess?: boolean;
   /** Display name generated for this run — shown as epigraph on the result screen. */
   name?: string;
   /**
