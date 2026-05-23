@@ -4005,6 +4005,36 @@ export const ui = {
         victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. The bard would tip his bonnet.',
         victory_epic: '{name} held the moor for {time}. Burns himself wrote shorter lines.',
       },
+      witch_hare: {
+        death_baseline: 'Awa in the hare\'s shape, {name}. The form undid afore the yard was gained.',
+        death_short: '"Ay quhill I com hom againe." {name} didnae.',
+        victory_baseline: '{name} ran oot a hare and cam hame a haggis. The confession held its end.',
+        victory_epic: 'All the witch\'s miles at {time}. {name} kent baith hame and the hill.',
+      },
+      anticlockwise: {
+        death_baseline: 'The brae went clockwise; {name} gaed the ither wey. Some hills dinnae compromise.',
+        death_short: 'Wrang-leg, wrang hill, right idea. {name} ran.',
+        victory_baseline: '{name} circled it left-weys and came hame onyway. The hill notes this.',
+        victory_taxman: 'The Taxman expected a clockwise run. {name} took him frae ahint.',
+      },
+      wee_ghostie: {
+        death_baseline: '{name} flickered and was gone. The moor doesnae count ghosts the same wey.',
+        death_short: 'Even a wee ghostie has a final fade. {name}, briefly.',
+        victory_baseline: 'Hame at {time}. {name} walked through every wa\' that tried to stop it.',
+        victory_epic: '{time} and still shinin. {name} hauded on past the point a ghost should.',
+      },
+      laird: {
+        death_baseline: 'The estate closes at dusk. {name} miscounted the hours.',
+        death_short: '{name} fell. The deer, naturally, scattered.',
+        victory_baseline: '{name} walked the whole length o\' it. The Laird goes where the Laird goes.',
+        victory_taxman: 'The Taxman sent a bill tae the Laird. {name} returned it — signed and dusted.',
+      },
+      selkie: {
+        death_baseline: 'Somewhere between the water and the moor, {name}. The tide makes its ain decision.',
+        death_short: 'The skin was left at the wrang stone. {name} couldnae mak the distance.',
+        victory_baseline: '{name} came hame — which form, the moor disnae say.',
+        victory_epic: '{time} between the tide-line and the heather. {name} held baith weys clean.',
+      },
     },
   },
 } as const;

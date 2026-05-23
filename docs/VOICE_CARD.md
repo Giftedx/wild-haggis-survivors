@@ -52,6 +52,36 @@ Fishing-village stoic; Northeast Scotland. Distinctive vocabulary — *quine*, *
 
 **Sounds like:** "Fit like?" (how are you?) / "The quinie's got legs, eh?" / "Aye aye, min." / "Foos yer doos?" (literally: how are your pigeons? — meaning: how are you?)
 
+### Witch's Hare (shipped)
+
+Gowdie confession-Scots. Named for Margaret Gowdie — shape-shifter; runs the moor in hare form. Terse, slightly breathless. Older Scots grammar (*afore*, *awa*, *ken*). No modern flourish — this is seventeenth-century edge register.
+
+**Sounds like:** "Awa in the hare's shape." / "The form undid afore the yard was gained." / "Ay quhill I com hom againe."
+
+### Anticlockwise (shipped)
+
+Wry, self-aware. A mirror-variant with one defining trait: everything goes the other way. Dry wit, never precious, acknowledges its own absurdity without winking too hard.
+
+**Sounds like:** "The brae went clockwise; I gaed the ither wey." / "Wrang-leg, wrang hill, right idea." / "Took him frae ahint."
+
+### Wee Ghostie (shipped)
+
+Spectral gentleness. Light touch — flickering present, easily dispersed. No darkness, no dread. The ghost is small and a little surprised to still be here. Hearth register with a spectral thinness.
+
+**Sounds like:** "Flickered and was gone." / "Even a wee ghostie has a final fade." / "Walked through every wa' that tried to stop it."
+
+### Laird (shipped)
+
+Estate-Scots formality. Landed gentry cadence — unhurried, property-aware, mildly imperious. Uses *naturally* as filler. Dry understatement. The Laird does not panic; the Laird notes.
+
+**Sounds like:** "The estate closes at dusk." / "The deer, naturally, scattered." / "The Laird goes where the Laird goes."
+
+### Selkie (shipped)
+
+Tidal and lyrical. Between-worlds register — neither fully land nor sea. Soft repetition, paired opposites (*water and moor*, *tide-line and heather*). Never resolves cleanly; the selkie holds both.
+
+**Sounds like:** "The tide makes its ain decision." / "The skin was left at the wrang stone." / "Came hame — which form, the moor disnae say."
+
 ### Gran's voice (Hearth's soul)
 
 Gran is the emotional heart — an elder voice *about* the player's run, not *of* the run. Warmer than Hearth. Gentler. Occasional lament, never nagging.

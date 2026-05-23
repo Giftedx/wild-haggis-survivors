@@ -3210,6 +3210,36 @@ export const ui = {
         victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. Tha bard wid tip his bunnet.',
         victory_epic: '{name} held tha moor fer {time}. Burns himsel wrote shorter lines.',
       },
+      witch_hare: {
+        death_baseline: 'Awa in tha hare\'s shape, {name}. Tha form undid afore tha yaird wis gained.',
+        death_short: '"Ay quhill I com hom againe." {name} didnae.',
+        victory_baseline: '{name} ran oot a hare an cam hame a haggis. Tha confession held its end.',
+        victory_epic: 'Aw tha witch\'s miles at {time}. {name} kent baith hame an tha hill.',
+      },
+      anticlockwise: {
+        death_baseline: 'Tha brae gaed clockwise; {name} gaed tha ither wey. Some hills dinnae compromise.',
+        death_short: 'Wrang-leg, wrang hill, richt idea. {name} ran.',
+        victory_baseline: '{name} circled it left-weys an cam hame onyway. Tha hill notes this.',
+        victory_taxman: 'Tha Taxman expectit a clockwise rin. {name} took him frae ahint.',
+      },
+      wee_ghostie: {
+        death_baseline: '{name} flickered an wis awa. Tha moor disnae coont ghosties tha same wey.',
+        death_short: 'Even a wee ghostie haes a final fade. {name}, briefly.',
+        victory_baseline: 'Hame at {time}. {name} walked through ivery wa\' that tried tae stop it.',
+        victory_epic: '{time} an still shinin. {name} hauded on past tha point a ghost should.',
+      },
+      laird: {
+        death_baseline: 'Tha estate closes at dusk. {name} miscounted tha hours.',
+        death_short: '{name} fell. Tha deer, naiturally, scatterit.',
+        victory_baseline: '{name} walked tha hale length o\' it. Tha Laird gangs whaur tha Laird gangs.',
+        victory_taxman: 'Tha Taxman sent a bill tae tha Laird. {name} returned it — signed an dusted.',
+      },
+      selkie: {
+        death_baseline: 'Somewhere atween tha watter an tha moor, {name}. Tha tide maks its ain decision.',
+        death_short: 'Tha skin wis left at tha wrang stane. {name} couldnae mak tha distance.',
+        victory_baseline: '{name} cam hame — which form, tha moor disnae say.',
+        victory_epic: '{time} atween tha tide-line an tha heather. {name} held baith weys clean.',
+      },
     },
   },
   /** T8 — Old Drover Almanac entry. Hearth voice; surfaced in FindsBook (T11). */

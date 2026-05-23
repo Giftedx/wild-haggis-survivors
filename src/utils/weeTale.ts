@@ -353,4 +353,44 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.burns_wee_beastie.death_short', requires: ['death', 'burns_wee_beastie', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.burns_wee_beastie.victory_baseline', requires: ['victory', 'burns_wee_beastie', 'has_name'] },
   { key: 'ui.weeTale.variant.burns_wee_beastie.victory_epic', requires: ['victory', 'burns_wee_beastie', 'has_name', 'epic'] },
+
+  // ── v3 — Witch's Hare (Gowdie confession-Scots) ────────────────
+  // Voice register per `docs/VOICE_CARD.md` §"Witch's Hare (shipped)".
+  // Named for Margaret Gowdie; older Scots grammar; terse, breathless.
+  { key: 'ui.weeTale.variant.witch_hare.death_baseline', requires: ['death', 'witch_hare', 'has_name'] },
+  { key: 'ui.weeTale.variant.witch_hare.death_short', requires: ['death', 'witch_hare', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.witch_hare.victory_baseline', requires: ['victory', 'witch_hare', 'has_name'] },
+  { key: 'ui.weeTale.variant.witch_hare.victory_epic', requires: ['victory', 'witch_hare', 'has_name', 'epic'] },
+
+  // ── v3 — Anticlockwise (wry mirror-subspecies) ─────────────────
+  // Voice register per `docs/VOICE_CARD.md` §"Anticlockwise (shipped)".
+  // Dry wit; acknowledges its own wrongness without winking too hard.
+  { key: 'ui.weeTale.variant.anticlockwise.death_baseline', requires: ['death', 'anticlockwise', 'has_name'] },
+  { key: 'ui.weeTale.variant.anticlockwise.death_short', requires: ['death', 'anticlockwise', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.anticlockwise.victory_baseline', requires: ['victory', 'anticlockwise', 'has_name'] },
+  { key: 'ui.weeTale.variant.anticlockwise.victory_taxman', requires: ['victory', 'anticlockwise', 'has_name', 'taxman'] },
+
+  // ── v3 — Wee Ghostie (spectral/gentle) ────────────────────────
+  // Voice register per `docs/VOICE_CARD.md` §"Wee Ghostie (shipped)".
+  // Hearth register with spectral thinness; small, surprised to still be here.
+  { key: 'ui.weeTale.variant.wee_ghostie.death_baseline', requires: ['death', 'wee_ghostie', 'has_name'] },
+  { key: 'ui.weeTale.variant.wee_ghostie.death_short', requires: ['death', 'wee_ghostie', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.wee_ghostie.victory_baseline', requires: ['victory', 'wee_ghostie', 'has_name'] },
+  { key: 'ui.weeTale.variant.wee_ghostie.victory_epic', requires: ['victory', 'wee_ghostie', 'has_name', 'epic'] },
+
+  // ── v3 — Laird (estate-Scots formality) ───────────────────────
+  // Voice register per `docs/VOICE_CARD.md` §"Laird (shipped)".
+  // Landed gentry cadence; unhurried; mildly imperious; dry understatement.
+  { key: 'ui.weeTale.variant.laird.death_baseline', requires: ['death', 'laird', 'has_name'] },
+  { key: 'ui.weeTale.variant.laird.death_short', requires: ['death', 'laird', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.laird.victory_baseline', requires: ['victory', 'laird', 'has_name'] },
+  { key: 'ui.weeTale.variant.laird.victory_taxman', requires: ['victory', 'laird', 'has_name', 'taxman'] },
+
+  // ── v3 — Selkie (tidal/lyrical) ───────────────────────────────
+  // Voice register per `docs/VOICE_CARD.md` §"Selkie (shipped)".
+  // Between-worlds; paired opposites; never resolves cleanly.
+  { key: 'ui.weeTale.variant.selkie.death_baseline', requires: ['death', 'selkie', 'has_name'] },
+  { key: 'ui.weeTale.variant.selkie.death_short', requires: ['death', 'selkie', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.selkie.victory_baseline', requires: ['victory', 'selkie', 'has_name'] },
+  { key: 'ui.weeTale.variant.selkie.victory_epic', requires: ['victory', 'selkie', 'has_name', 'epic'] },
 ] as const;
