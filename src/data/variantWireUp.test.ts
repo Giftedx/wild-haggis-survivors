@@ -37,6 +37,8 @@ const SCOTS_MARKERS = [
   'peerie', 'voe', 'du', 'dee', 'skerry', 'mirry',
   // Orcadian (V3)
   'peedie', 'geo', 'frae', 'brodgar',
+  // Hebridean (V3)
+  'machair', 'stac', 'calanais', 'minch',
   // Burns-citational (V2 Track 3)
   'sleekit', 'sonsie', 'agley', 'syne',
 ];
@@ -64,7 +66,7 @@ describe('every non-classic variant is fully wired', () => {
           'none', 'racing_band', 'iron_belly', 'forager', 'surefoot',
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
-          'morningside', 'drouthy', 'pibroch', 'orcadian',
+          'morningside', 'drouthy', 'pibroch', 'orcadian', 'hebridean',
         ]).toContain(def.appearance.accentStyle);
       });
 
@@ -84,7 +86,8 @@ describe('every non-classic variant is fully wired', () => {
           || !!mods.critChancePct
           || !!mods.driftSignFlip
           || !!mods.driftAmplifyPct
-          || !!mods.pibrochWindowExtensionMs;
+          || !!mods.pibrochWindowExtensionMs
+          || !!mods.waterHazardImmune;
         expect(hasAnyMod, `${v.key} has no stat modifier`).toBe(true);
       });
 

@@ -103,6 +103,11 @@ export const variant = {
     flavor: 'Peedie as a standing stone. Patient as the Ring o\' Brodgar. Frae the islands where Norn met Scots — an\' neither flinched.',
     lore: 'From the islands where the Neolithic never quite ended — where Skara Brae sat under the sand for four thousand years before anyone thought to look. Small, deliberate, wider-eyed than you\'d expect. The Ring of Brodgar was not built in a day. Neither, for that matter, was this haggis.',
   },
+  hebridean: {
+    name: 'Hebridean Haggis',
+    flavor: 'From the machair\'s edge — sand, sea-pink, salt. The Minch does not stop it. Nothing made of water does.',
+    lore: 'The Outer Hebrides breed a particular kind of patience — the kind that watches the Atlantic come in for ten thousand years and never once backs away from the stac. This haggis carries that in its bones. Burn water and tidal wrack are old acquaintances, not threats. The machair holds the memory of every shore crossing.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

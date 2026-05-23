@@ -84,6 +84,11 @@ export const variant = {
     flavor: 'Composure. Propriety. A pearl brooch an a studied disdain fur tha rough business o survival.',
     lore: 'Fae Edinburgh\'s finest pairt, whaur tha stane is grey-gowd an tha curtains are aye straicht. Combat stats are precisely unchanged fae classic — tha Morningside Haggis considers statistics rather vulgar tae discuss. Fit it brings is bearin. Ane manages.',
   },
+  hebridean: {
+    name: 'Hebridean Haggis',
+    flavor: 'Fae tha machair\'s edge — sand, sea-pink, saut. Tha Minch disnae stop it. Naethin made o watter daes.',
+    lore: 'Tha Outer Hebrides breed a particular kind o patience — tha kind that watches tha Atlantic come in for ten thousand year an never wance backs awa fae tha stac. Burn watter an tidal wrack are auld acquaintances, no threats. Tha machair hauds tha memory o ivvery shore crossin.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

@@ -61,6 +61,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Orcadian Haggis — deep sea-teal field, standing-stone grey-green
   // stripe, Norse-gold accent thread. The Orkney palette in kilt form.
   orcadian:     { field: 0x2e5060, fieldDark: 0x1a3040, stripe: 0x7a8060, accent: 0xc8a858 },
+  // Hebridean Haggis — Atlantic blue field, kelp-green stripe,
+  // machair marram-grass gold accent thread.
+  hebridean:    { field: 0x2e6070, fieldDark: 0x1a3a4a, stripe: 0x6a9878, accent: 0xd0c890 },
 };
 
 /**

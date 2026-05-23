@@ -447,4 +447,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.orcadian.death_short', requires: ['death', 'orcadian', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.orcadian.victory_baseline', requires: ['victory', 'orcadian', 'has_name'] },
   { key: 'ui.weeTale.variant.orcadian.victory_taxman', requires: ['victory', 'orcadian', 'has_name', 'taxman'] },
+  // From the machair's edge — water-born, shore-wise.
+  { key: 'ui.weeTale.variant.hebridean.death_baseline', requires: ['death', 'hebridean', 'has_name'] },
+  { key: 'ui.weeTale.variant.hebridean.death_short', requires: ['death', 'hebridean', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.hebridean.victory_baseline', requires: ['victory', 'hebridean', 'has_name'] },
+  { key: 'ui.weeTale.variant.hebridean.victory_taxman', requires: ['victory', 'hebridean', 'has_name', 'taxman'] },
 ] as const;

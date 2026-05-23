@@ -215,7 +215,12 @@ export class HazardsSystem {
         // and Assist Mode invincibility are all honoured the same way
         // HazardZones honours them (single shared predicate, no drift).
         if (this.overlapsPlayer(h, player)) {
-          const immune = isPlayerHazardImmune(
+          // Hebridean variant is immune to water-type hazards — check
+          // before the shared predicate so the immunity gate stays
+          // per-hazard-key rather than polluting the generic path.
+          const isWaterHazard = h.def.key === 'burn_water' || h.def.key === 'tidal_wrack';
+          const variantImmune = isWaterHazard && player.isWaterHazardImmune();
+          const immune = variantImmune || isPlayerHazardImmune(
             this.getIFrames?.() ?? false,
             player.isDashInvincible(),
             player.isHazardLeaping(),

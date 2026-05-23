@@ -62,6 +62,7 @@ export function applyVariantModifiers(player: Player, variant: VariantDef): void
   if (modifiers.critChancePct) player.addCritChance(modifiers.critChancePct);
   if (modifiers.spriteScale) player.setScale(modifiers.spriteScale);
   if (modifiers.driftSignFlip) player.flipDriftSign();
+  if (modifiers.waterHazardImmune) player.setWaterHazardImmune(true);
 }
 
 export interface PermanentUpgradeResult {

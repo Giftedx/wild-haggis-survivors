@@ -898,6 +898,7 @@ export const ui = {
         drouthy: 'Aye, still drouthy. That\'ll dae.',
         pibroch: 'Tha tune wis still gangin when A stoppit.',
         orcadian: 'Tha geo wis here afore tha score. It\'s aye here.',
+        hebridean: 'A haggis fell here, on tha machair.',
       },
     },
     grandfather: {
@@ -1132,6 +1133,12 @@ export const ui = {
         b: 'Tha Ring stood twa thoosan year. Ye\'ll manage.',
         c: 'Brodgar wasnae biggit in a day. Neither wis this.',
         d: 'Breathe. Tha muir\'s been here langer than tha wound.',
+      },
+      hebridean: {
+        a: 'Tha sea taks, tha machair hauds. Breathe.',
+        b: 'Watter disnae stop ye. Neither daes this.',
+        c: 'Tha stac staunds through awthing. Sae dae ye.',
+        d: 'Tha Minch never calmed for onybody. Neither daes trouble.',
       },
     },
     boss_down: {
@@ -1451,6 +1458,12 @@ export const ui = {
         c: 'Up a course. Tha tooer hauds.',
         d: 'Auld things dinnae rush — but they get there.',
       },
+      hebridean: {
+        a: 'Taller by tha hour. Tha machair watches ye grow.',
+        b: 'Tha tide rises slowly. Sae dae ye.',
+        c: 'Anither step oot alang tha stac. Guid.',
+        d: 'Tha Calanais stanes shift for naebody. Ye\'re gettin closer.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1575,6 +1588,12 @@ export const ui = {
         b: 'Ane doon. Tha field\'s aye there.',
         c: 'Tha Pech began wi ane stane tae. Same idea.',
         d: 'Ring startit somewhaur. This is that somewhaur.',
+      },
+      hebridean: {
+        a: 'First bluid on tha shore. Tha sea taks note.',
+        b: 'Tha Minch didnae stap ye. They cannae either.',
+        c: 'Shore-side rule: tha tide comes first; tha rest follaes.',
+        d: 'Tha machair haes seen harsher openins.',
       },
     },
     kill_streak: {
@@ -1702,6 +1721,12 @@ export const ui = {
         c: 'Stack em up, like tha Broch o Gurness.',
         d: 'Corrigall Farm — hairst at yer ain pace. Faster here.',
       },
+      hebridean: {
+        a: 'Like tha tide. Unstoppable, quate, an comin back.',
+        b: 'Tha Minch pulls, tha shore pushes. Ye\'re tha shore.',
+        c: 'They\'re fawin like wracks in tha tide. Let em.',
+        d: 'Nae pause on tha machair — tha sea disnae wait either.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1826,6 +1851,12 @@ export const ui = {
         b: 'Maeshowe faces tha midwinter sun. We find wir ain licht.',
         c: 'Stanes staund oot tha warst o it. Sae dae Ah.',
         d: 'Still. Tha isle hauds ye even when ye slip.',
+      },
+      hebridean: {
+        a: 'Tha stac staunds through ilka storm. Sae dae ye.',
+        b: 'Cam through tha crossin afore. Cam through this.',
+        c: 'Tha machair renews efter ilka tide. Sae daes this.',
+        d: 'Island fowk ken hoo tae endure. Aye — just sae.',
       },
     },
     biome_change: {
@@ -2461,6 +2492,12 @@ export const ui = {
         c: 'Listen. Tha geo kens ilka sound that passes through.',
         d: 'Tha wind taks its time here, tae. Ah\'m learnin frae it.',
       },
+      hebridean: {
+        a: 'Nae hurry. Tha islands hae been here a guid while.',
+        b: 'Tha Atlantic disnae hurry. Neither dae Ah.',
+        c: 'Listen — that\'s tha Minch, no silence.',
+        d: 'Tha machair hauds its ain counsel. Worth learnin frae.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -2938,6 +2975,10 @@ export const ui = {
       variant_orcadian_unlocked: {
         a: 'Three coastal runs. Tha Orcadian Haggis — patient as tha Ring, sma as tha stanes mind.',
         b: 'Tha isle grants passage. Tha Orcadian Haggis steps ashore.',
+      },
+      variant_hebridean_unlocked: {
+        a: 'Fower coastal runs. Tha Hebridean Haggis answers — water-wise, machair-rootit.',
+        b: 'Tha Minch kent ye\'d be back. Tha Hebridean Haggis steps oot o tha sea-fog.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3516,6 +3557,12 @@ export const ui = {
         death_short: '{name} wis doon. Like tha midwinter dark at Maeshowe — first tha dark, then tha solstice beam.',
         victory_baseline: '{name} walked tha hale ring an cam oot tha ither side. Tha Brodgar Folk wid\'ve nod\'d.',
         victory_taxman: '{name} settled tha Taxman\'s ledger. Orcadians dinnae run frae accounts.',
+      },
+      hebridean: {
+        death_baseline: '{name} gaed oot on tha machair wind. Tha sea haes seen this afore — an tha shore hauds on.',
+        death_short: 'Ower brief, {name}. Even tha stac taks a season tae erode.',
+        victory_baseline: '{name} cam through aw o it. Tha Minch kens a survivor when it sees ane.',
+        victory_taxman: 'Tha Taxman fund {name} on tha shoreline. Tha island fowk dinnae leave easy.',
       },
     },
   },

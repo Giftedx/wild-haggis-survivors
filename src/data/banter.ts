@@ -360,6 +360,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.orcadian.c',
         'ui.banter.low_hp.orcadian.d',
       ],
+      hebridean: [
+        'ui.banter.low_hp.hebridean.a',
+        'ui.banter.low_hp.hebridean.b',
+        'ui.banter.low_hp.hebridean.c',
+        'ui.banter.low_hp.hebridean.d',
+      ],
     },
   },
   {
@@ -710,6 +716,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.orcadian.c',
         'ui.banter.level_up.orcadian.d',
       ],
+      hebridean: [
+        'ui.banter.level_up.hebridean.a',
+        'ui.banter.level_up.hebridean.b',
+        'ui.banter.level_up.hebridean.c',
+        'ui.banter.level_up.hebridean.d',
+      ],
     },
   },
   {
@@ -841,6 +853,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.orcadian.b',
         'ui.banter.first_blood.orcadian.c',
         'ui.banter.first_blood.orcadian.d',
+      ],
+      hebridean: [
+        'ui.banter.first_blood.hebridean.a',
+        'ui.banter.first_blood.hebridean.b',
+        'ui.banter.first_blood.hebridean.c',
+        'ui.banter.first_blood.hebridean.d',
       ],
     },
   },
@@ -975,6 +993,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.orcadian.c',
         'ui.banter.kill_streak.orcadian.d',
       ],
+      hebridean: [
+        'ui.banter.kill_streak.hebridean.a',
+        'ui.banter.kill_streak.hebridean.b',
+        'ui.banter.kill_streak.hebridean.c',
+        'ui.banter.kill_streak.hebridean.d',
+      ],
     },
   },
   {
@@ -1106,6 +1130,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.orcadian.b',
         'ui.banter.recover.orcadian.c',
         'ui.banter.recover.orcadian.d',
+      ],
+      hebridean: [
+        'ui.banter.recover.hebridean.a',
+        'ui.banter.recover.hebridean.b',
+        'ui.banter.recover.hebridean.c',
+        'ui.banter.recover.hebridean.d',
       ],
     },
   },
@@ -1424,6 +1454,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.orcadian.b',
         'ui.banter.idle.orcadian.c',
         'ui.banter.idle.orcadian.d',
+      ],
+      hebridean: [
+        'ui.banter.idle.hebridean.a',
+        'ui.banter.idle.hebridean.b',
+        'ui.banter.idle.hebridean.c',
+        'ui.banter.idle.hebridean.d',
       ],
     },
   },

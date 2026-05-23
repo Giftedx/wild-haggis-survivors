@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -49,6 +49,13 @@ export interface VariantModifier {
    * by GameScene. Used by the Pibroch variant.
    */
   pibrochWindowExtensionMs?: number;
+  /**
+   * Grants immunity to water-type environmental hazards (`burn_water`,
+   * `tidal_wrack`). Applied at run start; HazardsSystem skips damage
+   * checks for those two hazard keys when this flag is true.
+   * Used by the Hebridean variant — shore-born, water-wise.
+   */
+  waterHazardImmune?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -106,7 +113,8 @@ export type HaggisAccentStyle =
   | 'morningside'
   | 'drouthy'
   | 'pibroch'
-  | 'orcadian';
+  | 'orcadian'
+  | 'hebridean';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -716,6 +724,39 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x4a7080,
         snout: 0x6a9090,
         accent: 0xc8a858, // Norse gold thread
+      },
+    },
+  },
+  {
+    // Hebridean Haggis — from the machair's edge; water-born, shore-wise.
+    // Immune to water-type environmental hazards (burn_water + tidal_wrack)
+    // — a haggis that was born into the Atlantic swell doesn't fear a
+    // tidal wrack or a burn crossing. Wide pickup radius mirrors a
+    // beachcomber's reach; modest speed edge from island-trail running.
+    // Slight HP reduction — lean build from the shore wind.
+    // Voice register: Hebridean-English — measured, Gaelic-tinged, patient.
+    // Palette: deep Minch-blue body, machair kelp-green accent, marram gold.
+    // Unlock: 4 coastal-only victories — the sea-ladder above Orcadian.
+    key: 'hebridean',
+    nameKey: 'variant.hebridean.name',
+    flavorKey: 'variant.hebridean.flavor',
+    textureKey: 'haggis_hebridean',
+    modifiers: {
+      moveSpeedPct: 0.05,
+      pickupRadiusFlat: 14,
+      maxHpFlat: -10,
+      waterHazardImmune: true,
+    },
+    unlock: { type: 'runs_in_coastal_only', required: 4 },
+    appearance: {
+      accentStyle: 'hebridean',
+      palette: {
+        outline: 0x10202a,
+        bodyDark: 0x1a3a4a,
+        bodyLight: 0x2e6070,
+        fur: 0x4a8878, // kelp green-blue
+        snout: 0x8ab0a0, // sea foam
+        accent: 0xd0c890, // machair marram-grass gold
       },
     },
   },

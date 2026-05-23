@@ -65,6 +65,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   drouthy:       { base: '#6a2008', primary: '#f0c828' }, // deep Highland red + whisky gold
   pibroch:       { base: '#1e1008', primary: '#c8c8c8' }, // drone-brown + silver chanter
   orcadian:      { base: '#1a3040', primary: '#7a8060' }, // deep sea-teal + standing-stone
+  hebridean:     { base: '#1a3a4a', primary: '#6a9878' }, // deep Minch-blue + machair kelp-green
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

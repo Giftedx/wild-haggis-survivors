@@ -1371,6 +1371,7 @@ export const ui = {
         drouthy: 'Still thirsty. Aye, that\'ll do.',
         pibroch: 'The tune was still going when I stopped.',
         orcadian: 'The geo was here afore the score. It\'s aye here.',
+        hebridean: 'A haggis fell here, on the machair.',
       },
     },
     grandfather: {
@@ -1681,6 +1682,12 @@ export const ui = {
         b: 'The Ring stood twa thousand year. Ye\'ll manage.',
         c: 'Brodgar wasnae built in a day. Neither was this.',
         d: 'Breathe. The moor\'s been here longer than the wound.',
+      },
+      hebridean: {
+        a: 'The sea takes, the machair holds. Breathe.',
+        b: 'Water doesn\'t stop ye. Neither does this.',
+        c: 'The stac stands through everything. So do ye.',
+        d: 'The Minch never calmed for anyone. Neither does trouble.',
       },
     },
     boss_down: {
@@ -2003,6 +2010,12 @@ export const ui = {
         c: 'Up a course. The tower holds.',
         d: 'Ancient things dinnae rush — but they get there.',
       },
+      hebridean: {
+        a: 'Taller by the hour. The machair watches ye grow.',
+        b: 'The tide rises slowly. So do ye.',
+        c: 'Another step out along the stac. Good.',
+        d: 'The Calanais stones shift for no one. Ye\'re getting closer.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2127,6 +2140,12 @@ export const ui = {
         b: 'Ane doon. The field\'s aye there.',
         c: 'The Pech began wi\' ane stone tae. Same idea.',
         d: 'Ring started somewhere. This is that somewhere.',
+      },
+      hebridean: {
+        a: 'First blood on the shore. The sea takes note.',
+        b: 'The Minch didn\'t stop ye. They can\'t either.',
+        c: 'Shore-side rule: the tide comes first; the rest follows.',
+        d: 'The machair has seen harsher openings.',
       },
     },
     kill_streak: {
@@ -2254,6 +2273,12 @@ export const ui = {
         c: 'Stack them up, like the Broch o\' Gurness.',
         d: 'Corrigall Farm — harvest at yer ain pace. Faster here.',
       },
+      hebridean: {
+        a: 'The tide culls what the shore won\'t hold. So do ye.',
+        b: 'Running down the moor like the Minch running out.',
+        c: 'Each one falls to the water-line.',
+        d: 'The machair doesn\'t count. It just holds the record.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2378,6 +2403,12 @@ export const ui = {
         b: 'Maeshowe faces the midwinter sun. We find wir ain light.',
         c: 'Stones stand oot the worst o\' it. So dae I.',
         d: 'Still. The isle holds ye even when ye slip.',
+      },
+      hebridean: {
+        a: 'The stac stands through every storm. So do ye.',
+        b: 'Came through the crossing before. Come through this.',
+        c: 'The machair renews after every tide. So does this.',
+        d: 'Island folk know how to endure. Aye — just so.',
       },
     },
     biome_change: {
@@ -3061,6 +3092,12 @@ export const ui = {
         c: 'Listen. The geo kens every sound that passes through.',
         d: 'The wind taks its time here, tae. I\'m learnin\' frae it.',
       },
+      hebridean: {
+        a: 'Nae rush. The islands have been here a good while.',
+        b: 'The Atlantic does not hurry. Neither do I.',
+        c: 'Listen — that\'s the Minch, not silence.',
+        d: 'The machair holds its own counsel. Worth learning from.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3589,6 +3626,12 @@ export const ui = {
         // the islands acknowledging someone who learned to stay.
         a: 'Three coastal runs. The Orcadian Haggis — patient as the Ring, small as the stones remember.',
         b: 'The isle grants passage. The Orcadian Haggis steps ashore.',
+      },
+      variant_hebridean_unlocked: {
+        // 4 coastal-only victories. Voice: hearth, open-horizon calm —
+        // the machair acknowledging someone who has truly learned the shore.
+        a: 'Four coastal runs. The Hebridean Haggis answers — water-wise, machair-rooted.',
+        b: 'The Minch knew ye\'d be back. The Hebridean Haggis steps out of the sea-fog.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4329,6 +4372,12 @@ export const ui = {
         death_short: '{name} was down. Like the midwinter dark at Maeshowe — first the dark, then the solstice beam.',
         victory_baseline: '{name} walked the whole ring and came out the other side. The Brodgar Folk would\'ve nodded.',
         victory_taxman: '{name} settled the Taxman\'s ledger. Orcadians don\'t run from accounts.',
+      },
+      hebridean: {
+        death_baseline: '{name} went out on the machair wind. The sea has seen this before — and the shore holds on.',
+        death_short: 'Too brief, {name}. Even the stac takes a season to erode.',
+        victory_baseline: '{name} came through it all. The Minch knows a survivor when it sees one.',
+        victory_taxman: 'The Taxman found {name} on the shoreline. The island folk don\'t leave easy.',
       },
     },
   },

@@ -313,6 +313,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   // fields drive the pure detector in `burnLeapInput.ts`, kept here so
   // the replay playback path re-detects the same leaps deterministically
   // from the recorded direction stream.
+  // Hebridean variant — immune to water-type hazards (burn_water / tidal_wrack).
+  // Set via applyVariantModifiers at run start; reset by class construction.
+  private _waterHazardImmune: boolean = false;
+
   private burnLeapActiveRemainingMs: number = 0;
   private burnLeapBoostRemainingMs: number = 0;
   private burnLeapCooldownRemainingMs: number = 0;
@@ -1416,6 +1420,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   isDashInvincible(): boolean { return this.dashInvincible; }
   /** Burn Leap iframe window — hazard-only immunity, no enemy damage immunity. */
   isHazardLeaping(): boolean { return this.burnLeapActiveRemainingMs > 0; }
+  /** Hebridean variant — immune to water-type hazards (burn_water / tidal_wrack). */
+  isWaterHazardImmune(): boolean { return this._waterHazardImmune; }
+  setWaterHazardImmune(v: boolean): void { this._waterHazardImmune = v; }
   /** 0 when any charge is ready, otherwise fraction of the current charge's regen timer. */
   getDashCooldownFraction(): number {
     if (this.dashCharges >= this.maxDashCharges) return 0;
