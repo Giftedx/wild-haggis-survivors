@@ -872,7 +872,7 @@ export class SpawnSystem {
             && config.packSize <= 1
             && rng.bool(eliteChance)) {
           enemy.markAsElite();
-          const affix = pickEliteAffixId(config.behavior, rng);
+          const affix = pickEliteAffixId(config.behavior, rng, config.eliteAffixDenylist);
           if (affix) enemy.applyEliteAffix(affix);
           const flashTint = affix ? ELITE_AFFIXES[affix].indicatorTint : 0xffdd44;
           const flash = this.scene.getStatusFxPool().acquireArc(pos.x + scatter, pos.y + scatter, 15, flashTint, 0.55);

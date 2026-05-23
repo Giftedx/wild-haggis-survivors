@@ -65,6 +65,11 @@ export interface EnemyConfig {
    *  (preserves nest's historical behaviour). Used by N1 Tier-2 boss
    *  Nicnevin to summon `unseelie_fiddler` minions instead. */
   spawnerMinionKey?: string;
+  /** Affixes excluded from the elite roll for this specific enemy key,
+   *  supplementing the behaviour-level `disallowedBehaviors` table.
+   *  Use when an affix creates an unfair pairing unique to this enemy
+   *  (e.g. beithir + volatile punishes the kill-cure race path). */
+  eliteAffixDenylist?: readonly import('./eliteAffixes').EliteAffixId[];
 }
 
 export const ENEMY_TYPES: Record<string, EnemyConfig> = {
@@ -582,6 +587,10 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
                           // before late-game density spikes.
     behavior: 'ranged',
     packSize: 1,
+    // Volatile would punish the kill-cure race path — the player is
+    // incentivised to close range and kill it; an explosion on death
+    // adds insult to an already time-pressured mechanic.
+    eliteAffixDenylist: ['volatile'],
   },
   // B5 Phase 2 follow-up — the Bodach Glas. Charter §4.4 calls for a
   // "mid-screen silhouette enemy" as the frost biome's signature

@@ -29,4 +29,29 @@ describe('pickEliteAffixId', () => {
       expect(id).not.toBeNull();
     }
   });
+
+  it('per-enemy denylist excludes the listed affix (beithir volatile case)', () => {
+    for (let seed = 0; seed < 500; seed++) {
+      const rng = createRNG(seed);
+      expect(pickEliteAffixId('ranged', rng, ['volatile'])).not.toBe('volatile');
+    }
+  });
+
+  it('denylist does not affect other affixes', () => {
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 2000; seed++) {
+      const id = pickEliteAffixId('ranged', createRNG(seed), ['volatile']);
+      if (id) seen.add(id);
+    }
+    expect(seen.has('swift')).toBe(true);
+    expect(seen.has('bulwark')).toBe(true);
+    expect(seen.has('wealthy')).toBe(true);
+    expect(seen.has('volatile')).toBe(false);
+  });
+
+  it('empty denylist behaves as no denylist', () => {
+    const rng = createRNG(0x1234);
+    const id = pickEliteAffixId('chase', rng, []);
+    expect(id).not.toBeNull();
+  });
 });

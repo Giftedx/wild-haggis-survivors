@@ -75,11 +75,22 @@ export const AFFIX_VOLATILE_RADIUS = 68;
 export const AFFIX_VOLATILE_SPLASH_DAMAGE = 16;
 
 /**
- * Weighted pick from affixes legal for `behavior`. Returns null only if the
- * filter removes every affix (should not happen with current table).
+ * Weighted pick from affixes legal for `behavior`. An optional per-enemy
+ * `denylist` supplements the behaviour-level exclusions — use it for
+ * enemies where a specific affix would create unfair interactions
+ * (e.g. beithir + volatile punishes the kill-cure race path).
+ * Returns null only if the filter removes every affix.
  */
-export function pickEliteAffixId(behavior: EnemyBehavior, rng: RNG): EliteAffixId | null {
-  const allowed = ALL_IDS.filter((id) => !ELITE_AFFIXES[id].disallowedBehaviors.includes(behavior));
+export function pickEliteAffixId(
+  behavior: EnemyBehavior,
+  rng: RNG,
+  denylist: readonly EliteAffixId[] = [],
+): EliteAffixId | null {
+  const allowed = ALL_IDS.filter(
+    (id) =>
+      !ELITE_AFFIXES[id].disallowedBehaviors.includes(behavior) &&
+      !denylist.includes(id),
+  );
   if (allowed.length === 0) return null;
   return rng.weighted(allowed, (id) => ELITE_AFFIXES[id].weight);
 }
