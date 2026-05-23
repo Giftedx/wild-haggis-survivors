@@ -56,6 +56,65 @@ export interface RenderGameOverSeedAndLinkRowsOpts {
   payload: GameOverPayload;
 }
 
+export interface GameOverBottomRowsLayoutInput {
+  panelTop: number;
+  PANEL_H: number;
+  height: number;
+  compact: boolean;
+  panelScale: number;
+  hasRerun: boolean;
+  captureEnabled: boolean;
+  recorderAvailable: boolean;
+  highlightAvailable: boolean;
+}
+
+export interface GameOverBottomRowsLayout {
+  buttonsY: number;
+  linkY: number;
+}
+
+/**
+ * Bottom-stack layout for the post-run ceremony.
+ *
+ * The panel can show, from top to bottom: seed readout, postcard/rerun,
+ * share URL, save frame, save clip, boss highlight, action buttons, and
+ * the Wee Tale footer. Reserve the footer first, then move the variable
+ * link stack above the action row so mobile and uiScale 1.4 never collide.
+ */
+export function computeGameOverBottomRowsLayout(input: GameOverBottomRowsLayoutInput): GameOverBottomRowsLayout {
+  const {
+    panelTop,
+    PANEL_H,
+    height,
+    compact,
+    panelScale,
+    hasRerun,
+    captureEnabled,
+    recorderAvailable,
+    highlightAvailable,
+  } = input;
+
+  const panelBottom = panelTop + PANEL_H;
+  const bottomLimit = Math.min(
+    panelBottom - Math.round(12 * panelScale),
+    height - Math.round(14 * panelScale),
+  );
+  const buttonsY = bottomLimit - Math.round(58 * panelScale);
+
+  let linkRows = 1; // postcard, or postcard/rerun pair on one row
+  if (hasRerun) linkRows += 1; // share-run URL row
+  if (captureEnabled && !compact) {
+    linkRows += 1; // save-frame / copy-frame row
+    if (recorderAvailable) linkRows += 1; // save clip row
+    if (highlightAvailable) linkRows += 1; // boss highlight row
+  }
+
+  return {
+    buttonsY,
+    linkY: buttonsY - Math.round((linkRows * 16 + 28) * panelScale),
+  };
+}
+
 /**
  * @returns Y of the action-button row baseline so the caller can mount
  *          the PLAY AGAIN / GOLD SHOP / TAE GRAN'S row at the same Y.
@@ -81,8 +140,24 @@ export function renderGameOverSeedAndLinkRows(
   // Seed readout — sits just above the action buttons. For daily runs it
   // prefixes "DAILY" and shows the date; for seeded runs just the code.
   // Tapping copies the code to the clipboard so players can share.
-  const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
-  const linkY = Math.min(panelTop + PANEL_H - Math.round(44 * panelScale), height - Math.round(56 * panelScale), buttonsY - Math.round(compact ? 28 : 0));
+  const hasRerun = typeof payload.runSeed === 'number';
+  const captureEnabled = getSettingsManager().load().captureEnabled === true;
+  const gameScene = scene.scene.get('Game') as GameScene | undefined;
+  const recorder = gameScene?.getClipRecorder();
+  const recorderAvailable = recorder?.isAvailable() === true;
+  const highlightAccessor = () => gameScene?.getBossKillHighlight() ?? null;
+  const highlightAvailable = highlightAccessor() !== null;
+  const { buttonsY, linkY } = computeGameOverBottomRowsLayout({
+    panelTop,
+    PANEL_H,
+    height,
+    compact,
+    panelScale,
+    hasRerun,
+    captureEnabled,
+    recorderAvailable,
+    highlightAvailable,
+  });
 
   if (payload.seedCode) {
     // Clamp seed readout above canvas bottom — default offset assumes a
@@ -91,7 +166,7 @@ export function renderGameOverSeedAndLinkRows(
     // the seed code isn't swallowed by the unlock banner.
     const seedY = Math.min(
       Math.max(panelTop + 590, unlockPanelY + unlockPanelH / 2 + Math.round(14 * panelScale)),
-      compact ? linkY - Math.round(18 * panelScale) : height - Math.round(42 * panelScale),
+      linkY - Math.round(18 * panelScale),
     );
     renderGameOverSeedReadout(scene, {
       centerX: panelCenterX,
@@ -106,7 +181,6 @@ export function renderGameOverSeedAndLinkRows(
   // Two small text links side-by-side under the seed readout. Postcard
   // saves the frame; rerun starts the exact seed again. Only render
   // rerun when the payload actually carries a numeric seed.
-  const hasRerun = typeof payload.runSeed === 'number';
   if (hasRerun) {
     renderGameOverPostcardLink(scene, { centerX: panelCenterX - 100, y: linkY, depth: d + 3, delay: 1180, getPayload });
     renderGameOverRerunSeedLink(scene, { centerX: panelCenterX + 100, y: linkY, depth: d + 3, delay: 1200, getPayload });
@@ -123,7 +197,7 @@ export function renderGameOverSeedAndLinkRows(
   // seed exists). Phase 4 — Copy frame sits beside Save frame when the
   // modern Clipboard API is available (Chrome 76+, FF 127+, Safari
   // 16.4+). Otherwise Save frame keeps the centre slot solo.
-  if (getSettingsManager().load().captureEnabled && !compact) {
+  if (captureEnabled && !compact) {
     // Capture rows shift down by one row when the share-run link is
     // rendered (rerun case); otherwise they keep the historical
     // tight stacking under the postcard.
@@ -135,8 +209,6 @@ export function renderGameOverSeedAndLinkRows(
     } else {
       renderGameOverSaveFrameLink(scene, { centerX: panelCenterX, y: saveFrameLinkY, depth: d + 3, delay: 1220, getPayload });
     }
-    const gameScene = scene.scene.get('Game') as GameScene | undefined;
-    const recorder = gameScene?.getClipRecorder();
     let nextClipRowY = saveFrameLinkY + 16;
     if (recorder?.isAvailable()) {
       renderGameOverSaveClipLink(scene, { centerX: panelCenterX, y: nextClipRowY, depth: d + 3, delay: 1240, recorder, getPayload });
@@ -147,8 +219,7 @@ export function renderGameOverSeedAndLinkRows(
     // accessor so a recycled scene / hot-reload never serves a stale
     // Blob, and so the link stays inert if the snapshot is gone by
     // click time.
-    const highlightAccessor = () => gameScene?.getBossKillHighlight() ?? null;
-    if (highlightAccessor() !== null) {
+    if (highlightAvailable) {
       renderGameOverSaveHighlightLink(scene, {
         centerX: panelCenterX,
         y: nextClipRowY,

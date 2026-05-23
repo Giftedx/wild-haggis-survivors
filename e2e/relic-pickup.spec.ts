@@ -12,7 +12,7 @@ import { expect, test } from './fixtures';
  * catalogue weighting already has full unit coverage in
  * `src/data/relicDrops.test.ts` + `src/systems/RelicSystem.test.ts`.
  *
- * The spec also confirms the 18-relic catalogue is reachable at runtime
+ * The spec also confirms the live relic catalogue is reachable at runtime
  * (DEBUG.getRelicCatalogueKeys), so a missing or mis-registered relic
  * fails fast before the slot test runs.
  */
@@ -82,15 +82,16 @@ test.describe('R1 — Relic pickup flow', () => {
       }
     });
 
-    // Sanity: DEBUG surface exposes the 18-relic catalogue.
+    // Sanity: DEBUG surface exposes the live relic catalogue.
     const catalogueKeys = await page.evaluate(() => {
       const dbg = (window as unknown as { DEBUG?: {
         getRelicCatalogueKeys?(): readonly string[];
       } }).DEBUG;
       return dbg?.getRelicCatalogueKeys?.() ?? [];
     });
-    expect(catalogueKeys.length).toBe(18);
+    expect(catalogueKeys.length).toBe(19);
     expect(catalogueKeys).toContain('sporran_of_holding');
+    expect(catalogueKeys).toContain('stormcrown');
 
     // Held slots start empty.
     const initialHeld = await page.evaluate(() => {

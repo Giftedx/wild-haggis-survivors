@@ -58,6 +58,11 @@ export function renderGameOverActionRow(
   // clips the canvas edge. Floor keeps the 24px between-button breathing
   // room intact (172 button width + 24 gap = 196 centre-to-centre).
   const actionBtnW = compact ? Math.floor((PANEL_W - 52) / 3) : 172;
+  // Compact buttons keep their physical hit targets narrow enough for a
+  // three-column mobile row. Clamp the visible label scale so uiScale 1.4
+  // does not make PLAY AGAIN / GOLD SHOP / TAE GRAN'S spill into the
+  // neighbouring buttons; the DOM focus mirror still exposes full labels.
+  const actionButtonUiScale = compact ? Math.min(uiScale, 1) : uiScale;
   const actionSideGap = compact
     ? actionBtnW + 14
     : Math.min(196, Math.max(actionBtnW / 2 + 12, Math.floor((width - actionBtnW - 40) / 2)));
@@ -92,9 +97,9 @@ export function renderGameOverActionRow(
     scene.scene.start('Croft');
   };
 
-  createResultActionButton(scene, focusController, panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, onPlayAgain);
-  createResultActionButton(scene, focusController, panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
-  createResultActionButton(scene, focusController, panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, onTaeGran);
+  createResultActionButton(scene, focusController, panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, actionButtonUiScale, onPlayAgain);
+  createResultActionButton(scene, focusController, panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, actionButtonUiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
+  createResultActionButton(scene, focusController, panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, actionButtonUiScale, onTaeGran);
 
   focusController.seedFocusFromActions();
   focusController.installKeyboard();

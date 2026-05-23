@@ -286,9 +286,9 @@ export class GameOverScene extends Phaser.Scene {
     // canvas (height - 8) so the bottom-most line is always visible
     // on short viewports.
     const weeTaleY = Math.min(
-      buttonsY + (compact ? 22 : 26),
-      panelTop + PANEL_H - 6,
-      height - 8,
+      buttonsY + Math.round((compact ? 40 : 42) * uiScale),
+      panelTop + PANEL_H - Math.round(10 * uiScale),
+      height - Math.round(10 * uiScale),
     );
     renderGameOverWeeTale({
       scene: this,
