@@ -5,8 +5,6 @@ import {
   CAIRN_STONE_CAP,
   CAIRN_FIRST_SPAWN_SEC,
   CAIRN_GAP_BASE_SEC,
-  CAIRN_BOON_MAGNET_FLAT_PX,
-  CAIRN_BOON_MAGNET_DURATION_MS,
 } from './CairnStackingScheduler';
 import { createRNG } from '../../utils/rng';
 
