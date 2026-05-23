@@ -13,7 +13,7 @@ import type * as Phaser from 'phaser';
 import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { bumpAncestralEchoesTouched } from '../../utils/save';
-import { CAIRN_INHERITED_BUFF_PCT, type FallenCairn } from '../../utils/save/fallenCairns';
+import { CAIRN_INHERITED_BUFF_PCT, WREATHED_INHERITED_BUFF_PCT, type FallenCairn } from '../../utils/save/fallenCairns';
 import type { WhisperResult } from './cairnOfEchoesWhisper';
 import type { Player } from '../../entities/Player';
 import type { BanterSystem } from '../../systems/BanterSystem';
@@ -126,14 +126,14 @@ export function handleCairnWalkOverOnScene(
   deps.caption('cairn_walkover', t(whisper.i18nKey), '#a8c4dc', 4000);
 
   // Wreathed cairns (Cailleach Gauntlet win) grant double buff — spec §4.3.
-  const buffMult = cairn.wreathedAt !== undefined ? 2 : 1;
-  const buffPct = CAIRN_INHERITED_BUFF_PCT * buffMult;
-  const buffLabel = `+${buffMult}% ${cairn.inheritedStat}`;
+  const wreathed = cairn.wreathedAt !== undefined;
+  const buffPct = wreathed ? WREATHED_INHERITED_BUFF_PCT : CAIRN_INHERITED_BUFF_PCT;
+  const buffLabel = `+${wreathed ? 2 : 1}% ${cairn.inheritedStat}`;
 
   // Floating buff text — slate-blue / gold marker that rises from the
   // cairn coord. Pulled from the shared FloatTextPool so combat / pickup
   // feedback channels don't compete for the same slots.
-  const buffColor = cairn.wreathedAt !== undefined ? '#f5d04e' : '#a8c4dc';
+  const buffColor = wreathed ? '#f5d04e' : '#a8c4dc';
   const buffText = deps.floatTextPool.acquire(
     cairn.x,
     cairn.y - 24,
