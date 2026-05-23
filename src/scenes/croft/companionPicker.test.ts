@@ -21,11 +21,12 @@ describe('buildCompanionPickerRows', () => {
       unlockedCompanions: ['sheepdog'],
       selectedCompanion: 'sheepdog',
     });
-    // [sheepdog, stoat_scout, opt_out]
-    expect(rows.length).toBe(3);
+    // [sheepdog, stoat_scout, eagle, opt_out]
+    expect(rows.length).toBe(4);
     expect(rows[0]).toMatchObject({ key: 'sheepdog', unlocked: true, selected: true });
     expect(rows[1]).toMatchObject({ key: 'stoat_scout', unlocked: false, selected: false });
-    expect(rows[2]).toMatchObject({ kind: 'opt_out', selected: false });
+    expect(rows[2]).toMatchObject({ key: 'eagle', unlocked: false, selected: false });
+    expect(rows[3]).toMatchObject({ kind: 'opt_out', selected: false });
   });
 
   it('marks stoat_scout as unlocked + selected after the player picks it', () => {
@@ -42,7 +43,8 @@ describe('buildCompanionPickerRows', () => {
       unlockedCompanions: ['sheepdog'],
       selectedCompanion: null,
     });
-    expect(rows[2]).toMatchObject({ kind: 'opt_out', selected: true });
+    // opt_out is always the last row
+    expect(rows[rows.length - 1]).toMatchObject({ kind: 'opt_out', selected: true });
     // None of the companion rows are selected in opt-out mode.
     expect(rows[0]).toMatchObject({ key: 'sheepdog', selected: false });
   });
@@ -76,7 +78,9 @@ describe('resolveNextSelection', () => {
   });
 
   it('opts out when the player clicks the no-companion row', () => {
-    const next = resolveNextSelection(defaultRows(), 2, 'sheepdog');
+    const rows = defaultRows();
+    // opt_out is always the last row
+    const next = resolveNextSelection(rows, rows.length - 1, 'sheepdog');
     expect(next).toBeNull();
   });
 

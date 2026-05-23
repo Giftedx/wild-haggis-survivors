@@ -1067,6 +1067,7 @@ export const ui = {
     companion: {
       sheepdog: 'SHEEPDOG',
       stoat_scout: 'STOAT',
+      eagle: 'EAGLE',
     },
     /** Selkie Dual-Form chip (Wild Living World Initiative). Two
      *  forms toggled by dash. Short labels — fit the 56 px chip. */
@@ -1345,6 +1346,9 @@ export const ui = {
     /** Stoat Scout companion unlock — fires after the third committed wager. */
     stoat_unlock_toast: 'A whitret watched fae the bracken. Stoat Scout companion unlocked.',
     stoat_unlock_caption: 'Three wagers bound. The moor sends a scout.',
+    /** Golden Eagle companion unlock — fires on first Cailleach Gauntlet win. */
+    eagle_unlock_toast: 'A golden eagle dropped from the summit sky. Eagle companion unlocked.',
+    eagle_unlock_caption: 'The storm is felled. The moor sends its eyes.',
     /**
      * T7 — Cairn-of-Echoes whispers (distinct from Cairn Stacking above).
      * A spectral cairn marks the player's last-death location; touching it

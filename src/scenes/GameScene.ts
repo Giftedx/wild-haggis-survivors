@@ -1535,6 +1535,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       metaSaveManager: this.metaSaveManager,
       caption: (id, message, color, durationMs) =>
         this.caption(id, message, color, durationMs),
+      showToast: (message, color) => this.juice?.showToast(message, color),
     });
     this.cailleachGauntletScheduler = gauntletInstall.scheduler;
     this.gauntletTeardown = gauntletInstall.teardown;

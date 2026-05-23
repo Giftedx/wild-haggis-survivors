@@ -604,6 +604,7 @@ export const ui = {
     companion: {
       sheepdog: 'COLLIE',
       stoat_scout: 'WHITRET',
+      eagle: 'ERNE',
     },
     /** Selkie Dual-Form chip — Scots overlay. "SELKIE" sits in
      *  Scots verbatim; the haggis form is the same word. */
@@ -880,6 +881,8 @@ export const ui = {
     },
     stoat_unlock_toast: 'A whitret watched fae tha bracken. Stoat Scout companion unlocked.',
     stoat_unlock_caption: 'Three wagers bound. Tha moor sends a scout.',
+    eagle_unlock_toast: 'A gowden erne drapped fae tha summit sky. Eagle companion unlocked.',
+    eagle_unlock_caption: 'Tha storm is felled. Tha moor sends its een.',
     whisper: {
       past_self: {
         first_death: "That's me, doon there.",

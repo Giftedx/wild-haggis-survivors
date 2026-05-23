@@ -23,6 +23,8 @@ import type { BanterSystem } from '../../systems/BanterSystem';
 import type { SaveManager } from '../../core/SaveManager';
 import type { CairnOfEchoesScheduler } from './CairnOfEchoesScheduler';
 import { globalEventBus, type GlobalEnemyKilledPayload } from '../../core/GlobalEventBus';
+import { unlockCompanion } from '../../utils/save';
+import { t } from '../../core/i18n';
 
 export interface CailleachGauntletInstallDeps {
   readonly scene: Phaser.Scene;
@@ -32,6 +34,7 @@ export interface CailleachGauntletInstallDeps {
   readonly getCairnScheduler: () => CairnOfEchoesScheduler;
   readonly metaSaveManager: SaveManager;
   readonly caption: (id: string, message: string, color?: string, durationMs?: number) => void;
+  readonly showToast: (message: string, color?: string) => void;
 }
 
 export interface CailleachGauntletInstallResult {
@@ -123,6 +126,17 @@ export function installCailleachGauntlet(
       globalEventBus.emit('GLOBAL_CAILLEACH_GAUNTLET_WON', { wreathedSavedAts });
       snuffGauntletCandles('wreathed');
       deps.getBanter()?.request('cailleach_gauntlet', { tag: 'cailleach_down' });
+      // First Cailleach Gauntlet win unlocks the Golden Eagle companion.
+      const eagleUnlocked = unlockCompanion('eagle');
+      if (eagleUnlocked) {
+        deps.showToast(t('ui.cairn.eagle_unlock_toast'), '#e8c840');
+        deps.caption(
+          'eagle_companion_unlock',
+          t('ui.cairn.eagle_unlock_caption'),
+          '#e8c840',
+          4000,
+        );
+      }
     },
     onLose: ({ extinguishedSavedAts }) => {
       deps.metaSaveManager.markCairnsExtinguished(extinguishedSavedAts);

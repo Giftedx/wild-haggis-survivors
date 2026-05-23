@@ -14,7 +14,7 @@
  */
 
 /** Closed union — widen here when a new companion ships. */
-export type CompanionKey = 'sheepdog' | 'stoat_scout';
+export type CompanionKey = 'sheepdog' | 'stoat_scout' | 'eagle';
 
 /**
  * Wild Living World Phase 2 — list of every shippable companion key in
@@ -23,7 +23,7 @@ export type CompanionKey = 'sheepdog' | 'stoat_scout';
  * `Object.keys` iteration order isn't a documented contract in older
  * JS engines and tests want a stable comparison.
  */
-export const COMPANION_KEYS_IN_ORDER: readonly CompanionKey[] = ['sheepdog', 'stoat_scout'];
+export const COMPANION_KEYS_IN_ORDER: readonly CompanionKey[] = ['sheepdog', 'stoat_scout', 'eagle'];
 
 export interface CompanionDef {
   readonly key: CompanionKey;
@@ -67,6 +67,22 @@ export const COMPANION_DEFS: Readonly<Record<CompanionKey, CompanionDef>> = {
     tetherDistance: 260,
     maxSpeed: 260,
     idleFrameSec: 0.32,
+  },
+  // Wild Living World Phase 3 — Golden Eagle. Unlocked by winning the
+  // Cailleach Gauntlet (defeating the storm goddess). The eagle is the
+  // apex of the highland sky; it earns a wider personal-space bubble and
+  // a longer tether than either smaller companion — it ranges, circles
+  // at distance, then returns. Perched two-frame sprite (head-turn) to
+  // keep it recognisable at game scale. Dignified slow hop: 160 px/s.
+  // Refs: SCOTTISH_RESEARCH_DEEP §3.2 (Cairngorm raptors).
+  eagle: {
+    key: 'eagle',
+    nameKey: 'ui.hud.companion.eagle',
+    textureKeys: ['croft_eagle_perch_f0', 'croft_eagle_perch_f1'],
+    followDistance: 52,
+    tetherDistance: 320,
+    maxSpeed: 160,
+    idleFrameSec: 0.8,
   },
 };
 
