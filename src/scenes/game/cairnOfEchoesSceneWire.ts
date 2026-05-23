@@ -64,9 +64,12 @@ export function createCairnSpriteForScene(
     .sprite(cairn.x, cairn.y, 'cairn_of_echoes')
     .setDepth(5)
     .setScale(0.85);
-  // Wreathed cairns (Cailleach Gauntlet win) glow gold — matches the
-  // wreathed-candle flame colour in cailleachCandle.ts.
-  if (cairn.wreathedAt !== undefined) sprite.setTint(0xf5d04e);
+  // Wreathed = gold; extinguished = cool slate-blue. Matches spec §Risk-6.
+  if (cairn.wreathedAt !== undefined) {
+    sprite.setTint(0xf5d04e);
+  } else if (cairn.extinguishedAt !== undefined) {
+    sprite.setTint(0x6080a0);
+  }
   const settings = deps.settingsManager.load();
   if (!settings.reduceFlashing) {
     deps.scene.tweens.add({
