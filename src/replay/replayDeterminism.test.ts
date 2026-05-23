@@ -40,6 +40,12 @@ import {
   pickSpawnerMinionAngle,
 } from '../entities/enemyAngleSeed';
 import type { FallenCairn } from '../utils/save/fallenCairns';
+import {
+  advanceGauntlet,
+  initialGauntletState,
+  type GauntletTickInput,
+  GAUNTLET_TOUCH_THRESHOLD,
+} from '../scenes/game/cailleachGauntlet';
 
 function scriptedBlob() {
   const blob = createEmptyReplayBlobV2({
@@ -387,5 +393,72 @@ describe('replay determinism — Moor Remembers cairn payload (T12)', () => {
     // Internal snapshot is independent; second finalize still has only cairnA.
     expect(blobB.cairns).toHaveLength(1);
     expect(blobB.cairns?.[0]).toEqual(cairnA);
+  });
+});
+
+describe('replay determinism — Cailleach Gauntlet wreath-set (V2)', () => {
+  /**
+   * The wreath-set is the first GAUNTLET_TOUCH_THRESHOLD savedAt values
+   * from cairns touched this run. It is a pure function of the input
+   * cairn list — no RNG, no external state — so replaying the same cairn
+   * snapshot always produces identical touchedSavedAts.
+   *
+   * Full GameScene-level replay is impractical in node-env vitest (Phaser
+   * touches window at eval-time). The pure advanceGauntlet helper covers
+   * the state-machine contract; the e2e smoke
+   * (e2e/moor-remembers-cailleach-gauntlet.spec.ts) closes the
+   * production-wiring gap per the T16 deferral note in the V2 plan.
+   */
+  const SAVED_ATS = [1001, 1002, 1003, 1004, 1005, 1006, 1007] as const;
+
+  const BASE: GauntletTickInput = {
+    gameTimeMs: 0,
+    touchedSavedAts: [...SAVED_ATS],
+    playerX: 1500,
+    playerY: 1500,
+    bossDead: false,
+    playerDead: false,
+  };
+
+  function runToWin(extraInput?: Partial<GauntletTickInput>) {
+    let state = initialGauntletState();
+    state = advanceGauntlet(state, { ...BASE, ...extraInput, gameTimeMs: 0 });
+    state = advanceGauntlet(state, { ...BASE, ...extraInput, gameTimeMs: 14 * 60 * 1000 });
+    state = advanceGauntlet(state, { ...BASE, ...extraInput, gameTimeMs: 15 * 60 * 1000 });
+    state = advanceGauntlet(state, { ...BASE, ...extraInput, gameTimeMs: 15 * 60 * 1000, bossDead: true });
+    return state;
+  }
+
+  it('idle → resolved/win — same wreath-set on every replay with same cairn list', () => {
+    const first = runToWin();
+    const second = runToWin();
+    expect(first.phase).toBe('resolved');
+    expect(first.outcome).toBe('win');
+    expect(first.touchedSavedAts).toEqual(second.touchedSavedAts);
+    expect([...first.touchedSavedAts]).toEqual([...SAVED_ATS]);
+  });
+
+  it('wreath-set captures exactly GAUNTLET_TOUCH_THRESHOLD entries, discarding extras', () => {
+    const extra = [...SAVED_ATS, 1008, 1009, 1010] as number[];
+    const state = runToWin({ touchedSavedAts: extra });
+    expect(state.touchedSavedAts).toHaveLength(GAUNTLET_TOUCH_THRESHOLD);
+    expect([...state.touchedSavedAts]).toEqual([...SAVED_ATS]);
+  });
+
+  it('lose path carries the same touchedSavedAts (extinguished-set = wreath-set at arm)', () => {
+    let state = initialGauntletState();
+    state = advanceGauntlet(state, { ...BASE, gameTimeMs: 15 * 60 * 1000 + 1 });
+    state = advanceGauntlet(state, { ...BASE, gameTimeMs: 15 * 60 * 1000 + 1, playerDead: true });
+    expect(state.phase).toBe('resolved');
+    expect(state.outcome).toBe('lose');
+    expect([...state.touchedSavedAts]).toEqual([...SAVED_ATS]);
+  });
+
+  it('different cairn lists produce different wreath-sets', () => {
+    const altSavedAts = [9001, 9002, 9003, 9004, 9005, 9006, 9007];
+    const a = runToWin();
+    const b = runToWin({ touchedSavedAts: altSavedAts });
+    expect([...a.touchedSavedAts]).not.toEqual([...b.touchedSavedAts]);
+    expect([...b.touchedSavedAts]).toEqual(altSavedAts);
   });
 });
