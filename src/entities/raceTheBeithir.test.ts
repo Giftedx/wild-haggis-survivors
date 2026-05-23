@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   RACE_DURATION_MS,
+  RACE_DURATION_ELITE_BONUS_MS,
   RACE_EXPIRE_DAMAGE_FRACTION,
   RACE_EXPIRE_DAMAGE_MIN,
   applyBeithirSting,
@@ -237,6 +238,45 @@ describe('raceTheBeithir — pure helper', () => {
       const a = script();
       const b = script();
       expect(a).toEqual(b);
+    });
+  });
+
+  describe('elite-Beithir affix routing', () => {
+    it('RACE_DURATION_ELITE_BONUS_MS is positive', () => {
+      expect(RACE_DURATION_ELITE_BONUS_MS).toBeGreaterThan(0);
+    });
+
+    it('elite sting opens a longer window than standard sting', () => {
+      const eliteDuration = RACE_DURATION_MS + RACE_DURATION_ELITE_BONUS_MS;
+      expect(eliteDuration).toBeGreaterThan(RACE_DURATION_MS);
+    });
+
+    it('applyBeithirSting with explicit elite duration sets remainingMs correctly', () => {
+      const eliteDuration = RACE_DURATION_MS + RACE_DURATION_ELITE_BONUS_MS;
+      const r = applyBeithirSting(initialBeithirState(), false, eliteDuration);
+      expect(r.appliedEdge).toBe(true);
+      expect(r.state.kind).toBe('stung');
+      if (r.state.kind === 'stung') {
+        expect(r.state.remainingMs).toBe(eliteDuration);
+      }
+    });
+
+    it('standard sting (no elite flag) uses RACE_DURATION_MS exactly', () => {
+      const r = applyBeithirSting(initialBeithirState());
+      if (r.state.kind === 'stung') {
+        expect(r.state.remainingMs).toBe(RACE_DURATION_MS);
+      }
+    });
+
+    it('elite refresh also extends the timer to the elite window', () => {
+      const eliteDuration = RACE_DURATION_MS + RACE_DURATION_ELITE_BONUS_MS;
+      // Start with a standard sting, then refresh with elite duration.
+      const first = applyBeithirSting(initialBeithirState());
+      const refreshed = applyBeithirSting(first.state, false, eliteDuration);
+      expect(refreshed.appliedEdge).toBe(false);
+      if (refreshed.state.kind === 'stung') {
+        expect(refreshed.state.remainingMs).toBe(eliteDuration);
+      }
     });
   });
 });

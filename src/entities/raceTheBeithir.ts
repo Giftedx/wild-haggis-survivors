@@ -55,6 +55,15 @@
 export const RACE_DURATION_MS = 8000;
 
 /**
+ * Bonus race time when the stinging Beithir is elite — 3 extra seconds.
+ * An elite Beithir is harder to kill (gold hp-ish but also swift/relentless)
+ * so the kill-cure path needs more room to be viable. The heal-patch race
+ * is unaffected by the Beithir's elite status, so we only extend the window
+ * rather than bifurcating the mechanic.
+ */
+export const RACE_DURATION_ELITE_BONUS_MS = 3000;
+
+/**
  * Damage on expire as a fraction of run-base max-HP. 30 % is "real
  * bite, not a kill" — classic (100 HP) eats 30, laird (130) eats 39,
  * iron-belly (115) eats 34. Pairs with the floor below for the
@@ -131,6 +140,10 @@ export interface BeithirApplyResult {
  * full but reports `appliedEdge: false` — the venom is a single
  * status, not a stack.
  *
+ * `durationMs` overrides the default window — callers pass
+ * `RACE_DURATION_MS + RACE_DURATION_ELITE_BONUS_MS` when the stinging
+ * Beithir is elite. The helper stays pure: it doesn't read the enemy.
+ *
  * Assist Mode invincibility short-circuits the bite: even though the
  * sting itself is status-setup (no immediate damage), it commits a
  * future damage payload on expire. Refusing to start the timer is
@@ -141,9 +154,10 @@ export interface BeithirApplyResult {
 export function applyBeithirSting(
   state: RaceTheBeithirState,
   isPlayerInvincible: boolean = false,
+  durationMs: number = RACE_DURATION_MS,
 ): BeithirApplyResult {
   if (isPlayerInvincible) return { state, appliedEdge: false };
-  const refreshed: RaceTheBeithirState = { kind: 'stung', remainingMs: RACE_DURATION_MS };
+  const refreshed: RaceTheBeithirState = { kind: 'stung', remainingMs: durationMs };
   if (state.kind === 'stung') return { state: refreshed, appliedEdge: false };
   return { state: refreshed, appliedEdge: true };
 }

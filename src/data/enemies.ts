@@ -587,10 +587,11 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
                           // before late-game density spikes.
     behavior: 'ranged',
     packSize: 1,
-    // Volatile would punish the kill-cure race path — the player is
-    // incentivised to close range and kill it; an explosion on death
-    // adds insult to an already time-pressured mechanic.
-    eliteAffixDenylist: ['volatile'],
+    // Volatile punishes the kill-cure path (close-range explosion on
+    // death). Bulwark bumps HP 30→37 — enough to make kill-cure
+    // non-viable for many early builds; we extend the race timer
+    // for remaining elite affixes (swift/relentless/wealthy) instead.
+    eliteAffixDenylist: ['volatile', 'bulwark'],
   },
   // B5 Phase 2 follow-up — the Bodach Glas. Charter §4.4 calls for a
   // "mid-screen silhouette enemy" as the frost biome's signature

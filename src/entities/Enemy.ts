@@ -1047,7 +1047,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       // types pick up parry support uniformly.
       if (currentPlayer.tryParryProjectile()) return;
 
-      currentPlayer.applyBeithirStingFromFang();
+      currentPlayer.applyBeithirStingFromFang(this.eliteFlag);
     });
 
     this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);

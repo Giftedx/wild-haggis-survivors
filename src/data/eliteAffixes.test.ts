@@ -37,6 +37,21 @@ describe('pickEliteAffixId', () => {
     }
   });
 
+  it('beithir denylist blocks volatile AND bulwark — kill-cure path stays viable', () => {
+    const beithirDenylist = ['volatile', 'bulwark'] as const;
+    const seen = new Set<string>();
+    for (let seed = 0; seed < 2000; seed++) {
+      const id = pickEliteAffixId('ranged', createRNG(seed), [...beithirDenylist]);
+      if (id) seen.add(id);
+    }
+    expect(seen.has('volatile')).toBe(false);
+    expect(seen.has('bulwark')).toBe(false);
+    // Swift, relentless, wealthy remain eligible.
+    expect(seen.has('swift')).toBe(true);
+    expect(seen.has('relentless')).toBe(true);
+    expect(seen.has('wealthy')).toBe(true);
+  });
+
   it('denylist does not affect other affixes', () => {
     const seen = new Set<string>();
     for (let seed = 0; seed < 2000; seed++) {

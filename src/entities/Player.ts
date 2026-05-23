@@ -69,6 +69,8 @@ import {
   isStung as isBeithirStungHelper,
   stingRemainingFraction,
   computeStingExpireDamage,
+  RACE_DURATION_MS,
+  RACE_DURATION_ELITE_BONUS_MS,
 } from './raceTheBeithir';
 import {
   type SelkieForm,
@@ -1839,8 +1841,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * and skip the sting if parried; this method assumes the sting is
    * committed.
    */
-  applyBeithirStingFromFang(): void {
-    const r = applyBeithirSting(this.beithirState, isInvincibilityEnabled());
+  applyBeithirStingFromFang(isEliteBeithir: boolean = false): void {
+    const duration = RACE_DURATION_MS + (isEliteBeithir ? RACE_DURATION_ELITE_BONUS_MS : 0);
+    const r = applyBeithirSting(this.beithirState, isInvincibilityEnabled(), duration);
     this.beithirState = r.state;
     if (!r.appliedEdge) return; // refresh — silent, timer reset
     this.beithirMaxHpAtSting = this.runBaseMaxHp;
