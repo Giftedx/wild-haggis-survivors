@@ -1373,6 +1373,7 @@ export const ui = {
         orcadian: 'The geo was here afore the score. It\'s aye here.',
         hebridean: 'A haggis fell here, on the machair.',
         iron_brew: 'A haggis fell here. Got back up three times first.',
+        grans_best: 'A haggis fell here. Gran would have had words.',
       },
     },
     grandfather: {
@@ -1695,6 +1696,12 @@ export const ui = {
         b: 'That dunt counts. The bru stacks.',
         c: 'Take a hit. Add it to the pile.',
         d: 'Every wallop\'s a wee bit of iron. Keep going.',
+      },
+      grans_best: {
+        a: 'Nearly there. Gran\'s watching. Get fiercer.',
+        b: 'Low HP. Good. That\'s when we hit hardest.',
+        c: 'Dinnae ye dare die gentle, hen.',
+        d: 'This is Gran\'s territory. The low end. Hold on.',
       },
     },
     boss_down: {
@@ -2029,6 +2036,12 @@ export const ui = {
         c: 'Harder wi every hit — and now a bit stronger tae.',
         d: 'Dunted tae greatness. A very Scottish biography.',
       },
+      grans_best: {
+        a: 'Stronger noo. Gran can see it from the armchair.',
+        b: 'Levelled up. Gran expected nothin less.',
+        c: 'Ye\'re getting there, hen. Keep it tidy.',
+        d: 'Gran\'s nod. That\'s the highest honour.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2165,6 +2178,12 @@ export const ui = {
         b: 'The bru cracks the opener. Aye.',
         c: 'First blood — the stacking\'s already begun.',
         d: 'Hit first, hit back harder. That\'s the brew way.',
+      },
+      grans_best: {
+        a: 'First yin. Gran wid have gone harder.',
+        b: 'That\'s the opener. Nae sentimentality.',
+        c: 'First blood — Gran approves. She disnae say so.',
+        d: 'One doon. Gran\'s already moved on tae the next.',
       },
     },
     kill_streak: {
@@ -2304,6 +2323,12 @@ export const ui = {
         c: 'Taken so many hits ye\'re dealing them back wi interest.',
         d: 'This is what the orange does. Fear the orange ane.',
       },
+      grans_best: {
+        a: 'They\'re dropping like Gran\'s patience. Entirely.',
+        b: 'Gran would have done the same — faster.',
+        c: 'Streak on. Gran\'s tallying.',
+        d: 'That\'s the low-HP fury. Gran named it.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2440,6 +2465,12 @@ export const ui = {
         b: 'Still standing. Still stacking.',
         c: 'Every wee recovery adds to the pile.',
         d: 'Dunted doon and back up again. That\'s the whole recipe.',
+      },
+      grans_best: {
+        a: 'Back up. Gran would expect nothing else.',
+        b: 'Recovered. The bonus waits if ye need it again.',
+        c: 'Colour back in the cheeks. Gran\'s satisfied.',
+        d: 'Still here. Gran\'s still watching.',
       },
     },
     biome_change: {
@@ -3135,6 +3166,12 @@ export const ui = {
         c: 'The moor\'s trying tae soften me. It\'s working backwards.',
         d: 'Orange. Indestructible. Scottish. That\'s the bru.',
       },
+      grans_best: {
+        a: 'Gran\'s quiet. That means she\'s pleased.',
+        b: 'The armchair\'s warm. The moor isn\'t. Gran\'s oot here anyway.',
+        c: 'She never rests. Neither should ye.',
+        d: 'Gran watches every run. She\'s seen worse. She\'s seen ye.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3674,6 +3711,11 @@ export const ui = {
         // 2 cursed victories. Voice: edge — wry, battered, delighted.
         a: 'Two cursed runs survived. The Iron Brew Haggis steps oot — orange, indestructible, ready tae be dunted.',
         b: 'Ye took the curse twice and won. The bru respects that. Helps wi the dunts, tae.',
+      },
+      variant_grans_best_unlocked: {
+        // 5 victories. Voice: hearth, dry, fond.
+        a: 'Five victories. Gran\'s Best emerges — fiercer at the low end, and she\'s been watching the whole time.',
+        b: 'Gran\'s nod granted. Gran\'s Best haggis takes the field. Skirl of approval.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4426,6 +4468,12 @@ export const ui = {
         death_short: 'Too brief, {name}. Barely got the bru stacking.',
         victory_baseline: '{name} — dunted, stacked, indestructible. The orange haggis prevails.',
         victory_taxman: 'The Taxman dunted {name} plenty. Wasted effort. The bru only stacks.',
+      },
+      grans_best: {
+        death_baseline: '{name} went low and swung hard. Gran would call it nearly enough.',
+        death_short: '{name}. Gran\'s seen worse runs. Not many.',
+        victory_baseline: '{name} got fierce at the low end and kept swinging. Gran expected nothing less.',
+        victory_taxman: 'The Taxman met {name} on a low-HP rage. Gran was watching from somewhere.',
       },
     },
   },

@@ -457,4 +457,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.iron_brew.death_short', requires: ['death', 'iron_brew', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.iron_brew.victory_baseline', requires: ['victory', 'iron_brew', 'has_name'] },
   { key: 'ui.weeTale.variant.iron_brew.victory_taxman', requires: ['victory', 'iron_brew', 'has_name', 'taxman'] },
+  // Gran's Best — fierce at the low end; Gran's voice throughout.
+  { key: 'ui.weeTale.variant.grans_best.death_baseline', requires: ['death', 'grans_best', 'has_name'] },
+  { key: 'ui.weeTale.variant.grans_best.death_short', requires: ['death', 'grans_best', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.grans_best.victory_baseline', requires: ['victory', 'grans_best', 'has_name'] },
+  { key: 'ui.weeTale.variant.grans_best.victory_taxman', requires: ['victory', 'grans_best', 'has_name', 'taxman'] },
 ] as const;

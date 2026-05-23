@@ -372,6 +372,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.iron_brew.c',
         'ui.banter.low_hp.iron_brew.d',
       ],
+      grans_best: [
+        'ui.banter.low_hp.grans_best.a',
+        'ui.banter.low_hp.grans_best.b',
+        'ui.banter.low_hp.grans_best.c',
+        'ui.banter.low_hp.grans_best.d',
+      ],
     },
   },
   {
@@ -734,6 +740,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.iron_brew.c',
         'ui.banter.level_up.iron_brew.d',
       ],
+      grans_best: [
+        'ui.banter.level_up.grans_best.a',
+        'ui.banter.level_up.grans_best.b',
+        'ui.banter.level_up.grans_best.c',
+        'ui.banter.level_up.grans_best.d',
+      ],
     },
   },
   {
@@ -877,6 +889,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.iron_brew.b',
         'ui.banter.first_blood.iron_brew.c',
         'ui.banter.first_blood.iron_brew.d',
+      ],
+      grans_best: [
+        'ui.banter.first_blood.grans_best.a',
+        'ui.banter.first_blood.grans_best.b',
+        'ui.banter.first_blood.grans_best.c',
+        'ui.banter.first_blood.grans_best.d',
       ],
     },
   },
@@ -1023,6 +1041,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.iron_brew.c',
         'ui.banter.kill_streak.iron_brew.d',
       ],
+      grans_best: [
+        'ui.banter.kill_streak.grans_best.a',
+        'ui.banter.kill_streak.grans_best.b',
+        'ui.banter.kill_streak.grans_best.c',
+        'ui.banter.kill_streak.grans_best.d',
+      ],
     },
   },
   {
@@ -1166,6 +1190,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.iron_brew.b',
         'ui.banter.recover.iron_brew.c',
         'ui.banter.recover.iron_brew.d',
+      ],
+      grans_best: [
+        'ui.banter.recover.grans_best.a',
+        'ui.banter.recover.grans_best.b',
+        'ui.banter.recover.grans_best.c',
+        'ui.banter.recover.grans_best.d',
       ],
     },
   },
@@ -1496,6 +1526,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.iron_brew.b',
         'ui.banter.idle.iron_brew.c',
         'ui.banter.idle.iron_brew.d',
+      ],
+      grans_best: [
+        'ui.banter.idle.grans_best.a',
+        'ui.banter.idle.grans_best.b',
+        'ui.banter.idle.grans_best.c',
+        'ui.banter.idle.grans_best.d',
       ],
     },
   },

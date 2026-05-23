@@ -113,6 +113,11 @@ export const variant = {
     flavor: 'Gets harder wi every dunt. Aye, it\'s the orange ane.',
     lore: 'Scotland\'s other national drink — impossibly orange, medically inadvisable, beloved without apology. Every dunt, every wallop, every blow the moor lands just tempers the steel a little further. By the end of a run, what was fragile is iron. The bru does something to ye — nobody\'s entirely sure what.',
   },
+  grans_best: {
+    name: 'Gran\'s Best',
+    flavor: 'Nearly deid an\' fiercer for it. Gran\'s watching. She approves.',
+    lore: 'Gran\'s Best is not her finest hour. It\'s her finest threat. The old haggis with the bad hip and the sharper tongue — lower the HP, the harder she swings. "Ye dinnae need two working legs tae skelp something," she has been heard tae say. The skirl of her patience running out carries further than any bagpipe.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

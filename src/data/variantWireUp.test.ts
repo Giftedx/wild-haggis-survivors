@@ -41,6 +41,8 @@ const SCOTS_MARKERS = [
   'machair', 'stac', 'calanais', 'minch',
   // Iron Brew (V3)
   'dunt', 'bru', 'dunted',
+  // Gran's Best (V3)
+  'gran', 'skirl',
   // Burns-citational (V2 Track 3)
   'sleekit', 'sonsie', 'agley', 'syne',
 ];
@@ -69,7 +71,7 @@ describe('every non-classic variant is fully wired', () => {
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
           'morningside', 'drouthy', 'pibroch', 'orcadian', 'hebridean',
-          'iron_brew',
+          'iron_brew', 'grans_best',
         ]).toContain(def.appearance.accentStyle);
       });
 
@@ -91,7 +93,8 @@ describe('every non-classic variant is fully wired', () => {
           || !!mods.driftAmplifyPct
           || !!mods.pibrochWindowExtensionMs
           || !!mods.waterHazardImmune
-          || !!mods.ironBrewStacking;
+          || !!mods.ironBrewStacking
+          || !!mods.granBestLowHpBonus;
         expect(hasAnyMod, `${v.key} has no stat modifier`).toBe(true);
       });
 

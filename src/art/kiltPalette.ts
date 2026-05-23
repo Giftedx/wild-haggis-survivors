@@ -67,6 +67,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Iron Brew Haggis — orange field, Irn-Bru blue stripe,
   // rust-amber accent. The can in kilt form.
   iron_brew:    { field: 0xd04010, fieldDark: 0x8a2800, stripe: 0x2040a0, accent: 0xff8040 },
+  // Gran's Best Haggis — deep burgundy field, sage-green stripe,
+  // cream-gold accent. Hearth colours; the armchair tartan.
+  grans_best:   { field: 0x8a3048, fieldDark: 0x5a1028, stripe: 0x4a6840, accent: 0xc8a060 },
 };
 
 /**

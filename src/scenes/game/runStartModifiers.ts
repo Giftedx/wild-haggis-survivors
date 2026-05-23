@@ -64,6 +64,7 @@ export function applyVariantModifiers(player: Player, variant: VariantDef): void
   if (modifiers.driftSignFlip) player.flipDriftSign();
   if (modifiers.waterHazardImmune) player.setWaterHazardImmune(true);
   if (modifiers.ironBrewStacking) player.setIronBrewStacking(true);
+  if (modifiers.granBestLowHpBonus) player.setGranBestEnabled(true);
 }
 
 export interface PermanentUpgradeResult {

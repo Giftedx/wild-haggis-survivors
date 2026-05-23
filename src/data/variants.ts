@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -63,6 +63,13 @@ export interface VariantModifier {
    * `Player.takeDamage` and feed into `addDamageMultiplier`.
    */
   ironBrewStacking?: boolean;
+  /**
+   * Gran's Best variant — +30% outgoing damage while HP ≤ 40% of max.
+   * Dynamic: evaluated each frame inside `getDamageMultiplier()` so the
+   * bonus activates / deactivates as HP crosses the threshold. Gran's
+   * voice (hearth register) sounds throughout the run via banter pools.
+   */
+  granBestLowHpBonus?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -122,7 +129,8 @@ export type HaggisAccentStyle =
   | 'pibroch'
   | 'orcadian'
   | 'hebridean'
-  | 'iron_brew';
+  | 'iron_brew'
+  | 'grans_best';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -788,6 +796,28 @@ export const VARIANTS: VariantDef[] = [
         fur: 0xff6820,
         snout: 0xffa060,
         accent: 0x40c0e0, // Irn-Bru blue — the can's secondary colour
+      },
+    },
+  },
+  {
+    key: 'grans_best',
+    nameKey: 'variant.grans_best.name',
+    flavorKey: 'variant.grans_best.flavor',
+    textureKey: 'haggis_grans_best',
+    modifiers: {
+      maxHpFlat: -15,
+      granBestLowHpBonus: true,
+    },
+    unlock: { type: 'victories', required: 5 },
+    appearance: {
+      accentStyle: 'grans_best',
+      palette: {
+        outline: 0x2a1820,
+        bodyDark: 0x5a1028,
+        bodyLight: 0x8a3048,
+        fur: 0xc8a060,   // warm cream-gold — Gran's oatmeal
+        snout: 0xe8d0a8, // pale oatmeal
+        accent: 0x4a6840, // sage-green — knitting wool
       },
     },
   },

@@ -900,6 +900,7 @@ export const ui = {
         orcadian: 'Tha geo wis here afore tha score. It\'s aye here.',
         hebridean: 'A haggis fell here, on tha machair.',
         iron_brew: 'A haggis fell here. Got back up three times first.',
+        grans_best: 'A haggis fell here. Gran wid hae had words.',
       },
     },
     grandfather: {
@@ -1146,6 +1147,12 @@ export const ui = {
         b: 'That dunt counts. Tha bru stacks.',
         c: 'Tak a hit. Add it tae tha pile.',
         d: 'Ivvery wallop\'s a wee bit o iron. Keep gaun.',
+      },
+      grans_best: {
+        a: 'Nearly there. Gran\'s watchin. Get fiercer.',
+        b: 'Low HP. Guid. That\'s when we hit hardest.',
+        c: 'Dinnae ye dare die gentle, hen.',
+        d: 'This is Gran\'s territory. Tha low end. Haud on.',
       },
     },
     boss_down: {
@@ -1477,6 +1484,12 @@ export const ui = {
         c: 'Harder wi ivvery hit — an noo a wee bit stronger tae.',
         d: 'Dunted tae greatness. A very Scottish biography.',
       },
+      grans_best: {
+        a: 'Stronger noo. Gran can see it fae tha airchair.',
+        b: 'Levelled up. Gran expectit naethin less.',
+        c: 'Ye\'re gettin there, hen. Keep it tidy.',
+        d: 'Gran\'s nod. That\'s tha highest honour.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1613,6 +1626,12 @@ export const ui = {
         b: 'Tha bru cracks tha opener. Aye.',
         c: 'First bluid — tha stackin\'s already begun.',
         d: 'Hit first, hit back harder. That\'s tha brew way.',
+      },
+      grans_best: {
+        a: 'First yin. Gran wid hae gone harder.',
+        b: 'That\'s tha opener. Nae sentimentality.',
+        c: 'First bluid — Gran approves. She disnae say sae.',
+        d: 'Ane doon. Gran\'s already muved on tae tha next.',
       },
     },
     kill_streak: {
@@ -1752,6 +1771,12 @@ export const ui = {
         c: 'Taen sae mony hits ye\'re dealin em back wi interest.',
         d: 'This is whit tha orange daes. Fear tha orange ane.',
       },
+      grans_best: {
+        a: 'They\'re drappin like Gran\'s patience. Entirely.',
+        b: 'Gran wid hae duin tha same — faster.',
+        c: 'Streak on. Gran\'s tallyin.',
+        d: 'That\'s tha low-HP fury. Gran named it.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1888,6 +1913,12 @@ export const ui = {
         b: 'Still staunnin. Still stackin.',
         c: 'Ivvery wee recovery adds tae tha pile.',
         d: 'Dunted doon an back up again. That\'s tha hale recipe.',
+      },
+      grans_best: {
+        a: 'Back up. Gran wid expect naethin else.',
+        b: 'Recovered. Tha bonus waits if ye need it again.',
+        c: 'Colour back in tha cheeks. Gran\'s satisfied.',
+        d: 'Still here. Gran\'s still watchin.',
       },
     },
     biome_change: {
@@ -2535,6 +2566,12 @@ export const ui = {
         c: 'Tha muir\'s tryin tae soften me. It\'s workin backwards.',
         d: 'Orange. Indestructible. Scottish. That\'s tha bru.',
       },
+      grans_best: {
+        a: 'Gran\'s quate. That means she\'s pleased.',
+        b: 'Tha airchair\'s warm. Tha muir isnae. Gran\'s oot here onyway.',
+        c: 'She never rests. Neither should ye.',
+        d: 'Gran watches ivvery run. She\'s seen worse. She\'s seen ye.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -3020,6 +3057,10 @@ export const ui = {
       variant_iron_brew_unlocked: {
         a: 'Twa cursed runs survived. Tha Iron Brew Haggis steps oot — orange, indestructible, ready tae be dunted.',
         b: 'Ye taen tha curse twice an won. Tha bru respects that. Helps wi tha dunts, tae.',
+      },
+      variant_grans_best_unlocked: {
+        a: 'Five victories. Gran\'s Best emerges — fiercer at tha low end, an she\'s been watchin tha hale time.',
+        b: 'Gran\'s nod granted. Gran\'s Best haggis taks tha field. Skirl o approval.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3610,6 +3651,12 @@ export const ui = {
         death_short: 'Ower brief, {name}. Barely got tha bru stackin.',
         victory_baseline: '{name} — dunted, stacked, indestructible. Tha orange haggis prevails.',
         victory_taxman: 'Tha Taxman dunted {name} plenty. Wasted effort. Tha bru only stacks.',
+      },
+      grans_best: {
+        death_baseline: '{name} gaed low an swung hard. Gran wid ca it nearly enough.',
+        death_short: '{name}. Gran\'s seen worse runs. No mony.',
+        victory_baseline: '{name} got fierce at tha low end an kept swingin. Gran expectit naethin less.',
+        victory_taxman: 'Tha Taxman met {name} on a low-HP rage. Gran wis watchin fae somewhere.',
       },
     },
   },

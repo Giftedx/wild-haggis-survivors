@@ -323,6 +323,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private static readonly IRON_BREW_DMG_PER_STACK = 0.02;
   private static readonly IRON_BREW_MAX_STACKS = 20;
 
+  // Gran's Best variant — +30% damage while HP ≤ 40% of max.
+  private _granBestEnabled = false;
+  private static readonly GRAN_BEST_THRESHOLD = 0.40;
+  private static readonly GRAN_BEST_BONUS = 0.30;
+
   private burnLeapActiveRemainingMs: number = 0;
   private burnLeapBoostRemainingMs: number = 0;
   private burnLeapCooldownRemainingMs: number = 0;
@@ -1414,8 +1419,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // U1 M4 — Haar / Peat / Thirst / Warden / cascade dmg fold here so
     // every weapon path picks them up via WeaponSystem.setMultipliers.
     const bag = this.runeBagAccessor();
-    if (!bag) return this.bonusDamageMultiplier;
-    return this.bonusDamageMultiplier * composeDamageMul(bag);
+    const runeMul = bag ? composeDamageMul(bag) : 1;
+    // Gran's Best: +30% when HP ≤ 40%. Dynamic per-frame check.
+    const granMul = (this._granBestEnabled && this.maxHp > 0 && this.hp / this.maxHp <= Player.GRAN_BEST_THRESHOLD)
+      ? (1 + Player.GRAN_BEST_BONUS)
+      : 1;
+    return this.bonusDamageMultiplier * runeMul * granMul;
   }
   getAoeMultiplier(): number { return this.bonusAoeMultiplier; }
   getAttackSpeedMultiplier(): number { return this.bonusAttackSpeedMultiplier; }
@@ -1438,6 +1447,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** Iron Brew variant — stacks a +2% damage bonus per hit, cap 20 stacks. */
   setIronBrewStacking(v: boolean): void { this._ironBrewStacking = v; }
   getIronBrewStacks(): number { return this._ironBrewStacks; }
+
+  /** Gran's Best variant — true when bonus is active (HP ≤ 40% of max). */
+  setGranBestEnabled(v: boolean): void { this._granBestEnabled = v; }
+  isGranBestActive(): boolean {
+    return this._granBestEnabled && this.maxHp > 0 && this.hp / this.maxHp <= Player.GRAN_BEST_THRESHOLD;
+  }
   /** 0 when any charge is ready, otherwise fraction of the current charge's regen timer. */
   getDashCooldownFraction(): number {
     if (this.dashCharges >= this.maxDashCharges) return 0;

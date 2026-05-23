@@ -94,6 +94,11 @@ export const variant = {
     flavor: 'Gets harder wi ivvery dunt. Aye, it\'s tha orange ane.',
     lore: 'Scotland\'s ither national drink — impossibly orange, medically inadvisable, beloved wi nae apology. Ivvery dunt, ivvery wallop, ivvery blaw tha muir lands jist tempers tha steel a wee bit further. By tha end o a run, whit wis fragile is iron. Tha bru daes somethin tae ye — naebody\'s entirely sure whit.',
   },
+  grans_best: {
+    name: 'Gran\'s Best',
+    flavor: 'Nearly deid an fiercer for it. Gran\'s watchin. She approves.',
+    lore: 'Gran\'s Best isnae her finest hour. It\'s her finest threat. Tha auld haggis wi tha bad hip an tha sharper tongue — lower tha HP, tha harder she swings. "Ye dinnae need twa workin legs tae skelp somethin," she haes been heard tae say. Tha skirl o her patience runnin oot cairries further than ony pipes.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',
