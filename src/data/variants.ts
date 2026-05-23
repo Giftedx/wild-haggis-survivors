@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite' | 'tam_o_shanter';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -146,7 +146,8 @@ export type HaggisAccentStyle =
   | 'iron_brew'
   | 'grans_best'
   | 'the_pict'
-  | 'jacobite';
+  | 'jacobite'
+  | 'tam_o_shanter';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -895,6 +896,38 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x4a6898,       // Jacobite blue — the blue cockade
         snout: 0x8090b0,     // pale exile — gaunt from the moor
         accent: 0xc04030,    // Stuart crimson — "Charlie's red"
+      },
+    },
+  },
+  {
+    // Tam-o'-Shanter — Burns's reckless horseman from the 1790 poem.
+    // Fast as Meg the mare (+15% speed), courageous in drink (+10% dmg),
+    // reckless in frame (-20 HP), half-drunk so drift is worse than usual
+    // (driftAmplifyPct 0.5 — not as far gone as Drouthy's 1.0 but the
+    // bonnet's sitting crooked). Prestige gate: 10 victories. The player
+    // has seen the moor enough times to ride reckless and survive anyway.
+    // Palette: Alloway midnight — deep bonnet-blue body, grey-mare snout,
+    // whisky-lamp amber accent (the pub candle that saw him off).
+    key: 'tam_o_shanter',
+    nameKey: 'variant.tam_o_shanter.name',
+    flavorKey: 'variant.tam_o_shanter.flavor',
+    textureKey: 'haggis_tam_o_shanter',
+    modifiers: {
+      moveSpeedPct: 0.15,
+      damagePct: 0.10,
+      maxHpFlat: -20,
+      driftAmplifyPct: 0.5,
+    },
+    unlock: { type: 'victories', required: 10 },
+    appearance: {
+      accentStyle: 'tam_o_shanter',
+      palette: {
+        outline: 0x0a1428,
+        bodyDark: 0x10203c,
+        bodyLight: 0x1e3a6a,
+        fur: 0x3a5890,       // bonnet blue
+        snout: 0x7a9ab8,     // grey mare — Meg's colour
+        accent: 0xf0c828,    // whisky-lamp amber — the pub lantern
       },
     },
   },

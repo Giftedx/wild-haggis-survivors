@@ -71,7 +71,7 @@ describe('every non-classic variant is fully wired', () => {
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
           'morningside', 'drouthy', 'pibroch', 'orcadian', 'hebridean',
-          'iron_brew', 'grans_best', 'the_pict', 'jacobite',
+          'iron_brew', 'grans_best', 'the_pict', 'jacobite', 'tam_o_shanter',
         ]).toContain(def.appearance.accentStyle);
       });
 

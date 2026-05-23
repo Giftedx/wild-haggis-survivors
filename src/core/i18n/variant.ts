@@ -128,6 +128,11 @@ export const variant = {
     flavor: 'For the Cause. Fast on the moor, light in the hand. Flora\'s plaid hides ye — briefly, bravely, as it always did.',
     lore: 'Bonnie Prince Charlie crossed the moor in a borrowed plaid. Flora MacDonald walked beside him, and the redcoats looked past. Every sixty seconds the plaid drops; every sixty seconds it lifts again. The Jacobite does not survive because it is strong. It survives because it is brief, and bright, and gone before ye ken.',
   },
+  tam_o_shanter: {
+    name: 'Tam o\' Shanter',
+    flavor: 'Fast as Meg, brave as whisky. The bard wrote him; the moor runs him noo. Weel done, Cutty-sark — but dinnae shout it.',
+    lore: '"Kings may be blest, but Tam was glorious, O\'er a\' the ills o\' life victorious!" Burns wrote the ride; this haggis rides it every run. Fast, reckless, half a dram past wise. The bonnet tilts left. The drift tilts worse. The moor between here and the Brig o\' Doon is the only question.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

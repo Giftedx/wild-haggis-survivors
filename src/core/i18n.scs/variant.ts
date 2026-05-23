@@ -109,6 +109,11 @@ export const variant = {
     flavor: 'For tha Cause. Fleet on tha muir, licht in tha haun. Flora\'s plaid hides ye — briefly, brawly, as it aye did.',
     lore: 'Bonnie Prince Charlie crossed tha muir in a borrowed plaid. Flora MacDonald walked aside him, an tha redcoats looked past. Ivvery saxty seconds tha plaid draps; ivvery saxty seconds it lifts again. Tha Jacobite disnae survive acause it\'s strang. It survives acause it\'s brief, an bricht, an awa afore ye ken.',
   },
+  tam_o_shanter: {
+    name: 'Tam o\' Shanter',
+    flavor: 'Fleet as Meg, brave as whusky. Tha bard writ him; tha muir rins him noo. Weel duin, Cutty-sark — but dinnae cry it oot.',
+    lore: '"Kings may be blest, but Tam wis glorious, O\'er a\' tha ills o\' life victorious!" Burns writ tha ride; this haggis rides it ilka run. Fleet, reckless, hauf a dram past wise. Tha bonnet tilts left. Tha drift tilts waur. Tha muir atween here an tha Brig o\' Doon is tha anely question.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

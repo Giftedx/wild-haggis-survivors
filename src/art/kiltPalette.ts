@@ -74,6 +74,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   the_pict:     { field: 0x6e3a10, fieldDark: 0x3a1c08, stripe: 0x2a4a6a, accent: 0x8a5020 },
   // The Jacobite — deep Jacobite-blue field, Stuart-crimson stripe, gold-braid accent.
   jacobite:     { field: 0x2e4878, fieldDark: 0x1a2848, stripe: 0xc04030, accent: 0xc8a840 },
+  // Tam-o'-Shanter — midnight-blue field (Alloway Kirk by dark), grey-mare stripe,
+  // whisky-lamp amber accent. Burns Night in a bonnet.
+  tam_o_shanter: { field: 0x1e3a6a, fieldDark: 0x10203c, stripe: 0x7a9ab8, accent: 0xf0c828 },
 };
 
 /**

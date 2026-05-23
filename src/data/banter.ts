@@ -390,6 +390,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.jacobite.c',
         'ui.banter.low_hp.jacobite.d',
       ],
+      tam_o_shanter: [
+        'ui.banter.low_hp.tam_o_shanter.a',
+        'ui.banter.low_hp.tam_o_shanter.b',
+        'ui.banter.low_hp.tam_o_shanter.c',
+        'ui.banter.low_hp.tam_o_shanter.d',
+      ],
     },
   },
   {
@@ -770,6 +776,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.jacobite.c',
         'ui.banter.level_up.jacobite.d',
       ],
+      tam_o_shanter: [
+        'ui.banter.level_up.tam_o_shanter.a',
+        'ui.banter.level_up.tam_o_shanter.b',
+        'ui.banter.level_up.tam_o_shanter.c',
+        'ui.banter.level_up.tam_o_shanter.d',
+      ],
     },
   },
   {
@@ -931,6 +943,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.jacobite.b',
         'ui.banter.first_blood.jacobite.c',
         'ui.banter.first_blood.jacobite.d',
+      ],
+      tam_o_shanter: [
+        'ui.banter.first_blood.tam_o_shanter.a',
+        'ui.banter.first_blood.tam_o_shanter.b',
+        'ui.banter.first_blood.tam_o_shanter.c',
+        'ui.banter.first_blood.tam_o_shanter.d',
       ],
     },
   },
@@ -1095,6 +1113,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.jacobite.c',
         'ui.banter.kill_streak.jacobite.d',
       ],
+      tam_o_shanter: [
+        'ui.banter.kill_streak.tam_o_shanter.a',
+        'ui.banter.kill_streak.tam_o_shanter.b',
+        'ui.banter.kill_streak.tam_o_shanter.c',
+        'ui.banter.kill_streak.tam_o_shanter.d',
+      ],
     },
   },
   {
@@ -1256,6 +1280,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.jacobite.b',
         'ui.banter.recover.jacobite.c',
         'ui.banter.recover.jacobite.d',
+      ],
+      tam_o_shanter: [
+        'ui.banter.recover.tam_o_shanter.a',
+        'ui.banter.recover.tam_o_shanter.b',
+        'ui.banter.recover.tam_o_shanter.c',
+        'ui.banter.recover.tam_o_shanter.d',
       ],
     },
   },
@@ -1604,6 +1634,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.jacobite.b',
         'ui.banter.idle.jacobite.c',
         'ui.banter.idle.jacobite.d',
+      ],
+      tam_o_shanter: [
+        'ui.banter.idle.tam_o_shanter.a',
+        'ui.banter.idle.tam_o_shanter.b',
+        'ui.banter.idle.tam_o_shanter.c',
+        'ui.banter.idle.tam_o_shanter.d',
       ],
     },
   },

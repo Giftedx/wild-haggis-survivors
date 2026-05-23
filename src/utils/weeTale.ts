@@ -472,4 +472,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.jacobite.death_short', requires: ['death', 'jacobite', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.jacobite.victory_baseline', requires: ['victory', 'jacobite', 'has_name'] },
   { key: 'ui.weeTale.variant.jacobite.victory_taxman', requires: ['victory', 'jacobite', 'has_name', 'taxman'] },
+  // Tam-o'-Shanter — Burns's reckless horseman; prestige; Alloway road.
+  { key: 'ui.weeTale.variant.tam_o_shanter.death_baseline', requires: ['death', 'tam_o_shanter', 'has_name'] },
+  { key: 'ui.weeTale.variant.tam_o_shanter.death_short', requires: ['death', 'tam_o_shanter', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.tam_o_shanter.victory_baseline', requires: ['victory', 'tam_o_shanter', 'has_name'] },
+  { key: 'ui.weeTale.variant.tam_o_shanter.victory_taxman', requires: ['victory', 'tam_o_shanter', 'has_name', 'taxman'] },
 ] as const;

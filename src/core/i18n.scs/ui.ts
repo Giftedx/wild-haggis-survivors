@@ -904,6 +904,7 @@ export const ui = {
         grans_best: 'A haggis fell here. Gran wid hae had words.',
         the_pict: 'A haggis fell here. Tha stane marks it. As aye.',
         jacobite: 'A haggis fell here. Tha plaid couldna haud forever.',
+        tam_o_shanter: 'A haggis fell here. Near enough tha Brig o\' Doon.',
       },
     },
     grandfather: {
@@ -1168,6 +1169,12 @@ export const ui = {
         b: 'Tha plaid\'s comin. Haud twa mair seconds.',
         c: 'Culloden didna finish it. This willna either.',
         d: 'Flora walked aside worse odds than these.',
+      },
+      tam_o_shanter: {
+        a: 'Tha Brig o\' Doon is close. Run, Meg, run.',
+        b: 'Weel duin, Cutty-sark — nae, dinnae say it. Jist run.',
+        c: 'Tha witches are gainin. Tha brig is tha anely answer.',
+        d: 'Faster. Rinnin watter saves ye. Find it.',
       },
     },
     boss_down: {
@@ -1517,6 +1524,12 @@ export const ui = {
         c: 'A step closer tae tha Cause.',
         d: 'Bonnie. Braw. Keep gaun.',
       },
+      tam_o_shanter: {
+        a: 'Kings may be blest, but Tam grows glorious.',
+        b: 'Anither dram o\' power. Tha bonnet sits truer.',
+        c: 'O\'er a\' tha ills o\' life victorious — that\'s tha bard\'s line. That\'s mine tae.',
+        d: 'Meg wid\'ve galloped harder. Keep up.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1671,6 +1684,12 @@ export const ui = {
         b: 'Flora wid hae smiled. Briefly, quietly, lik that.',
         c: 'First bluid for tha Prince. Aye — that\'s tha ane.',
         d: 'For ivvery redcoat that cam ower tha glen — this.',
+      },
+      tam_o_shanter: {
+        a: 'First yin doon on tha Alloway road.',
+        b: 'Tha witches stirred at that. Guid.',
+        c: 'Weel aimed, ya beauty. Tha bard wid approve.',
+        d: 'First bluid, an tha bonnet\'s still on.',
       },
     },
     kill_streak: {
@@ -1828,6 +1847,12 @@ export const ui = {
         c: 'Each kill brings tha Cause a step nearer.',
         d: 'Tha muir watches. Tha plaid hides tha count.',
       },
+      tam_o_shanter: {
+        a: 'Tam wis on a streak at Alloway tae. Ended badly.',
+        b: 'Cutty-sark couldna catch him whan he muived lik this.',
+        c: 'Tha bonnet\'s low, tha speed is high, tha streak\'s growin.',
+        d: 'Meg wid\'ve kept up. Barely.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1982,6 +2007,12 @@ export const ui = {
         b: 'Flora got him tae tha shore. I\'ll get masel there tae.',
         c: 'Back on tha Cause. Tha muir\'s no duin wi me yet.',
         d: 'Still tae Skye. Still gaun.',
+      },
+      tam_o_shanter: {
+        a: 'Back on tha saddle. Tha bonnet\'s still on.',
+        b: 'Tha Brig o\' Doon\'s ahint me noo. Braith.',
+        c: 'Rinnin watter saved him. Speed saves me.',
+        d: 'Tam survived worse — just. Sae did I.',
       },
     },
     biome_change: {
@@ -2647,6 +2678,12 @@ export const ui = {
         c: 'Waitin is tha Jacobite\'s trade. A patience born o defeat.',
         d: 'Flora coontit redcoats. Ah coont seconds.',
       },
+      tam_o_shanter: {
+        a: 'Tha lamp\'s still lit in tha pub windae. Tha pub\'s far awa noo.',
+        b: 'Whusky\'s warmer than tha muir. Tha muir disnae notice.',
+        c: 'Alloway Kirk is quate tha nicht. For noo.',
+        d: 'Tha bonnet sits true. Tha drift says itherweys.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -3144,6 +3181,10 @@ export const ui = {
       variant_jacobite_unlocked: {
         a: 'Seeven victories. Tha Jacobite steps oot — for tha Cause, for Flora, for ivvery muir they crossed wi nae map an nae hope.',
         b: 'Ye won seeven times. Tha plaid unfaulds. Flora\'s route is open; tha redcoats are lookin tha ither way.',
+      },
+      variant_tam_o_shanter_unlocked: {
+        a: 'Ten victories. Tam o\' Shanter mounts up — fleet as Meg, reckless as tha bard, tha bonnet on at a gallop. "Kings may be blest, but Tam wis glorious."',
+        b: 'Ye won ten times. Tha pub at Ayr sends ye aff. Tha muir atween here an tha Brig o\' Doon is yours.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3752,6 +3793,12 @@ export const ui = {
         death_short: '{name}. Flora will no forget.',
         victory_baseline: '{name} crossed tha muir, for tha Cause, an came oot tha ither side.',
         victory_taxman: 'Tha Taxman fund a Jacobite. Tha Jacobite had a plaid. Tha Taxman lost.',
+      },
+      tam_o_shanter: {
+        death_baseline: '{name} fell on tha Alloway road. Near enough tha Brig o\' Doon.',
+        death_short: '{name}. Tha bonnet rolled on.',
+        victory_baseline: '{name} made it ower tha brig. Tha witches couldna follow. Meg wid\'ve been proud.',
+        victory_taxman: 'Tha Taxman tried tae stap {name} on tha Alloway stretch. Tam wis faster. Tam\'s aye faster.',
       },
     },
   },

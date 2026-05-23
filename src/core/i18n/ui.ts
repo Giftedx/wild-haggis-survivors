@@ -1378,6 +1378,7 @@ export const ui = {
         grans_best: 'A haggis fell here. Gran would have had words.',
         the_pict: 'A haggis fell here. The stone marks it. As always.',
         jacobite: 'A haggis fell here. The plaid could not hold forever.',
+        tam_o_shanter: 'A haggis fell here. Near enough the Brig o\' Doon.',
       },
     },
     grandfather: {
@@ -1718,6 +1719,12 @@ export const ui = {
         b: 'The plaid\'s comin\'. Hold twa mair seconds.',
         c: 'Culloden didnae finish it. This willnae either.',
         d: 'Flora walked beside worse odds than these.',
+      },
+      tam_o_shanter: {
+        a: 'The Brig o\' Doon is close. Run, Meg, run.',
+        b: 'Weel done, Cutty-sark — nae, dinnae say it. Just run.',
+        c: 'The witches are gaining. The bridge is the anely answer.',
+        d: 'Faster. The running water saves ye. Find it.',
       },
     },
     boss_down: {
@@ -2070,6 +2077,12 @@ export const ui = {
         c: 'A step closer tae the Cause.',
         d: 'Bonnie. Braw. Keep gaun.',
       },
+      tam_o_shanter: {
+        a: 'Kings may be blest, but Tam grows glorious.',
+        b: 'Another dram o\' power. The bonnet sits truer.',
+        c: 'O\'er a\' the ills o\' life victorious — that\'s the bard\'s line. That\'s mine tae.',
+        d: 'Meg wid\'ve galloped harder. Keep up.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2224,6 +2237,12 @@ export const ui = {
         b: 'Flora would have smiled. Briefly, quietly, like that.',
         c: 'First blood for the Prince. Aye — that\'s the ane.',
         d: 'For every redcoat that came over the glen — this.',
+      },
+      tam_o_shanter: {
+        a: 'First yin doon on the Alloway road.',
+        b: 'The witches stirred at that. Good.',
+        c: 'Weel aimed, ya beauty. The bard wid approve.',
+        d: 'First blood, and the bonnet\'s still on.',
       },
     },
     kill_streak: {
@@ -2381,6 +2400,12 @@ export const ui = {
         c: 'Each kill brings the Cause a step nearer.',
         d: 'The moor watches. The plaid hides the count.',
       },
+      tam_o_shanter: {
+        a: 'Tam was on a streak at Alloway tae. Ended badly.',
+        b: 'Cutty-sark couldna catch him when he moved like this.',
+        c: 'The bonnet\'s low, the speed is high, the streak is growin\'.',
+        d: 'Meg wid\'ve kept up. Barely.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2535,6 +2560,12 @@ export const ui = {
         b: 'Flora got him tae the shore. I\'ll get masel there tae.',
         c: 'Back on the Cause. The moor\'s no done wi me yet.',
         d: 'Still tae Skye. Still gaun.',
+      },
+      tam_o_shanter: {
+        a: 'Back on the saddle. The bonnet\'s still on.',
+        b: 'The Brig o\' Doon\'s behind me noo. Breathe.',
+        c: 'Running water saved him. Speed saves me.',
+        d: 'Tam survived worse — just. So did I.',
       },
     },
     biome_change: {
@@ -3248,6 +3279,12 @@ export const ui = {
         c: 'Waiting is the Jacobite\'s trade. A patience born o\' defeat.',
         d: 'Flora counted redcoats. I count seconds.',
       },
+      tam_o_shanter: {
+        a: 'The lamp\'s still lit in the pub window. The pub\'s far awa noo.',
+        b: 'Whisky\'s warmer than the moor. The moor disnae notice.',
+        c: 'Alloway Kirk is quiet the nicht. For noo.',
+        d: 'The bonnet sits true. The drift says otherwise.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3802,6 +3839,11 @@ export const ui = {
         // 7 victories. Voice: edge — tragic-romantic, lament tinged.
         a: 'Seven victories. The Jacobite steps oot — for the Cause, for Flora, for every moor they crossed wi nae map an\' nae hope.',
         b: 'Ye won seven times. The plaid unfolds. Flora\'s route is open; the redcoats are looking the ither way.',
+      },
+      variant_tam_o_shanter_unlocked: {
+        // 10 victories. Voice: edge, Burns-citational, delighted.
+        a: 'Ten victories. Tam o\' Shanter mounts up — fast as Meg, reckless as the bard, the bonnet on at a gallop. "Kings may be blest, but Tam was glorious."',
+        b: 'Ye won ten times. The pub at Ayr sends ye off. The moor between here and the Brig o\' Doon is yours.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4572,6 +4614,12 @@ export const ui = {
         death_short: '{name}. Flora will no forget.',
         victory_baseline: '{name} crossed the moor, for the Cause, and came oot the ither side.',
         victory_taxman: 'The Taxman found a Jacobite. The Jacobite had a plaid. The Taxman lost.',
+      },
+      tam_o_shanter: {
+        death_baseline: '{name} fell on the Alloway road. Near enough the Brig o\' Doon.',
+        death_short: '{name}. The bonnet rolled on.',
+        victory_baseline: '{name} made it ower the brig. The witches couldnae follow. Meg wid\'ve been proud.',
+        victory_taxman: 'The Taxman tried tae stop {name} on the Alloway road. Tam was faster. Tam\'s aye faster.',
       },
     },
   },
