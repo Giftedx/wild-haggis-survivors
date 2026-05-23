@@ -62,7 +62,7 @@ Candidates worth a sketch (pick 1 max for a content drop):
 - ~~**Selkie**~~ — ✅ shipped 2026-05-23 (`src/data/variants.ts` key `selkie`). Wild Living World Initiative. Dash mechanic: slip pelt on (seal = fast) / off (haggis = combat). Full EN + SCS banter, kilt + tartan palette, wee tales. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
 - **Tufted** — minion summoner; auto-fills familiar slot with a pup.
 - **Iron Brew** — damage-taken buff stacks.
-- **Pibroch** — rhythm mastery SKU; widens Pibroch beat window.
+- ~~**Pibroch**~~ — ✅ shipped 2026-05-23 (`pibroch`, `pibrochWindowExtensionMs: 70`, unlock: 3 victories). Widens Pibroch Crescendo beat window from ±80ms to ±150ms.
 - **Tam-o'-Shanter** — prestige variant, unlocked endgame.
 - ~~**Doric Quinie**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `doric_quinie`). Northeast Aberdonian voice register; native review still open per `project_v2_variants_status` memory.
 - ~~**Peerie Shetlander**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `peerie_shetlander`). Shetlandic-voice register; native review still open per `project_v2_variants_status` memory.
