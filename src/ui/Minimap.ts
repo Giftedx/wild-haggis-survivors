@@ -59,7 +59,7 @@ export class Minimap {
    * read as ambient (one-pixel marker, 0.4 alpha) and do not compete with
    * the boss / elite / pickup vocabulary above.
    */
-  cairnMarkers: ReadonlyArray<{ x: number; y: number }> = [];
+  cairnMarkers: ReadonlyArray<{ x: number; y: number; state: 'wreathed' | 'extinguished' | 'neutral' }> = [];
 
   private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
     const { x, y, width, height, zoom } = getCameraViewport(this.scene);
@@ -130,15 +130,22 @@ export class Minimap {
       });
     }
 
-    // Cairn-of-Echoes (The Moor Remembers spec 2026-05-22) — dim slate
+    // Cairn-of-Echoes (The Moor Remembers spec 2026-05-22) — state-tinted
     // pixels at every past-self death coord. Drawn below the enemy /
     // boss / chest vocabulary so they read as moor ambience and never
-    // compete for the player's attention with combat-critical markers.
+    // compete with combat-critical markers.
+    // Wreathed = gold; extinguished = cool dim slate; neutral = mid-slate.
     if (this.cairnMarkers.length > 0) {
-      this.gfx.fillStyle(0x3a4148, 0.4);
       for (const m of this.cairnMarkers) {
         const mx = Phaser.Math.Clamp(mapX + m.x * scaleX, mapX, mapX + this.SIZE);
         const my = Phaser.Math.Clamp(mapY + m.y * scaleY, mapY, mapY + this.SIZE);
+        if (m.state === 'wreathed') {
+          this.gfx.fillStyle(0xf5d04e, 0.6);
+        } else if (m.state === 'extinguished') {
+          this.gfx.fillStyle(0x2a3040, 0.3);
+        } else {
+          this.gfx.fillStyle(0x3a4148, 0.4);
+        }
         this.gfx.fillRect(mx, my, 1, 1);
       }
     }

@@ -112,8 +112,14 @@ export class CairnOfEchoesScheduler {
   }
 
   /** Coordinates for all loaded cairns — fed to the minimap overlay. */
-  getMinimapMarkers(): Array<{ x: number; y: number }> {
-    return this.cairns.map((c) => ({ x: c.x, y: c.y }));
+  getMinimapMarkers(): Array<{ x: number; y: number; state: 'wreathed' | 'extinguished' | 'neutral' }> {
+    return this.cairns.map((c) => ({
+      x: c.x,
+      y: c.y,
+      state: c.wreathedAt !== undefined ? 'wreathed'
+           : c.extinguishedAt !== undefined ? 'extinguished'
+           : 'neutral',
+    }));
   }
 
   /**

@@ -115,13 +115,32 @@ describe('CairnOfEchoesScheduler', () => {
     expect(onWalkOver).toHaveBeenCalledTimes(2);
   });
 
-  it('getMinimapMarkers returns all loaded cairn coords', () => {
+  it('getMinimapMarkers returns all loaded cairn coords with neutral state', () => {
     const a = makeCairn(100, 100, 1);
     const b = makeCairn(500, 500, 2);
     const scheduler = new CairnOfEchoesScheduler(buildHooks({ getCairns: () => [a, b] }));
     scheduler.load();
     const markers = scheduler.getMinimapMarkers();
-    expect(markers).toEqual([{ x: 100, y: 100 }, { x: 500, y: 500 }]);
+    expect(markers).toEqual([
+      { x: 100, y: 100, state: 'neutral' },
+      { x: 500, y: 500, state: 'neutral' },
+    ]);
+  });
+
+  it('getMinimapMarkers reports wreathed state for cairns with wreathedAt', () => {
+    const wreathed: import('../../utils/save/fallenCairns').FallenCairn = {
+      ...makeCairn(200, 200, 3), wreathedAt: 9999,
+    };
+    const extinguished: import('../../utils/save/fallenCairns').FallenCairn = {
+      ...makeCairn(300, 300, 4), extinguishedAt: 8888,
+    };
+    const scheduler = new CairnOfEchoesScheduler(
+      buildHooks({ getCairns: () => [wreathed, extinguished] }),
+    );
+    scheduler.load();
+    const markers = scheduler.getMinimapMarkers();
+    expect(markers[0].state).toBe('wreathed');
+    expect(markers[1].state).toBe('extinguished');
   });
 });
 
