@@ -442,4 +442,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.pibroch.death_short', requires: ['death', 'pibroch', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.pibroch.victory_baseline', requires: ['victory', 'pibroch', 'has_name'] },
   { key: 'ui.weeTale.variant.pibroch.victory_taxman', requires: ['victory', 'pibroch', 'has_name', 'taxman'] },
+  // Peedie as a standing stone; patient as the Ring o' Brodgar.
+  { key: 'ui.weeTale.variant.orcadian.death_baseline', requires: ['death', 'orcadian', 'has_name'] },
+  { key: 'ui.weeTale.variant.orcadian.death_short', requires: ['death', 'orcadian', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.orcadian.victory_baseline', requires: ['victory', 'orcadian', 'has_name'] },
+  { key: 'ui.weeTale.variant.orcadian.victory_taxman', requires: ['victory', 'orcadian', 'has_name', 'taxman'] },
 ] as const;

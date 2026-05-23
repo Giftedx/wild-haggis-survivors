@@ -1370,6 +1370,7 @@ export const ui = {
         morningside: 'Wholly avoidable, that. With more composure.',
         drouthy: 'Still thirsty. Aye, that\'ll do.',
         pibroch: 'The tune was still going when I stopped.',
+        orcadian: 'The geo was here afore the score. It\'s aye here.',
       },
     },
     grandfather: {
@@ -1674,6 +1675,12 @@ export const ui = {
         b: 'Nae panic. The ground-tune holds even when the hands shake.',
         c: 'Low — but the ùrlar\'s still in me. That\'s enough.',
         d: 'The moor disnae hurry the pibroch. Neither will I.',
+      },
+      orcadian: {
+        a: 'Still standin. Like the stones.',
+        b: 'The Ring stood twa thousand year. Ye\'ll manage.',
+        c: 'Brodgar wasnae built in a day. Neither was this.',
+        d: 'Breathe. The moor\'s been here longer than the wound.',
       },
     },
     boss_down: {
@@ -1990,6 +1997,12 @@ export const ui = {
         c: 'The ground-tune deepens. So do I.',
         d: 'The ceòl mòr lifts with every step forward.',
       },
+      orcadian: {
+        a: 'Aye. Another layer o\' the Broch.',
+        b: 'The Skara Brae folk didnae hurry. Neither dae we.',
+        c: 'Up a course. The tower holds.',
+        d: 'Ancient things dinnae rush — but they get there.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2108,6 +2121,12 @@ export const ui = {
         b: 'One note struck. The ceòl mòr begins here.',
         c: 'They fell to the moor\'s own rhythm. Good a way as any.',
         d: 'Opening ground-note landed. The pibroch is moving now.',
+      },
+      orcadian: {
+        a: 'First strike — like the first stone placed at Brodgar.',
+        b: 'Ane doon. The field\'s aye there.',
+        c: 'The Pech began wi\' ane stone tae. Same idea.',
+        d: 'Ring started somewhere. This is that somewhere.',
       },
     },
     kill_streak: {
@@ -2229,6 +2248,12 @@ export const ui = {
         c: 'The theme is returning. They haven\'t learned it yet.',
         d: 'Each kill is a variation. The ground-tune stays true.',
       },
+      orcadian: {
+        a: 'Like the Ringers — each ane adds tae the circle.',
+        b: 'The mounds grow slowly. This is faster.',
+        c: 'Stack them up, like the Broch o\' Gurness.',
+        d: 'Corrigall Farm — harvest at yer ain pace. Faster here.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2347,6 +2372,12 @@ export const ui = {
         b: 'The heal came on the beat. Of course it did.',
         c: 'Steadied. The moor\'s rhythm never stopped.',
         d: 'Recovered — the ceòl mòr doesn\'t pause for wounds.',
+      },
+      orcadian: {
+        a: 'The sea gives back. Always.',
+        b: 'Maeshowe faces the midwinter sun. We find wir ain light.',
+        c: 'Stones stand oot the worst o\' it. So dae I.',
+        d: 'Still. The isle holds ye even when ye slip.',
       },
     },
     biome_change: {
@@ -3024,6 +3055,12 @@ export const ui = {
         c: 'The ceòl mòr doesn\'t need me moving to keep going.',
         d: 'Quarter-note. Quarter-note. The moor is a drum — if ye ken how to hear it.',
       },
+      orcadian: {
+        a: 'The Simmer Dim — the light that never quite gaes oot.',
+        b: 'Skara Brae sat under the sand four thousand year. Patient.',
+        c: 'Listen. The geo kens every sound that passes through.',
+        d: 'The wind taks its time here, tae. I\'m learnin\' frae it.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3546,6 +3583,12 @@ export const ui = {
         // acknowledging someone who has learned to listen.
         a: 'Three victories. The Pibroch Haggis steps out — the moor already knew its rhythm.',
         b: 'The ceòl mòr was always here. Now ye\'ve a haggis that hears it.',
+      },
+      variant_orcadian_unlocked: {
+        // 3 coastal-only victories. Voice: hearth, ancient-patience —
+        // the islands acknowledging someone who learned to stay.
+        a: 'Three coastal runs. The Orcadian Haggis — patient as the Ring, small as the stones remember.',
+        b: 'The isle grants passage. The Orcadian Haggis steps ashore.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4280,6 +4323,12 @@ export const ui = {
         death_short: '{name} fell mid-bar. The ceòl mòr doesn\'t stop for the player.',
         victory_baseline: '{name} walked the full pibroch — ground-note, variations, coda. The moor heard all of it.',
         victory_taxman: '{name} brought the Taxman\'s ledger to the final bar. The tune outlasted him.',
+      },
+      orcadian: {
+        death_baseline: '{name} fell out there on the muir. The stones keep no score — they abide.',
+        death_short: '{name} was down. Like the midwinter dark at Maeshowe — first the dark, then the solstice beam.',
+        victory_baseline: '{name} walked the whole ring and came out the other side. The Brodgar Folk would\'ve nodded.',
+        victory_taxman: '{name} settled the Taxman\'s ledger. Orcadians don\'t run from accounts.',
       },
     },
   },

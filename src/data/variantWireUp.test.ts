@@ -35,6 +35,8 @@ const SCOTS_MARKERS = [
   'quinie', 'min', 'haar', 'een',
   // Shetlandic (V2 Track 2)
   'peerie', 'voe', 'du', 'dee', 'skerry', 'mirry',
+  // Orcadian (V3)
+  'peedie', 'geo', 'frae', 'brodgar',
   // Burns-citational (V2 Track 3)
   'sleekit', 'sonsie', 'agley', 'syne',
 ];
@@ -62,7 +64,7 @@ describe('every non-classic variant is fully wired', () => {
           'none', 'racing_band', 'iron_belly', 'forager', 'surefoot',
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
-          'morningside', 'drouthy', 'pibroch',
+          'morningside', 'drouthy', 'pibroch', 'orcadian',
         ]).toContain(def.appearance.accentStyle);
       });
 

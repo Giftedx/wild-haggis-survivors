@@ -354,6 +354,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.pibroch.c',
         'ui.banter.low_hp.pibroch.d',
       ],
+      orcadian: [
+        'ui.banter.low_hp.orcadian.a',
+        'ui.banter.low_hp.orcadian.b',
+        'ui.banter.low_hp.orcadian.c',
+        'ui.banter.low_hp.orcadian.d',
+      ],
     },
   },
   {
@@ -698,6 +704,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.pibroch.c',
         'ui.banter.level_up.pibroch.d',
       ],
+      orcadian: [
+        'ui.banter.level_up.orcadian.a',
+        'ui.banter.level_up.orcadian.b',
+        'ui.banter.level_up.orcadian.c',
+        'ui.banter.level_up.orcadian.d',
+      ],
     },
   },
   {
@@ -823,6 +835,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.pibroch.b',
         'ui.banter.first_blood.pibroch.c',
         'ui.banter.first_blood.pibroch.d',
+      ],
+      orcadian: [
+        'ui.banter.first_blood.orcadian.a',
+        'ui.banter.first_blood.orcadian.b',
+        'ui.banter.first_blood.orcadian.c',
+        'ui.banter.first_blood.orcadian.d',
       ],
     },
   },
@@ -951,6 +969,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.pibroch.c',
         'ui.banter.kill_streak.pibroch.d',
       ],
+      orcadian: [
+        'ui.banter.kill_streak.orcadian.a',
+        'ui.banter.kill_streak.orcadian.b',
+        'ui.banter.kill_streak.orcadian.c',
+        'ui.banter.kill_streak.orcadian.d',
+      ],
     },
   },
   {
@@ -1076,6 +1100,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.pibroch.b',
         'ui.banter.recover.pibroch.c',
         'ui.banter.recover.pibroch.d',
+      ],
+      orcadian: [
+        'ui.banter.recover.orcadian.a',
+        'ui.banter.recover.orcadian.b',
+        'ui.banter.recover.orcadian.c',
+        'ui.banter.recover.orcadian.d',
       ],
     },
   },
@@ -1388,6 +1418,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.pibroch.b',
         'ui.banter.idle.pibroch.c',
         'ui.banter.idle.pibroch.d',
+      ],
+      orcadian: [
+        'ui.banter.idle.orcadian.a',
+        'ui.banter.idle.orcadian.b',
+        'ui.banter.idle.orcadian.c',
+        'ui.banter.idle.orcadian.d',
       ],
     },
   },

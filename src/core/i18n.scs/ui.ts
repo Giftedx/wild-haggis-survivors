@@ -897,6 +897,7 @@ export const ui = {
         morningside: 'Wholly avoidable, that. Wi mair composure.',
         drouthy: 'Aye, still drouthy. That\'ll dae.',
         pibroch: 'Tha tune wis still gangin when A stoppit.',
+        orcadian: 'Tha geo wis here afore tha score. It\'s aye here.',
       },
     },
     grandfather: {
@@ -1125,6 +1126,12 @@ export const ui = {
         b: 'Nae panic. Tha ground-tune hauds even when tha haunds shake.',
         c: 'Laich — but tha ùrlar\'s still in me. That\'s eneuch.',
         d: 'Tha muir disnae hurry tha pibroch. Neither will Ah.',
+      },
+      orcadian: {
+        a: 'Still standin. Like tha stanes.',
+        b: 'Tha Ring stood twa thoosan year. Ye\'ll manage.',
+        c: 'Brodgar wasnae biggit in a day. Neither wis this.',
+        d: 'Breathe. Tha muir\'s been here langer than tha wound.',
       },
     },
     boss_down: {
@@ -1438,6 +1445,12 @@ export const ui = {
         c: 'Tha grund-tune deepens. Sae dae Ah.',
         d: 'Tha ceòl mòr lifts wi ilka step forrit.',
       },
+      orcadian: {
+        a: 'Aye. Anither layer o tha Broch.',
+        b: 'Tha Skara Brae fowk didnae hurry. Neither dae we.',
+        c: 'Up a course. Tha tooer hauds.',
+        d: 'Auld things dinnae rush — but they get there.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1556,6 +1569,12 @@ export const ui = {
         b: 'Ae note struck. Tha ceòl mòr begins here.',
         c: 'They fell tae tha muir\'s ain rhythm. Guid a wey as ony.',
         d: 'Openin grund-note landit. Tha pibroch is movin noo.',
+      },
+      orcadian: {
+        a: 'First strike — like tha first stane placed at Brodgar.',
+        b: 'Ane doon. Tha field\'s aye there.',
+        c: 'Tha Pech began wi ane stane tae. Same idea.',
+        d: 'Ring startit somewhaur. This is that somewhaur.',
       },
     },
     kill_streak: {
@@ -1677,6 +1696,12 @@ export const ui = {
         c: 'Tha theme is returnin. They haenae learnt it yet.',
         d: 'Ilka kill is a variation. Tha grund-tune stays true.',
       },
+      orcadian: {
+        a: 'Like tha Ringers — ilka ane adds tae tha circle.',
+        b: 'Tha mounds grow slowly. This is faster.',
+        c: 'Stack em up, like tha Broch o Gurness.',
+        d: 'Corrigall Farm — hairst at yer ain pace. Faster here.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1795,6 +1820,12 @@ export const ui = {
         b: 'Tha heal cam on tha beat. O coorse it did.',
         c: 'Steadied. Tha muir\'s rhythm never stoppit.',
         d: 'Recovered — tha ceòl mòr disnae pause for wounds.',
+      },
+      orcadian: {
+        a: 'Tha sea gies back. Aye.',
+        b: 'Maeshowe faces tha midwinter sun. We find wir ain licht.',
+        c: 'Stanes staund oot tha warst o it. Sae dae Ah.',
+        d: 'Still. Tha isle hauds ye even when ye slip.',
       },
     },
     biome_change: {
@@ -2419,10 +2450,16 @@ export const ui = {
         d: 'Whit time is it? Disnae maitter. It\'s dram o\'clock.',
       },
       pibroch: {
-        a: 'Still. Tha ùrlar runs underneath — Ah\'m just walkin on tap o it.',
+        a: 'Still. Tha ùrlar rins underneath — Ah\'m just walkin on tap o it.',
         b: 'Even at rest, tha muir has a tempo. Ah\'m listenin.',
         c: 'Tha ceòl mòr disnae need me movin tae keep gangin.',
         d: 'Quarter-note. Quarter-note. Tha muir is a drum — if ye ken hoo tae hear it.',
+      },
+      orcadian: {
+        a: 'Tha Simmer Dim — tha licht that never quite gaes oot.',
+        b: 'Skara Brae sat under tha sand fower thoosan year. Patient.',
+        c: 'Listen. Tha geo kens ilka sound that passes through.',
+        d: 'Tha wind taks its time here, tae. Ah\'m learnin frae it.',
       },
     },
     act_intermission_enter: {
@@ -2897,6 +2934,10 @@ export const ui = {
       variant_pibroch_unlocked: {
         a: 'Three victories. Tha Pibroch Haggis steps oot — tha muir already kent its rhythm.',
         b: 'Tha ceòl mòr wis aye here. Noo ye\'ve a haggis that hears it.',
+      },
+      variant_orcadian_unlocked: {
+        a: 'Three coastal runs. Tha Orcadian Haggis — patient as tha Ring, sma as tha stanes mind.',
+        b: 'Tha isle grants passage. Tha Orcadian Haggis steps ashore.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3469,6 +3510,12 @@ export const ui = {
         death_short: '{name} fell mid-bar. Tha ceòl mòr disnae stap for tha player.',
         victory_baseline: '{name} walked tha full pibroch — grund-note, variations, coda. Tha muir heard aw o it.',
         victory_taxman: '{name} brocht tha Taxman\'s ledger tae tha final bar. Tha tune outlastit him.',
+      },
+      orcadian: {
+        death_baseline: '{name} fell oot there on tha muir. Tha stanes keep nae score — they abide.',
+        death_short: '{name} wis doon. Like tha midwinter dark at Maeshowe — first tha dark, then tha solstice beam.',
+        victory_baseline: '{name} walked tha hale ring an cam oot tha ither side. Tha Brodgar Folk wid\'ve nod\'d.',
+        victory_taxman: '{name} settled tha Taxman\'s ledger. Orcadians dinnae run frae accounts.',
       },
     },
   },

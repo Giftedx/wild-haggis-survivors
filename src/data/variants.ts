@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -105,7 +105,8 @@ export type HaggisAccentStyle =
   | 'peerie_shetlander'
   | 'morningside'
   | 'drouthy'
-  | 'pibroch';
+  | 'pibroch'
+  | 'orcadian';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -682,6 +683,39 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x8a5828,
         snout: 0xa07040,
         accent: 0xc8c8c8, // silver chanter
+      },
+    },
+  },
+  {
+    // Orcadian Haggis — peedie as a standing stone, patient as the
+    // Ring o' Brodgar. Frae the islands where Norn met Scots and neither
+    // flinched. Smallest sprite in the roster; good at gathering (wide
+    // pickup radius); ancient-stone patience grants bonus XP. Slight
+    // speed penalty — the stones didna hurry either.
+    // Palette: deep sea-teal + standing-stone grey-green + Norse-copper
+    // accent thread — the Orkney palette in kilt form.
+    // Unlock: 3 coastal-only victories — master the shore, earn the isle.
+    key: 'orcadian',
+    nameKey: 'variant.orcadian.name',
+    flavorKey: 'variant.orcadian.flavor',
+    textureKey: 'haggis_orcadian',
+    modifiers: {
+      spriteScale: 0.78,
+      pickupRadiusFlat: 18,
+      xpMultiplierPct: 0.12,
+      maxHpFlat: 5,
+      moveSpeedPct: -0.06,
+    },
+    unlock: { type: 'runs_in_coastal_only', required: 3 },
+    appearance: {
+      accentStyle: 'orcadian',
+      palette: {
+        outline: 0x0e1820,
+        bodyDark: 0x1a3040,
+        bodyLight: 0x2e5060,
+        fur: 0x4a7080,
+        snout: 0x6a9090,
+        accent: 0xc8a858, // Norse gold thread
       },
     },
   },

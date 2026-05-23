@@ -98,6 +98,11 @@ export const variant = {
     flavor: 'Every beat a footstep. Every footstep a beat. The ceòl mòr rides this one — and the moor listens.',
     lore: 'The piob mhòr — the great pipe — is older than Scotland. Its player does not chase the beat; the beat is already in them. This haggis has never needed to count the bars. The Pibroch Crescendo window is wider — the rhythm does not demand precision from what already lives inside it.',
   },
+  orcadian: {
+    name: 'Orcadian Haggis',
+    flavor: 'Peedie as a standing stone. Patient as the Ring o\' Brodgar. Frae the islands where Norn met Scots — an\' neither flinched.',
+    lore: 'From the islands where the Neolithic never quite ended — where Skara Brae sat under the sand for four thousand years before anyone thought to look. Small, deliberate, wider-eyed than you\'d expect. The Ring of Brodgar was not built in a day. Neither, for that matter, was this haggis.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',
