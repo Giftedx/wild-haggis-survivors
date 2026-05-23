@@ -77,6 +77,14 @@ export const sporran = {
       name: 'Tumshie Lantern',
       desc: 'Carved face keeps three folk awa. +15 HP, spawns ease 5%. Samhain anely.',
     },
+    hogmanay_coal: {
+      name: 'Tha Dark Man\'s Coal',
+      desc: 'Coal frae tha first-footer. Keeps tha fingers nimble — fire quicker, but tha gloamin bites back. Hogmanay anely.',
+    },
+    beltane_spark: {
+      name: 'Beltane Spark',
+      desc: 'Tha fire lowps in ye. +12% skaith; tha crossin asks less hert. Beltane anely.',
+    },
   },
   variant: {
     cailleach_frost: {
@@ -86,6 +94,14 @@ export const sporran = {
     glaswegian_buckie: {
       name: 'Buckie Unner Yer Airm',
       desc: 'Ready fur onybody. +6% skaith, +6% skaith taen. Glaswegian anely.',
+    },
+    witch_hare_familiar: {
+      name: 'Isobel\'s Familiar',
+      desc: 'Rides tha pooch. +10% skaith; tha bindin asks its tithe — less hert tae stairt. Witch\'s Hare anely.',
+    },
+    selkie_sealskin: {
+      name: 'Sealskin Memory',
+      desc: 'Tha seal moves wioot thinkin o waas. +9% speed; tha tide taks its ain time — weapon slows 6%. Selkie anely.',
     },
   },
 } as const;

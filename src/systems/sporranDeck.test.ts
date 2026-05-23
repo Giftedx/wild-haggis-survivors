@@ -162,15 +162,16 @@ describe('applySporranPicks', () => {
 });
 
 describe('ALL_SPORRAN_CARDS pool integrity', () => {
-  it('contains exactly 18 cards (Phase 3 — 12 base + 2 rare + 2 seasonal + 2 variant)', () => {
-    expect(ALL_SPORRAN_CARDS).toHaveLength(18);
+  it('contains exactly 22 cards (Phase 4 — 18 prior + 2 seasonal + 2 variant)', () => {
+    expect(ALL_SPORRAN_CARDS).toHaveLength(22);
   });
 
-  it('splits as 5 curses + 6 boons + 7 quirks across the full pool', () => {
+  it('splits as 5 curses + 6 boons + 11 quirks across the full pool', () => {
     const counts = { curse: 0, boon: 0, quirk: 0 };
     for (const card of ALL_SPORRAN_CARDS) counts[card.kind]++;
-    // base 5+4+3 + Phase 3 (2 boons in seasonal + 4 quirks in rare/variant) = 5/6/7
-    expect(counts).toEqual({ curse: 5, boon: 6, quirk: 7 });
+    // base 5+4+3 + Phase 3 (2 boons in seasonal + 4 quirks in rare/variant)
+    // + Phase 4 (4 more quirks: 2 seasonal + 2 variant) = 5/6/11
+    expect(counts).toEqual({ curse: 5, boon: 6, quirk: 11 });
   });
 
   it('every card has a unique non-empty id matching ^[a-z_]+$', () => {
@@ -213,11 +214,13 @@ describe('ALL_SPORRAN_CARDS pool integrity', () => {
     }
   });
 
-  it('the 6 Phase 3 cards each carry an explicit eligibility gate', () => {
+  it('the 10 gated cards each carry an explicit eligibility gate', () => {
     const gatedIds = new Set([
       'rare_taxman_grudge', 'rare_witchs_thread',
       'seasonal_burns_dram', 'seasonal_samhain_lantern',
+      'seasonal_hogmanay_coal', 'seasonal_beltane_spark',
       'variant_cailleach_frost', 'variant_glaswegian_buckie',
+      'variant_witch_hare_familiar', 'variant_selkie_sealskin',
     ]);
     for (const card of ALL_SPORRAN_CARDS) {
       if (gatedIds.has(card.id)) {

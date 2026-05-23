@@ -102,6 +102,14 @@ export const sporran = {
       name: 'Tumshie Lantern',
       desc: 'Carved face keeps three folk away. +15 HP, spawns ease 5%. Samhain only.',
     },
+    hogmanay_coal: {
+      name: 'The Dark Man\'s Coal',
+      desc: 'Coal from the first-footer. Keeps the fingers nimble — fire quicker, but the gloaming bites back. Hogmanay only.',
+    },
+    beltane_spark: {
+      name: 'Beltane Spark',
+      desc: 'The fire leaps in ye. +12% damage; the crossing asks less heart. Beltane only.',
+    },
   },
   /**
    * Phase 3 — variant-keyed. Only drawable when the matching variant
@@ -115,6 +123,14 @@ export const sporran = {
     glaswegian_buckie: {
       name: 'Buckie Under Yer Arm',
       desc: 'Ready fer onybody. +6% damage, +6% damage taken. Glaswegian only.',
+    },
+    witch_hare_familiar: {
+      name: 'Isobel\'s Familiar',
+      desc: 'Rides the pocket. +10% damage; the binding asks its tithe — less heart to start. Witch\'s Hare only.',
+    },
+    selkie_sealskin: {
+      name: 'Sealskin Memory',
+      desc: 'The seal moves without thinking of walls. +9% speed; the tide takes its own time — weapon slows 6%. Selkie only.',
     },
   },
 } as const;

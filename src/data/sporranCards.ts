@@ -222,6 +222,35 @@ const SEASONAL_CARDS: readonly SporranCard[] = [
       return { extraStartingHpHeal: 15, extraDamageMultiplier: 0 };
     },
   },
+  {
+    id: 'seasonal_hogmanay_coal',
+    kind: 'quirk',
+    nameKey: 'sporran.seasonal.hogmanay_coal.name',
+    descKey: 'sporran.seasonal.hogmanay_coal.desc',
+    eligibility: { type: 'seasonal', eventKey: 'hogmanay' },
+    apply: (m) => {
+      // Coal from the dark first-footer: warmth keeps the fingers nimble
+      // (+8% faster weapon fire), but the Hogmanay gloaming bites back
+      // (+7% damage taken). Distinct from the run-start Hogmanay blessing
+      // which rolls a broader first-footing gift.
+      m.weaponCooldownMult *= 0.92;
+      m.damageTakenMult *= 1.07;
+      return { extraStartingHpHeal: 0, extraDamageMultiplier: 0 };
+    },
+  },
+  {
+    id: 'seasonal_beltane_spark',
+    kind: 'quirk',
+    nameKey: 'sporran.seasonal.beltane_spark.name',
+    descKey: 'sporran.seasonal.beltane_spark.desc',
+    eligibility: { type: 'seasonal', eventKey: 'beltane' },
+    apply: (m) => {
+      // Beltane fire-walker: carry the flame (+12% damage) but the
+      // crossing costs — start with less heart (−8% HP pool).
+      m.startHpRatio *= 0.92;
+      return { extraStartingHpHeal: 0, extraDamageMultiplier: 0.12 };
+    },
+  },
 ];
 
 /**
@@ -256,14 +285,41 @@ const VARIANT_CARDS: readonly SporranCard[] = [
       return { extraStartingHpHeal: 0, extraDamageMultiplier: 0.06 };
     },
   },
+  {
+    id: 'variant_witch_hare_familiar',
+    kind: 'quirk',
+    nameKey: 'sporran.variant.witch_hare_familiar.name',
+    descKey: 'sporran.variant.witch_hare_familiar.desc',
+    eligibility: { type: 'variant', variantKey: 'witch_hare' },
+    apply: (m) => {
+      // Isobel Gowdie's familiar rides the pocket: +10% damage, but the
+      // binding asks a tithe — start with 10% less HP.
+      m.startHpRatio *= 0.90;
+      return { extraStartingHpHeal: 0, extraDamageMultiplier: 0.10 };
+    },
+  },
+  {
+    id: 'variant_selkie_sealskin',
+    kind: 'quirk',
+    nameKey: 'sporran.variant.selkie_sealskin.name',
+    descKey: 'sporran.variant.selkie_sealskin.desc',
+    eligibility: { type: 'variant', variantKey: 'selkie' },
+    apply: (m) => {
+      // The sealskin gives speed (+9% move) but the tide keeps its own
+      // rhythm — weapon fire slows 6% (the seal doesn't rush the hunt).
+      m.moveSpeedMult *= 1.09;
+      m.weaponCooldownMult *= 1.06;
+      return { extraStartingHpHeal: 0, extraDamageMultiplier: 0 };
+    },
+  },
 ];
 
 /**
- * Full pool — 18 cards across four families:
+ * Full pool — 22 cards across four families:
  * - 12 base (Phase 0–1.5: 5 curses + 4 boons + 3 quirks)
  * - 2 deed-gated rares (Phase 3)
- * - 2 seasonal-gated (Phase 3)
- * - 2 variant-keyed (Phase 3)
+ * - 4 seasonal-gated (Phase 3: burns_dram, samhain_lantern; Phase 4: hogmanay_coal, beltane_spark)
+ * - 4 variant-keyed (Phase 3: cailleach_frost, glaswegian_buckie; Phase 4: witch_hare_familiar, selkie_sealskin)
  *
  * Order is stable for test readability; `drawSporran` shuffles a copy
  * so output is determinism-locked to the RNG seed, not the array order.
