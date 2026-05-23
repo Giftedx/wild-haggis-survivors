@@ -66,7 +66,7 @@ Candidates worth a sketch (pick 1 max for a content drop):
 - **Tam-o'-Shanter** — prestige variant, unlocked endgame.
 - ~~**Doric Quinie**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `doric_quinie`). Northeast Aberdonian voice register; native review still open per `project_v2_variants_status` memory.
 - ~~**Peerie Shetlander**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `peerie_shetlander`). Shetlandic-voice register; native review still open per `project_v2_variants_status` memory.
-- **Orcadian** — *peedie* (small) variant; Norse-tinged Scots. Specialty: Neolithic-biome affinity. (*Ref: §14.6.*)
+- ~~**Orcadian**~~ — ✅ shipped 2026-05-23 (`orcadian`, spriteScale 0.78, +18px pickup, +12% XP, +5 HP, -6% speed, unlock: 3 coastal-only victories). Peedie Neolithic-register banter; Orcadian marker set added to Scots fence. (*Ref: §14.6.*)
 - ~~**Morningside Haggis**~~ — ✅ shipped 2026-05-23 (`src/data/variants.ts` key `morningside`). Pearl-brooch accent, grey-gold kilt, cultivated disdain register ("ane" voice, SCS). Stats unchanged from classic (the joke). Unlock: `best_time: 900`. Full 7-pool banter + wee tales. (*Ref: §14.3.*)
 - ~~**Burns's Wee Beastie**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `burns_wee_beastie`). Burns-poetry banter pool; Canongate audit still open per `project_v2_variants_status` memory.
 - ~~**Witch's Hare**~~ — ✅ shipped 2026-04-28 (`src/data/variants.ts` key `witch_hare`). Isobel-Gowdie 1662 confession flavour; dash = invincible hop. Unlock gate: `cursed_victories:5`. See `project_witch_hare_variant` memory.
