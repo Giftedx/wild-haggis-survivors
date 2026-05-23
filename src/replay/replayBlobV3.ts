@@ -57,8 +57,8 @@ export interface ReplayBlobV3Meta extends ReplayBlobV2Meta {
    * still replay correctly. CairnOfEchoesScheduler receives these via
    * the `getCairns` hook injected by GameScene (wired in T10).
    *
-   * TODO(T10): GameScene.create() — pass `blob.cairns ?? []` to
-   * CairnOfEchoesScheduler when constructing in replay mode.
+   * Wired in GameScene.create() (T10): replay branch passes `blob.cairns ?? []`
+   * to CairnOfEchoesScheduler.getCairns so FIFO-rotated cairns still replay.
    */
   cairns?: FallenCairn[];
 }

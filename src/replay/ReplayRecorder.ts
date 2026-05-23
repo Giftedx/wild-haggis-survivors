@@ -55,8 +55,8 @@ export interface ReplayRecorderMeta extends ReplayBlobMeta {
    * so replays read this array rather than the live meta-save, preserving
    * the T1 determinism contract across FIFO rotations.
    *
-   * TODO(T10): GameScene.create() reads `blob.cairns ?? []` and passes
-   * it to CairnOfEchoesScheduler when constructing in replay mode.
+   * Wired in GameScene.create() (T10): replay mode passes this list to
+   * CairnOfEchoesScheduler.getCairns so FIFO-rotated cairns still replay.
    */
   cairns?: readonly FallenCairn[];
 }
