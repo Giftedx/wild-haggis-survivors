@@ -1068,6 +1068,7 @@ export const ui = {
       sheepdog: 'SHEEPDOG',
       stoat_scout: 'STOAT',
       eagle: 'EAGLE',
+      kelpie_foal: 'KELPIE',
     },
     /** Selkie Dual-Form chip (Wild Living World Initiative). Two
      *  forms toggled by dash. Short labels — fit the 56 px chip. */
@@ -1349,6 +1350,9 @@ export const ui = {
     /** Golden Eagle companion unlock — fires on first Cailleach Gauntlet win. */
     eagle_unlock_toast: 'A golden eagle dropped from the summit sky. Eagle companion unlocked.',
     eagle_unlock_caption: 'The storm is felled. The moor sends its eyes.',
+    /** Kelpie Foal companion unlock — fires on first Each Uisge kill. */
+    kelpie_foal_unlock_toast: 'A young kelpie followed ye oot the loch. Kelpie Foal companion unlocked.',
+    kelpie_foal_unlock_caption: 'The water horse is stilled. Its foal chose the moor.',
     /**
      * T7 — Cairn-of-Echoes whispers (distinct from Cairn Stacking above).
      * A spectral cairn marks the player's last-death location; touching it

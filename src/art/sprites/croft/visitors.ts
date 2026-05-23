@@ -13,6 +13,7 @@ import { bakeWeansTexture } from './weans';
 import { bakeSheepdogStandingTextures } from './sheepdogStanding';
 import { bakeStoatStandingTextures } from './stoatStanding';
 import { bakeEaglePerchedTextures } from './eaglePerched';
+import { bakeKelpieFoalCompanionTextures } from './kelpiefoalCompanion';
 import { bakeReturningPalTexture } from './returningPal';
 
 export function bakeCroftVisitors(scene: Phaser.Scene): void {
@@ -22,5 +23,6 @@ export function bakeCroftVisitors(scene: Phaser.Scene): void {
   bakeSheepdogStandingTextures(scene);
   bakeStoatStandingTextures(scene);
   bakeEaglePerchedTextures(scene);
+  bakeKelpieFoalCompanionTextures(scene);
   bakeReturningPalTexture(scene);
 }

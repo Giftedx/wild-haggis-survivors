@@ -181,6 +181,8 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'croft_stoat_stand_f1',
     'croft_eagle_perch_f0',
     'croft_eagle_perch_f1',
+    'croft_kelpie_foal_f0',
+    'croft_kelpie_foal_f1',
     'croft_returning_pal',
     'croft_rain_window',
     'croft_brownie_bowl',

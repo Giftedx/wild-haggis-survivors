@@ -28,6 +28,7 @@ import {
   recordRun, loadSave,
   bumpBanterHeard,
   bumpBossKillCount, bumpCairnBlessing, bumpCursedVictoryByBoss,
+  unlockCompanion,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { GameMusicState } from '../systems/music/ProceduralMusicEngine';
@@ -1280,6 +1281,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         // line. Push-only here; resetTransientRunState clears the
         // array on the next run.
         this.bossKilledKeys.push(bossKey);
+        // Wild Living World Phase 4 — Kelpie Foal unlock on first
+        // Each Uisge kill. The foal follows the haggis out of the
+        // loch after its kin is defeated.
+        if (bossKey === 'each_uisge') {
+          const foalUnlocked = unlockCompanion('kelpie_foal');
+          if (foalUnlocked) {
+            this.juice?.showToast(t('ui.cairn.kelpie_foal_unlock_toast'), '#40d8e0');
+            this.caption('kelpie_foal_unlock', t('ui.cairn.kelpie_foal_unlock_caption'), '#40d8e0', 3500);
+          }
+        }
         // W82 Phase 3 — snapshot the rolling buffer at the kill
         // moment. Non-destructive: the recorder keeps rolling so a
         // subsequent boss kill produces its own clean snapshot

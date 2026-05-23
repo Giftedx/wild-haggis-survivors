@@ -186,6 +186,12 @@ describe('save bumpers v23 — companion selection / unlock', () => {
     ]);
   });
 
+  it('unlockCompanion works for kelpie_foal (Phase 4 companion)', () => {
+    expect(unlockCompanion('kelpie_foal')).toBe(true);
+    expect(unlockCompanion('kelpie_foal')).toBe(false);
+    expect(loadSave().livingWorldUnlocks.unlockedCompanions).toContain('kelpie_foal');
+  });
+
   it('setSelectedCompanion accepts a key after it is unlocked', () => {
     unlockCompanion('stoat_scout');
     setSelectedCompanion('stoat_scout');

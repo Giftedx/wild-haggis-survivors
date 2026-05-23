@@ -14,16 +14,18 @@
  */
 
 /** Closed union — widen here when a new companion ships. */
-export type CompanionKey = 'sheepdog' | 'stoat_scout' | 'eagle';
+export type CompanionKey = 'sheepdog' | 'stoat_scout' | 'eagle' | 'kelpie_foal';
 
 /**
- * Wild Living World Phase 2 — list of every shippable companion key in
+ * Wild Living World Phase 4 — list of every shippable companion key in
  * stable display order. Used by save-coerce (allowlist) and Croft UI
  * (panel order). NOT generated from `COMPANION_DEFS` keys because
  * `Object.keys` iteration order isn't a documented contract in older
  * JS engines and tests want a stable comparison.
  */
-export const COMPANION_KEYS_IN_ORDER: readonly CompanionKey[] = ['sheepdog', 'stoat_scout', 'eagle'];
+export const COMPANION_KEYS_IN_ORDER: readonly CompanionKey[] = [
+  'sheepdog', 'stoat_scout', 'eagle', 'kelpie_foal',
+];
 
 export interface CompanionDef {
   readonly key: CompanionKey;
@@ -83,6 +85,21 @@ export const COMPANION_DEFS: Readonly<Record<CompanionKey, CompanionDef>> = {
     tetherDistance: 320,
     maxSpeed: 160,
     idleFrameSec: 0.8,
+  },
+  // Wild Living World Phase 4 — Kelpie Foal. Unlocked by defeating the
+  // Each Uisge boss for the first time. The foal chose to follow after
+  // you bested its kin — curious rather than menacing, teal-bodied,
+  // aqua-maned. Sits between the stoat and sheepdog in follow-distance
+  // (closer than the eagle; the foal is still young and uncertain).
+  // Refs: SCOTTISH_RESEARCH.md §1.1 (kelpie / each_uisge lore).
+  kelpie_foal: {
+    key: 'kelpie_foal',
+    nameKey: 'ui.hud.companion.kelpie_foal',
+    textureKeys: ['croft_kelpie_foal_f0', 'croft_kelpie_foal_f1'],
+    followDistance: 34,
+    tetherDistance: 240,
+    maxSpeed: 200,
+    idleFrameSec: 0.6,
   },
 };
 

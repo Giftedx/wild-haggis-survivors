@@ -21,12 +21,13 @@ describe('buildCompanionPickerRows', () => {
       unlockedCompanions: ['sheepdog'],
       selectedCompanion: 'sheepdog',
     });
-    // [sheepdog, stoat_scout, eagle, opt_out]
-    expect(rows.length).toBe(4);
+    // [sheepdog, stoat_scout, eagle, kelpie_foal, opt_out]
+    expect(rows.length).toBe(5);
     expect(rows[0]).toMatchObject({ key: 'sheepdog', unlocked: true, selected: true });
     expect(rows[1]).toMatchObject({ key: 'stoat_scout', unlocked: false, selected: false });
     expect(rows[2]).toMatchObject({ key: 'eagle', unlocked: false, selected: false });
-    expect(rows[3]).toMatchObject({ kind: 'opt_out', selected: false });
+    expect(rows[3]).toMatchObject({ key: 'kelpie_foal', unlocked: false, selected: false });
+    expect(rows[rows.length - 1]).toMatchObject({ kind: 'opt_out', selected: false });
   });
 
   it('marks stoat_scout as unlocked + selected after the player picks it', () => {

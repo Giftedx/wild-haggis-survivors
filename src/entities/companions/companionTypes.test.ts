@@ -7,8 +7,8 @@ import {
 } from './companionTypes';
 
 describe('COMPANION_KEYS_IN_ORDER', () => {
-  it('contains all three companions in stable order', () => {
-    expect(COMPANION_KEYS_IN_ORDER).toEqual(['sheepdog', 'stoat_scout', 'eagle']);
+  it('contains all four companions in stable order', () => {
+    expect(COMPANION_KEYS_IN_ORDER).toEqual(['sheepdog', 'stoat_scout', 'eagle', 'kelpie_foal']);
   });
 
   it('has no duplicates', () => {
@@ -71,5 +71,31 @@ describe('CompanionKey type coverage', () => {
   it('eagle is a valid CompanionKey at runtime via the def record', () => {
     const key: CompanionKey = 'eagle';
     expect(COMPANION_DEFS[key]).toBeDefined();
+  });
+
+  it('kelpie_foal is a valid CompanionKey at runtime via the def record', () => {
+    const key: CompanionKey = 'kelpie_foal';
+    expect(COMPANION_DEFS[key]).toBeDefined();
+  });
+});
+
+describe('kelpie_foal def', () => {
+  const foal = COMPANION_DEFS.kelpie_foal;
+
+  it('uses the correct companion texture keys', () => {
+    expect(foal.textureKeys[0]).toBe('croft_kelpie_foal_f0');
+    expect(foal.textureKeys[1]).toBe('croft_kelpie_foal_f1');
+  });
+
+  it('has closer follow distance than eagle (still young)', () => {
+    expect(foal.followDistance).toBeLessThan(COMPANION_DEFS.eagle.followDistance);
+  });
+
+  it('is faster than eagle (young water-horse energy)', () => {
+    expect(foal.maxSpeed).toBeGreaterThan(COMPANION_DEFS.eagle.maxSpeed);
+  });
+
+  it('references the correct i18n nameKey', () => {
+    expect(foal.nameKey).toBe('ui.hud.companion.kelpie_foal');
   });
 });
