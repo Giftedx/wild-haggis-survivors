@@ -3210,6 +3210,36 @@ export const ui = {
         victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. Tha bard wid tip his bunnet.',
         victory_epic: '{name} held tha moor fer {time}. Burns himsel wrote shorter lines.',
       },
+      moor_runner: {
+        death_baseline: '{name} hit tha moor at speed an ran oot o\' it. That kind o\' momentum disnae stop clean.',
+        death_short: 'Ower fast, wrang direction. {name} ran aw tha same.',
+        victory_baseline: '{name} cam hame under their ain steam. Tha moor logged tha pace.',
+        victory_epic: '{time} at full stride. {name} ran tha moor like it asked tae be run.',
+      },
+      iron_belly: {
+        death_baseline: 'Even iron bends at tha last. {name} held langer than tha moor expectit.',
+        death_short: 'Tha belly took it. Tha rest o\' {name} couldnae follae.',
+        victory_baseline: '{name} absorbed aw o\' it an cam hame dentit. Tha dents are badges.',
+        victory_taxman: 'Tha Taxman threw aw he had at {name}. {name} swallied it an walked aff.',
+      },
+      glen_forager: {
+        death_baseline: 'Tha glen gies an tha glen taks. {name} had a guid haul afore tha end.',
+        death_short: 'Wrang turn, wrang weather. {name} foraged their last.',
+        victory_baseline: '{name} cam hame wi\' full pooches an a story worth tha tellin\'.',
+        victory_epic: '{time} through tha glen. {name} knew ivery hollow, ivery bent branch, ivery wey hame.',
+      },
+      surefoot: {
+        death_baseline: 'Tha grund shifted under {name}. Surefoot or no, some bogs dinnae forgive.',
+        death_short: 'Ane bad step. {name} had been carefu\' till then.',
+        victory_baseline: '{name} fund ivery footin\' an cam hame withoot a slip. Tha moor notes this.',
+        victory_epic: '{time} an nae a stumble. {name} read tha grund better than it read them.',
+      },
+      pipe_breath: {
+        death_baseline: 'Tha last note went lang, {name}. Tha moor heard it oot.',
+        death_short: 'Wind knocked oot — an wi\' it, {name}.',
+        victory_baseline: '{name} played tha moor hame. Tha tune held aw tha wey through.',
+        victory_epic: '{time} o\' unbroken breath. {name} played an tha moor listened.',
+      },
       witch_hare: {
         death_baseline: 'Awa in tha hare\'s shape, {name}. Tha form undid afore tha yaird wis gained.',
         death_short: '"Ay quhill I com hom againe." {name} didnae.',

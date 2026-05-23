@@ -4005,6 +4005,36 @@ export const ui = {
         victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. The bard would tip his bonnet.',
         victory_epic: '{name} held the moor for {time}. Burns himself wrote shorter lines.',
       },
+      moor_runner: {
+        death_baseline: '{name} hit the moor at speed and ran oot o\' it. That kind of momentum doesnae stop clean.',
+        death_short: 'Too fast, wrong direction. {name} ran aw the same.',
+        victory_baseline: '{name} came hame under their ain steam. The moor logged the pace.',
+        victory_epic: '{time} at full stride. {name} ran the moor like it asked to be run.',
+      },
+      iron_belly: {
+        death_baseline: 'Even iron bends at the last. {name} held longer than the moor expected.',
+        death_short: 'The belly took it. The rest o\' {name} couldnae follow.',
+        victory_baseline: '{name} absorbed aw o\' it and came hame dented. The dents are badges.',
+        victory_taxman: 'The Taxman threw aw he had at {name}. {name} swallied it and walked aff.',
+      },
+      glen_forager: {
+        death_baseline: 'The glen gives and the glen takes. {name} had a guid haul afore the end.',
+        death_short: 'Wrang turn, wrang weather. {name} foraged their last.',
+        victory_baseline: '{name} came hame wi\' full pockets and a story worth the telling.',
+        victory_epic: '{time} through the glen. {name} knew every hollow, every bent branch, every wey hame.',
+      },
+      surefoot: {
+        death_baseline: 'The ground shifted under {name}. Surefoot or no, some bogs dinnae forgive.',
+        death_short: 'One bad step. {name} had been careful till then.',
+        victory_baseline: '{name} found every footing and came hame without a slip. The moor notes this.',
+        victory_epic: '{time} and nae a stumble. {name} read the ground better than it read them.',
+      },
+      pipe_breath: {
+        death_baseline: 'The last note went long, {name}. The moor heard it oot.',
+        death_short: 'Wind knocked oot — and wi\' it, {name}.',
+        victory_baseline: '{name} played the moor hame. The tune held aw the wey through.',
+        victory_epic: '{time} o\' unbroken breath. {name} played and the moor listened.',
+      },
       witch_hare: {
         death_baseline: 'Awa in the hare\'s shape, {name}. The form undid afore the yard was gained.',
         death_short: '"Ay quhill I com hom againe." {name} didnae.',

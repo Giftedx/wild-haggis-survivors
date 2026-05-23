@@ -354,6 +354,41 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.burns_wee_beastie.victory_baseline', requires: ['victory', 'burns_wee_beastie', 'has_name'] },
   { key: 'ui.weeTale.variant.burns_wee_beastie.victory_epic', requires: ['victory', 'burns_wee_beastie', 'has_name', 'epic'] },
 
+  // ── v3 — Moor Runner (Hearth + velocity) ──────────────────────
+  // Hearth register; speed and momentum language. classic uses generics only.
+  { key: 'ui.weeTale.variant.moor_runner.death_baseline', requires: ['death', 'moor_runner', 'has_name'] },
+  { key: 'ui.weeTale.variant.moor_runner.death_short', requires: ['death', 'moor_runner', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.moor_runner.victory_baseline', requires: ['victory', 'moor_runner', 'has_name'] },
+  { key: 'ui.weeTale.variant.moor_runner.victory_epic', requires: ['victory', 'moor_runner', 'has_name', 'epic'] },
+
+  // ── v3 — Iron Belly (Hearth + stoic toughness) ─────────────────
+  // Hearth register; spare, mythic. Iron / dented / absorbed language.
+  { key: 'ui.weeTale.variant.iron_belly.death_baseline', requires: ['death', 'iron_belly', 'has_name'] },
+  { key: 'ui.weeTale.variant.iron_belly.death_short', requires: ['death', 'iron_belly', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.iron_belly.victory_baseline', requires: ['victory', 'iron_belly', 'has_name'] },
+  { key: 'ui.weeTale.variant.iron_belly.victory_taxman', requires: ['victory', 'iron_belly', 'has_name', 'taxman'] },
+
+  // ── v3 — Glen Forager (Hearth + foraging/wilderness) ───────────
+  // Hearth register; resourceful, observant. Pockets/haul/glen language.
+  { key: 'ui.weeTale.variant.glen_forager.death_baseline', requires: ['death', 'glen_forager', 'has_name'] },
+  { key: 'ui.weeTale.variant.glen_forager.death_short', requires: ['death', 'glen_forager', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.glen_forager.victory_baseline', requires: ['victory', 'glen_forager', 'has_name'] },
+  { key: 'ui.weeTale.variant.glen_forager.victory_epic', requires: ['victory', 'glen_forager', 'has_name', 'epic'] },
+
+  // ── v3 — Surefoot (Hearth + balance/footing) ───────────────────
+  // Hearth register; careful, confident. Ground/footing/stumble language.
+  { key: 'ui.weeTale.variant.surefoot.death_baseline', requires: ['death', 'surefoot', 'has_name'] },
+  { key: 'ui.weeTale.variant.surefoot.death_short', requires: ['death', 'surefoot', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.surefoot.victory_baseline', requires: ['victory', 'surefoot', 'has_name'] },
+  { key: 'ui.weeTale.variant.surefoot.victory_epic', requires: ['victory', 'surefoot', 'has_name', 'epic'] },
+
+  // ── v3 — Pipe Breath (Hearth + musical/breath) ─────────────────
+  // Hearth register; sound/drone/reed language. Breath as metre.
+  { key: 'ui.weeTale.variant.pipe_breath.death_baseline', requires: ['death', 'pipe_breath', 'has_name'] },
+  { key: 'ui.weeTale.variant.pipe_breath.death_short', requires: ['death', 'pipe_breath', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.pipe_breath.victory_baseline', requires: ['victory', 'pipe_breath', 'has_name'] },
+  { key: 'ui.weeTale.variant.pipe_breath.victory_epic', requires: ['victory', 'pipe_breath', 'has_name', 'epic'] },
+
   // ── v3 — Witch's Hare (Gowdie confession-Scots) ────────────────
   // Voice register per `docs/VOICE_CARD.md` §"Witch's Hare (shipped)".
   // Named for Margaret Gowdie; older Scots grammar; terse, breathless.
