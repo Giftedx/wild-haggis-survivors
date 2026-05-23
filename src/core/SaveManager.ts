@@ -145,6 +145,15 @@ export interface IRunState {
    * payloads; coerced to `false` in that case.
    */
   ironmoor?: boolean;
+  /**
+   * Cairn Stacking v2 — mid-run persistence of the partial stack counter
+   * so a player who quits after two stones doesn't lose their progress.
+   * All three fields are optional for backwards-compat with pre-persistence
+   * saves; absent → defaults (0 stones, first-spawn cadence).
+   */
+  cairnStackCount?: number;
+  cairnSpawnedCount?: number;
+  cairnNextSpawnAtSec?: number;
 }
 
 export interface ISaveDataV3 {

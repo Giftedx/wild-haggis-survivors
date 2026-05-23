@@ -20,6 +20,7 @@ import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { TimeManager } from '../../systems/TimeManager';
 import type { RunStatsTracker } from '../../systems/RunStatsTracker';
 import type { MoorMomentScheduler } from './MoorMomentScheduler';
+import type { CairnStackingScheduler } from './CairnStackingScheduler';
 import type { LevelUpFlow } from './LevelUpFlow';
 import type { VariantDef } from '../../data/variants';
 import type { RunScoreState } from './RunScoreState';
@@ -48,6 +49,12 @@ export interface RunPersistenceHooks {
   getTimeManager(): TimeManager;
   getRunStatsTracker(): RunStatsTracker;
   getMoorMoments(): MoorMomentScheduler;
+  /**
+   * Optional — absent on scenes that haven't wired cairn stacking. When
+   * present, `collect()` includes the stack counter in the snapshot so
+   * resumed runs keep the player's partial progress.
+   */
+  getCairnStacking?(): CairnStackingScheduler;
   getLevelUpFlow(): LevelUpFlow;
   getSaveManager(): SaveManager;
   getActiveVariant(): VariantDef;
@@ -144,6 +151,15 @@ export class RunPersistenceBridge {
       ...(heldRelicKeys.length > 0 ? { heldRelicKeys: [...heldRelicKeys] } : {}),
       actState: snapshotRunActState(h.getRunActState()),
       ironmoor: h.isIronmoorRun(),
+      ...(() => {
+        const cs = h.getCairnStacking?.();
+        if (!cs) return {};
+        return {
+          cairnStackCount: cs.getStoneCount(),
+          cairnSpawnedCount: cs.getSpawnedCount(),
+          cairnNextSpawnAtSec: cs.getNextSpawnAtSec(),
+        };
+      })(),
       ...(() => {
         const bag = h.getTempBuffBag?.();
         if (!bag) return {};

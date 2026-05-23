@@ -1134,6 +1134,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       updateBossBar: (data) => this.hud.updateBossBar(data),
       spawnRelicAt: (key, x, y) => this.relicOrchestrator.debugSpawnAt(key, x, y),
       getHeldRelicKeysForDebug: () => this.relicSystem?.heldKeys() ?? [],
+      getCairnStacking: () => this.cairnStacking,
       getRelicCatalogue: () => RELICS,
       openRelicDiscardPromptForAudit: () => {
         if (this.relicOrchestrator.isDiscardModalOpen()) return false;
@@ -1467,6 +1468,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       },
     });
     this.cairnStacking.reset();
+    // Restore partial cairn-stack progress from a mid-run save. Called
+    // after reset() so snapshot values overwrite the zeroed defaults.
+    // Not piped through RunPersistenceBridge.applyResume — that fires
+    // before cairnStacking exists in create()'s lifecycle.
+    if (resumeRun) {
+      this.cairnStacking.restoreFromSnapshot({
+        stoneCount: resumeRun.cairnStackCount ?? 0,
+        spawnedCount: resumeRun.cairnSpawnedCount ?? 0,
+        nextSpawnAtSec: resumeRun.cairnNextSpawnAtSec,
+      });
+    }
 
     // The Moor Remembers (spec 2026-05-22) — persistent cross-run cairns.
     // Sister to cairnStacking but the source of truth is meta save, not

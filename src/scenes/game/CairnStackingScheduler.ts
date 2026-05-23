@@ -197,4 +197,31 @@ export class CairnStackingScheduler {
   notifyStoneExpired(): void {
     this.spawnPending = false;
   }
+
+  /**
+   * Restore scheduler state from a mid-run snapshot (e.g. after resume
+   * from a saved run). `spawnPending` is always cleared on restore — any
+   * in-flight stone at quit time was ephemeral and won't be re-created.
+   *
+   * `nextSpawnAtSec` is optional: absent means the snapshot predates this
+   * field (pre-persistence era runs). In that case we fall back to the
+   * first-spawn default adjusted for the already-spawned count, which may
+   * spawn a stone sooner than the original cadence but won't skip any
+   * stones the player already earned.
+   */
+  restoreFromSnapshot(snapshot: {
+    stoneCount: number;
+    spawnedCount: number;
+    nextSpawnAtSec?: number;
+  }): void {
+    this.stoneCount = Math.min(Math.max(0, snapshot.stoneCount), CAIRN_STONE_CAP);
+    this.spawnedCount = Math.min(Math.max(0, snapshot.spawnedCount), CAIRN_STONE_CAP);
+    this.spawnPending = false;
+    if (snapshot.nextSpawnAtSec !== undefined) {
+      this.nextSpawnAtSec = snapshot.nextSpawnAtSec;
+    }
+    // If nextSpawnAtSec was absent we keep whatever reset() set — the
+    // first-spawn default — which is conservative (defers rather than
+    // immediately drops a stone).
+  }
 }

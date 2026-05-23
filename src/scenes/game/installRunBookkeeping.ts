@@ -45,6 +45,7 @@ import type { BiomeId } from '../../data/biomes';
 import type { RNG } from '../../utils/rng';
 import type { TempBuffBag } from '../../systems/TempBuffBag';
 import type { RelicDef, RelicKey } from '../../data/relics';
+import type { CairnStackingScheduler } from './CairnStackingScheduler';
 
 export interface InstallRunBookkeepingOpts {
   // Shared system accessors (used by 2+ of the four ctors).
@@ -85,6 +86,9 @@ export interface InstallRunBookkeepingOpts {
   setEvolvedWeapons(e: string[]): void;
   restoreHeldRelics(keys: readonly string[]): void;
   suppressNextNodeMapRoll(): void;
+
+  /** Optional — when provided, collect() includes cairn stack state in the run snapshot. */
+  getCairnStacking?(): CairnStackingScheduler;
 
   // BossHpTracker-only.
   updateBossBar(data: { name: string; hpFraction: number } | null): void;
@@ -156,6 +160,7 @@ export function installRunBookkeeping(
     restoreHeldRelics: opts.restoreHeldRelics,
     isSceneActive: opts.isSceneActive,
     suppressNextNodeMapRoll: opts.suppressNextNodeMapRoll,
+    getCairnStacking: opts.getCairnStacking,
   };
   const runPersistence = new RunPersistenceBridge(runPersistenceHooks);
 

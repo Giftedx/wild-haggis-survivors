@@ -311,6 +311,53 @@ describe('CairnStackingScheduler', () => {
     expect(scheduler.getNextSpawnAtSec()).toBe(CAIRN_FIRST_SPAWN_SEC);
   });
 
+  it('restoreFromSnapshot restores partial stack and defers spawn correctly', () => {
+    const { hooks, spawnSpy } = makeFixture();
+    const scheduler = new CairnStackingScheduler(hooks);
+    scheduler.reset();
+
+    // Simulate a save taken after 2 stones and with next-spawn at 600s.
+    scheduler.restoreFromSnapshot({
+      stoneCount: 2,
+      spawnedCount: 2,
+      nextSpawnAtSec: 600,
+    });
+
+    expect(scheduler.getStoneCount()).toBe(2);
+    expect(scheduler.getSpawnedCount()).toBe(2);
+    expect(scheduler.getNextSpawnAtSec()).toBe(600);
+    expect(scheduler.isSpawnPending()).toBe(false);
+
+    // Tick before nextSpawnAtSec — no spawn.
+    scheduler.tick(599);
+    expect(spawnSpy).not.toHaveBeenCalled();
+
+    // Tick at next-spawn time — spawns.
+    scheduler.tick(600);
+    expect(spawnSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('restoreFromSnapshot clears spawnPending (in-flight stones at save time are ephemeral)', () => {
+    const { hooks } = makeFixture();
+    const scheduler = new CairnStackingScheduler(hooks);
+    scheduler.reset();
+    // Manually put in pending state.
+    scheduler.tick(CAIRN_FIRST_SPAWN_SEC);
+    expect(scheduler.isSpawnPending()).toBe(true);
+
+    scheduler.restoreFromSnapshot({ stoneCount: 0, spawnedCount: 1 });
+    expect(scheduler.isSpawnPending()).toBe(false);
+  });
+
+  it('restoreFromSnapshot falls back to first-spawn default when nextSpawnAtSec absent', () => {
+    const { hooks } = makeFixture();
+    const scheduler = new CairnStackingScheduler(hooks);
+    scheduler.reset();
+
+    scheduler.restoreFromSnapshot({ stoneCount: 0, spawnedCount: 0 });
+    expect(scheduler.getNextSpawnAtSec()).toBe(CAIRN_FIRST_SPAWN_SEC);
+  });
+
   it('determinism — same RNG seed yields same gap sequence', () => {
     const fix1 = makeFixture();
     const fix2 = makeFixture();
