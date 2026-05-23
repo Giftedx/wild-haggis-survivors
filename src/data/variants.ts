@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -86,7 +86,8 @@ export type HaggisAccentStyle =
   | 'cailleach'
   | 'glaswegian'
   | 'doric_quinie'
-  | 'peerie_shetlander';
+  | 'peerie_shetlander'
+  | 'morningside';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -573,6 +574,34 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x6d7d8a,
         snout: 0xb8a890,
         accent: 0x4a8a7c,
+      },
+    },
+  },
+  {
+    // Morningside Haggis — comic-posh Edinburgh variant.
+    // Affected near-RP voice; cultivated disdain for the rough
+    // business of survival. Stats unchanged from classic: the
+    // character is entirely banter. Refs: SCOTTISH_RESEARCH_DEEP
+    // §14.3 (Edinburgh vernacular + Morningside social register).
+    // Palette: warm Edinburgh New Town stone (ashlar grey with
+    // cream), sage-green accent for the pearl brooch detail.
+    // Unlock: survive 15 minutes in a single run — Morningside
+    // propriety demands composure, not speed.
+    key: 'morningside',
+    nameKey: 'variant.morningside.name',
+    flavorKey: 'variant.morningside.flavor',
+    textureKey: 'haggis_morningside',
+    modifiers: {},
+    unlock: { type: 'best_time', required: 900 },
+    appearance: {
+      accentStyle: 'morningside',
+      palette: {
+        outline: 0x1a1814,
+        bodyDark: 0x6a6058,
+        bodyLight: 0x948a80,
+        fur: 0xc0b8ac,
+        snout: 0xd4a88a,
+        accent: 0xb8c8a8, // muted sage for the pearl-brooch accent
       },
     },
   },

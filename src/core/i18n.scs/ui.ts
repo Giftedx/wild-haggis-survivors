@@ -891,6 +891,7 @@ export const ui = {
         glaswegian: 'Goat cocky. Goat goat.',
         doric_quinie: "Awa wi' the haar.",
         burns_wee_beastie: 'Wee, sleekit, an stilled.',
+        morningside: 'Wholly avoidable, that. Wi mair composure.',
       },
     },
     grandfather: {
@@ -1101,6 +1102,12 @@ export const ui = {
         b: 'Seal-skin\'s thin, but tha tide\'s no duin wi ye.',
         c: 'Ae mair wave like that an we\'re driftwood.',
         d: 'Haud tha borrowed skin tight. Braithe.',
+      },
+      morningside: {
+        a: 'Ane\'s condition is becoming distinctly sub-optimal.',
+        b: 'This is no how ane anticipated tha eftternuin proceeding.',
+        c: 'A brief recovery wid be entirely in order. If tha moor wid permit.',
+        d: 'Ane maun simply press on. There is nae ither properly duin option.',
       },
     },
     boss_down: {
@@ -1396,6 +1403,12 @@ export const ui = {
         c: 'Anither sang learnt under tha waves.',
         d: 'Up ye rise, slick as kelp.',
       },
+      morningside: {
+        a: 'Ane has improoved. Ane expectit nae less.',
+        b: 'Ah. Rather satisfyin, that. Ane notes tha progress.',
+        c: 'A considerable advancement. Quietly notit.',
+        d: 'Ane continues tae develop, as ane should.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1496,6 +1509,12 @@ export const ui = {
         b: 'Tha shore heard that. Keep movin.',
         c: 'First bluid under moonlit watter.',
         d: 'Seal-skin shakes dry. Onward.',
+      },
+      morningside: {
+        a: 'Weel. That wis necessary. Ane apologises tae nae yin.',
+        b: 'Ane\'s first encounter — conducted wi appropriate briskness.',
+        c: 'Dispatched. Ane notes tha experience withoot comment.',
+        d: 'Handled. Ane moves on withoot makkin a scene.',
       },
     },
     kill_streak: {
@@ -1599,6 +1618,12 @@ export const ui = {
         c: 'Seal-slick, haggis-hard. Keep tha rhythm.',
         d: 'A whole shoal doon. Braw wark.',
       },
+      morningside: {
+        a: 'Quite a run. Ane disnae boast, but ane notices.',
+        b: 'Consecutive eliminations. Efficiently achieved.',
+        c: 'This level o efficiency is, ane supposes, becomin.',
+        d: 'A streak. Ane keeps ane\'s composure, naturally.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1699,6 +1724,12 @@ export const ui = {
         b: 'Tide washed tha warst o it awa.',
         c: 'Skin settles richt again. Move.',
         d: 'A wee shore-braith, then back tae danger.',
+      },
+      morningside: {
+        a: 'Guid. Ane\'s reserves are restored tae a mair acceptable level.',
+        b: 'Tha crisis has passed. Ane maintained composure throughout.',
+        c: 'There. Rather better. Ane needn\'t mention tha earlier difficulty.',
+        d: 'Restored. Ane carries on as ane always has.',
       },
     },
     biome_change: {
@@ -2310,6 +2341,12 @@ export const ui = {
         c: 'Kelp at tha ankle, heather at tha nose.',
         d: 'Borrowed skin, borrowed minute. Use it weel.',
       },
+      morningside: {
+        a: 'Tha moor appears tae be takkin rather a lang time.',
+        b: 'Ane is bein patient. This is patience. Ane notes this.',
+        c: 'Ane waits. Perfectly contentedly. Ane is fine.',
+        d: 'Mm. Tha heather gangs on somewhat, disnae it.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -2771,6 +2808,10 @@ export const ui = {
       variant_witch_hare_unlocked: {
         a: 'Five cursit victories. Tha mauchin watches fae tha heather.',
         b: 'A\'ll gang intill ane hare — an tha muir lets ye.',
+      },
+      variant_morningside_unlocked: {
+        a: 'Fifteen minutes. Ane managed. Tha Morningside Haggis joins tha roster.',
+        b: 'Composure. Propriety. Tha moor is quite welcome.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3325,6 +3366,12 @@ export const ui = {
         death_short: 'Tha skin wis left at tha wrang stane. {name} couldnae mak tha distance.',
         victory_baseline: '{name} cam hame — which form, tha moor disnae say.',
         victory_epic: '{time} atween tha tide-line an tha heather. {name} held baith weys clean.',
+      },
+      morningside: {
+        death_baseline: 'Ane encountered tha moor\'s full schedule tha day. It wis, on reflection, a bittie much.',
+        death_short: 'Rather abrupt endin. {name} had expectit rather mair time.',
+        victory_baseline: '{name} prevailed. Ane is quietly satisfied. Ane says nae mair.',
+        victory_taxman: 'Tha taxman wis seen aff by {name}. Rather efficiently. Ane considers tha matter closed.',
       },
     },
   },

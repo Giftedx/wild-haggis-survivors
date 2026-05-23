@@ -428,4 +428,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.selkie.death_short', requires: ['death', 'selkie', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.selkie.victory_baseline', requires: ['victory', 'selkie', 'has_name'] },
   { key: 'ui.weeTale.variant.selkie.victory_epic', requires: ['victory', 'selkie', 'has_name', 'epic'] },
+  { key: 'ui.weeTale.variant.morningside.death_baseline', requires: ['death', 'morningside', 'has_name'] },
+  { key: 'ui.weeTale.variant.morningside.death_short', requires: ['death', 'morningside', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.morningside.victory_baseline', requires: ['victory', 'morningside', 'has_name'] },
+  { key: 'ui.weeTale.variant.morningside.victory_taxman', requires: ['victory', 'morningside', 'has_name', 'taxman'] },
 ] as const;

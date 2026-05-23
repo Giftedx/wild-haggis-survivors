@@ -49,6 +49,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // stripe and surf-foam accent. The two-form mechanic carries the
   // identity; the kilt sits quiet.
   selkie:       { field: 0x2a3540, fieldDark: 0x12181e, stripe: 0x4a8a7c, accent: 0xe8f0ec },
+  // Morningside Haggis — grey-gold Edinburgh stone field, pearl-grey
+  // stripe, warm pearl accent. As composed as the address warrants.
+  morningside:  { field: 0x8a8070, fieldDark: 0x4a4038, stripe: 0xb8c8a8, accent: 0xe8e0d8 },
 };
 
 /**

@@ -79,6 +79,11 @@ export const variant = {
     flavor: 'Twa forms, ane tide. Dash slips tha pelt on or aff. Tha seal swims throu tha muir.',
     lore: 'O tha seal-folk o tha Hebrides — them as slip tha pelt tae walk ashore, an slip back whan tha tide minds them. Tha dash is tha seam.',
   },
+  morningside: {
+    name: 'Morningside Haggis',
+    flavor: 'Composure. Propriety. A pearl brooch an a studied disdain fur tha rough business o survival.',
+    lore: 'Fae Edinburgh\'s finest pairt, whaur tha stane is grey-gowd an tha curtains are aye straicht. Combat stats are precisely unchanged fae classic — tha Morningside Haggis considers statistics rather vulgar tae discuss. Fit it brings is bearin. Ane manages.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

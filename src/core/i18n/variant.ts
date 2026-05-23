@@ -83,6 +83,11 @@ export const variant = {
     flavor: 'Two forms, one tide. Dash slips the pelt on or off. The seal swims through the moor.',
     lore: 'Of the seal-people of the Hebrides — they who slip the pelt to walk ashore, and slip back when the tide remembers them. The dash is the seam between forms.',
   },
+  morningside: {
+    name: 'Morningside Haggis',
+    flavor: 'Composure. Propriety. A pearl brooch and a studied disdain for the rough business of moor survival.',
+    lore: 'From Edinburgh\'s finest residential district, where the stone is grey-gold and the curtains are always straight. Combat stats are precisely unchanged from classic — the Morningside Haggis considers statistics rather vulgar to discuss. What it brings is bearing. One manages.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

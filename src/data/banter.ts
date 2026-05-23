@@ -336,6 +336,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.selkie.c',
         'ui.banter.low_hp.selkie.d',
       ],
+      morningside: [
+        'ui.banter.low_hp.morningside.a',
+        'ui.banter.low_hp.morningside.b',
+        'ui.banter.low_hp.morningside.c',
+        'ui.banter.low_hp.morningside.d',
+      ],
     },
   },
   {
@@ -662,6 +668,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.selkie.c',
         'ui.banter.level_up.selkie.d',
       ],
+      morningside: [
+        'ui.banter.level_up.morningside.a',
+        'ui.banter.level_up.morningside.b',
+        'ui.banter.level_up.morningside.c',
+        'ui.banter.level_up.morningside.d',
+      ],
     },
   },
   {
@@ -769,6 +781,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.selkie.b',
         'ui.banter.first_blood.selkie.c',
         'ui.banter.first_blood.selkie.d',
+      ],
+      morningside: [
+        'ui.banter.first_blood.morningside.a',
+        'ui.banter.first_blood.morningside.b',
+        'ui.banter.first_blood.morningside.c',
+        'ui.banter.first_blood.morningside.d',
       ],
     },
   },
@@ -879,6 +897,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.selkie.c',
         'ui.banter.kill_streak.selkie.d',
       ],
+      morningside: [
+        'ui.banter.kill_streak.morningside.a',
+        'ui.banter.kill_streak.morningside.b',
+        'ui.banter.kill_streak.morningside.c',
+        'ui.banter.kill_streak.morningside.d',
+      ],
     },
   },
   {
@@ -986,6 +1010,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.selkie.b',
         'ui.banter.recover.selkie.c',
         'ui.banter.recover.selkie.d',
+      ],
+      morningside: [
+        'ui.banter.recover.morningside.a',
+        'ui.banter.recover.morningside.b',
+        'ui.banter.recover.morningside.c',
+        'ui.banter.recover.morningside.d',
       ],
     },
   },
@@ -1280,6 +1310,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.selkie.b',
         'ui.banter.idle.selkie.c',
         'ui.banter.idle.selkie.d',
+      ],
+      morningside: [
+        'ui.banter.idle.morningside.a',
+        'ui.banter.idle.morningside.b',
+        'ui.banter.idle.morningside.c',
+        'ui.banter.idle.morningside.d',
       ],
     },
   },
@@ -2192,6 +2228,10 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       variant_witch_hare_unlocked: [
         'ui.banter.first_time.variant_witch_hare_unlocked.a',
         'ui.banter.first_time.variant_witch_hare_unlocked.b',
+      ],
+      variant_morningside_unlocked: [
+        'ui.banter.first_time.variant_morningside_unlocked.a',
+        'ui.banter.first_time.variant_morningside_unlocked.b',
       ],
       // ── B1 Phase 4 expansion — first-pick of each W2 route. Fires
       //    once per route via

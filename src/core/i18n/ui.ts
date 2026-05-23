@@ -1363,6 +1363,7 @@ export const ui = {
         glaswegian: 'Got cocky. Got got.',
         doric_quinie: "Awa wi' the haar.",
         burns_wee_beastie: 'Wee, sleekit, and stilled.',
+        morningside: 'Wholly avoidable, that. With more composure.',
       },
     },
     grandfather: {
@@ -1649,6 +1650,12 @@ export const ui = {
         b: 'Seal-skin\'s thin, but the tide\'s no done wi\' ye.',
         c: 'One mair wave like that and we\'re driftwood.',
         d: 'Haud the borrowed skin tight. Breathe.',
+      },
+      morningside: {
+        a: 'One\'s condition is becoming distinctly sub-optimal.',
+        b: 'This is not how one anticipated the afternoon proceeding.',
+        c: 'A brief recovery would be entirely in order. If the moor would permit.',
+        d: 'One must simply press on. There is no other properly done option.',
       },
     },
     boss_down: {
@@ -1947,6 +1954,12 @@ export const ui = {
         c: 'Another song learnt under the waves.',
         d: 'Up ye rise, slick as kelp.',
       },
+      morningside: {
+        a: 'One has improved. One expected no less.',
+        b: 'Ah. Rather satisfying, that. One notes the progress.',
+        c: 'A considerable advancement. Quietly noted.',
+        d: 'One continues to develop, as one should.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2047,6 +2060,12 @@ export const ui = {
         b: 'The shore heard that. Keep movin.',
         c: 'First blood under moonlit water.',
         d: 'Seal-skin shakes dry. Onward.',
+      },
+      morningside: {
+        a: 'Well. That was necessary. One apologises to no one.',
+        b: 'One\'s first encounter — conducted with appropriate briskness.',
+        c: 'Dispatched. One notes the experience without comment.',
+        d: 'Handled. One moves on without making a scene.',
       },
     },
     kill_streak: {
@@ -2150,6 +2169,12 @@ export const ui = {
         c: 'Seal-slick, haggis-hard. Keep the rhythm.',
         d: 'A whole shoal doon. Braw work.',
       },
+      morningside: {
+        a: 'Quite a run. One doesn\'t boast, but one notices.',
+        b: 'Consecutive eliminations. Efficiently achieved.',
+        c: 'This level of efficiency is, one supposes, becoming.',
+        d: 'A streak. One keeps one\'s composure, naturally.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2250,6 +2275,12 @@ export const ui = {
         b: 'Tide washed the worst o\' it away.',
         c: 'Skin settles right again. Move.',
         d: 'A wee shore-breath, then back tae danger.',
+      },
+      morningside: {
+        a: 'Good. One\'s reserves are restored to a more acceptable level.',
+        b: 'The crisis has passed. One maintained composure throughout.',
+        c: 'There. Rather better. One needn\'t mention the earlier difficulty.',
+        d: 'Restored. One carries on as one always has.',
       },
     },
     biome_change: {
@@ -2909,6 +2940,12 @@ export const ui = {
         c: 'Kelp at the ankle, heather at the nose.',
         d: 'Borrowed skin, borrowed minute. Use it weel.',
       },
+      morningside: {
+        a: 'The moor appears to be taking rather a long time.',
+        b: 'One is being patient. This is patience. One notes this.',
+        c: 'One waits. Perfectly contentedly. One is fine.',
+        d: 'Mm. The heather goes on somewhat, doesn\'t it.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3412,6 +3449,13 @@ export const ui = {
         //  accordingly.
         a: 'Five cursed victories. The hare watches frae the heather.',
         b: 'I shall go intill ane hare — and the moor lets ye.',
+      },
+      variant_morningside_unlocked: {
+        // Survives 15 minutes in a single run. Voice: hearth-posh,
+        //  entirely composed, refusing to acknowledge the achievement
+        //  is notable. One managed.
+        a: 'Fifteen minutes. One managed. The Morningside Haggis joins the roster.',
+        b: 'Composure. Propriety. The moor is quite welcome.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4128,6 +4172,12 @@ export const ui = {
         death_short: 'The skin was left at the wrang stone. {name} couldnae mak the distance.',
         victory_baseline: '{name} came hame — which form, the moor disnae say.',
         victory_epic: '{time} between the tide-line and the heather. {name} held baith weys clean.',
+      },
+      morningside: {
+        death_baseline: 'One encountered the moor\'s full schedule today. It was, on reflection, a bit much.',
+        death_short: 'Rather abrupt ending. {name} had expected rather more time.',
+        victory_baseline: '{name} prevailed. One is quietly satisfied. One says no more.',
+        victory_taxman: 'The taxman was seen off by {name}. Rather efficiently. One considers the matter closed.',
       },
     },
   },

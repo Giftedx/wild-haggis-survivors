@@ -286,6 +286,36 @@ function drawVariantSignature(
       break;
     }
     case 'haggis_glaswegian':
+    case 'morningside': {
+      // Pearl-spray brooch — three small ovals clustered on the chest,
+      // a classic Morningside jewellery marker. Reads at game scale as
+      // "refined" rather than ostentatious. Positioned just below the
+      // chin (cy+4 to cy+7) so it clears the haggis face and legs.
+      // Cream-white centres with a muted sage outline per palette.
+      const bx = cx + 1;
+      const by = cy + 5;
+      // Brooch surround — a tiny oval backing, slightly darker than body.
+      g.fillStyle(0xd8c8a0, 0.8);
+      g.fillEllipse(bx, by, 7, 5);
+      // Three pearls: centre + two flanking.
+      g.fillStyle(0x2a2418, 0.5);
+      g.fillCircle(bx, by, 1.3);
+      g.fillCircle(bx - 2.4, by + 0.6, 1.1);
+      g.fillCircle(bx + 2.4, by + 0.6, 1.1);
+      g.fillStyle(0xf0ece0, 1);
+      g.fillCircle(bx, by, 1.1);
+      g.fillCircle(bx - 2.4, by + 0.6, 0.9);
+      g.fillCircle(bx + 2.4, by + 0.6, 0.9);
+      // Pearl lustre highlights.
+      g.fillStyle(0xffffff, 0.7);
+      g.fillCircle(bx - 0.3, by - 0.4, 0.4);
+      g.fillCircle(bx - 2.7, by + 0.2, 0.35);
+      g.fillCircle(bx + 2.1, by + 0.2, 0.35);
+      // Pin shaft — a fine horizontal line across the brooch.
+      g.lineStyle(0.6, 0xb8a880, 0.7);
+      g.lineBetween(bx - 3, by + 0.5, bx + 4, by + 0.5);
+      break;
+    }
     case 'glaswegian': {
       // Wee traffic-cone wedge atop the head — Duke of Wellington tribute.
       g.fillStyle(0x1a0e06, 1);

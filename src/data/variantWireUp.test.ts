@@ -18,6 +18,10 @@ import type { VariantKey } from './variants';
  */
 const NON_CLASSIC_VARIANTS = VARIANTS.filter((v) => v.key !== 'classic');
 
+// Variants that intentionally ship with no stat modifiers — the design
+// choice IS the differentiation (Morningside's joke: it brings bearing).
+const BLANK_MODIFIER_EXCEPTIONS = new Set<VariantKey>(['morningside']);
+
 // Glesga / Highland / Scottish register markers. A non-classic variant's
 // name+flavor must hit at least one — guards against accidental English-
 // RP drift (e.g. "one's estate, quite", which Laird nearly shipped with).
@@ -58,10 +62,12 @@ describe('every non-classic variant is fully wired', () => {
           'none', 'racing_band', 'iron_belly', 'forager', 'surefoot',
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
+          'morningside',
         ]).toContain(def.appearance.accentStyle);
       });
 
       it('ships a non-trivial modifier profile', () => {
+        if (BLANK_MODIFIER_EXCEPTIONS.has(v.key as VariantKey)) return;
         const def = getVariantByKey(v.key);
         const mods = def.modifiers;
         const hasAnyMod =
