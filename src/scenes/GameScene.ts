@@ -94,6 +94,7 @@ import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
 import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
 import { installCailleachGauntlet } from './game/installCailleachGauntlet';
 import { EngineerTurretSystem } from './game/EngineerTurretSystem';
+import { TuftedFamiliarSystem } from './game/TuftedFamiliarSystem';
 import type { WhisperResult } from './game/cairnOfEchoesWhisper';
 import {
   createCairnSpriteForScene,
@@ -560,6 +561,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   engineerTurretSystem: EngineerTurretSystem | null = null;
   /** Turret sprite — held here so resetTransientRunState can destroy it. */
   private engineerTurretSprite: Phaser.GameObjects.Image | null = null;
+  /** Tufted variant familiar — null when variant is not tufted. */
+  tuftedFamiliarSystem: TuftedFamiliarSystem | null = null;
+  /** Pup sprite — held here so resetTransientRunState can destroy it. */
+  private tuftedPupSprite: Phaser.GameObjects.Image | null = null;
   /**
    * Live sprite refs keyed by FallenCairn identity so the scheduler's
    * `onSpriteCreate` / `onSpriteDestroy` callbacks can find and tween
@@ -1587,6 +1592,32 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         },
       });
       this.engineerTurretSystem.place(spawnPx + 80, spawnPy);
+    }
+
+    // Tufted variant — spawn the wee pup 50 px behind the player so the
+    // companion is visible from the first frame. The pup follows and fires
+    // independently; `tuftedFamiliarSystem` is null for all other variants.
+    this.tuftedFamiliarSystem = null;
+    this.tuftedPupSprite?.destroy();
+    this.tuftedPupSprite = null;
+    if (selectedVariant.modifiers.tuftedFamiliar) {
+      this.tuftedFamiliarSystem = new TuftedFamiliarSystem({
+        getIsVictoryPending: () => this.victoryPending,
+        getPlayerPosition: () => ({ x: this.player.x, y: this.player.y }),
+        firePupShot: (fromX, fromY, damageMul) =>
+          this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),
+        movePupSprite: (x, y) => {
+          if (this.tuftedPupSprite) {
+            this.tuftedPupSprite.setPosition(x, y);
+          }
+        },
+        spawnPupSprite: (x, y) => {
+          if (!this.textures.exists('tufted_pup')) return;
+          this.tuftedPupSprite = this.add.image(x, y, 'tufted_pup');
+          this.tuftedPupSprite.setDepth(1);
+        },
+      });
+      this.tuftedFamiliarSystem.place(spawnPx - 50, spawnPy);
     }
 
     // Lemmings Easter Egg (DESIGN_IDEAS §13) — cliff-edge parade homage

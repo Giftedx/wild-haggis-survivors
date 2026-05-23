@@ -1380,6 +1380,7 @@ export const ui = {
         jacobite: 'A haggis fell here. The plaid could not hold forever.',
         tam_o_shanter: 'A haggis fell here. Near enough the Brig o\' Doon.',
         engineer: 'A haggis fell here. The turret still stands.',
+        tufted: 'A haggis fell here. The pup waited — then moved on.',
       },
     },
     grandfather: {
@@ -1732,6 +1733,12 @@ export const ui = {
         b: 'Structural integrity compromised. Continue anyway.',
         c: 'The cairn holds. So will I. Probably.',
         d: 'Watt\'s engine ran on pressure too.',
+      },
+      tufted: {
+        a: 'The pup\'s watching. Don\'t make it watch this.',
+        b: 'Wee beastie still fighting. I\'ll manage.',
+        c: 'The pup bites harder when I\'m low. We agree on the urgency.',
+        d: 'Not gone yet. The pup would not know what to do.',
       },
     },
     boss_down: {
@@ -2096,6 +2103,12 @@ export const ui = {
         c: 'The drawings are getting better. So is the haggis.',
         d: 'Watt improved the engine fourteen times. This is one.',
       },
+      tufted: {
+        a: 'Stronger. The pup notices.',
+        b: 'Level up. The pup is unimpressed. Good — standard maintained.',
+        c: 'Growing. The pup grows with me.',
+        d: 'The moor teaches. The pup watches me learn.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2262,6 +2275,12 @@ export const ui = {
         b: 'The cairn fired first. I\'ll take the credit.',
         c: 'One down. The mechanism is satisfied.',
         d: 'First contact. The specifications were correct.',
+      },
+      tufted: {
+        a: 'First blood. The pup already found the second.',
+        b: 'First target down. The pup had the third in sight.',
+        c: 'We opened the account. Both of us.',
+        d: 'First kill — mine. Next kill — the pup\'s. We\'re counting separately.',
       },
     },
     kill_streak: {
@@ -2431,6 +2450,12 @@ export const ui = {
         c: 'Sequential elimination. The mechanism is efficient today.',
         d: 'Rennie would have called this good load-bearing.',
       },
+      tufted: {
+        a: 'Two of us. Half the time.',
+        b: 'The pup is enjoying this. So am I.',
+        c: 'Running tally: me and the pup, the moor and nothing.',
+        d: 'Streak\'s ours. I\'ll split the credit with the pup.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2597,6 +2622,12 @@ export const ui = {
         b: 'The mechanism bent. It did not break.',
         c: 'Back within tolerances. The cairn never stopped.',
         d: 'Telford rebuilt the bridge three times. This is once.',
+      },
+      tufted: {
+        a: 'The pup did not panic. Good example.',
+        b: 'Back in it. The pup barely broke stride.',
+        c: 'Recovered. The pup kept the pressure on.',
+        d: 'Crisis passed. The pup kept biting through it.',
       },
     },
     biome_change: {
@@ -3322,6 +3353,12 @@ export const ui = {
         c: 'The mechanism runs. I observe. Both are useful.',
         d: 'A still haggis is a haggis reviewing the drawings.',
       },
+      tufted: {
+        a: 'The pup\'s found something. I should move.',
+        b: 'Wee pause. The pup\'s circling.',
+        c: 'Still as two stones. The pup\'s better at this than me.',
+        d: 'Quiet on the moor. The pup smells something.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3886,6 +3923,11 @@ export const ui = {
         // 15 victories. Voice: dry, technical, quietly proud.
         a: 'Fifteen victories. The Engineer places the cairn — Watt measured, Telford bridged, Rennie spanned. This haggis builds. Then it goes to war.',
         b: 'Ye won fifteen times. The turret is stacked. The mechanism is armed. Two shooters on the moor.',
+      },
+      variant_tufted_unlocked: {
+        // 10 victories. Voice: hearth-warm, gently proud, companion-focused.
+        a: 'Ten victories. The Tufted Haggis earns the pup — the wee familiar that follows, finds, and fights on the moor.',
+        b: 'Ye won ten times. The tuft-mark holds. The pup is yours — and it bites.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4668,6 +4710,12 @@ export const ui = {
         death_short: '{name}. The cairn stands. The barrel cools.',
         victory_baseline: '{name} built once and won. Watt would have improved the design for the next run.',
         victory_taxman: 'The Taxman faced {name} and a cairn-turret. Two shooters. One ledger. Settled.',
+      },
+      tufted: {
+        death_baseline: '{name} fell. The pup waited on the moor — still circling the spot, in case.',
+        death_short: '{name} and the pup. One fell. The pup did not.',
+        victory_baseline: '{name} and the pup made it through. Two haggis by the end of it — or near enough.',
+        victory_taxman: 'The Taxman faced {name} and the pup. Two against one. The ledger forgot to count the pup.',
       },
     },
   },

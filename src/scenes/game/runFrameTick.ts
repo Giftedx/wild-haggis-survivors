@@ -104,6 +104,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     getCairnOfEchoesScheduler: () => scene.cairnOfEchoesScheduler ?? null,
     getCailleachGauntletScheduler: () => scene.cailleachGauntletScheduler ?? null,
     getEngineerTurretSystem: () => scene.engineerTurretSystem ?? null,
+    getTuftedFamiliarSystem: () => scene.tuftedFamiliarSystem ?? null,
     getRelicSlotUI: () => scene.relicSlotUI,
     getRelicEffectDriver: () => scene.relicEffectDriver,
     relicOrchestrator: scene.relicOrchestrator,

@@ -119,6 +119,11 @@ export const variant = {
     flavor: 'Built tha cairn afore tha run. Watt measured. Telford bridged. This haggis shoots twice.',
     lore: 'Scotland gied tha warld tha steam engine, tha telephone, an tha adhesive stamp. This haggis studied unner a\' three traditions. It stacks wan cairn-turret per run — nae mair, nae less — an yon stane fires faithfully til tha last enemy faws. Tha haggis is slower for tha tools it cairries. Tha turret disnae care.',
   },
+  tufted: {
+    name: 'Tufted Haggis',
+    flavor: 'Nivver alane on tha muir. Tha wee pup follows — an it bites.',
+    lore: 'Some haggis come tufted fae birth — tha tuft-merk draws a pup tae thair side afore tha first run is duin. Tha pup is sma. Tha teeth are no. Whaur tha haggis finds difficulty, tha pup finds an angle. Twa on tha muir. Tha muir kens it.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

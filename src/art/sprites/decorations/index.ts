@@ -49,6 +49,7 @@ import { bakeCairn } from './cairn';
 import { bakeSheepSkull } from './sheepSkull';
 import { bakeAntlerShed } from './antlerShed';
 import { bakeEngineerTurret } from './engineerTurret';
+import { bakeTuftedPup } from './tuftedPup';
 
 export function bakeDecorations(scene: Phaser.Scene): void {
   bakeThistle(scene);
@@ -83,4 +84,5 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeSheepSkull(scene);
   bakeAntlerShed(scene);
   bakeEngineerTurret(scene);
+  bakeTuftedPup(scene);
 }

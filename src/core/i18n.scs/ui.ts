@@ -906,6 +906,7 @@ export const ui = {
         jacobite: 'A haggis fell here. Tha plaid couldna haud forever.',
         tam_o_shanter: 'A haggis fell here. Near enough tha Brig o\' Doon.',
         engineer: 'A haggis fell here. Tha turret still stands.',
+        tufted: 'A haggis fell here. Tha pup waitit — then muivit on.',
       },
     },
     grandfather: {
@@ -1182,6 +1183,12 @@ export const ui = {
         b: 'Structural integrity compromised. Continue onywye.',
         c: 'Tha cairn hauds. Sae will Ah. Probably.',
         d: 'Watt\'s engine ran on pressure tae.',
+      },
+      tufted: {
+        a: 'Tha pup\'s watchin. Dinnae mak it watch this.',
+        b: 'Wee beastie still fechtin. Ah\'ll manage.',
+        c: 'Tha pup bites harder whan Ah\'m low. We agree on tha urgency.',
+        d: 'No awa yet. Tha pup widnae ken whit tae dae.',
       },
     },
     boss_down: {
@@ -1543,6 +1550,12 @@ export const ui = {
         c: 'Tha drawin\'s gettin better. Sae is tha haggis.',
         d: 'Watt improved tha engine fourteen times. This is ane.',
       },
+      tufted: {
+        a: 'Stranger. Tha pup notices.',
+        b: 'Level up. Tha pup is unimpressed. Guid — standard maintained.',
+        c: 'Growin. Tha pup grows wi me.',
+        d: 'Tha muir teaches. Tha pup watches me learn.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1709,6 +1722,12 @@ export const ui = {
         b: 'Tha cairn fired first. Ah\'ll tak tha credit.',
         c: 'Ane doon. Tha mechanism is satisfied.',
         d: 'First contact. Tha specifications were correct.',
+      },
+      tufted: {
+        a: 'First bluid. Tha pup awready fund tha second.',
+        b: 'First target doon. Tha pup had tha third in sicht.',
+        c: 'We opened tha account. Baith o us.',
+        d: 'First kill — mine. Next kill — tha pup\'s. We\'re countin separately.',
       },
     },
     kill_streak: {
@@ -1878,6 +1897,12 @@ export const ui = {
         c: 'Sequential elimination. Tha mechanism is efficient tha day.',
         d: 'Rennie wid hae cawed this guid load-bearin.',
       },
+      tufted: {
+        a: 'Twa o us. Hauf tha time.',
+        b: 'Tha pup is enjoyin this. Sae am Ah.',
+        c: 'Rinnin tally: me an tha pup, tha muir an nocht.',
+        d: 'Streak\'s oors. Ah\'ll split tha credit wi tha pup.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -2044,6 +2069,12 @@ export const ui = {
         b: 'Tha mechanism bent. It did no brek.',
         c: 'Back within tolerances. Tha cairn never stapped.',
         d: 'Telford rebuilt tha brig three times. This is ance.',
+      },
+      tufted: {
+        a: 'Tha pup didna panic. Guid example.',
+        b: 'Back in it. Tha pup barely brok stride.',
+        c: 'Recovered. Tha pup kept tha pressure on.',
+        d: 'Crisis passed. Tha pup kept bitin through it.',
       },
     },
     biome_change: {
@@ -2721,6 +2752,12 @@ export const ui = {
         c: 'Tha mechanism rins. Ah observe. Baith are yaisefu.',
         d: 'A still haggis is a haggis reviewin tha drawin\'s.',
       },
+      tufted: {
+        a: 'Tha pup\'s fund somethin. Ah should muive.',
+        b: 'Wee pause. Tha pup\'s circlin.',
+        c: 'Still as twa stanes. Tha pup\'s better at this than me.',
+        d: 'Quate on tha muir. Tha pup smells somethin.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -3226,6 +3263,10 @@ export const ui = {
       variant_engineer_unlocked: {
         a: 'Fifteen victories. Tha Engineer places tha cairn — Watt measured, Telford bridged, Rennie spanned. This haggis builds. Then it gaes tae war.',
         b: 'Ye won fifteen times. Tha turret is stacked. Tha mechanism is airmed. Twa shooters on tha muir.',
+      },
+      variant_tufted_unlocked: {
+        a: 'Ten victories. Tha Tufted Haggis earns tha pup — tha wee familiar that follows, finds, an fechts on tha muir.',
+        b: 'Ye won ten times. Tha tuft-merk hauds. Tha pup is yours — an it bites.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3846,6 +3887,12 @@ export const ui = {
         death_short: '{name}. Tha cairn staunds. Tha barrel cools.',
         victory_baseline: '{name} built ance an won. Watt wid hae improved tha design for tha next run.',
         victory_taxman: 'Tha Taxman faced {name} an a cairn-turret. Twa shooters. Wan ledger. Settled.',
+      },
+      tufted: {
+        death_baseline: '{name} fell. Tha pup waitit on tha muir — still circlin tha spot, in case.',
+        death_short: '{name} an tha pup. Ane fell. Tha pup did no.',
+        victory_baseline: '{name} an tha pup made it through. Twa haggis by tha end o it — or near enough.',
+        victory_taxman: 'Tha Taxman faced {name} an tha pup. Twa against ane. Tha ledger forgot tae coont tha pup.',
       },
     },
   },

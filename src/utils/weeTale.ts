@@ -482,4 +482,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.engineer.death_short', requires: ['death', 'engineer', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.engineer.victory_baseline', requires: ['victory', 'engineer', 'has_name'] },
   { key: 'ui.weeTale.variant.engineer.victory_taxman', requires: ['victory', 'engineer', 'has_name', 'taxman'] },
+  // The Tufted Haggis — the pup; two on the moor; companion familiar.
+  { key: 'ui.weeTale.variant.tufted.death_baseline', requires: ['death', 'tufted', 'has_name'] },
+  { key: 'ui.weeTale.variant.tufted.death_short', requires: ['death', 'tufted', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.tufted.victory_baseline', requires: ['victory', 'tufted', 'has_name'] },
+  { key: 'ui.weeTale.variant.tufted.victory_taxman', requires: ['victory', 'tufted', 'has_name', 'taxman'] },
 ] as const;

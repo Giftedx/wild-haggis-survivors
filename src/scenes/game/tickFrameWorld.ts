@@ -67,6 +67,7 @@ import type { LemmingsEasterEgg } from './lemmingsEasterEgg';
 import type { AncestralEcho } from './ancestralEcho';
 import type { CairnOfEchoesScheduler } from './CairnOfEchoesScheduler';
 import type { EngineerTurretSystem } from './EngineerTurretSystem';
+import type { TuftedFamiliarSystem } from './TuftedFamiliarSystem';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import type { RelicOrchestrator } from './RelicOrchestrator';
 import type { RNG } from '../../utils/rng';
@@ -136,6 +137,8 @@ export interface TickFrameWorldDeps {
   getCailleachGauntletScheduler: () => import('./CailleachGauntletScheduler').CailleachGauntletScheduler | null;
   /** Engineer variant — null when variant is not engineer. */
   getEngineerTurretSystem: () => EngineerTurretSystem | null;
+  /** Tufted variant — null when variant is not tufted. */
+  getTuftedFamiliarSystem: () => TuftedFamiliarSystem | null;
   /** Lazy — destroyed + nulled between runs. */
   getRelicSlotUI: () => RelicSlotUI | null;
   /** Driver lives on the orchestrator (non-null in active runs) and is
@@ -293,6 +296,11 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   // is settled for this frame before the turret fires.
   const engineerTurret = deps.getEngineerTurretSystem();
   if (engineerTurret) engineerTurret.tick(scaledDelta);
+
+  // Tufted variant — tick familiar AFTER turret; pup follows player and
+  // fires from its own position using the same weapon pipeline.
+  const tuftedFamiliar = deps.getTuftedFamiliarSystem();
+  if (tuftedFamiliar) tuftedFamiliar.tick(scaledDelta);
 
   // Pass player facing — own concern, kept out of the multiplier fold.
   // Always read from `player.rotation` (persists when stationary) so

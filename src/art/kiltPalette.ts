@@ -80,6 +80,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // The Engineer — dark pewter field, copper-rivet stripe,
   // workshop-iron accent. Not a dress tartan; a working one.
   engineer:      { field: 0x304040, fieldDark: 0x1e2828, stripe: 0xc8780a, accent: 0x6a8080 },
+  // Tufted — warm brown field, cream-tuft stripe, heather-pelt accent.
+  // The pup's topknot colour ties the companion to the variant's tartan.
+  tufted:        { field: 0x4a3420, fieldDark: 0x2d1f0d, stripe: 0xe8dcc8, accent: 0x7a5c3d },
 };
 
 /**

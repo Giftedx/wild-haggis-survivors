@@ -402,6 +402,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.engineer.c',
         'ui.banter.low_hp.engineer.d',
       ],
+      tufted: [
+        'ui.banter.low_hp.tufted.a',
+        'ui.banter.low_hp.tufted.b',
+        'ui.banter.low_hp.tufted.c',
+        'ui.banter.low_hp.tufted.d',
+      ],
     },
   },
   {
@@ -794,6 +800,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.engineer.c',
         'ui.banter.level_up.engineer.d',
       ],
+      tufted: [
+        'ui.banter.level_up.tufted.a',
+        'ui.banter.level_up.tufted.b',
+        'ui.banter.level_up.tufted.c',
+        'ui.banter.level_up.tufted.d',
+      ],
     },
   },
   {
@@ -967,6 +979,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.engineer.b',
         'ui.banter.first_blood.engineer.c',
         'ui.banter.first_blood.engineer.d',
+      ],
+      tufted: [
+        'ui.banter.first_blood.tufted.a',
+        'ui.banter.first_blood.tufted.b',
+        'ui.banter.first_blood.tufted.c',
+        'ui.banter.first_blood.tufted.d',
       ],
     },
   },
@@ -1143,6 +1161,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.engineer.c',
         'ui.banter.kill_streak.engineer.d',
       ],
+      tufted: [
+        'ui.banter.kill_streak.tufted.a',
+        'ui.banter.kill_streak.tufted.b',
+        'ui.banter.kill_streak.tufted.c',
+        'ui.banter.kill_streak.tufted.d',
+      ],
     },
   },
   {
@@ -1316,6 +1340,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.engineer.b',
         'ui.banter.recover.engineer.c',
         'ui.banter.recover.engineer.d',
+      ],
+      tufted: [
+        'ui.banter.recover.tufted.a',
+        'ui.banter.recover.tufted.b',
+        'ui.banter.recover.tufted.c',
+        'ui.banter.recover.tufted.d',
       ],
     },
   },
@@ -1676,6 +1706,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.engineer.b',
         'ui.banter.idle.engineer.c',
         'ui.banter.idle.engineer.d',
+      ],
+      tufted: [
+        'ui.banter.idle.tufted.a',
+        'ui.banter.idle.tufted.b',
+        'ui.banter.idle.tufted.c',
+        'ui.banter.idle.tufted.d',
       ],
     },
   },

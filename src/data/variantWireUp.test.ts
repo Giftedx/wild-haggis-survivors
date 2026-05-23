@@ -72,7 +72,7 @@ describe('every non-classic variant is fully wired', () => {
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
           'morningside', 'drouthy', 'pibroch', 'orcadian', 'hebridean',
           'iron_brew', 'grans_best', 'the_pict', 'jacobite', 'tam_o_shanter',
-          'engineer',
+          'engineer', 'tufted',
         ]).toContain(def.appearance.accentStyle);
       });
 
@@ -98,7 +98,8 @@ describe('every non-classic variant is fully wired', () => {
           || !!mods.granBestLowHpBonus
           || !!mods.noShopAccess
           || !!mods.floraPlaidPeriodic
-          || !!mods.engineerTurret;
+          || !!mods.engineerTurret
+          || !!mods.tuftedFamiliar;
         expect(hasAnyMod, `${v.key} has no stat modifier`).toBe(true);
       });
 

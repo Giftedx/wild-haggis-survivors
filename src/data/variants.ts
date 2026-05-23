@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite' | 'tam_o_shanter' | 'engineer';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite' | 'tam_o_shanter' | 'engineer' | 'tufted';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -92,6 +92,13 @@ export interface VariantModifier {
    * calls WeaponSystem.fireTurretShot(x, y, 0.5) on its own clock.
    */
   engineerTurret?: boolean;
+  /**
+   * The Tufted variant — spawns a wee companion pup at run start that
+   * follows the player and fires the main weapon at 30% damage every
+   * 1800 ms. The pup uses leash-follow logic and attacks from its own
+   * position. Wired in GameScene via TuftedFamiliarSystem.
+   */
+  tuftedFamiliar?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -156,7 +163,8 @@ export type HaggisAccentStyle =
   | 'the_pict'
   | 'jacobite'
   | 'tam_o_shanter'
-  | 'engineer';
+  | 'engineer'
+  | 'tufted';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -968,6 +976,37 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x4a5c5c,       // pewter-grey — workshop iron
         snout: 0x6a8080,     // worn metal — time on the tools
         accent: 0xc8780a,    // copper rivet — the engineer's mark
+      },
+    },
+  },
+  {
+    // The Tufted Haggis — born with a cream topknot, draws a wee pup to
+    // its side before the first run ends. The pup follows at a leash
+    // distance and fires the main weapon at 30% damage every 1800 ms.
+    // The haggis itself is slightly frailer and slower (sharing the
+    // moor with a companion is a distraction). Two on the moor.
+    // Palette: warm brown body, cream tuft accent — earthy, lived-in.
+    // Unlock: 10 victories — accessible but earnt.
+    key: 'tufted',
+    nameKey: 'variant.tufted.name',
+    flavorKey: 'variant.tufted.flavor',
+    textureKey: 'haggis_tufted',
+    modifiers: {
+      moveSpeedPct: -0.05,
+      maxHpFlat: -10,
+      damagePct: -0.10,
+      tuftedFamiliar: true,
+    },
+    unlock: { type: 'victories', required: 10 },
+    appearance: {
+      accentStyle: 'tufted',
+      palette: {
+        outline: 0x1a1208,
+        bodyDark: 0x2d1f0d,
+        bodyLight: 0x4a3420,
+        fur: 0x7a5c3d,       // warm brown — heather-tinted pelt
+        snout: 0x9a7855,     // weathered snout — moor-seasoned
+        accent: 0xe8dcc8,    // cream tuft — the birth-mark that calls the pup
       },
     },
   },

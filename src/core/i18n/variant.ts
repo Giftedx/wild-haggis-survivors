@@ -138,6 +138,11 @@ export const variant = {
     flavor: 'Built the cairn before the run. Watt measured. Telford bridged. This haggis shoots twice.',
     lore: 'Scotland gave the world the steam engine, the telephone, and the adhesive postage stamp. This haggis studied under all three traditions. It stacks one cairn-turret per run — no more, no less — and that stone fires faithfully until the last enemy falls. The haggis is slower for the tools it carries. The turret does not care.',
   },
+  tufted: {
+    name: 'Tufted Haggis',
+    flavor: 'Never alone on the moor. The wee pup follows — and it bites.',
+    lore: 'Some haggis come tufted from birth — the tuft-mark draws a pup to their side before the first run is done. The pup is small. The teeth are not. Where the haggis finds difficulty, the pup finds an angle. Two on the moor. The moor knows it.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',
