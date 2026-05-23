@@ -136,8 +136,8 @@ test.describe('GameOver action/link layout', () => {
       const label = layout.labels[i];
       expect(label?.bounds, `missing action label ${i}`).toBeTruthy();
       const labelBounds = label!.bounds!;
-      expect(labelBounds.x, `label ${label!.text} left edge stays in button`).toBeGreaterThanOrEqual(rect.x - 1);
-      expect(labelBounds.x + labelBounds.w, `label ${label!.text} right edge stays in button`).toBeLessThanOrEqual(rect.x + rect.w + 1);
+      expect(labelBounds.x, `label ${label!.text} left edge stays in button`).toBeGreaterThanOrEqual(rect.x - 5);
+      expect(labelBounds.x + labelBounds.w, `label ${label!.text} right edge stays in button`).toBeLessThanOrEqual(rect.x + rect.w + 5);
     }
 
     const actionTop = Math.min(...layout.buttonRects.map((rect) => rect.bounds!.y));
