@@ -17,13 +17,12 @@ import {
   CailleachGauntletScheduler,
   type CailleachGauntletSchedulerHooks,
 } from './CailleachGauntletScheduler';
-import type { Enemy } from '../../entities/Enemy';
 import type { Player } from '../../entities/Player';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { SaveManager } from '../../core/SaveManager';
 import type { CairnOfEchoesScheduler } from './CairnOfEchoesScheduler';
-import { globalEventBus } from '../../core/GlobalEventBus';
+import { globalEventBus, type GlobalEnemyKilledPayload } from '../../core/GlobalEventBus';
 
 export interface CailleachGauntletInstallDeps {
   readonly scene: Phaser.Scene;
@@ -37,10 +36,8 @@ export interface CailleachGauntletInstallDeps {
 
 export interface CailleachGauntletInstallResult {
   readonly scheduler: CailleachGauntletScheduler;
-  /** Cleanup — destroy candle sprites + null the boss ref. */
+  /** Cleanup — destroy candle sprites + unsub event listeners. */
   readonly teardown: () => void;
-  /** Current Cailleach boss enemy (or null when not engaged). */
-  readonly getCailleachBoss: () => Enemy | null;
 }
 
 /**
@@ -51,7 +48,12 @@ export function installCailleachGauntlet(
   deps: CailleachGauntletInstallDeps,
 ): CailleachGauntletInstallResult {
   let candles: Phaser.GameObjects.Image[] = [];
-  let cailleachBoss: Enemy | null = null;
+  let cailleachBossKilled = false;
+
+  const onEnemyKilled = (payload: GlobalEnemyKilledPayload): void => {
+    if (payload.enemyKey === 'cailleach_boss') cailleachBossKilled = true;
+  };
+  const unsubEnemyKilled = globalEventBus.on('GLOBAL_ENEMY_KILLED', onEnemyKilled);
 
   const spawnGauntletCandles = (
     ring: readonly { readonly x: number; readonly y: number }[],
@@ -90,7 +92,10 @@ export function installCailleachGauntlet(
       const p = deps.getPlayer();
       return { x: p?.x ?? 0, y: p?.y ?? 0 };
     },
-    isBossDead: () => cailleachBoss !== null && !cailleachBoss.active,
+    // Event-driven: GLOBAL_ENEMY_KILLED fires synchronously inside
+    // Enemy.emitKillEvents() before any pool recycling can occur, so
+    // this flag is reliable regardless of pool churn at 15+ minutes.
+    isBossDead: () => cailleachBossKilled,
     isPlayerDead: () => (deps.getPlayer()?.getHp() ?? 1) <= 0,
     onArmed: () => {
       deps.getBanter()?.request('cailleach_gauntlet', { tag: 'armed' });
@@ -104,8 +109,6 @@ export function installCailleachGauntlet(
       // SpawnSystem.spawnBossManually exists (V2 contract).
       (deps.getSpawnSystem() as unknown as { spawnBossManually: (k: string, x: number, y: number) => void })
         .spawnBossManually('cailleach_boss', centerX, centerY);
-      const enemies = deps.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
-      cailleachBoss = enemies.find((e) => e.active && e.getEnemyKey() === 'cailleach_boss') ?? null;
       deps.getBanter()?.request('cailleach_gauntlet', { tag: 'cailleach_spawned' });
     },
     onWin: ({ wreathedSavedAts }) => {
@@ -135,8 +138,8 @@ export function installCailleachGauntlet(
     scheduler,
     teardown: () => {
       destroyCandles();
-      cailleachBoss = null;
+      unsubEnemyKilled();
+      cailleachBossKilled = false;
     },
-    getCailleachBoss: () => cailleachBoss,
   };
 }

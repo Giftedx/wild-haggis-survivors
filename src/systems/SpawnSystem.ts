@@ -263,7 +263,7 @@ export class SpawnSystem {
   findActiveBoss(): Enemy | null {
     const active = this.pool.getChildren() as Enemy[];
     let best: Enemy | null = null;
-    let bestSpawnTime = -1;
+    let bestSpawnTime = -Infinity; // -1 sentinel used by manual-spawn bosses (e.g. cailleach_boss)
     for (let i = 0; i < active.length; i++) {
       const e = active[i];
       if (!e.active || !e.isBoss()) continue;
@@ -1058,6 +1058,13 @@ export class SpawnSystem {
     this.gameTimeSec = Math.max(0, sec);
     this.syncWaveDirectorFromTimeline();
     this.spawnTimer = Math.min(this.spawnTimer, this.spawnInterval);
+    // Suppress the win-finale (taxman) when skipping to or past RUN_WIN_TIME_SEC.
+    // beginRunWinFinale checks this flag on entry; without this guard,
+    // skipToMinute(15+) spawns taxman alongside any gauntlet boss and
+    // the 1500ms triggerVictory delay ends the run before gauntlet resolves.
+    if (sec >= BALANCE.run.RUN_WIN_TIME_SEC) {
+      this.runWinFinaleStarted = true;
+    }
   }
 
   /**
