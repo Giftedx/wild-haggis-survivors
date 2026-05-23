@@ -181,6 +181,9 @@ export type GlobalEvents = {
   /** V2 — Cailleach Gauntlet completed successfully. */
   GLOBAL_CAILLEACH_GAUNTLET_WON: GlobalCailleachGauntletWonPayload;
   bossEnraged: string;
+  /** Nuckelavee periodic breath attack — payload is the boss position
+   *  so the receiver can spawn the drought zone at the right location. */
+  nuckelaveeBreath: { x: number; y: number };
 };
 
 type Handler<T> = (payload: T) => void;

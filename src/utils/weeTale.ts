@@ -73,9 +73,9 @@ export type WeeTaleTag =
   | 'short' | 'long' | 'epic'
   | 'no_boss' | 'any_boss'
   | 'gordon' | 'tour_bus' | 'taxman'
-  | 'each_uisge' | 'nicnevin' | 'the_laird' | 'hunter_general'
+  | 'each_uisge' | 'nicnevin' | 'the_laird' | 'nuckelavee' | 'hunter_general'
   | 'gordon_death' | 'tour_bus_death' | 'taxman_death'
-  | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'hunter_general_death'
+  | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'nuckelavee_death' | 'hunter_general_death'
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
@@ -302,6 +302,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // he finishes (most expected; matches the lore framing).
   { key: 'ui.weeTale.death.taxman_postbell', requires: ['death', 'taxman_death', 'post_bell'] },
 
+  // Orcadian mythos — died to the Nuckelavee.
+  { key: 'ui.weeTale.death.nuckelavee', requires: ['death', 'nuckelavee_death'] },
+
   // ── Victory fallbacks (single-tag) ─────────────────────────────
   { key: 'ui.weeTale.victory.fallback_a', requires: ['victory'] },
   { key: 'ui.weeTale.victory.fallback_b', requires: ['victory'] },
@@ -312,6 +315,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.victory.ironmoor', requires: ['victory', 'ironmoor'] },
   { key: 'ui.weeTale.victory.taxman_kill', requires: ['victory', 'taxman'] },
   { key: 'ui.weeTale.victory.three_bosses', requires: ['victory', 'gordon', 'tour_bus', 'taxman'] },
+  // Orcadian mythos — Nuckelavee beaten on the way to the Taxman.
+  { key: 'ui.weeTale.victory.nuckelavee_kill', requires: ['victory', 'nuckelavee'] },
 
   // ── v2 — universal {name}-bearing lines (tier-2) ───────────────
   // Picks ahead of the no-name fallbacks for any run that has a

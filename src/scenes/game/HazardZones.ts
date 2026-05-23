@@ -204,6 +204,12 @@ export class HazardZones {
     return this.enteredHealingCircle;
   }
 
+  /** Nuckelavee retreat — exposes heal-patch centres so the retreat
+   *  tick can compute repulsion without reaching into private state. */
+  getHealPatchPositions(): Array<{ x: number; y: number; r: number }> {
+    return this.healZones.map((z) => ({ x: z.x, y: z.y, r: z.r }));
+  }
+
   spawn(): void {
     const W = GAME.WORLD_WIDTH;
     const H = GAME.WORLD_HEIGHT;

@@ -212,6 +212,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.the_laird.b',
         'ui.banter.boss_warn.the_laird.c',
       ],
+      nuckelavee: [
+        'ui.banter.boss_warn.nuckelavee.a',
+        'ui.banter.boss_warn.nuckelavee.b',
+        'ui.banter.boss_warn.nuckelavee.c',
+      ],
       hunter_general: [
         'ui.banter.boss_warn.hunter_general.a',
         'ui.banter.boss_warn.hunter_general.b',
@@ -450,6 +455,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.the_laird.a',
         'ui.banter.boss_down.the_laird.b',
         'ui.banter.boss_down.the_laird.c',
+      ],
+      nuckelavee: [
+        'ui.banter.boss_down.nuckelavee.a',
+        'ui.banter.boss_down.nuckelavee.b',
+        'ui.banter.boss_down.nuckelavee.c',
       ],
       hunter_general: [
         'ui.banter.boss_down.hunter_general.a',

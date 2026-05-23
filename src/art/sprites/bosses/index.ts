@@ -17,6 +17,7 @@ import { bakeBossLaird } from './laird';
 import { bakeBossHunterGeneral } from './hunterGeneral';
 import { bakeBossTaxman } from './taxman';
 import { bakeBossCailleach } from './cailleachBoss';
+import { bakeBossNuckelavee } from './nuckelavee';
 import { bakeBossArenaProps } from './arenaProps';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
@@ -28,6 +29,8 @@ export function bakeBosses(scene: Phaser.Scene): void {
   // N1 Tier-2 mythos: Nicnevin slots at 12:30 between Tour Bus (10:00) and the Laird (15:00).
   bakeBossNicnevin(scene);
   bakeBossLaird(scene);
+  // Orcadian mythos: Nuckelavee slots at 17:00 between the Laird (15:00) and Hunter General (20:00).
+  bakeBossNuckelavee(scene);
   bakeBossHunterGeneral(scene);
   bakeBossTaxman(scene);
   // V2 — Cailleach Gauntlet boss; manual-spawn only (no auto-time slot).

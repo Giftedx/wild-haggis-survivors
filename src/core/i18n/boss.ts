@@ -4,6 +4,7 @@ export const boss = {
   tour_bus: { name: 'The Tour Bus' },
   nicnevin: { name: 'Nicnevin' },
   the_laird: { name: 'The Laird' },
+  nuckelavee: { name: 'The Nuckelavee' },
   hunter_general: { name: 'The Haggis Hunter General' },
   taxman: { name: 'Death (The Taxman)' },
   cailleach_boss: { name: 'The Cailleach' },

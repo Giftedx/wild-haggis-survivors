@@ -117,6 +117,9 @@ export const beastie = {
   the_laird: {
     lore: 'An aristocrat wi a freehauld a hunner thoosand acres wide that his grandfaither got efter Culloden. Wears tartan that disnae belang tae him. Ains a salmon river ye cannae fish.',
   },
+  nuckelavee: {
+    lore: 'An Orcadian sea-deil; tha maist feared craitur in tha northren isles. Nae skin — tha black bluid an yella muscle is bare tae tha air. Its braith brings plague, droocht, an daith o craps. Wan burnin reid ee. Comes ashore tae pursue; retreats fae rinnin fresh watter, its ae weakness. First set doon in detail by Walter Traill Dennison in 1891. SCOTTISH_RESEARCH_DEEP Pairt 4.',
+  },
   hunter_general: {
     lore: 'Tha supervisin haggis-hunter. Haes a rifle aulder nor tha Empire an a crew aulder nor that. Treats tha hunt as inheritance. Treats tha haggis as a ledger entry.',
   },

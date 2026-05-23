@@ -78,6 +78,7 @@ import type { SecondTickHookContext } from './runtimeTickHooks';
 import { tickMantlePulse, tickRelicEffectFrame, tickSecondCounter } from './runtimeTickHooks';
 import { applyWeaponMultiplierFold } from './weaponMultiplierFold';
 import { shouldReseedAtSec } from '../../systems/biomeReseedSchedule';
+import { tickNuckelaveeRetreat } from './nuckelaveeRetreat';
 import { GAME } from '../../config';
 import { t } from '../../core/i18n';
 
@@ -343,6 +344,14 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
       bossY: nicnevin?.y ?? 0,
       bossActive: !!nicnevin,
     });
+  }
+
+  // Nuckelavee retreat — override chase velocity when boss is near a heal
+  // patch (fresh water). Runs AFTER spawnSystem.update so enemy behaviors
+  // have already set velocity; the override lands before physics integrates.
+  const nuckelavee = deps.spawnSystem.getActiveBossByKey('nuckelavee');
+  if (nuckelavee?.active) {
+    tickNuckelaveeRetreat(nuckelavee, deps.hazardZones.getHealPatchPositions());
   }
 
   deps.xpSystem.update(deps.player.x, deps.player.y, deps.player.getPickupRadius(), deps.player.getHpFraction());

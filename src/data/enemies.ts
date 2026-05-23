@@ -830,6 +830,23 @@ export const BOSSES: BossConfig[] = [
     xpValue: 75,
     scale: 2.2,
   },
+  // Orcadian mythos boss — the skinless man-horse. Retreats from healing
+  // circles (fresh water is its sole weakness). Slots at 17:00 to give
+  // the player 2 minutes after the Laird before the Hunter General.
+  // HP/damage tuned between the Laird and Hunter General; speed matches
+  // the Laird but the retreat interaction changes the fight geometry.
+  {
+    key: 'nuckelavee',
+    nameKey: 'boss.nuckelavee.name',
+    warningKey: 'ui.bossWarning.nuckelavee',
+    spawnTimeSec: 1020,    // 17:00
+    texture: 'boss_nuckelavee',
+    speed: 95,
+    hp: 4200,
+    damage: 32,
+    xpValue: 85,
+    scale: 2.5,
+  },
   {
     key: 'hunter_general',
     nameKey: 'boss.hunter_general.name',

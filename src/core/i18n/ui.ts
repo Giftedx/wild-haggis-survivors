@@ -1198,6 +1198,8 @@ export const ui = {
     taxman: "The Taxman's here — and he's no' takin' a cheque.",
     /** V2 — Cailleach Gauntlet boss walks the moor. */
     cailleach_boss: 'THE CAILLEACH WALKS — winter answers what ye called.',
+    /** Orcadian mythos boss — no skin, one eye, breath is plague. */
+    nuckelavee: 'Something comin\' fae the sea — no\' right, no\' human, no\' stopped.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a chest and let it loose!',
@@ -1233,6 +1235,7 @@ export const ui = {
     boss_killed_tour_bus: 'Bus terminated! Next stop: the scrapyard via Yoker.',
     boss_killed_nicnevin: 'Nicnevin\'s court dissolved. The moor breathes again.',
     boss_killed_the_laird: 'The Laird\'s on his erse! Yer bum\'s oot the windae, pal!',
+    boss_killed_nuckelavee: 'The Nuckelavee is doon! Back tae yer sea, ya skinless horror!',
     boss_killed_hunter_general: 'Hunter-General floored! Take yir medals and yir pith helmet!',
     boss_killed_taxman: 'THE TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'The Cailleach is doon! Stormcrown is yours.',
@@ -1545,6 +1548,13 @@ export const ui = {
         b: 'Posh git on horseback. Snobby dunter.',
         c: 'Tweeds and teeth. Watch yer flanks.',
       },
+      // Orcadian mythos — no skin, one eye, plague breath, hates fresh water.
+      // Edge voice: horror register, short and bitten.
+      nuckelavee: {
+        a: 'No skin on it. No skin at aw.',
+        b: 'Smells like plague. That\'s the breath o\' the thing.',
+        c: 'One eye. Horse body. No\' right. No\' stopped.',
+      },
       hunter_general: {
         a: 'The General\'s got yer scent.',
         b: 'Proper soldier noo. Nae mair eejits.',
@@ -1777,6 +1787,12 @@ export const ui = {
         a: 'Laird\'s nae laird nae mair.',
         b: 'Land\'s back wi\' the moor.',
         c: 'Posher than a polished thistle, an\' just as flat noo.',
+      },
+      // Orcadian mythos — relief and fresh water held.
+      nuckelavee: {
+        a: 'Back tae the deep wi\' ye. The burn held.',
+        b: 'That thing shouldnae have been on land. Glad it\'s no\' noo.',
+        c: 'Never thought fresh water could dae that. Now ye ken.',
       },
       hunter_general: {
         a: 'General\'s off-duty. Permanently.',
@@ -4540,6 +4556,7 @@ export const ui = {
       tour_bus: 'The tour bus came round the bend at {time}. Headlights, then nothing.',
       taxman: 'The Taxman closed the ledger at {time}. A debt only ever called once.',
       taxman_postbell: 'Past the bell-toll. The Taxman caught up at {time} — he always does, eventually.',
+      nuckelavee: 'No skin on the thing. It came off the sea at {time}. The burn on the far brae held the rest.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
     },
@@ -4553,6 +4570,7 @@ export const ui = {
       ironmoor: 'Ironmoor cleared at {time}. Once was enough — and once is plenty.',
       taxman_kill: 'Closed the Taxman\'s ledger at {time}. He won\'t forget; the haggis won\'t either.',
       three_bosses: 'Three boss-skulls in the heather behind. Home at {time}, walking light.',
+      nuckelavee_kill: 'The Nuckelavee went back to the sea. {time} on the moor, and the burns held.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
     },

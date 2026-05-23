@@ -814,6 +814,7 @@ export const ui = {
     boss_killed_tour_bus: 'Bus terminated! Next stap: tha scrappy via Yoker.',
     boss_killed_nicnevin: 'Nicnevin\'s court dissolved. Tha muir braithes again.',
     boss_killed_the_laird: 'Tha Laird\'s on his erse! Yer bum\'s oot tha windae, pal!',
+    boss_killed_nuckelavee: 'Tha Nuckelavee is doon! Back tae yer sea, ya skinless horror!',
     boss_killed_hunter_general: 'Hunter-General floored! Tak yer medals an yer pith helmet!',
     boss_killed_taxman: 'THA TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'Tha Cailleach is doon! Stormcrown is yours.',
@@ -999,6 +1000,11 @@ export const ui = {
         a: 'Tha Laird\'s come tae collect.',
         b: 'Posh git on horseback. Snobby dunter.',
         c: 'Tweeds an teeth. Mind yer flanks.',
+      },
+      nuckelavee: {
+        a: 'Nae skin on it. Nae skin at aw.',
+        b: 'Smells lik plague. That\'s tha braith o tha thing.',
+        c: 'Wan ee. Horse body. Nae richt. Nae stapped.',
       },
       hunter_general: {
         a: 'Tha General\'s got yer scent.',
@@ -1225,6 +1231,11 @@ export const ui = {
         a: 'Laird\'s nae laird nae mair.',
         b: 'Laund\'s back wi tha moor.',
         c: 'Posher than a polished thistle, an just as flat noo.',
+      },
+      nuckelavee: {
+        a: 'Back tae tha deep wi ye. Tha burn held.',
+        b: 'That thing shouldnae hae been on laund. Glad it\'s no noo.',
+        c: 'Never thocht fresh watter could dae that. Noo ye ken.',
       },
       hunter_general: {
         a: 'General\'s aff-duty. Permanently.',
@@ -3725,6 +3736,7 @@ export const ui = {
       tour_bus: 'Tha tour bus cam roond tha bend at {time}. Heidlichts, then naethin.',
       taxman: 'Tha Taxman closed tha ledger at {time}. A debt cried but the wance.',
       taxman_postbell: 'Past tha bell-toll. Tha Taxman caught up at {time} — he aye dis, by-an-by.',
+      nuckelavee: 'Nae skin on tha thing. It cam aff tha sea at {time}. Tha burn on tha far brae held tha lave.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
     },
     victory: {
@@ -3735,6 +3747,7 @@ export const ui = {
       ironmoor: 'Ironmoor cleared at {time}. Wance wis aneuch — an wance is plenty.',
       taxman_kill: 'Steekit tha Taxman\'s ledger at {time}. He\'ll no forget; tha haggis winnae either.',
       three_bosses: 'Three boss-skulls in tha heather ahint. Hame at {time}, walkin licht.',
+      nuckelavee_kill: 'Tha Nuckelavee gaed back tae tha sea. {time} on tha moor, an tha burns held.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
     },
     variant: {

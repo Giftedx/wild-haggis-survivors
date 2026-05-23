@@ -117,6 +117,9 @@ export const beastie = {
   the_laird: {
     lore: 'An aristocrat with a freehold a hundred thousand acres wide that his grandfather got after Culloden. Wears tartan that doesn\'t belong to him. Owns a salmon river you can\'t fish.',
   },
+  nuckelavee: {
+    lore: 'An Orcadian sea-demon; the most feared creature in the northern isles. No skin — the black blood and yellow muscle are exposed. Its breath causes plague, drought, and crop death. One burning red eye. Comes ashore to pursue; retreats from running fresh water, its only weakness. First documented in detail by Walter Traill Dennison in 1891. SCOTTISH_RESEARCH_DEEP Part 4.',
+  },
   hunter_general: {
     lore: 'The supervising haggis-hunter. Has a rifle older than the Empire and a crew older than that. Treats the hunt as inheritance. Treats the haggis as a ledger entry.',
   },
