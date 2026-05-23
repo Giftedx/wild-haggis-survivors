@@ -62,6 +62,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   witch_hare:    { base: '#281428', primary: '#6a8848' }, // bruised heather + witch-eye green
   selkie:        { base: '#12181e', primary: '#4a8a7c' }, // wet-stone + kelp-green
   morningside:   { base: '#4a4038', primary: '#b8c8a8' }, // Edinburgh stone + sage-green
+  drouthy:       { base: '#6a2008', primary: '#f0c828' }, // deep Highland red + whisky gold
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

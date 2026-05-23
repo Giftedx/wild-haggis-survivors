@@ -21,7 +21,7 @@ Initiatives that landed in the live build between 2026-04-09 and 2026-05-09.
 | M1 | Moor Road multi-node | 3-5 node micro-maps per act, 7 node types, 56 def entries. Shipped 2026-04-24. |
 | C1 | Highland Almanac | Discovery-log meta hub (Beasties / Weys / Finds / Banter). Shipped 2026-04-24. |
 | R1 | Relics third tier | 18 handcrafted relics, 3-slot cap, drops from elites + bosses. Shipped 2026-04-24. |
-| V2 | Variants pack | 14 → 15 variants (Witch's Hare added 2026-04-28). Shipped 2026-04-24. |
+| V2 | Variants pack | 14 → 15 variants (Witch's Hare added 2026-04-28). 16th variant — Morningside Haggis (posh Edinburgh, pearl brooch, "ane" voice, blank modifier by design) shipped 2026-05-23. Shipped 2026-04-24. |
 | U1 | Runes | 30 rule-stack cards, conditions + effects in evaluator pair. Shipped 2026-04-25. |
 | E1 | Seasonal events | 13 events with calendar gating (Burns Night, Beltane, Samhain, Hogmanay + 9 more). Shipped 2026-04-24/29. |
 | C2 | Weapon lore pass | 103 EN flavour leaves + 30 SCS rune overlays. Shipped + truth-up 2026-04-26. |
@@ -33,6 +33,7 @@ Plus the 2026-05-09 mechanics sprint: Stance Toggle (Q), Shinty Parry (E), Cloot
 
 | MR1 | The Moor Remembers (V1) | Persistent cross-run cairns + Old Drover hidden grandfather voice arc. Shipped 2026-05-22. |
 | MR2 | The Moor Remembers (V2 — Cailleach Gauntlet) | 7-cairn-touch trigger + candle ring at 14:00 + Cailleach boss at 15:00 with new `wail` behaviour. Win → wreathed cairns + Stormcrown relic + Cailleach's Mantle tartan. Lose → extinguished candles (cairns abide). Schema v10→v11. Shipped 2026-05-22. |
+| WLW | Wild Living World — Whistle-Call Companions (Phases 1–4) | 4 companions in stable unlock chain: sheepdog (default), stoat_scout (3 clootie wagers), golden eagle (Cailleach Gauntlet win), kelpie_foal (first Each Uisge kill). Companion picker in Gran's Croft; `livingWorldUnlocks` save bag (schema v23); null opt-out path. All 4 shipped 2026-05-23. |
 
 ---
 

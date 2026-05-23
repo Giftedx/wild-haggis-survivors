@@ -72,6 +72,7 @@ describe('save migration', () => {
       'iron_belly',
       'glen_forager',
       'surefoot',
+      'drouthy',
     ]);
     expect(migrated.selectedVariant).toBe('moor_runner');
   });
@@ -187,12 +188,14 @@ describe('variant unlock evaluation', () => {
       'iron_belly',
       'glen_forager',
       'surefoot',
+      'drouthy',
     ]);
     expect(result.newlyUnlockedVariants).toEqual([
       'moor_runner',
       'iron_belly',
       'glen_forager',
       'surefoot',
+      'drouthy',
     ]);
   });
 });

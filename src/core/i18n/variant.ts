@@ -88,6 +88,11 @@ export const variant = {
     flavor: 'Composure. Propriety. A pearl brooch and a studied disdain for the rough business of moor survival.',
     lore: 'From Edinburgh\'s finest residential district, where the stone is grey-gold and the curtains are always straight. Combat stats are precisely unchanged from classic — the Morningside Haggis considers statistics rather vulgar to discuss. What it brings is bearing. One manages.',
   },
+  drouthy: {
+    name: 'Drouthy Haggis',
+    flavor: 'Three drams deep on the moor an\' still on his feet. Mostly. The drift\'s worse, aye, but there\'s a Whisky Breath charge banked an\' the night is young.',
+    lore: 'Drouthy — Scots for parched, aye, but the thirst is specific. The hip flask is always half-gone before the first bell. The drift doubles wi\' the drams; the Whisky Breath bursts harder for it. Unlock: earn 1,200 lifetime gold — most o\' it spent at the pub.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',
@@ -100,6 +105,7 @@ export const variant = {
     crit: '{sign}{pct}% crit',
     size: '{sign}{pct}% size',
     drift_flip: 'Drift goes widdershins',
+    drift_amplify: '+{pct}% drift',
     baseline: 'Baseline stats',
   },
   unlock: {

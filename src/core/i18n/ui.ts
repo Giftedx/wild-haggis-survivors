@@ -1368,6 +1368,7 @@ export const ui = {
         doric_quinie: "Awa wi' the haar.",
         burns_wee_beastie: 'Wee, sleekit, and stilled.',
         morningside: 'Wholly avoidable, that. With more composure.',
+        drouthy: 'Still thirsty. Aye, that\'ll do.',
       },
     },
     grandfather: {
@@ -1660,6 +1661,12 @@ export const ui = {
         b: 'This is not how one anticipated the afternoon proceeding.',
         c: 'A brief recovery would be entirely in order. If the moor would permit.',
         d: 'One must simply press on. There is no other properly done option.',
+      },
+      drouthy: {
+        a: 'Woozy. Mair frae the hit than the whisky. Mostly.',
+        b: 'Haud on — the moor\'s tiltin\'. Or I am.',
+        c: 'One mair dram tae steady the nerves. An\' one mair tae steady that one.',
+        d: 'Dinnae worry. The haggis bends. Hic.',
       },
     },
     boss_down: {
@@ -1964,6 +1971,12 @@ export const ui = {
         c: 'A considerable advancement. Quietly noted.',
         d: 'One continues to develop, as one should.',
       },
+      drouthy: {
+        a: 'Level up! The drams were workin\' the whole time.',
+        b: 'Stronger wi\' every nip. I\'ve had a few.',
+        c: 'Hic. That felt like a level or the ground movin\'.',
+        d: 'Onward! The barrel\'s still on the moor somewhere.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2070,6 +2083,12 @@ export const ui = {
         b: 'One\'s first encounter — conducted with appropriate briskness.',
         c: 'Dispatched. One notes the experience without comment.',
         d: 'Handled. One moves on without making a scene.',
+      },
+      drouthy: {
+        a: 'First blude! Slainte mhath — the barrel\'s barely touched.',
+        b: 'Away wi\' ye! Hic. The moor\'s mine the nicht.',
+        c: 'That\'s the dram workin\'. Couldnae hae done it sober. Maybe.',
+        d: 'Doon! The whisky kent it afore I did.',
       },
     },
     kill_streak: {
@@ -2179,6 +2198,12 @@ export const ui = {
         c: 'This level of efficiency is, one supposes, becoming.',
         d: 'A streak. One keeps one\'s composure, naturally.',
       },
+      drouthy: {
+        a: 'Stack \'em like drams — ane, twa, three, an\' the moor spins.',
+        b: 'Cannae stop noo. The barrel\'s no empty yet.',
+        c: 'Hic. Every kill\'s anither swig. This is braw.',
+        d: 'They\'re fallin\' faster than I am. That\'s a guid sign.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2285,6 +2310,12 @@ export const ui = {
         b: 'The crisis has passed. One maintained composure throughout.',
         c: 'There. Rather better. One needn\'t mention the earlier difficulty.',
         d: 'Restored. One carries on as one always has.',
+      },
+      drouthy: {
+        a: 'Better. The moor settles when ye stop spinnin\' a minute.',
+        b: 'Right again. Or close enough tae right. Hic.',
+        c: 'Healed? Grand. Anither dram tae celebrate?',
+        d: 'On ma feet again. That\'s nae always a given.',
       },
     },
     biome_change: {
@@ -2950,6 +2981,12 @@ export const ui = {
         c: 'One waits. Perfectly contentedly. One is fine.',
         d: 'Mm. The heather goes on somewhat, doesn\'t it.',
       },
+      drouthy: {
+        a: 'Quiet on the moor. Just me, the whisky, an\' seventeen degrees o\' drift.',
+        b: 'A drouthy haggis is a patient haggis. He\'s got a flask.',
+        c: 'Hic. The drift\'s worse when ye stand still an\' think aboot it.',
+        d: 'Whit time is it? Doesnae matter. It\'s dram o\'clock.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3460,6 +3497,12 @@ export const ui = {
         //  is notable. One managed.
         a: 'Fifteen minutes. One managed. The Morningside Haggis joins the roster.',
         b: 'Composure. Propriety. The moor is quite welcome.',
+      },
+      variant_drouthy_unlocked: {
+        // 1,200 lifetime gold earned — spent most at the pub.
+        // Voice: hearth, jolly, slightly slurred surprise.
+        a: 'Twelve hundred gold banked — or spent. The Drouthy Haggis rolls in.',
+        b: 'Aye, he was always comin\'. The moor smelled the whisky a mile oot.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4182,6 +4225,12 @@ export const ui = {
         death_short: 'Rather abrupt ending. {name} had expected rather more time.',
         victory_baseline: '{name} prevailed. One is quietly satisfied. One says no more.',
         victory_taxman: 'The taxman was seen off by {name}. Rather efficiently. One considers the matter closed.',
+      },
+      drouthy: {
+        death_baseline: 'The bottle didnae help. {name} sleeps where he fell.',
+        death_short: '{name} went doon fast. The flask rolled on.',
+        victory_baseline: '{name} staggered through. The barrel remembered him.',
+        victory_taxman: '{name} outlasted the Taxman. The drams outlasted them baith.',
       },
     },
   },

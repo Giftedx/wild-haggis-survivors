@@ -52,6 +52,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Morningside Haggis — grey-gold Edinburgh stone field, pearl-grey
   // stripe, warm pearl accent. As composed as the address warrants.
   morningside:  { field: 0x8a8070, fieldDark: 0x4a4038, stripe: 0xb8c8a8, accent: 0xe8e0d8 },
+  // Drouthy Haggis — deep Highland red field, amber-gold stripe, warm
+  // amber accent. The flask catches the light. Traditional and well-used.
+  drouthy:      { field: 0xb84018, fieldDark: 0x6a2008, stripe: 0xf0c828, accent: 0xd88028 },
 };
 
 /**

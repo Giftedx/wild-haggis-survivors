@@ -895,6 +895,7 @@ export const ui = {
         doric_quinie: "Awa wi' the haar.",
         burns_wee_beastie: 'Wee, sleekit, an stilled.',
         morningside: 'Wholly avoidable, that. Wi mair composure.',
+        drouthy: 'Aye, still drouthy. That\'ll dae.',
       },
     },
     grandfather: {
@@ -1111,6 +1112,12 @@ export const ui = {
         b: 'This is no how ane anticipated tha eftternuin proceeding.',
         c: 'A brief recovery wid be entirely in order. If tha moor wid permit.',
         d: 'Ane maun simply press on. There is nae ither properly duin option.',
+      },
+      drouthy: {
+        a: 'Woozy. Mair frae tha hit than tha whusky. Maistly.',
+        b: 'Haud on — tha muir\'s tiltin. Or Ah am.',
+        c: 'Ae mair dram tae steady tha nerves. An ae mair tae steady that ane.',
+        d: 'Dinnae fash. Tha haggis bends. Hic.',
       },
     },
     boss_down: {
@@ -1412,6 +1419,12 @@ export const ui = {
         c: 'A considerable advancement. Quietly notit.',
         d: 'Ane continues tae develop, as ane should.',
       },
+      drouthy: {
+        a: 'Level up! Tha drams wur warkin tha hale time.',
+        b: 'Strunger wi ilka nip. Ah\'ve haed a few.',
+        c: 'Hic. That felt like a level or tha grund movin.',
+        d: 'Onwaird! Tha barrel\'s still on tha muir somewhaur.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1518,6 +1531,12 @@ export const ui = {
         b: 'Ane\'s first encounter — conducted wi appropriate briskness.',
         c: 'Dispatched. Ane notes tha experience withoot comment.',
         d: 'Handled. Ane moves on withoot makkin a scene.',
+      },
+      drouthy: {
+        a: 'First bluid! Slainte mhath — tha barrel\'s barely touched.',
+        b: 'Awa wi ye! Hic. Tha muir\'s mine tha nicht.',
+        c: 'That\'s tha dram warkin. Couldnae hae duin it sober. Mibbe.',
+        d: 'Doon! Tha whusky kent it afore Ah did.',
       },
     },
     kill_streak: {
@@ -1627,6 +1646,12 @@ export const ui = {
         c: 'This level o efficiency is, ane supposes, becomin.',
         d: 'A streak. Ane keeps ane\'s composure, naturally.',
       },
+      drouthy: {
+        a: 'Stack em like drams — ane, twa, three, an tha muir spins.',
+        b: 'Cannae stap noo. Tha barrel\'s no empty yet.',
+        c: 'Hic. Ilka kill\'s anither swig. This is braw.',
+        d: 'They\'re fawin faster than Ah am. That\'s a guid sign.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1733,6 +1758,12 @@ export const ui = {
         b: 'Tha crisis has passed. Ane maintained composure throughout.',
         c: 'There. Rather better. Ane needn\'t mention tha earlier difficulty.',
         d: 'Restored. Ane carries on as ane always has.',
+      },
+      drouthy: {
+        a: 'Better. Tha muir settles when ye stap spinnin a meenit.',
+        b: 'Richt again. Or close enough tae richt. Hic.',
+        c: 'Healed? Grand. Anither dram tae celebrate?',
+        d: 'On ma feet again. That\'s nae aye a given.',
       },
     },
     biome_change: {
@@ -2350,6 +2381,12 @@ export const ui = {
         c: 'Ane waits. Perfectly contentedly. Ane is fine.',
         d: 'Mm. Tha heather gangs on somewhat, disnae it.',
       },
+      drouthy: {
+        a: 'Quait on tha muir. Just me, tha whusky, an seventeen degrees o drift.',
+        b: 'A drouthy haggis is a patient haggis. He\'s got a flask.',
+        c: 'Hic. Tha drift\'s waur when ye staund still an think aboot it.',
+        d: 'Whit time is it? Disnae maitter. It\'s dram o\'clock.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -2815,6 +2852,10 @@ export const ui = {
       variant_morningside_unlocked: {
         a: 'Fifteen minutes. Ane managed. Tha Morningside Haggis joins tha roster.',
         b: 'Composure. Propriety. Tha moor is quite welcome.',
+      },
+      variant_drouthy_unlocked: {
+        a: 'Twal hunner gold banked — or spent. Tha Drouthy Haggis rolls in.',
+        b: 'Aye, he wis aye comin. Tha muir smelled tha whusky a mile oot.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3375,6 +3416,12 @@ export const ui = {
         death_short: 'Rather abrupt endin. {name} had expectit rather mair time.',
         victory_baseline: '{name} prevailed. Ane is quietly satisfied. Ane says nae mair.',
         victory_taxman: 'Tha taxman wis seen aff by {name}. Rather efficiently. Ane considers tha matter closed.',
+      },
+      drouthy: {
+        death_baseline: 'Tha bottle didnae help. {name} sleeps whaur he fell.',
+        death_short: '{name} went doon fast. Tha flask rolled on.',
+        victory_baseline: '{name} staggered through. Tha barrel minded him.',
+        victory_taxman: '{name} outlastit tha Taxman. Tha drams outlastit them baith.',
       },
     },
   },

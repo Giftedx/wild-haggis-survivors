@@ -1688,6 +1688,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
+   * Amplify the Drift magnitude by `fraction` (e.g. 1.0 = doubled, 0.5 = 1.5×).
+   * Composable with reduceDrift — both fold into `bonusDriftReduction`.
+   * The effective drift multiplier is `(1 - bonusDriftReduction)`;
+   * amplifyDrift multiplies it by `(1 + fraction)`.
+   * Used by the Drouthy variant: drunk legs, doubled drift.
+   */
+  amplifyDrift(fraction: number): void {
+    this.bonusDriftReduction = 1 - (1 - this.bonusDriftReduction) * (1 + fraction);
+    this.recalcStats();
+  }
+
+  /**
+   * Pre-load Whisky Breath stacks at run start. Used by variants that
+   * begin the run with a charged flask (Drouthy: starts at threshold,
+   * first burst available from the opening bell).
+   */
+  setWhiskyBreathStacks(n: number): void {
+    this.whiskyBreathState = { stacks: Math.min(Math.max(0, Math.floor(n)), STACKS_MAX) };
+  }
+
+  /**
    * Mirror the Drift direction — clockwise (+1) toggles to anticlockwise (-1)
    * and back. Set at run-start by the Anticlockwise Haggis variant; magnitude
    * is unchanged, only the rotation-matrix sign flips.

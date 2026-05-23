@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -33,6 +33,14 @@ export interface VariantModifier {
    * matrix without changing its magnitude.
    */
   driftSignFlip?: boolean;
+  /**
+   * Amplify the Drift magnitude by this fraction (e.g. 1.0 = doubled).
+   * Applied via `Player.amplifyDrift`. Composable with `driftReductionPct`
+   * — the effective drift multiplier is `(1 - bonusDriftReduction)` and
+   * both modifiers fold into the same field. Used by the Drouthy variant
+   * (drunk haggis — drift doubled by the drams).
+   */
+  driftAmplifyPct?: number;
 }
 
 export type VariantUnlockCondition =
@@ -87,7 +95,8 @@ export type HaggisAccentStyle =
   | 'glaswegian'
   | 'doric_quinie'
   | 'peerie_shetlander'
-  | 'morningside';
+  | 'morningside'
+  | 'drouthy';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -115,6 +124,13 @@ export interface VariantDef {
    * Future V2 cohort audits assign keys per variant.
    */
   startWithPassives?: string[];
+  /**
+   * Number of Whisky Breath stacks the player starts the run with.
+   * Applied via `Player.setWhiskyBreathStacks` after variant modifiers.
+   * Used by the Drouthy variant — the drunk haggis has a flask already
+   * half-drained, so the first burst is available from the opening bell.
+   */
+  startWhiskyStacks?: number;
 }
 
 export interface VariantProgressSnapshot {
@@ -605,6 +621,35 @@ export const VARIANTS: VariantDef[] = [
       },
     },
   },
+  {
+    // Drouthy Haggis — drunk on the moor, drift doubled by the drams.
+    // Starts the run with a full Whisky Breath charge already banked
+    // (flask half-drunk before the first bell). The drift amplification
+    // means the moor is already spinning; every kill banks more whisky
+    // momentum on top. Refs: SCOTTISH_RESEARCH_DEEP §13.6 (whisky as
+    // cultural libation + "drouthy" Scots — thirsty).
+    // Palette: whisky-amber — dark-amber body, golden fur, bright hip-
+    // flask accent. Kilt: deep red + amber gold (traditional Highland).
+    // Unlock: 1 200 lifetime gold — spent most of it at the pub.
+    key: 'drouthy',
+    nameKey: 'variant.drouthy.name',
+    flavorKey: 'variant.drouthy.flavor',
+    textureKey: 'haggis_drouthy',
+    modifiers: { driftAmplifyPct: 1.0 },
+    startWhiskyStacks: 8,
+    unlock: { type: 'total_gold_earned', required: 1200 },
+    appearance: {
+      accentStyle: 'drouthy',
+      palette: {
+        outline: 0x3a2810,
+        bodyDark: 0x7a4018,
+        bodyLight: 0xc87820,
+        fur: 0xd4a060,
+        snout: 0xe8b070,
+        accent: 0xf0c828, // bright whisky-gold hip flask
+      },
+    },
+  },
 ];
 
 export const VARIANT_KEYS = VARIANTS.map((variant) => variant.key) as VariantKey[];
@@ -785,6 +830,7 @@ export function formatVariantModifierSummary(variant: VariantDef): string {
     parts.push(t('variant.summary.size', pctInterp(delta)));
   }
   if (modifiers.driftSignFlip) parts.push(t('variant.summary.drift_flip'));
+  if (modifiers.driftAmplifyPct) parts.push(t('variant.summary.drift_amplify', { pct: Math.round(modifiers.driftAmplifyPct * 100) }));
 
   return parts.length > 0 ? parts.join('  |  ') : t('variant.summary.baseline');
 }
@@ -820,7 +866,8 @@ export function formatRunVariantLabel(variant: VariantDef): string {
     // the variant panel shows the modifier summary line instead of
     // "Baseline stats" for a variant that only differs visually.
     || (!!modifiers.spriteScale && modifiers.spriteScale !== 1)
-    || !!modifiers.driftSignFlip;
+    || !!modifiers.driftSignFlip
+    || !!modifiers.driftAmplifyPct;
   const name = t(variant.nameKey);
   if (!hasModifiers) return name;
   return `${name}  |  ${formatVariantModifierSummary(variant)}`;

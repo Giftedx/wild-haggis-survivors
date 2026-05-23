@@ -57,6 +57,7 @@ export function applyVariantModifiers(player: Player, variant: VariantDef): void
   if (modifiers.xpMultiplierPct) player.addXpMultiplier(modifiers.xpMultiplierPct);
   if (modifiers.damagePct) player.addDamageMultiplier(modifiers.damagePct);
   if (modifiers.driftReductionPct) player.reduceDrift(modifiers.driftReductionPct);
+  if (modifiers.driftAmplifyPct) player.amplifyDrift(modifiers.driftAmplifyPct);
   if (modifiers.cooldownReductionPct) player.addCooldownReduction(modifiers.cooldownReductionPct);
   if (modifiers.critChancePct) player.addCritChance(modifiers.critChancePct);
   if (modifiers.spriteScale) player.setScale(modifiers.spriteScale);

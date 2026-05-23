@@ -432,4 +432,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.morningside.death_short', requires: ['death', 'morningside', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.morningside.victory_baseline', requires: ['victory', 'morningside', 'has_name'] },
   { key: 'ui.weeTale.variant.morningside.victory_taxman', requires: ['victory', 'morningside', 'has_name', 'taxman'] },
+  // Three drams deep and still swinging.
+  { key: 'ui.weeTale.variant.drouthy.death_baseline', requires: ['death', 'drouthy', 'has_name'] },
+  { key: 'ui.weeTale.variant.drouthy.death_short', requires: ['death', 'drouthy', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.drouthy.victory_baseline', requires: ['victory', 'drouthy', 'has_name'] },
+  { key: 'ui.weeTale.variant.drouthy.victory_taxman', requires: ['victory', 'drouthy', 'has_name', 'taxman'] },
 ] as const;

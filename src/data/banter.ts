@@ -342,6 +342,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.morningside.c',
         'ui.banter.low_hp.morningside.d',
       ],
+      drouthy: [
+        'ui.banter.low_hp.drouthy.a',
+        'ui.banter.low_hp.drouthy.b',
+        'ui.banter.low_hp.drouthy.c',
+        'ui.banter.low_hp.drouthy.d',
+      ],
     },
   },
   {
@@ -674,6 +680,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.morningside.c',
         'ui.banter.level_up.morningside.d',
       ],
+      drouthy: [
+        'ui.banter.level_up.drouthy.a',
+        'ui.banter.level_up.drouthy.b',
+        'ui.banter.level_up.drouthy.c',
+        'ui.banter.level_up.drouthy.d',
+      ],
     },
   },
   {
@@ -787,6 +799,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.morningside.b',
         'ui.banter.first_blood.morningside.c',
         'ui.banter.first_blood.morningside.d',
+      ],
+      drouthy: [
+        'ui.banter.first_blood.drouthy.a',
+        'ui.banter.first_blood.drouthy.b',
+        'ui.banter.first_blood.drouthy.c',
+        'ui.banter.first_blood.drouthy.d',
       ],
     },
   },
@@ -903,6 +921,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.morningside.c',
         'ui.banter.kill_streak.morningside.d',
       ],
+      drouthy: [
+        'ui.banter.kill_streak.drouthy.a',
+        'ui.banter.kill_streak.drouthy.b',
+        'ui.banter.kill_streak.drouthy.c',
+        'ui.banter.kill_streak.drouthy.d',
+      ],
     },
   },
   {
@@ -1016,6 +1040,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.morningside.b',
         'ui.banter.recover.morningside.c',
         'ui.banter.recover.morningside.d',
+      ],
+      drouthy: [
+        'ui.banter.recover.drouthy.a',
+        'ui.banter.recover.drouthy.b',
+        'ui.banter.recover.drouthy.c',
+        'ui.banter.recover.drouthy.d',
       ],
     },
   },
@@ -1316,6 +1346,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.morningside.b',
         'ui.banter.idle.morningside.c',
         'ui.banter.idle.morningside.d',
+      ],
+      drouthy: [
+        'ui.banter.idle.drouthy.a',
+        'ui.banter.idle.drouthy.b',
+        'ui.banter.idle.drouthy.c',
+        'ui.banter.idle.drouthy.d',
       ],
     },
   },

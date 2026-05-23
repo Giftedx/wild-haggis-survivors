@@ -1076,6 +1076,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (bonus > 0) this.player.addPickupRadius(bonus);
     }
 
+    // Drouthy Haggis — pre-load Whisky Breath stacks so the first burst
+    // is available from the opening bell (flask was half-drunk already).
+    if (selectedVariant.startWhiskyStacks) {
+      this.player.setWhiskyBreathStacks(selectedVariant.startWhiskyStacks);
+    }
+
     // Apply permanent upgrades from save data. The two flag outputs
     // don't live on Player so come back as a result object.
     const permResult = applyPermanentUpgrades({
