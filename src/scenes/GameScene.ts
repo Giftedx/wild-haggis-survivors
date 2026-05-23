@@ -88,6 +88,7 @@ import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
 import type { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { CairnStackingScheduler } from './game/CairnStackingScheduler';
+import { CairnBoonPickerScene } from './CairnBoonPickerScene';
 import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
 import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
 import { installCailleachGauntlet } from './game/installCailleachGauntlet';
@@ -1454,6 +1455,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       },
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       bumpCairnBlessing: () => bumpCairnBlessing(),
+      openCairnBoonPicker: (options, onPick) => {
+        this.timeManager.request('CAIRN_BOON', { pausePhysics: true, timeScale: 0 });
+        this.scene.launch(CairnBoonPickerScene.KEY, {
+          options,
+          onPick: (id: Parameters<typeof onPick>[0]) => {
+            this.timeManager.release('CAIRN_BOON');
+            onPick(id);
+          },
+        });
+      },
     });
     this.cairnStacking.reset();
 

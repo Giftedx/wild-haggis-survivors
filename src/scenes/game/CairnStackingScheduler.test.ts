@@ -68,6 +68,7 @@ function makeFixture(
     spawnCairnStone: spawnSpy,
     caption: captionSpy,
     bumpCairnBlessing: bumpSpy,
+    openCairnBoonPicker: vi.fn(),
   };
   return {
     hooks: { ...baseHooks, ...overrides },
@@ -161,8 +162,15 @@ describe('CairnStackingScheduler', () => {
     expect(juice.showToast).toHaveBeenCalledTimes(1);
   });
 
-  it('third stone fires the Cairn Blessing boon — heal + magnet + boon banter (subsequent)', () => {
-    const { hooks, spawnSpy, juice, banter, player, captionSpy, bumpSpy } = makeFixture();
+  it('third stone opens boon picker (v2) — burst + flash, then applies picked boon', () => {
+    // Wire openCairnBoonPicker to auto-pick full_mend (simulates player
+    // choosing the first card). Downstream effects come from _applyBoon.
+    const pickerSpy = vi.fn().mockImplementation(
+      (_opts: unknown, onPick: (id: string) => void) => onPick('full_mend'),
+    );
+    const { hooks, spawnSpy, juice, banter, player, captionSpy, bumpSpy } = makeFixture({
+      openCairnBoonPicker: pickerSpy,
+    });
     const scheduler = new CairnStackingScheduler(hooks);
     scheduler.reset();
 
@@ -176,26 +184,32 @@ describe('CairnStackingScheduler', () => {
 
     expect(scheduler.getStoneCount()).toBe(CAIRN_STONE_CAP);
     expect(scheduler.getSpawnedCount()).toBe(CAIRN_STONE_CAP);
+    // Picker was opened with 3 options.
+    expect(pickerSpy).toHaveBeenCalledTimes(1);
+    expect(pickerSpy.mock.calls[0][0]).toHaveLength(3);
+    // full_mend effect: heal to max HP.
     expect(player.heal).toHaveBeenCalledExactlyOnceWith(player.getMaxHp());
-    expect(player.grantMoorMomentMagnet).toHaveBeenCalledExactlyOnceWith(
-      CAIRN_BOON_MAGNET_FLAT_PX,
-      CAIRN_BOON_MAGNET_DURATION_MS,
-    );
+    // Visual effects fire before the picker opens.
+    expect(juice.showMoorMomentBurst).toHaveBeenCalledTimes(1);
+    expect(juice.flashWhite).toHaveBeenCalledTimes(1);
     // Default fixture's bumpCairnBlessing returns 1 — subsequent blessing
     // routes to the existing `boon` pool, not `boon_first`.
     expect(bumpSpy).toHaveBeenCalledTimes(1);
     expect(banter.request).toHaveBeenCalledWith('cairn_moment', { tag: 'boon' });
     expect(captionSpy).toHaveBeenCalledTimes(1);
-    expect(juice.showMoorMomentBurst).toHaveBeenCalledTimes(1);
-    expect(juice.flashWhite).toHaveBeenCalledTimes(1);
   });
 
   it('first lifetime blessing routes to boon_first sub-pool (pre-bump 0)', () => {
     // Override the bumper to return 0 — the v22 contract for "this is
     // the first Cairn's Blessing the player has ever earned."
     const firstEverBumper = vi.fn().mockReturnValue(0);
+    // Auto-pick any boon so _applyBoon fires and routes banter.
+    const pickerSpy = vi.fn().mockImplementation(
+      (_opts: unknown, onPick: (id: string) => void) => onPick('full_mend'),
+    );
     const { hooks, spawnSpy, banter, bumpSpy } = makeFixture({
       bumpCairnBlessing: firstEverBumper,
+      openCairnBoonPicker: pickerSpy,
     });
     const scheduler = new CairnStackingScheduler(hooks);
     scheduler.reset();

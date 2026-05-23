@@ -1292,9 +1292,40 @@ export const ui = {
   cairn: {
     /** Per-stone collect toast — shows {count}/{cap} so the player tracks progress. */
     stack_toast: 'Stone laid on the cairn ({count}/{cap}).',
-    /** Third stone — the boon fires. Toast lands first, caption sits longer for ceremony. */
-    boon_toast: 'The cairn stands. The moor minds ye now.',
-    boon_caption: 'Cairn\'s Blessing — fully mended, the moor draws the gleanings closer.',
+    /** Third stone — picker opens. Flash lands before the modal. */
+    boon_toast: 'The cairn stands. Choose what the moor gives back.',
+    boon_caption: 'Cairn\'s Blessing',
+    /** Title strip on the 3-card boon picker modal. */
+    picker_title: 'The Cairn Answers',
+    /** Per-boon copy. Each has name (modal card title), desc (card body),
+     *  toast (post-pick confirmation strip). */
+    boon: {
+      full_mend: {
+        name: 'Full Mend',
+        desc: 'The stone gives back what the moor has taken. Fully restored.',
+        toast: 'Fully mended — the cairn knew.',
+      },
+      moor_sweep: {
+        name: 'Moor Sweep',
+        desc: 'Eight seconds of expanded reach. Sweep the moor clean.',
+        toast: 'The moor draws in — gems and gold within reach.',
+      },
+      stone_vigour: {
+        name: 'Stone Vigour',
+        desc: 'A fieldstone\'s endurance — +20 to yer heart, right now.',
+        toast: 'Bigger heart — the cairn grew ye.',
+      },
+      cairn_ward: {
+        name: 'Cairn Ward',
+        desc: 'The stones stand between ye and the moor. +12% damage this run.',
+        toast: 'Cairn Ward — the old weight behind yer blows.',
+      },
+      glacial_calm: {
+        name: 'Glacial Calm',
+        desc: 'Still hands, faster fire. −15% weapon cooldown this run.',
+        toast: 'Glacial calm — every strike finds its pace.',
+      },
+    },
     /**
      * T7 — Cairn-of-Echoes whispers (distinct from Cairn Stacking above).
      * A spectral cairn marks the player's last-death location; touching it

@@ -35,6 +35,7 @@ import { GAME, COLORS_CSS } from './config';
 import { BootScene } from './scenes/BootScene';
 import { GameScene } from './scenes/GameScene';
 import { ActIntermissionScene } from './scenes/ActIntermissionScene';
+import { CairnBoonPickerScene } from './scenes/CairnBoonPickerScene';
 import { installLazyProductionSceneLoader } from './scenes/lazyProductionScenes';
 import { buildRenderNodesConfig } from './systems/shaders/ShaderRegistry';
 import { registerAllShaders } from './systems/shaders/registerAllShaders';
@@ -87,7 +88,7 @@ const config: Phaser.Types.Core.GameConfig = {
       fixedStep: true,
     },
   },
-  scene: [BootScene, GameScene, ActIntermissionScene],
+  scene: [BootScene, GameScene, ActIntermissionScene, CairnBoonPickerScene],
   render: {
     pixelArt: true,
     antialias: false,

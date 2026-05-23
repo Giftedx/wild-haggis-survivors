@@ -38,6 +38,7 @@ import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { RNG } from '../../utils/rng';
 import { t } from '../../core/i18n';
+import { getCairnBoonById, pickCairnBoonOptions, type CairnBoonDef, type CairnBoonId } from './cairnStackingBoons';
 
 export const CAIRN_STONE_CAP = 3;
 export const CAIRN_FIRST_SPAWN_SEC = 75;
@@ -62,6 +63,13 @@ export interface CairnStackingSchedulerHooks {
    * existing `boon` pool. Sister to clootie + beithir lifetime bumpers.
    */
   bumpCairnBlessing(): number;
+  /**
+   * Open the 3-card boon picker modal. The scheduler calls this when
+   * the third stone is collected, passing three weighted-draw options
+   * and a callback the modal invokes with the player's chosen boon ID.
+   * Production wires this to `cairnBoonPickerModal.open(...)`.
+   */
+  openCairnBoonPicker(options: readonly CairnBoonDef[], onPick: (id: CairnBoonId) => void): void;
 }
 
 export class CairnStackingScheduler {
@@ -133,22 +141,10 @@ export class CairnStackingScheduler {
     const reachedCap = this.stoneCount >= CAIRN_STONE_CAP;
 
     if (reachedCap) {
-      player.heal(player.getMaxHp());
-      player.grantMoorMomentMagnet(
-        CAIRN_BOON_MAGNET_FLAT_PX,
-        CAIRN_BOON_MAGNET_DURATION_MS,
-      );
-      this.hooks.getJuice().showToast(t('ui.cairn.boon_toast'), '#e8d8a8');
       this.hooks.getJuice().showMoorMomentBurst(player.x, player.y);
       this.hooks.getJuice().flashWhite(96);
-      this.hooks.caption('cairn_blessing', t('ui.cairn.boon_caption'), '#e8d8a8', 3600);
-      // Lifetime counter routes the first blessing ever to boon_first
-      // (pilgrim wonder beat) and subsequent blessings to the existing
-      // boon pool (familiar rite). Pre-bump 0 = first ever; bumper
-      // persists to v22 save. Sister to clootie + beithir routing.
-      const beforeCount = this.hooks.bumpCairnBlessing();
-      const tag = beforeCount === 0 ? 'boon_first' : 'boon';
-      this.hooks.getBanter()?.request('cairn_moment', { tag });
+      const options = pickCairnBoonOptions(this.hooks.getRunRng());
+      this.hooks.openCairnBoonPicker(options, (id) => this._applyBoon(id, player));
     } else {
       this.hooks.getJuice().showToast(
         t('ui.cairn.stack_toast', { count: this.stoneCount, cap: CAIRN_STONE_CAP }),
@@ -156,6 +152,20 @@ export class CairnStackingScheduler {
       );
       this.hooks.getBanter()?.request('cairn_moment', { tag: 'stack' });
     }
+  }
+
+  /**
+   * Apply a chosen boon after the picker resolves. Separated from
+   * `onStoneCollected` so the modal callback can invoke it once the
+   * player dismisses the card, not during the overlap frame.
+   */
+  private _applyBoon(id: CairnBoonId, player: Player): void {
+    getCairnBoonById(id).effect(player, this.hooks.getJuice());
+    this.hooks.getJuice().showToast(t(`ui.cairn.boon.${id}.toast`), '#e8d8a8');
+    this.hooks.caption('cairn_blessing', t(`ui.cairn.boon.${id}.name`), '#e8d8a8', 3600);
+    const beforeCount = this.hooks.bumpCairnBlessing();
+    const tag = beforeCount === 0 ? 'boon_first' : 'boon';
+    this.hooks.getBanter()?.request('cairn_moment', { tag });
   }
 
   // ── Test surface ──────────────────────────────────────────────────────

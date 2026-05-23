@@ -833,8 +833,36 @@ export const ui = {
   },
   cairn: {
     stack_toast: 'Stane laid on tha cairn ({count}/{cap}).',
-    boon_toast: 'Tha cairn stauns. Tha moor minds ye nou.',
-    boon_caption: 'Cairn\'s Blessin — fully mendit, tha moor draws tha gleanings closer.',
+    boon_toast: 'Tha cairn stauns. Wale whit tha moor gies back.',
+    boon_caption: 'Cairn\'s Blessin',
+    picker_title: 'Tha Cairn Answers',
+    boon: {
+      full_mend: {
+        name: 'Full Mend',
+        desc: 'Tha stane gies back whit tha moor taen. Fully mendit.',
+        toast: 'Fully mendit — tha cairn kent.',
+      },
+      moor_sweep: {
+        name: 'Moor Sweep',
+        desc: 'Echt seconds o\' wider reach. Sweep tha moor clean.',
+        toast: 'Tha moor draws in — gems an\' gowd within reach.',
+      },
+      stone_vigour: {
+        name: 'Stane Vigour',
+        desc: 'A fieldstane\'s endurance — +20 tae yer hert, richt nou.',
+        toast: 'Bigger hert — tha cairn grew ye.',
+      },
+      cairn_ward: {
+        name: 'Cairn Ward',
+        desc: 'Tha stanes staun atween ye an\' tha moor. +12% skaith this rin.',
+        toast: 'Cairn Ward — tha auld wecht ahint yer blaws.',
+      },
+      glacial_calm: {
+        name: 'Glacial Calm',
+        desc: 'Still hauns, faster fire. −15% wappen cooldown this rin.',
+        toast: 'Glacial calm — ilka strike finds its pace.',
+      },
+    },
     whisper: {
       past_self: {
         first_death: "That's me, doon there.",
