@@ -24,6 +24,8 @@ import type { Player } from '../../entities/Player';
 import type { RNG } from '../../utils/rng';
 import {
   CLOOTIE_PICK_RADIUS_PX,
+  CLOOTIE_HP_COST_FRACTION,
+  CLOOTIE_HP_COST_MIN,
   type ClootieBoon,
   applyClootieBoon,
   chooseClootieBoon,
@@ -50,6 +52,18 @@ export interface ClootieTreeHooks {
    *  already applied the HP cost + boon to the player; the callback is
    *  for the toast / caption / banter / save bumps. */
   onPick(boon: ClootieBoon, hpCost: number): void;
+
+  // ── visual / cost overrides (optional — black clootie variant) ──────
+  /** Override the boon-picker function. Defaults to `chooseClootieBoon`. */
+  readonly chooseBoon?: (rng: RNG) => ClootieBoon;
+  /** Override the HP cost fraction. Defaults to `CLOOTIE_HP_COST_FRACTION`. */
+  readonly hpCostFraction?: number;
+  /** Override the HP cost minimum. Defaults to `CLOOTIE_HP_COST_MIN`. */
+  readonly hpCostMin?: number;
+  /** Tint applied to the tree sprite (0xRRGGBB). Default: no tint. */
+  readonly spriteTint?: number;
+  /** Colour of the glow arc (0xRRGGBB). Default: `0x88a070`. */
+  readonly glowTint?: number;
 }
 
 interface ClootieTreeInstance {
@@ -79,7 +93,8 @@ export class ClootieTree {
     if (this.spawned || this.picked) return;
     this.spawned = true;
 
-    const boon = chooseClootieBoon(this.hooks.rng);
+    const pickBoon = this.hooks.chooseBoon ?? chooseClootieBoon;
+    const boon = pickBoon(this.hooks.rng);
     const pos = computeClootiePlacement(
       this.hooks.rng,
       this.hooks.player.x,
@@ -87,22 +102,29 @@ export class ClootieTree {
       this.hooks.worldWidth,
       this.hooks.worldHeight,
     );
-    const hpCost = computeWagerHpCost(this.hooks.runBaseMaxHp);
+    const costFraction = this.hooks.hpCostFraction ?? CLOOTIE_HP_COST_FRACTION;
+    const costMin = this.hooks.hpCostMin ?? CLOOTIE_HP_COST_MIN;
+    const hpCost = computeWagerHpCost(this.hooks.runBaseMaxHp, costFraction, costMin);
 
+    const glowColour = this.hooks.glowTint ?? 0x88a070;
     const glow = this.hooks.scene.add
-      .circle(pos.x, pos.y + 4, CLOOTIE_PICK_RADIUS_PX + 8, 0x88a070, 0.18)
+      .circle(pos.x, pos.y + 4, CLOOTIE_PICK_RADIUS_PX + 8, glowColour, 0.18)
       .setDepth(4);
 
     // Sprite — use the baked clootie tree texture if available, fall
     // back to a tinted rectangle so unit-test scenes that skip BootScene
     // baking don't render the magenta missing-texture placeholder.
     // Pattern matches §"Phaser 4 Gotchas" / new-system-safety checklist.
-    const sprite = this.hooks.scene.textures.exists(CLOOTIE_TREE_TEXTURE_KEY)
+    const rawSprite = this.hooks.scene.textures.exists(CLOOTIE_TREE_TEXTURE_KEY)
       ? this.hooks.scene.add.sprite(pos.x, pos.y, CLOOTIE_TREE_TEXTURE_KEY).setDepth(5)
       : this.hooks.scene.add
           .rectangle(pos.x, pos.y, 18, 26, 0x4a3a2c)
           .setStrokeStyle(1, 0x2a1a14)
           .setDepth(5);
+    if (this.hooks.spriteTint !== undefined) {
+      (rawSprite as Phaser.GameObjects.Sprite).setTint?.(this.hooks.spriteTint);
+    }
+    const sprite = rawSprite;
 
     // Gentle breathing pulse on the glow so the landmark is visible
     // without shouting. Tree itself stays still — clootie wells are

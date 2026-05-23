@@ -97,6 +97,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     getStandingStones: () => scene.standingStones,
     getReliquary: () => scene.reliquary,
     getClootieTree: () => scene.clootieTree,
+    getBlackClootieTree: () => scene.blackClootieTree,
     getLemmingsEasterEgg: () => scene.lemmingsEasterEgg,
     getAncestralEcho: () => scene.ancestralEcho,
     setAncestralEcho: (v) => { scene.ancestralEcho = v; },
@@ -165,7 +166,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     relicEffectDriver: scene.relicEffectDriver,
     relicPickupSpawner: scene.relicPickupSpawner,
     reliquaryMinimapMarker: scene.reliquary?.getMinimapMarker() ?? null,
-    clootieMinimapMarker: scene.clootieTree?.getMinimapMarker() ?? null,
+    clootieMinimapMarker: scene.clootieTree?.getMinimapMarker() ?? scene.blackClootieTree?.getMinimapMarker() ?? null,
     livingWorldPresence: scene.livingWorldDirector.getPresence(),
     // Wild Living World Phase 2 — hazardPressure axis. 6 simultaneous
     // hazards is the practical ceiling on a busy run; normalising to

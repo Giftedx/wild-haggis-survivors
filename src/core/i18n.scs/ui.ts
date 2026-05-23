@@ -460,6 +460,21 @@ export const ui = {
       title: 'Haste',
       desc: 'A green rag whuppin — weapons answer fifteen percent quicker.',
     },
+    second_announce_toast: 'A second tree — its clooties are black. Tha moor asks mair.',
+    second_announce_caption: 'Anither wager, deeper cost. Walk through an tha moor taks twintie pairts in a hunner.',
+    second_commit_toast: '{title} bound deep — {cost} HP gien tae tha black tree.',
+    deep_wrath: {
+      title: 'Deep Wrath',
+      desc: 'Black clooties stained daurk — yer blows bite twa-fifths herder fer tha rest o\' tha rin.',
+    },
+    deep_patience: {
+      title: 'Deep Patience',
+      desc: 'Tha weel hauls hard — pickups draw in fae ninety paces oot.',
+    },
+    deep_haste: {
+      title: 'Deep Haste',
+      desc: 'Tha black rag snaps — weapons answer twintie-twa percent quicker.',
+    },
   },
   standingStones: {
     announce_toast: 'Three stanes stir — pick yer blessin.',

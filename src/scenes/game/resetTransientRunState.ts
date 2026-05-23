@@ -54,7 +54,11 @@ import type { MoorMomentsState } from './moorMoments';
 import { resetReplayBridge } from './replayBridgeInstall';
 import { tearDownNodeMap } from './nodeMapLifecycle';
 import { chooseReliquarySpawnSec } from './reliquary';
-import { chooseClootieSpawnSec } from '../../entities/clootieRagWager';
+import {
+  chooseClootieSpawnSec,
+  shouldSpawnBlackClootie,
+  chooseBlackClootieSpawnSec,
+} from '../../entities/clootieRagWager';
 import type { ClootieTree } from './clootieTree';
 import type { LemmingsEasterEgg } from './lemmingsEasterEgg';
 import type { StandingStones } from './standingStones';
@@ -140,6 +144,7 @@ export interface ResetTransientRunStateDeps {
   setPendingRunSeed: (v: number | null) => void;
   setReliquarySpawnSec: (v: number) => void;
   setClootieSpawnSec: (v: number) => void;
+  setBlackClootieSpawnSec: (v: number) => void;
   setPendingChests: (v: Array<{ golden: boolean }>) => void;
   setPickupDespawnHandles: (v: TickerHandle[]) => void;
   setVictoryFade: (v: null) => void;
@@ -153,6 +158,8 @@ export interface ResetTransientRunStateDeps {
   setStonesWarned: (v: boolean) => void;
   setReliquary: (v: Reliquary | null) => void;
   setClootieTree: (v: ClootieTree | null) => void;
+  blackClootieTree: ClootieTree | null;
+  setBlackClootieTree: (v: ClootieTree | null) => void;
   setLemmingsEasterEgg: (v: LemmingsEasterEgg | null) => void;
   setAncestralEcho: (v: AncestralEcho | null) => void;
   setRelicSlotUI: (v: RelicSlotUI | null) => void;
@@ -214,6 +221,13 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   // independently from the same `runRng`, so the order is part of the
   // replay contract — NEVER reorder them.
   deps.setClootieSpawnSec(chooseClootieSpawnSec(runRng));
+  // Black clootie — 25 % chance, late-game window. Always consume two
+  // RNG tokens (chance + spawn-sec when enabled) to keep the stream
+  // length fixed regardless of the outcome. The chance token is
+  // consumed first; if disabled, the sec roll is skipped but a
+  // placeholder draw is NOT needed (0 = disabled sentinel covers it).
+  const blackEnabled = shouldSpawnBlackClootie(runRng);
+  deps.setBlackClootieSpawnSec(blackEnabled ? chooseBlackClootieSpawnSec(runRng) : 0);
   deps.setPendingChests([]);
   deps.setPickupDespawnHandles([]);
   deps.updateTickers.clear();
@@ -249,6 +263,8 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   deps.setReliquary(null);
   deps.clootieTree?.destroy();
   deps.setClootieTree(null);
+  deps.blackClootieTree?.destroy();
+  deps.setBlackClootieTree(null);
   deps.lemmingsEasterEgg?.destroy();
   deps.setLemmingsEasterEgg(null);
   deps.ancestralEcho?.destroy();

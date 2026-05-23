@@ -113,6 +113,7 @@ import {
   spawnStandingStones as moorMomentsSpawnStandingStones,
   spawnReliquary as moorMomentsSpawnReliquary,
   spawnClootieTree as moorMomentsSpawnClootieTree,
+  spawnBlackClootieTree as moorMomentsSpawnBlackClootieTree,
   showRunIdentityToast as moorMomentsShowRunIdentityToast,
 } from './game/moorMoments';
 import { PauseMenu } from './game/PauseMenu';
@@ -320,6 +321,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Clootie Tree — single sacred-supplication landmark per run. Walking
    *  through commits the wager: a slice of max-HP for a rolled boon. */
   clootieTree: ClootieTree | null = null;
+  /** Black Clootie — rare second wager (25 % of runs, [13:00, 18:00]).
+   *  Deeper boons, higher HP cost, dark visual. Null when disabled or
+   *  not yet spawned. */
+  blackClootieTree: ClootieTree | null = null;
   /** Lemmings Easter Egg (DESIGN_IDEAS §13) — once-per-variant cliff-edge
    *  parade. Idle 90 s in coastal biome triggers the homage to DMA Design
    *  / Dundee 1991. Cosmetic-only; no balance impact. Null between runs;
@@ -327,6 +332,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   lemmingsEasterEgg: LemmingsEasterEgg | null = null;
   /** Run-specific second at which the clootie tree spawns (DESIGN_IDEAS §1). */
   private clootieSpawnSec: number = 0;
+  /** Run-specific second at which the black clootie can spawn; 0 = disabled
+   *  this run (75 % of runs). */
+  private blackClootieSpawnSec: number = 0;
   /** Taxman Grudge Ledger — silent per-run finish buffer (DESIGN_IDEAS §1).
    *  Weapon listener appends one entry per elite/boss kill;
    *  `RunLifecycle.handleVictory` reads + judges the verdict at run end.
@@ -669,6 +677,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setPendingRunSeed: (v) => { this.pendingRunSeed = v; },
       setReliquarySpawnSec: (v) => { this.reliquarySpawnSec = v; },
       setClootieSpawnSec: (v) => { this.clootieSpawnSec = v; },
+      setBlackClootieSpawnSec: (v) => { this.blackClootieSpawnSec = v; },
       setPendingChests: (v) => { this.pendingChests = v; },
       setPickupDespawnHandles: (v) => { this.pickupDespawnHandles = v; },
       setVictoryFade: (v) => { this.victoryFade = v; },
@@ -682,6 +691,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setStonesWarned: (v) => { this.stonesWarned = v; },
       setReliquary: (v) => { this.reliquary = v; },
       setClootieTree: (v) => { this.clootieTree = v; },
+      blackClootieTree: this.blackClootieTree,
+      setBlackClootieTree: (v) => { this.blackClootieTree = v; },
       setLemmingsEasterEgg: (v) => { this.lemmingsEasterEgg = v; },
       setAncestralEcho: (v) => { this.ancestralEcho = v; },
       setRelicSlotUI: (v) => { this.relicSlotUI = v; },
@@ -1809,11 +1820,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getReliquarySpawnSec: () => this.reliquarySpawnSec,
       getClootieTree: () => this.clootieTree,
       getClootieSpawnSec: () => this.clootieSpawnSec,
+      getBlackClootieTree: () => this.blackClootieTree,
+      getBlackClootieSpawnSec: () => this.blackClootieSpawnSec,
       getStonesWarned: () => this.stonesWarned,
       markStonesWarned: () => { this.stonesWarned = true; },
       spawnStandingStones: () => this.spawnStandingStones(),
       spawnReliquary: () => this.spawnReliquary(),
       spawnClootieTree: () => this.spawnClootieTree(),
+      spawnBlackClootieTree: () => this.spawnBlackClootieTree(),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     };
   }
@@ -1862,6 +1876,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private spawnClootieTree(): void {
     if (this.clootieTree) return;
     this.clootieTree = moorMomentsSpawnClootieTree(this.buildMoorMomentsContext());
+  }
+
+  private spawnBlackClootieTree(): void {
+    if (this.blackClootieTree) return;
+    this.blackClootieTree = moorMomentsSpawnBlackClootieTree(this.buildMoorMomentsContext());
   }
 
   private showRunIdentityToast(isResume: boolean): void {

@@ -112,6 +112,7 @@ export interface TickFrameWorldDeps {
   getStandingStones: () => StandingStones | null;
   getReliquary: () => Reliquary | null;
   getClootieTree: () => ClootieTree | null;
+  getBlackClootieTree: () => ClootieTree | null;
   /** Lemmings Easter Egg orchestrator (DESIGN_IDEAS §13). Lazy — null
    *  between runs / before the in-line ctor in GameScene.create() runs. */
   getLemmingsEasterEgg: () => LemmingsEasterEgg | null;
@@ -244,6 +245,7 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   deps.getStandingStones()?.tick();
   deps.getReliquary()?.tick();
   deps.getClootieTree()?.tick();
+  deps.getBlackClootieTree()?.tick();
   // Lemmings Easter Egg (DESIGN_IDEAS §13) — once-per-variant cliff-edge
   // parade trigger. Drives off scaledDelta so paused frames don't tick
   // toward the 90 s threshold (a pause-menu camp must not earn the

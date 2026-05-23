@@ -77,11 +77,14 @@ export interface SecondTickHookContext {
   getReliquarySpawnSec: () => number;
   getClootieTree: () => ClootieTree | null;
   getClootieSpawnSec: () => number;
+  getBlackClootieTree: () => ClootieTree | null;
+  getBlackClootieSpawnSec: () => number;
   getStonesWarned: () => boolean;
   markStonesWarned: () => void;
   spawnStandingStones: () => void;
   spawnReliquary: () => void;
   spawnClootieTree: () => void;
+  spawnBlackClootieTree: () => void;
   caption: (id: string, msg: string, tint: string, dur: number) => void;
 }
 
@@ -130,6 +133,13 @@ export function tickSecondCounter(
   const clootieSec = ctx.getClootieSpawnSec();
   if (clootieSec > 0 && runSec >= clootieSec && !ctx.getClootieTree()) {
     ctx.spawnClootieTree();
+  }
+  // Black Clootie — rare second wager, late-game window [13:00, 18:00].
+  // Disabled (sec === 0) on ~75 % of runs; the once-only guard fires
+  // via `getBlackClootieTree()` null-check, same as the standard one.
+  const blackClootieSec = ctx.getBlackClootieSpawnSec();
+  if (blackClootieSec > 0 && runSec >= blackClootieSec && !ctx.getBlackClootieTree()) {
+    ctx.spawnBlackClootieTree();
   }
   return runSec;
 }

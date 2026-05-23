@@ -790,6 +790,22 @@ export const ui = {
       title: 'Haste',
       desc: 'A green rag whippin\' — weapons answer fifteen percent quicker.',
     },
+    // Black Clootie — rare second wager (25 % of runs, late-game).
+    second_announce_toast: 'A second tree — its rags are black. The moor asks more.',
+    second_announce_caption: 'Another wager, deeper cost. Walk through and the moor takes twenty parts in a hundred.',
+    second_commit_toast: '{title} bound deeply — {cost} HP given tae the dark tree.',
+    deep_wrath: {
+      title: 'Deep Wrath',
+      desc: 'Black rags stained dark — yir blows bite two-fifths harder for the rest o\' the run.',
+    },
+    deep_patience: {
+      title: 'Deep Patience',
+      desc: 'The well pulls hard — pickups draw in fae ninety paces out.',
+    },
+    deep_haste: {
+      title: 'Deep Haste',
+      desc: 'The black rag snaps — weapons answer twenty-twa percent quicker.',
+    },
   },
   /** Standing Stones — mid-run trinity at the 5:00 mark. */
   standingStones: {

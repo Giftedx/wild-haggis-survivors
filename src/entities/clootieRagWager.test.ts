@@ -10,11 +10,21 @@ import {
   CLOOTIE_PICK_RADIUS_PX,
   CLOOTIE_SPAWN_MAX_SEC,
   CLOOTIE_SPAWN_MIN_SEC,
+  DEEP_CLOOTIE_BOONS,
+  BLACK_CLOOTIE_CHANCE,
+  BLACK_CLOOTIE_HP_COST_FRACTION,
+  BLACK_CLOOTIE_HP_COST_MIN,
+  BLACK_CLOOTIE_SPAWN_MIN_SEC,
+  BLACK_CLOOTIE_SPAWN_MAX_SEC,
   chooseClootieBoon,
   chooseClootieSpawnSec,
+  chooseDeepClootieBoon,
+  chooseBlackClootieSpawnSec,
+  shouldSpawnBlackClootie,
   computeClootiePlacement,
   computeWagerHpCost,
   shuffleClootieBoons,
+  shuffleDeepClootieBoons,
   type ClootieBoonId,
 } from './clootieRagWager';
 
@@ -159,6 +169,93 @@ describe('clootieRagWager', () => {
 
     it('cost minimum is at least 1 HP — floor never zeros the cost', () => {
       expect(CLOOTIE_HP_COST_MIN).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('deep boon catalogue', () => {
+    it('exposes the three deep boons', () => {
+      const ids = DEEP_CLOOTIE_BOONS.map((b) => b.id).sort();
+      expect(ids).toEqual(['deep_haste', 'deep_patience', 'deep_wrath']);
+    });
+
+    it('every deep boon has title + desc i18n keys under ui.clootie.deep_*', () => {
+      for (const b of DEEP_CLOOTIE_BOONS) {
+        expect(b.titleKey).toMatch(/^ui\.clootie\.deep_/);
+        expect(b.descKey).toMatch(/^ui\.clootie\.deep_/);
+      }
+    });
+  });
+
+  describe('shuffleDeepClootieBoons / chooseDeepClootieBoon', () => {
+    it('shuffle returns all members exactly once', () => {
+      const rng = createRNG(42);
+      const out = shuffleDeepClootieBoons(rng);
+      expect(out).toHaveLength(DEEP_CLOOTIE_BOONS.length);
+      const ids = new Set(out.map((b) => b.id));
+      expect(ids.size).toBe(DEEP_CLOOTIE_BOONS.length);
+    });
+
+    it('same seed → same deep boon (replay determinism)', () => {
+      const a = chooseDeepClootieBoon(createRNG('deep-alpha'));
+      const b = chooseDeepClootieBoon(createRNG('deep-alpha'));
+      expect(a.id).toBe(b.id);
+    });
+  });
+
+  describe('shouldSpawnBlackClootie / chooseBlackClootieSpawnSec', () => {
+    it('chance constant is 0.25 (25 % of runs)', () => {
+      expect(BLACK_CLOOTIE_CHANCE).toBeCloseTo(0.25, 5);
+    });
+
+    it('approximately 25 % of seeds enable the black clootie', () => {
+      let enabled = 0;
+      for (let s = 0; s < 200; s++) {
+        if (shouldSpawnBlackClootie(createRNG(s))) enabled++;
+      }
+      // Allow generous band (15 – 40 %) — 200 trials is small.
+      expect(enabled).toBeGreaterThanOrEqual(20);
+      expect(enabled).toBeLessThanOrEqual(80);
+    });
+
+    it('same seed → same enabled result (replay determinism)', () => {
+      const a = shouldSpawnBlackClootie(createRNG('black-alpha'));
+      const b = shouldSpawnBlackClootie(createRNG('black-alpha'));
+      expect(a).toBe(b);
+    });
+
+    it('spawn sec is inside the configured window', () => {
+      const rng = createRNG('black-seed');
+      for (let i = 0; i < 50; i++) {
+        const sec = chooseBlackClootieSpawnSec(rng);
+        expect(sec).toBeGreaterThanOrEqual(BLACK_CLOOTIE_SPAWN_MIN_SEC);
+        expect(sec).toBeLessThanOrEqual(BLACK_CLOOTIE_SPAWN_MAX_SEC);
+      }
+    });
+
+    it('black clootie window is later than the standard window', () => {
+      expect(BLACK_CLOOTIE_SPAWN_MIN_SEC).toBeGreaterThan(CLOOTIE_SPAWN_MAX_SEC);
+    });
+  });
+
+  describe('computeWagerHpCost — optional fraction / min overrides', () => {
+    it('uses default fraction when none provided', () => {
+      expect(computeWagerHpCost(100)).toBe(12);
+    });
+
+    it('uses black clootie fraction when passed explicitly', () => {
+      // 100 * 0.20 = 20, clears the 8-floor.
+      expect(computeWagerHpCost(100, BLACK_CLOOTIE_HP_COST_FRACTION, BLACK_CLOOTIE_HP_COST_MIN)).toBe(20);
+    });
+
+    it('floors at black clootie minimum for very low base HP', () => {
+      expect(computeWagerHpCost(10, BLACK_CLOOTIE_HP_COST_FRACTION, BLACK_CLOOTIE_HP_COST_MIN))
+        .toBe(BLACK_CLOOTIE_HP_COST_MIN);
+    });
+
+    it('black clootie cost is higher than standard at same base HP', () => {
+      const standard = computeWagerHpCost(100);
+      const black = computeWagerHpCost(100, BLACK_CLOOTIE_HP_COST_FRACTION, BLACK_CLOOTIE_HP_COST_MIN);
+      expect(black).toBeGreaterThan(standard);
     });
   });
 });

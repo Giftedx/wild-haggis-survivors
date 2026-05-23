@@ -49,7 +49,12 @@ import {
 import { StandingStones, type StoneBoon } from './standingStones';
 import { Reliquary, type ReliquaryCurio } from './reliquary';
 import { ClootieTree } from './clootieTree';
-import type { ClootieBoon } from '../../entities/clootieRagWager';
+import {
+  type ClootieBoon,
+  BLACK_CLOOTIE_HP_COST_FRACTION,
+  BLACK_CLOOTIE_HP_COST_MIN,
+  chooseDeepClootieBoon,
+} from '../../entities/clootieRagWager';
 import { crossesMoorMercyHpFrac } from './moorMercyTrigger';
 import { formatRunIdentityToast } from './runIdentityToast';
 
@@ -276,6 +281,48 @@ export function spawnClootieTree(ctx: MoorMomentsContext): ClootieTree {
   tree.spawn();
   ctx.juice.showToast(t('ui.clootie.announce_toast'), '#cfd0a8');
   ctx.caption('clootie_announce', t('ui.clootie.announce_caption'), '#cfd0a8', 3000);
+  return tree;
+}
+
+/**
+ * Black Clootie — rare second wager (25 % of runs, late-game window).
+ * Darker visual, deeper boons (40 %/90 px/22 % vs 25 %/60 px/15 %),
+ * steeper HP cost (20 % of run-base max vs 12 %). Same ClootieTree
+ * class; overrides injected via optional hooks.
+ *
+ * Announces with a distinct colour (#b0a0b8 muted lavender) and a
+ * separate i18n key so the toast reads as a different event.
+ */
+export function spawnBlackClootieTree(ctx: MoorMomentsContext): ClootieTree {
+  const tree = new ClootieTree({
+    scene: ctx.scene,
+    player: ctx.player,
+    rng: ctx.runRng,
+    worldWidth: GAME.WORLD_WIDTH,
+    worldHeight: GAME.WORLD_HEIGHT,
+    runBaseMaxHp: ctx.player.getRunBaseMaxHp(),
+    chooseBoon: chooseDeepClootieBoon,
+    hpCostFraction: BLACK_CLOOTIE_HP_COST_FRACTION,
+    hpCostMin: BLACK_CLOOTIE_HP_COST_MIN,
+    glowTint: 0x6a3050,
+    spriteTint: 0x9a6880,
+    onPick: (boon: ClootieBoon, hpCost: number) => {
+      const title = t(boon.titleKey);
+      const desc = t(boon.descKey);
+      ctx.juice.showToast(
+        t('ui.clootie.second_commit_toast', { title, cost: String(hpCost) }),
+        '#b0a0b8',
+      );
+      ctx.caption('black_clootie_commit', desc, '#b0a0b8', 3500);
+      audio.playClootieBound();
+      const beforeCount = bumpClootieWagerCommit();
+      const tag = beforeCount === 0 ? 'bound_first' : 'bound';
+      ctx.banter?.request('clootie_wager', { tag });
+    },
+  });
+  tree.spawn();
+  ctx.juice.showToast(t('ui.clootie.second_announce_toast'), '#b0a0b8');
+  ctx.caption('black_clootie_announce', t('ui.clootie.second_announce_caption'), '#b0a0b8', 3000);
   return tree;
 }
 

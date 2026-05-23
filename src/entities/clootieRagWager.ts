@@ -48,9 +48,10 @@
 import type { Player } from './Player';
 import type { RNG } from '../utils/rng';
 
-/** The three boon-keys. One is rolled per run; tree displays it on
- *  its banner before the player commits. */
-export type ClootieBoonId = 'wrath' | 'patience' | 'haste';
+/** The three standard boon-keys. One is rolled per run; tree displays
+ *  it on its banner before the player commits. */
+export type ClootieBoonId = 'wrath' | 'patience' | 'haste'
+  | 'deep_wrath' | 'deep_patience' | 'deep_haste';
 
 export interface ClootieBoon {
   readonly id: ClootieBoonId;
@@ -88,6 +89,31 @@ export const CLOOTIE_BOONS: readonly ClootieBoon[] = [
   },
 ];
 
+/**
+ * Black Clootie deep boons — stronger than the standard three but cost
+ * 20 % of run-base max-HP vs the standard 12 %.
+ *   - deep_wrath    → +40 % global damage
+ *   - deep_patience → +90 px pickup radius
+ *   - deep_haste    → −22 % weapon cooldown
+ */
+export const DEEP_CLOOTIE_BOONS: readonly ClootieBoon[] = [
+  {
+    id: 'deep_wrath',
+    titleKey: 'ui.clootie.deep_wrath.title',
+    descKey: 'ui.clootie.deep_wrath.desc',
+  },
+  {
+    id: 'deep_patience',
+    titleKey: 'ui.clootie.deep_patience.title',
+    descKey: 'ui.clootie.deep_patience.desc',
+  },
+  {
+    id: 'deep_haste',
+    titleKey: 'ui.clootie.deep_haste.title',
+    descKey: 'ui.clootie.deep_haste.desc',
+  },
+];
+
 /** Earliest second the clootie tree can spawn (inclusive). 4:00 — past
  *  the standing-stones trinity (5:00) so the early-run isn't a
  *  three-landmark scavenger hunt. */
@@ -97,6 +123,19 @@ export const CLOOTIE_SPAWN_MIN_SEC = 240;
  *  chase both, and the wager's HP cost still matters going into the
  *  late wave-stack. */
 export const CLOOTIE_SPAWN_MAX_SEC = 540;
+
+/** Black Clootie chance — 25 % of runs, rolled at run-start. */
+export const BLACK_CLOOTIE_CHANCE = 0.25;
+/** Earliest second the black clootie can spawn (inclusive). 13:00 —
+ *  well into the late wave-stack, past gordon's typical window. */
+export const BLACK_CLOOTIE_SPAWN_MIN_SEC = 780;
+/** Latest second the black clootie can spawn (inclusive). 18:00. */
+export const BLACK_CLOOTIE_SPAWN_MAX_SEC = 1080;
+/** Fraction of run-base max-HP the black clootie costs. Higher than
+ *  the standard 12 % — the moor asks more the second time. */
+export const BLACK_CLOOTIE_HP_COST_FRACTION = 0.20;
+/** Floor on the black clootie cost. */
+export const BLACK_CLOOTIE_HP_COST_MIN = 8;
 
 /** Proximity threshold for committing the wager (pixels). Slightly
  *  larger than reliquary's 34 px because the tree's silhouette is
@@ -182,13 +221,17 @@ export function computeClootiePlacement(
  * Compute the integer HP cost from the run-base max-HP. Floor of the
  * fractional product, with a minimum so very-low-HP variants still
  * feel the trade. Pure — same input, same output; no RNG.
+ *
+ * Optional `fraction` / `min` overrides let the black clootie use a
+ * steeper cost without duplicating this function.
  */
-export function computeWagerHpCost(runBaseMaxHp: number): number {
-  if (runBaseMaxHp <= 0) return CLOOTIE_HP_COST_MIN;
-  return Math.max(
-    CLOOTIE_HP_COST_MIN,
-    Math.floor(runBaseMaxHp * CLOOTIE_HP_COST_FRACTION),
-  );
+export function computeWagerHpCost(
+  runBaseMaxHp: number,
+  fraction = CLOOTIE_HP_COST_FRACTION,
+  min = CLOOTIE_HP_COST_MIN,
+): number {
+  if (runBaseMaxHp <= 0) return min;
+  return Math.max(min, Math.floor(runBaseMaxHp * fraction));
 }
 
 /**
@@ -207,5 +250,47 @@ export function applyClootieBoon(player: Player, boon: ClootieBoon): void {
     case 'haste':
       player.addCooldownReduction(0.15);
       break;
+    case 'deep_wrath':
+      player.addDamageMultiplier(0.40);
+      break;
+    case 'deep_patience':
+      player.addPickupRadius(90);
+      break;
+    case 'deep_haste':
+      player.addCooldownReduction(0.22);
+      break;
   }
 }
+
+/** Fisher-Yates shuffle over the deep boon list, driven by the supplied RNG. */
+export function shuffleDeepClootieBoons(rng: RNG): ClootieBoon[] {
+  const a = DEEP_CLOOTIE_BOONS.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
+/** Pick the first deep boon of a seeded shuffle. Replay-deterministic. */
+export function chooseDeepClootieBoon(rng: RNG): ClootieBoon {
+  return shuffleDeepClootieBoons(rng)[0]!;
+}
+
+/**
+ * Roll whether the black clootie tree should spawn this run. Consumes
+ * one RNG token — must be called at a fixed position in the run-start
+ * stream (after `chooseClootieSpawnSec`) for replay determinism.
+ */
+export function shouldSpawnBlackClootie(rng: RNG): boolean {
+  return rng.float(0, 1) < BLACK_CLOOTIE_CHANCE;
+}
+
+/**
+ * Roll the black clootie's spawn second. Only called when
+ * `shouldSpawnBlackClootie` returned true. Range [13:00, 18:00].
+ */
+export function chooseBlackClootieSpawnSec(rng: RNG): number {
+  return rng.int(BLACK_CLOOTIE_SPAWN_MIN_SEC, BLACK_CLOOTIE_SPAWN_MAX_SEC);
+}
+
