@@ -1580,6 +1580,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.cairn_walkover.grandfather_complete.a',
         'ui.banter.cairn_walkover.grandfather_complete.b',
       ],
+      // V2 — Cailleach Gauntlet state reactions.
+      wreathed: [
+        'ui.banter.cairn_walkover.wreathed.a',
+        'ui.banter.cairn_walkover.wreathed.b',
+      ],
+      extinguished: [
+        'ui.banter.cairn_walkover.extinguished.a',
+        'ui.banter.cairn_walkover.extinguished.b',
+      ],
     },
   },
   {

@@ -1955,6 +1955,14 @@ export const ui = {
         a: 'He is quiet noo. The muir is mine.',
         b: 'Five-an-twenty. He\'s said his piece.',
       },
+      wreathed: {
+        a: 'Aye, that wis a guid day. Fun the seven, beat the Cailleach. The stanes mind.',
+        b: 'A wreathed cairn. Past-me earned that. The gauntlet wis won here.',
+      },
+      extinguished: {
+        a: 'The Cailleach claimed the caunles, nae the stanes. They bide still.',
+        b: 'Snuffed, but no\' gane. Past-me tried. The muir kept the count.',
+      },
     },
     // ── Lemmings Easter Egg (DESIGN_IDEAS §13). SCS overlay for
     //    lemmings_remember. Hearth tone — pleased, fond. Scots `mind`

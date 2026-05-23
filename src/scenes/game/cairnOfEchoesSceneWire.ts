@@ -170,9 +170,13 @@ export function handleCairnWalkOverOnScene(
         ? 'grandfather_first'
         : whisper.kind === 'grandfather'
           ? 'grandfather_revealed'
-          : state.firstThisRun
-            ? 'past_self_first'
-            : 'past_self';
+          : cairn.wreathedAt !== undefined
+            ? 'wreathed'
+            : cairn.extinguishedAt !== undefined
+              ? 'extinguished'
+              : state.firstThisRun
+                ? 'past_self_first'
+                : 'past_self';
   deps.banter?.request('cairn_walkover', { tag: subPool });
   state.setFirstThisRun(false);
 

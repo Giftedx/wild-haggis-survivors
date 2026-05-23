@@ -2453,12 +2453,14 @@ export const ui = {
       },
     },
     /** Cairn Walkover ("The Moor Remembers" feature). Fires when the player
-     *  steps over a Cairn of Echoes. Five sub-pool tags:
+     *  steps over a Cairn of Echoes. Seven sub-pool tags:
      *    past_self_first    — first cairn touched this run
      *    past_self          — subsequent cairn touches
      *    grandfather_first  — first grandfather whisper ever (lifetime)
      *    grandfather_revealed — subsequent grandfather whispers
      *    grandfather_complete — after the 25th grandfather leaf is revealed
+     *    wreathed           — cairn has wreathedAt (Cailleach Gauntlet win)
+     *    extinguished       — cairn has extinguishedAt (gauntlet lost)
      *  Hearth tone throughout: quiet, awed, never boastful. The moor speaks;
      *  the haggis only listens. Banter pool priority 34. */
     /** The Moor Remembers V2 (Cailleach Gauntlet). Five tag sub-pools
@@ -2524,6 +2526,14 @@ export const ui = {
       grandfather_complete: {
         a: 'He is quiet now. The moor is mine.',
         b: 'Twenty-five. He\'s said his piece.',
+      },
+      wreathed: {
+        a: 'Aye, that wis a guid day. Found the seven, beat the Cailleach. The stones remember.',
+        b: 'A wreathed cairn. Past-me earned that. The gauntlet was won here.',
+      },
+      extinguished: {
+        a: 'The Cailleach claimed the candles, nae the stones. They bide still.',
+        b: 'Snuffed, but no\' gone. Past-me tried. The moor kept the count.',
       },
     },
     /** Lemmings Easter Egg (DESIGN_IDEAS §13). Fires once when the cliff-
