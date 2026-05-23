@@ -328,6 +328,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private static readonly GRAN_BEST_THRESHOLD = 0.40;
   private static readonly GRAN_BEST_BONUS = 0.30;
 
+  // Jacobite variant — Flora's Plaid: 2s invincibility every 60s.
+  private _floraPlaidEnabled = false;
+  private _floraPlaidCooldownRemainingMs = 0;
+  private _floraPlaidActiveRemainingMs = 0;
+  private static readonly FLORA_PLAID_COOLDOWN_MS = 60000;
+  private static readonly FLORA_PLAID_ACTIVE_MS = 2000;
+
   private burnLeapActiveRemainingMs: number = 0;
   private burnLeapBoostRemainingMs: number = 0;
   private burnLeapCooldownRemainingMs: number = 0;
@@ -804,6 +811,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
+    // Jacobite — Flora's Plaid: cycle between 60s cooldown and 2s invincibility.
+    if (this._floraPlaidEnabled) {
+      if (this._floraPlaidActiveRemainingMs > 0) {
+        this._floraPlaidActiveRemainingMs -= scaledDelta;
+        if (this._floraPlaidActiveRemainingMs <= 0) {
+          this._floraPlaidActiveRemainingMs = 0;
+          this._floraPlaidCooldownRemainingMs = Player.FLORA_PLAID_COOLDOWN_MS;
+          if (this.active) this.setAlpha(1);
+        }
+      } else {
+        this._floraPlaidCooldownRemainingMs -= scaledDelta;
+        if (this._floraPlaidCooldownRemainingMs <= 0) {
+          this._floraPlaidActiveRemainingMs = Player.FLORA_PLAID_ACTIVE_MS;
+          if (this.active) this.setAlpha(0.45);
+        }
+      }
+    }
+
     // Tick net slow debuff timers (bound to timeScale)
     if (this.netSlowTimersMs.length > 0) {
       for (let i = this.netSlowTimersMs.length - 1; i >= 0; i--) {
@@ -1208,6 +1233,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage(amount: number): boolean {
+    // Flora's Plaid: full invincibility window — no damage, no stacks, no edges.
+    if (this._floraPlaidActiveRemainingMs > 0) return false;
     this.hurtEdgeThisFrame = true;
     // Iron Brew: each hit stacks +2% outgoing damage (cap 20 stacks).
     if (this._ironBrewStacking && this._ironBrewStacks < Player.IRON_BREW_MAX_STACKS) {
@@ -1453,6 +1480,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   isGranBestActive(): boolean {
     return this._granBestEnabled && this.maxHp > 0 && this.hp / this.maxHp <= Player.GRAN_BEST_THRESHOLD;
   }
+
+  /** Jacobite variant — true during the 2s Flora's Plaid invincibility window. */
+  setFloraPlaidEnabled(v: boolean): void { this._floraPlaidEnabled = v; }
+  isFloraPlaidActive(): boolean { return this._floraPlaidActiveRemainingMs > 0; }
+
   /** 0 when any charge is ready, otherwise fraction of the current charge's regen timer. */
   getDashCooldownFraction(): number {
     if (this.dashCharges >= this.maxDashCharges) return 0;

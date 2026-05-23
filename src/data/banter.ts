@@ -384,6 +384,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.the_pict.c',
         'ui.banter.low_hp.the_pict.d',
       ],
+      jacobite: [
+        'ui.banter.low_hp.jacobite.a',
+        'ui.banter.low_hp.jacobite.b',
+        'ui.banter.low_hp.jacobite.c',
+        'ui.banter.low_hp.jacobite.d',
+      ],
     },
   },
   {
@@ -758,6 +764,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.the_pict.c',
         'ui.banter.level_up.the_pict.d',
       ],
+      jacobite: [
+        'ui.banter.level_up.jacobite.a',
+        'ui.banter.level_up.jacobite.b',
+        'ui.banter.level_up.jacobite.c',
+        'ui.banter.level_up.jacobite.d',
+      ],
     },
   },
   {
@@ -913,6 +925,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.the_pict.b',
         'ui.banter.first_blood.the_pict.c',
         'ui.banter.first_blood.the_pict.d',
+      ],
+      jacobite: [
+        'ui.banter.first_blood.jacobite.a',
+        'ui.banter.first_blood.jacobite.b',
+        'ui.banter.first_blood.jacobite.c',
+        'ui.banter.first_blood.jacobite.d',
       ],
     },
   },
@@ -1071,6 +1089,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.the_pict.c',
         'ui.banter.kill_streak.the_pict.d',
       ],
+      jacobite: [
+        'ui.banter.kill_streak.jacobite.a',
+        'ui.banter.kill_streak.jacobite.b',
+        'ui.banter.kill_streak.jacobite.c',
+        'ui.banter.kill_streak.jacobite.d',
+      ],
     },
   },
   {
@@ -1226,6 +1250,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.the_pict.b',
         'ui.banter.recover.the_pict.c',
         'ui.banter.recover.the_pict.d',
+      ],
+      jacobite: [
+        'ui.banter.recover.jacobite.a',
+        'ui.banter.recover.jacobite.b',
+        'ui.banter.recover.jacobite.c',
+        'ui.banter.recover.jacobite.d',
       ],
     },
   },
@@ -1568,6 +1598,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.the_pict.b',
         'ui.banter.idle.the_pict.c',
         'ui.banter.idle.the_pict.d',
+      ],
+      jacobite: [
+        'ui.banter.idle.jacobite.a',
+        'ui.banter.idle.jacobite.b',
+        'ui.banter.idle.jacobite.c',
+        'ui.banter.idle.jacobite.d',
       ],
     },
   },

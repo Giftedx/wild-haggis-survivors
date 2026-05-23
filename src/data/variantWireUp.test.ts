@@ -71,7 +71,7 @@ describe('every non-classic variant is fully wired', () => {
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
           'morningside', 'drouthy', 'pibroch', 'orcadian', 'hebridean',
-          'iron_brew', 'grans_best', 'the_pict',
+          'iron_brew', 'grans_best', 'the_pict', 'jacobite',
         ]).toContain(def.appearance.accentStyle);
       });
 
@@ -95,7 +95,8 @@ describe('every non-classic variant is fully wired', () => {
           || !!mods.waterHazardImmune
           || !!mods.ironBrewStacking
           || !!mods.granBestLowHpBonus
-          || !!mods.noShopAccess;
+          || !!mods.noShopAccess
+          || !!mods.floraPlaidPeriodic;
         expect(hasAnyMod, `${v.key} has no stat modifier`).toBe(true);
       });
 

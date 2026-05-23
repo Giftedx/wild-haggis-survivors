@@ -452,7 +452,7 @@ export class HazardZones {
         // master toggle is checked inside `isInvincibilityEnabled` —
         // returns false when assistMode master is off regardless of
         // sub-flag state.
-        if (isPlayerHazardImmune(
+        if (player.isFloraPlaidActive() || isPlayerHazardImmune(
           this.hooks.isIFrames(),
           player.isDashInvincible(),
           player.isHazardLeaping(),

@@ -219,7 +219,8 @@ export class HazardsSystem {
           // before the shared predicate so the immunity gate stays
           // per-hazard-key rather than polluting the generic path.
           const isWaterHazard = h.def.key === 'burn_water' || h.def.key === 'tidal_wrack';
-          const variantImmune = isWaterHazard && player.isWaterHazardImmune();
+          const variantImmune = (isWaterHazard && player.isWaterHazardImmune())
+            || player.isFloraPlaidActive();
           const immune = variantImmune || isPlayerHazardImmune(
             this.getIFrames?.() ?? false,
             player.isDashInvincible(),

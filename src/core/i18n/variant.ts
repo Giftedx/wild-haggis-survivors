@@ -123,6 +123,11 @@ export const variant = {
     flavor: 'Aye, afore the Romans. Woad an stane an moor. Nae gold — glories are carved, no bought.',
     lore: 'They left their marks in stone, not in books. The knotwork is their language; the beast-columns their boast. No crown, no chronicle — only the moor and what they cut into its bedrock. They never needed the shop. They still don\'t.',
   },
+  jacobite: {
+    name: 'The Jacobite',
+    flavor: 'For the Cause. Fast on the moor, light in the hand. Flora\'s plaid hides ye — briefly, bravely, as it always did.',
+    lore: 'Bonnie Prince Charlie crossed the moor in a borrowed plaid. Flora MacDonald walked beside him, and the redcoats looked past. Every sixty seconds the plaid drops; every sixty seconds it lifts again. The Jacobite does not survive because it is strong. It survives because it is brief, and bright, and gone before ye ken.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

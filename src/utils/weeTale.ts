@@ -467,4 +467,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.the_pict.death_short', requires: ['death', 'the_pict', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.the_pict.victory_baseline', requires: ['victory', 'the_pict', 'has_name'] },
   { key: 'ui.weeTale.variant.the_pict.victory_taxman', requires: ['victory', 'the_pict', 'has_name', 'taxman'] },
+  // The Jacobite — Flora's Plaid; for the Cause; tragic-romantic.
+  { key: 'ui.weeTale.variant.jacobite.death_baseline', requires: ['death', 'jacobite', 'has_name'] },
+  { key: 'ui.weeTale.variant.jacobite.death_short', requires: ['death', 'jacobite', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.jacobite.victory_baseline', requires: ['victory', 'jacobite', 'has_name'] },
+  { key: 'ui.weeTale.variant.jacobite.victory_taxman', requires: ['victory', 'jacobite', 'has_name', 'taxman'] },
 ] as const;

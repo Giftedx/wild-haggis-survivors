@@ -65,6 +65,7 @@ export function applyVariantModifiers(player: Player, variant: VariantDef): void
   if (modifiers.waterHazardImmune) player.setWaterHazardImmune(true);
   if (modifiers.ironBrewStacking) player.setIronBrewStacking(true);
   if (modifiers.granBestLowHpBonus) player.setGranBestEnabled(true);
+  if (modifiers.floraPlaidPeriodic) player.setFloraPlaidEnabled(true);
 }
 
 export interface PermanentUpgradeResult {

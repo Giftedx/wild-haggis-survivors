@@ -903,6 +903,7 @@ export const ui = {
         iron_brew: 'A haggis fell here. Got back up three times first.',
         grans_best: 'A haggis fell here. Gran wid hae had words.',
         the_pict: 'A haggis fell here. Tha stane marks it. As aye.',
+        jacobite: 'A haggis fell here. Tha plaid couldna haud forever.',
       },
     },
     grandfather: {
@@ -1161,6 +1162,12 @@ export const ui = {
         b: 'Tha stane disna bleed. Neither dae I.',
         c: 'Aye battered. Aye here.',
         d: 'Tha Pict disna flee. Backs tae tha bedrock, face tae tha muir.',
+      },
+      jacobite: {
+        a: 'For tha Cause. Still for tha Cause.',
+        b: 'Tha plaid\'s comin. Haud twa mair seconds.',
+        c: 'Culloden didna finish it. This willna either.',
+        d: 'Flora walked aside worse odds than these.',
       },
     },
     boss_down: {
@@ -1504,6 +1511,12 @@ export const ui = {
         c: 'Aye — that ane gaes intae tha carvin.',
         d: 'Strength haundit doon fae tha bedrock itsel.',
       },
+      jacobite: {
+        a: 'Tha Cause advances. Tha muir taks note.',
+        b: 'Flora wid approve. Tha road north is clearer.',
+        c: 'A step closer tae tha Cause.',
+        d: 'Bonnie. Braw. Keep gaun.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1652,6 +1665,12 @@ export const ui = {
         b: 'Aye. There it is. Tha carvin begins.',
         c: 'Nae gowd tae be had. Jist this. Guid enough.',
         d: 'Tha Pict marks tha first kill. As aye.',
+      },
+      jacobite: {
+        a: 'Tha Cause draws first bluid. Tha muir will mind.',
+        b: 'Flora wid hae smiled. Briefly, quietly, lik that.',
+        c: 'First bluid for tha Prince. Aye — that\'s tha ane.',
+        d: 'For ivvery redcoat that cam ower tha glen — this.',
       },
     },
     kill_streak: {
@@ -1803,6 +1822,12 @@ export const ui = {
         c: 'Aye — tha knotwork is talkin noo.',
         d: 'Woad-marked an unstoppable.',
       },
+      jacobite: {
+        a: 'Tha glen kens tha name. Tha streak grows.',
+        b: 'Charlie himsel couldna hae duin it better.',
+        c: 'Each kill brings tha Cause a step nearer.',
+        d: 'Tha muir watches. Tha plaid hides tha count.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1951,6 +1976,12 @@ export const ui = {
         b: 'Back tae tha bedrock. Back tae it.',
         c: 'Dinnae mistake breathin fer weakness.',
         d: 'Still carvit. Still here.',
+      },
+      jacobite: {
+        a: 'Tha plaid buys a moment. Yaise it.',
+        b: 'Flora got him tae tha shore. I\'ll get masel there tae.',
+        c: 'Back on tha Cause. Tha muir\'s no duin wi me yet.',
+        d: 'Still tae Skye. Still gaun.',
       },
     },
     biome_change: {
@@ -2610,6 +2641,12 @@ export const ui = {
         c: 'Woad disna wash aff easy.',
         d: 'They carvit acause they had time. I dae tha same.',
       },
+      jacobite: {
+        a: 'Tha plaid will come again. Saxty seconds.',
+        b: 'Tha loch is quate. Ower tha sea tae Skye.',
+        c: 'Waitin is tha Jacobite\'s trade. A patience born o defeat.',
+        d: 'Flora coontit redcoats. Ah coont seconds.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -3103,6 +3140,10 @@ export const ui = {
       variant_the_pict_unlocked: {
         a: 'Three runs, nae healer touched. Tha Pict steps oot o tha stane — woad-marked, muir-rooted, disna deal in gowd.',
         b: 'Tha auld ane waukens. Tha Pict: carvit in stane, painted in woad, nae interest in tha shop.',
+      },
+      variant_jacobite_unlocked: {
+        a: 'Seeven victories. Tha Jacobite steps oot — for tha Cause, for Flora, for ivvery muir they crossed wi nae map an nae hope.',
+        b: 'Ye won seeven times. Tha plaid unfaulds. Flora\'s route is open; tha redcoats are lookin tha ither way.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3705,6 +3746,12 @@ export const ui = {
         death_short: '{name}. Tha knotwork still hauds.',
         victory_baseline: '{name} carvit it oot. Tha muir kens wha won, even wi nae gowd tae shaw.',
         victory_taxman: 'Tha Taxman had gowd. Tha Pict had stane. Tha stane lasts.',
+      },
+      jacobite: {
+        death_baseline: '{name} fell on tha muir. Tha plaid couldna haud. Tha Cause gaes on.',
+        death_short: '{name}. Flora will no forget.',
+        victory_baseline: '{name} crossed tha muir, for tha Cause, an came oot tha ither side.',
+        victory_taxman: 'Tha Taxman fund a Jacobite. Tha Jacobite had a plaid. Tha Taxman lost.',
       },
     },
   },

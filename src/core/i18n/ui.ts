@@ -1377,6 +1377,7 @@ export const ui = {
         iron_brew: 'A haggis fell here. Got back up three times first.',
         grans_best: 'A haggis fell here. Gran would have had words.',
         the_pict: 'A haggis fell here. The stone marks it. As always.',
+        jacobite: 'A haggis fell here. The plaid could not hold forever.',
       },
     },
     grandfather: {
@@ -1711,6 +1712,12 @@ export const ui = {
         b: 'The stone disna bleed. Neither dae I.',
         c: 'Aye battered. Aye here.',
         d: 'The Pict disna flee. Backs tae the bedrock, face tae the moor.',
+      },
+      jacobite: {
+        a: 'For the Cause. Still for the Cause.',
+        b: 'The plaid\'s comin\'. Hold twa mair seconds.',
+        c: 'Culloden didnae finish it. This willnae either.',
+        d: 'Flora walked beside worse odds than these.',
       },
     },
     boss_down: {
@@ -2057,6 +2064,12 @@ export const ui = {
         c: 'Aye — that ane goes intae the carving.',
         d: 'Strength handed doon fae the bedrock itsel.',
       },
+      jacobite: {
+        a: 'The Cause advances. The moor takes note.',
+        b: 'Flora would approve. The road north is clearer.',
+        c: 'A step closer tae the Cause.',
+        d: 'Bonnie. Braw. Keep gaun.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2205,6 +2218,12 @@ export const ui = {
         b: 'Aye. There it is. The carving begins.',
         c: 'Nae gold tae be had. Jist this. Guid enough.',
         d: 'The Pict marks the first kill. As always.',
+      },
+      jacobite: {
+        a: 'The Cause draws first blood. The moor will remember.',
+        b: 'Flora would have smiled. Briefly, quietly, like that.',
+        c: 'First blood for the Prince. Aye — that\'s the ane.',
+        d: 'For every redcoat that came over the glen — this.',
       },
     },
     kill_streak: {
@@ -2356,6 +2375,12 @@ export const ui = {
         c: 'Aye — the knotwork is talkin noo.',
         d: 'Woad-marked an unstoppable.',
       },
+      jacobite: {
+        a: 'The glen kens the name. The streak grows.',
+        b: 'Charlie himself couldna have done it better.',
+        c: 'Each kill brings the Cause a step nearer.',
+        d: 'The moor watches. The plaid hides the count.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2504,6 +2529,12 @@ export const ui = {
         b: 'Back tae the bedrock. Back tae it.',
         c: 'Dinnae mistake breathin for weakness.',
         d: 'Still carved. Still here.',
+      },
+      jacobite: {
+        a: 'The plaid buys a moment. Use it.',
+        b: 'Flora got him tae the shore. I\'ll get masel there tae.',
+        c: 'Back on the Cause. The moor\'s no done wi me yet.',
+        d: 'Still tae Skye. Still gaun.',
       },
     },
     biome_change: {
@@ -3211,6 +3242,12 @@ export const ui = {
         c: 'Woad disna wash aff easy.',
         d: 'They carved because they had time. I dae the same.',
       },
+      jacobite: {
+        a: 'The plaid will come again. Sixty seconds.',
+        b: 'The loch is quiet. Ower the sea tae Skye.',
+        c: 'Waiting is the Jacobite\'s trade. A patience born o\' defeat.',
+        d: 'Flora counted redcoats. I count seconds.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3760,6 +3797,11 @@ export const ui = {
         // 3 no-heal victories. Voice: hearth, ancient, spare.
         a: 'Three runs, nae healer touched. The Pict steps oot o\' the stone — woad-marked, moor-rooted, disna deal in gold.',
         b: 'The old ane wakes. The Pict: carved in stone, painted in woad, nae interest in the shop.',
+      },
+      variant_jacobite_unlocked: {
+        // 7 victories. Voice: edge — tragic-romantic, lament tinged.
+        a: 'Seven victories. The Jacobite steps oot — for the Cause, for Flora, for every moor they crossed wi nae map an\' nae hope.',
+        b: 'Ye won seven times. The plaid unfolds. Flora\'s route is open; the redcoats are looking the ither way.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4524,6 +4566,12 @@ export const ui = {
         death_short: '{name}. The knotwork still hauds.',
         victory_baseline: '{name} carved it oot. The moor kens wha won, even wi nae gold tae show.',
         victory_taxman: 'The Taxman had gold. The Pict had stone. The stone lasts.',
+      },
+      jacobite: {
+        death_baseline: '{name} fell on the moor. The plaid couldnae hold. The Cause goes on.',
+        death_short: '{name}. Flora will no forget.',
+        victory_baseline: '{name} crossed the moor, for the Cause, and came oot the ither side.',
+        victory_taxman: 'The Taxman found a Jacobite. The Jacobite had a plaid. The Taxman lost.',
       },
     },
   },

@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -77,6 +77,13 @@ export interface VariantModifier {
    * as a greyed-out locked button in renderGameOverActionRow.
    */
   noShopAccess?: boolean;
+  /**
+   * The Jacobite variant — Flora MacDonald's Plaid: 2-second invincibility
+   * window every 60 seconds. The plaid hid the Prince; it hides this haggis
+   * too. Ticked in Player.update; checked in takeDamage and hazard systems
+   * via Player.isFloraPlaidActive().
+   */
+  floraPlaidPeriodic?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -138,7 +145,8 @@ export type HaggisAccentStyle =
   | 'hebridean'
   | 'iron_brew'
   | 'grans_best'
-  | 'the_pict';
+  | 'the_pict'
+  | 'jacobite';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -857,6 +865,36 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x8a5020,    // ochre warpaint
         snout: 0xb07840,  // weathered ochre
         accent: 0x2a4a6a, // woad blue-grey
+      },
+    },
+  },
+  {
+    // The Jacobite — Bonnie Prince Charlie's cause, Flora MacDonald's courage.
+    // Light-footed exile: +10% speed (aye, running — wisely). Fragile frame
+    // (-10 HP) — the Prince near starved on the moor. Flora's Plaid: every
+    // 60s, a 2s invincibility window (the plaid that hid him, hides this one
+    // too). Tragic-romantic Edge register throughout.
+    // Palette: deep Jacobite navy body, crimson Stuart accent, gold braid.
+    // Unlock: 7 victories — the Cause demands commitment.
+    key: 'jacobite',
+    nameKey: 'variant.jacobite.name',
+    flavorKey: 'variant.jacobite.flavor',
+    textureKey: 'haggis_jacobite',
+    modifiers: {
+      moveSpeedPct: 0.10,
+      maxHpFlat: -10,
+      floraPlaidPeriodic: true,
+    },
+    unlock: { type: 'victories', required: 7 },
+    appearance: {
+      accentStyle: 'jacobite',
+      palette: {
+        outline: 0x0e1428,
+        bodyDark: 0x1a2848,
+        bodyLight: 0x2e4878,
+        fur: 0x4a6898,       // Jacobite blue — the blue cockade
+        snout: 0x8090b0,     // pale exile — gaunt from the moor
+        accent: 0xc04030,    // Stuart crimson — "Charlie's red"
       },
     },
   },
