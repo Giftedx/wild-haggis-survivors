@@ -55,6 +55,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Drouthy Haggis — deep Highland red field, amber-gold stripe, warm
   // amber accent. The flask catches the light. Traditional and well-used.
   drouthy:      { field: 0xb84018, fieldDark: 0x6a2008, stripe: 0xf0c828, accent: 0xd88028 },
+  // Pibroch Haggis — dark drone-brown field, silver chanter stripe.
+  // The colour of the bag against the silver of the pipes.
+  pibroch:      { field: 0x3a2010, fieldDark: 0x1e1008, stripe: 0xc8c8c8, accent: 0x807060 },
 };
 
 /**

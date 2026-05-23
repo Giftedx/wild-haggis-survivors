@@ -12,7 +12,7 @@ import { resolveEffectiveCooldownMs } from './effectiveWeaponCooldown';
 import { resolveMuzzleFlashColor, resolveWeaponVfxColor } from './muzzleFlashColors';
 import { fillCirclePool } from './fillCirclePool';
 import { musicEngine } from './music/ProceduralMusicEngine';
-import { applyPibrochDamage, isPibrochAligned } from './music/pibrochAlignment';
+import { applyPibrochDamage, isPibrochAligned, PIBROCH_WINDOW_MS } from './music/pibrochAlignment';
 import { applyPibrochHammerRhythm, applyWaulkingRhythm } from './music/waulkingRhythm';
 import { populateEvolvedKeys } from './evolvedWeaponKeys';
 import {
@@ -110,6 +110,8 @@ export class WeaponSystem {
   private cooldownReduction: number = 0;
   /** Run-scoped curse multiplier. 1.0 identity; >1 slower fire. */
   private curseCooldownMul: number = 1;
+  /** Pibroch variant — extra ms added to the base ±80 ms beat window. */
+  private pibrochWindowExtensionMs: number = 0;
 
   /** Emits:
    *  - 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite, eliteAffixId?)
@@ -340,6 +342,11 @@ export class WeaponSystem {
   /** Run-scoped curse modifier — clamps >=0.05 so a bug can't freeze fire. */
   setCurseCooldownMul(mul: number): void {
     this.curseCooldownMul = Math.max(0.05, Number.isFinite(mul) ? mul : 1);
+  }
+
+  /** Pibroch variant — widen the beat-alignment window at run start. */
+  setPibrochWindowExtensionMs(ms: number): void {
+    this.pibrochWindowExtensionMs = Math.max(0, ms);
   }
 
   getCurseCooldownMul(): number {
@@ -1585,6 +1592,7 @@ export class WeaponSystem {
     return isPibrochAligned(
       musicEngine.getMsSinceLastQuarterNote(),
       musicEngine.getQuarterNotePeriodMs(),
+      PIBROCH_WINDOW_MS + this.pibrochWindowExtensionMs,
     );
   }
 

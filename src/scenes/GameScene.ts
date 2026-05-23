@@ -1082,6 +1082,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.setWhiskyBreathStacks(selectedVariant.startWhiskyStacks);
     }
 
+    // Pibroch Haggis — widen the beat-alignment window so rhythm hits
+    // come naturally (the ceòl mòr is already in them).
+    if (selectedVariant.modifiers.pibrochWindowExtensionMs) {
+      this.weaponSystem.setPibrochWindowExtensionMs(selectedVariant.modifiers.pibrochWindowExtensionMs);
+    }
+
     // Apply permanent upgrades from save data. The two flag outputs
     // don't live on Player so come back as a result object.
     const permResult = applyPermanentUpgrades({

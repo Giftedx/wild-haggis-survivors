@@ -62,7 +62,7 @@ describe('every non-classic variant is fully wired', () => {
           'none', 'racing_band', 'iron_belly', 'forager', 'surefoot',
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
           'glaswegian', 'doric_quinie', 'peerie_shetlander',
-          'morningside', 'drouthy',
+          'morningside', 'drouthy', 'pibroch',
         ]).toContain(def.appearance.accentStyle);
       });
 
@@ -81,7 +81,8 @@ describe('every non-classic variant is fully wired', () => {
           || !!mods.cooldownReductionPct
           || !!mods.critChancePct
           || !!mods.driftSignFlip
-          || !!mods.driftAmplifyPct;
+          || !!mods.driftAmplifyPct
+          || !!mods.pibrochWindowExtensionMs;
         expect(hasAnyMod, `${v.key} has no stat modifier`).toBe(true);
       });
 

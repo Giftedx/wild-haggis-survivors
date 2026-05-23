@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -41,6 +41,14 @@ export interface VariantModifier {
    * (drunk haggis — drift doubled by the drams).
    */
   driftAmplifyPct?: number;
+  /**
+   * Extend the Pibroch Crescendo beat window by this many milliseconds.
+   * The base window is ±80 ms; adding e.g. 70 widens it to ±150 ms so
+   * rhythm hits come more naturally without making the mechanic trivial.
+   * Applied via `WeaponSystem.setPibrochWindowExtensionMs` at run start
+   * by GameScene. Used by the Pibroch variant.
+   */
+  pibrochWindowExtensionMs?: number;
 }
 
 export type VariantUnlockCondition =
@@ -96,7 +104,8 @@ export type HaggisAccentStyle =
   | 'doric_quinie'
   | 'peerie_shetlander'
   | 'morningside'
-  | 'drouthy';
+  | 'drouthy'
+  | 'pibroch';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -650,6 +659,32 @@ export const VARIANTS: VariantDef[] = [
       },
     },
   },
+  {
+    // Pibroch Haggis — the ceòl mòr rides this one. Widens the
+    // Pibroch Crescendo beat window from ±80 ms to ±150 ms so rhythm
+    // hits come naturally to a haggis that has never needed to count
+    // the bars. Base stats unchanged — the timing edge IS the build.
+    // Palette: drone-brown + silver chanter — dark warm body, pale
+    // silver accent (the chanter's gleam against the hide).
+    // Unlock: 3 victories — for those who have mastered the moor.
+    key: 'pibroch',
+    nameKey: 'variant.pibroch.name',
+    flavorKey: 'variant.pibroch.flavor',
+    textureKey: 'haggis_pibroch',
+    modifiers: { pibrochWindowExtensionMs: 70 },
+    unlock: { type: 'victories', required: 3 },
+    appearance: {
+      accentStyle: 'pibroch',
+      palette: {
+        outline: 0x1e1008,
+        bodyDark: 0x3a2010,
+        bodyLight: 0x6a4020,
+        fur: 0x8a5828,
+        snout: 0xa07040,
+        accent: 0xc8c8c8, // silver chanter
+      },
+    },
+  },
 ];
 
 export const VARIANT_KEYS = VARIANTS.map((variant) => variant.key) as VariantKey[];
@@ -831,6 +866,7 @@ export function formatVariantModifierSummary(variant: VariantDef): string {
   }
   if (modifiers.driftSignFlip) parts.push(t('variant.summary.drift_flip'));
   if (modifiers.driftAmplifyPct) parts.push(t('variant.summary.drift_amplify', { pct: Math.round(modifiers.driftAmplifyPct * 100) }));
+  if (modifiers.pibrochWindowExtensionMs) parts.push(t('variant.summary.pibroch_window', { ms: modifiers.pibrochWindowExtensionMs }));
 
   return parts.length > 0 ? parts.join('  |  ') : t('variant.summary.baseline');
 }
@@ -867,7 +903,8 @@ export function formatRunVariantLabel(variant: VariantDef): string {
     // "Baseline stats" for a variant that only differs visually.
     || (!!modifiers.spriteScale && modifiers.spriteScale !== 1)
     || !!modifiers.driftSignFlip
-    || !!modifiers.driftAmplifyPct;
+    || !!modifiers.driftAmplifyPct
+    || !!modifiers.pibrochWindowExtensionMs;
   const name = t(variant.nameKey);
   if (!hasModifiers) return name;
   return `${name}  |  ${formatVariantModifierSummary(variant)}`;

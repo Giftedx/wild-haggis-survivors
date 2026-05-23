@@ -1369,6 +1369,7 @@ export const ui = {
         burns_wee_beastie: 'Wee, sleekit, and stilled.',
         morningside: 'Wholly avoidable, that. With more composure.',
         drouthy: 'Still thirsty. Aye, that\'ll do.',
+        pibroch: 'The tune was still going when I stopped.',
       },
     },
     grandfather: {
@@ -1667,6 +1668,12 @@ export const ui = {
         b: 'Haud on — the moor\'s tiltin\'. Or I am.',
         c: 'One mair dram tae steady the nerves. An\' one mair tae steady that one.',
         d: 'Dinnae worry. The haggis bends. Hic.',
+      },
+      pibroch: {
+        a: 'The beat kens I\'m hurt. It\'s slowin\' wi\' me.',
+        b: 'Nae panic. The ground-tune holds even when the hands shake.',
+        c: 'Low — but the ùrlar\'s still in me. That\'s enough.',
+        d: 'The moor disnae hurry the pibroch. Neither will I.',
       },
     },
     boss_down: {
@@ -1977,6 +1984,12 @@ export const ui = {
         c: 'Hic. That felt like a level or the ground movin\'.',
         d: 'Onward! The barrel\'s still on the moor somewhere.',
       },
+      pibroch: {
+        a: 'Up a bar. The music knew before I did.',
+        b: 'A level gained on the strong beat. As it should be.',
+        c: 'The ground-tune deepens. So do I.',
+        d: 'The ceòl mòr lifts with every step forward.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2089,6 +2102,12 @@ export const ui = {
         b: 'Away wi\' ye! Hic. The moor\'s mine the nicht.',
         c: 'That\'s the dram workin\'. Couldnae hae done it sober. Maybe.',
         d: 'Doon! The whisky kent it afore I did.',
+      },
+      pibroch: {
+        a: 'First blood — on the downbeat. The tune asked; they answered.',
+        b: 'One note struck. The ceòl mòr begins here.',
+        c: 'They fell to the moor\'s own rhythm. Good a way as any.',
+        d: 'Opening ground-note landed. The pibroch is moving now.',
       },
     },
     kill_streak: {
@@ -2204,6 +2223,12 @@ export const ui = {
         c: 'Hic. Every kill\'s anither swig. This is braw.',
         d: 'They\'re fallin\' faster than I am. That\'s a guid sign.',
       },
+      pibroch: {
+        a: 'The streak is a bar repeat. Let it ring.',
+        b: 'Same beat, again. The pibroch knows this road.',
+        c: 'The theme is returning. They haven\'t learned it yet.',
+        d: 'Each kill is a variation. The ground-tune stays true.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2316,6 +2341,12 @@ export const ui = {
         b: 'Right again. Or close enough tae right. Hic.',
         c: 'Healed? Grand. Anither dram tae celebrate?',
         d: 'On ma feet again. That\'s nae always a given.',
+      },
+      pibroch: {
+        a: 'Back. The ùrlar was still going. It waits.',
+        b: 'The heal came on the beat. Of course it did.',
+        c: 'Steadied. The moor\'s rhythm never stopped.',
+        d: 'Recovered — the ceòl mòr doesn\'t pause for wounds.',
       },
     },
     biome_change: {
@@ -2987,6 +3018,12 @@ export const ui = {
         c: 'Hic. The drift\'s worse when ye stand still an\' think aboot it.',
         d: 'Whit time is it? Doesnae matter. It\'s dram o\'clock.',
       },
+      pibroch: {
+        a: 'Still. The ùrlar runs underneath — I\'m just walking on top of it.',
+        b: 'Even at rest, the moor has a tempo. I\'m listening.',
+        c: 'The ceòl mòr doesn\'t need me moving to keep going.',
+        d: 'Quarter-note. Quarter-note. The moor is a drum — if ye ken how to hear it.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3503,6 +3540,12 @@ export const ui = {
         // Voice: hearth, jolly, slightly slurred surprise.
         a: 'Twelve hundred gold banked — or spent. The Drouthy Haggis rolls in.',
         b: 'Aye, he was always comin\'. The moor smelled the whisky a mile oot.',
+      },
+      variant_pibroch_unlocked: {
+        // 3 victories. Voice: hearth-warm, understated — the moor
+        // acknowledging someone who has learned to listen.
+        a: 'Three victories. The Pibroch Haggis steps out — the moor already knew its rhythm.',
+        b: 'The ceòl mòr was always here. Now ye\'ve a haggis that hears it.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4231,6 +4274,12 @@ export const ui = {
         death_short: '{name} went doon fast. The flask rolled on.',
         victory_baseline: '{name} staggered through. The barrel remembered him.',
         victory_taxman: '{name} outlasted the Taxman. The drams outlasted them baith.',
+      },
+      pibroch: {
+        death_baseline: 'The ground-tune ran out before {name} did. The moor keeps playing.',
+        death_short: '{name} fell mid-bar. The ceòl mòr doesn\'t stop for the player.',
+        victory_baseline: '{name} walked the full pibroch — ground-note, variations, coda. The moor heard all of it.',
+        victory_taxman: '{name} brought the Taxman\'s ledger to the final bar. The tune outlasted him.',
       },
     },
   },

@@ -63,6 +63,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   selkie:        { base: '#12181e', primary: '#4a8a7c' }, // wet-stone + kelp-green
   morningside:   { base: '#4a4038', primary: '#b8c8a8' }, // Edinburgh stone + sage-green
   drouthy:       { base: '#6a2008', primary: '#f0c828' }, // deep Highland red + whisky gold
+  pibroch:       { base: '#1e1008', primary: '#c8c8c8' }, // drone-brown + silver chanter
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

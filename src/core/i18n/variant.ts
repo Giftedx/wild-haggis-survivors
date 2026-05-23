@@ -93,6 +93,11 @@ export const variant = {
     flavor: 'Three drams deep on the moor an\' still on his feet. Mostly. The drift\'s worse, aye, but there\'s a Whisky Breath charge banked an\' the night is young.',
     lore: 'Drouthy — Scots for parched, aye, but the thirst is specific. The hip flask is always half-gone before the first bell. The drift doubles wi\' the drams; the Whisky Breath bursts harder for it. Unlock: earn 1,200 lifetime gold — most o\' it spent at the pub.',
   },
+  pibroch: {
+    name: 'Pibroch Haggis',
+    flavor: 'Every beat a footstep. Every footstep a beat. The ceòl mòr rides this one — and the moor listens.',
+    lore: 'The piob mhòr — the great pipe — is older than Scotland. Its player does not chase the beat; the beat is already in them. This haggis has never needed to count the bars. The Pibroch Crescendo window is wider — the rhythm does not demand precision from what already lives inside it.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',
@@ -106,6 +111,7 @@ export const variant = {
     size: '{sign}{pct}% size',
     drift_flip: 'Drift goes widdershins',
     drift_amplify: '+{pct}% drift',
+    pibroch_window: '+{ms}ms beat window',
     baseline: 'Baseline stats',
   },
   unlock: {

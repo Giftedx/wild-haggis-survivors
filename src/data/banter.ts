@@ -348,6 +348,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.drouthy.c',
         'ui.banter.low_hp.drouthy.d',
       ],
+      pibroch: [
+        'ui.banter.low_hp.pibroch.a',
+        'ui.banter.low_hp.pibroch.b',
+        'ui.banter.low_hp.pibroch.c',
+        'ui.banter.low_hp.pibroch.d',
+      ],
     },
   },
   {
@@ -686,6 +692,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.drouthy.c',
         'ui.banter.level_up.drouthy.d',
       ],
+      pibroch: [
+        'ui.banter.level_up.pibroch.a',
+        'ui.banter.level_up.pibroch.b',
+        'ui.banter.level_up.pibroch.c',
+        'ui.banter.level_up.pibroch.d',
+      ],
     },
   },
   {
@@ -805,6 +817,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.drouthy.b',
         'ui.banter.first_blood.drouthy.c',
         'ui.banter.first_blood.drouthy.d',
+      ],
+      pibroch: [
+        'ui.banter.first_blood.pibroch.a',
+        'ui.banter.first_blood.pibroch.b',
+        'ui.banter.first_blood.pibroch.c',
+        'ui.banter.first_blood.pibroch.d',
       ],
     },
   },
@@ -927,6 +945,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.drouthy.c',
         'ui.banter.kill_streak.drouthy.d',
       ],
+      pibroch: [
+        'ui.banter.kill_streak.pibroch.a',
+        'ui.banter.kill_streak.pibroch.b',
+        'ui.banter.kill_streak.pibroch.c',
+        'ui.banter.kill_streak.pibroch.d',
+      ],
     },
   },
   {
@@ -1046,6 +1070,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.drouthy.b',
         'ui.banter.recover.drouthy.c',
         'ui.banter.recover.drouthy.d',
+      ],
+      pibroch: [
+        'ui.banter.recover.pibroch.a',
+        'ui.banter.recover.pibroch.b',
+        'ui.banter.recover.pibroch.c',
+        'ui.banter.recover.pibroch.d',
       ],
     },
   },
@@ -1352,6 +1382,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.drouthy.b',
         'ui.banter.idle.drouthy.c',
         'ui.banter.idle.drouthy.d',
+      ],
+      pibroch: [
+        'ui.banter.idle.pibroch.a',
+        'ui.banter.idle.pibroch.b',
+        'ui.banter.idle.pibroch.c',
+        'ui.banter.idle.pibroch.d',
       ],
     },
   },

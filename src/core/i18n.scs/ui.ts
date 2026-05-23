@@ -896,6 +896,7 @@ export const ui = {
         burns_wee_beastie: 'Wee, sleekit, an stilled.',
         morningside: 'Wholly avoidable, that. Wi mair composure.',
         drouthy: 'Aye, still drouthy. That\'ll dae.',
+        pibroch: 'Tha tune wis still gangin when A stoppit.',
       },
     },
     grandfather: {
@@ -1118,6 +1119,12 @@ export const ui = {
         b: 'Haud on — tha muir\'s tiltin. Or Ah am.',
         c: 'Ae mair dram tae steady tha nerves. An ae mair tae steady that ane.',
         d: 'Dinnae fash. Tha haggis bends. Hic.',
+      },
+      pibroch: {
+        a: 'Tha beat kens Ah\'m hurt. It\'s slowin wi me.',
+        b: 'Nae panic. Tha ground-tune hauds even when tha haunds shake.',
+        c: 'Laich — but tha ùrlar\'s still in me. That\'s eneuch.',
+        d: 'Tha muir disnae hurry tha pibroch. Neither will Ah.',
       },
     },
     boss_down: {
@@ -1425,6 +1432,12 @@ export const ui = {
         c: 'Hic. That felt like a level or tha grund movin.',
         d: 'Onwaird! Tha barrel\'s still on tha muir somewhaur.',
       },
+      pibroch: {
+        a: 'Up a bar. Tha music kent afore Ah did.',
+        b: 'A level gained on tha strang beat. As it should be.',
+        c: 'Tha grund-tune deepens. Sae dae Ah.',
+        d: 'Tha ceòl mòr lifts wi ilka step forrit.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1537,6 +1550,12 @@ export const ui = {
         b: 'Awa wi ye! Hic. Tha muir\'s mine tha nicht.',
         c: 'That\'s tha dram warkin. Couldnae hae duin it sober. Mibbe.',
         d: 'Doon! Tha whusky kent it afore Ah did.',
+      },
+      pibroch: {
+        a: 'First bluid — on tha dounbeat. Tha tune askit; they answerit.',
+        b: 'Ae note struck. Tha ceòl mòr begins here.',
+        c: 'They fell tae tha muir\'s ain rhythm. Guid a wey as ony.',
+        d: 'Openin grund-note landit. Tha pibroch is movin noo.',
       },
     },
     kill_streak: {
@@ -1652,6 +1671,12 @@ export const ui = {
         c: 'Hic. Ilka kill\'s anither swig. This is braw.',
         d: 'They\'re fawin faster than Ah am. That\'s a guid sign.',
       },
+      pibroch: {
+        a: 'Tha streak is a bar repeat. Let it ring.',
+        b: 'Same beat, again. Tha pibroch kens this road.',
+        c: 'Tha theme is returnin. They haenae learnt it yet.',
+        d: 'Ilka kill is a variation. Tha grund-tune stays true.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1764,6 +1789,12 @@ export const ui = {
         b: 'Richt again. Or close enough tae richt. Hic.',
         c: 'Healed? Grand. Anither dram tae celebrate?',
         d: 'On ma feet again. That\'s nae aye a given.',
+      },
+      pibroch: {
+        a: 'Back. Tha ùrlar wis still gangin. It waits.',
+        b: 'Tha heal cam on tha beat. O coorse it did.',
+        c: 'Steadied. Tha muir\'s rhythm never stoppit.',
+        d: 'Recovered — tha ceòl mòr disnae pause for wounds.',
       },
     },
     biome_change: {
@@ -2387,6 +2418,12 @@ export const ui = {
         c: 'Hic. Tha drift\'s waur when ye staund still an think aboot it.',
         d: 'Whit time is it? Disnae maitter. It\'s dram o\'clock.',
       },
+      pibroch: {
+        a: 'Still. Tha ùrlar runs underneath — Ah\'m just walkin on tap o it.',
+        b: 'Even at rest, tha muir has a tempo. Ah\'m listenin.',
+        c: 'Tha ceòl mòr disnae need me movin tae keep gangin.',
+        d: 'Quarter-note. Quarter-note. Tha muir is a drum — if ye ken hoo tae hear it.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -2856,6 +2893,10 @@ export const ui = {
       variant_drouthy_unlocked: {
         a: 'Twal hunner gold banked — or spent. Tha Drouthy Haggis rolls in.',
         b: 'Aye, he wis aye comin. Tha muir smelled tha whusky a mile oot.',
+      },
+      variant_pibroch_unlocked: {
+        a: 'Three victories. Tha Pibroch Haggis steps oot — tha muir already kent its rhythm.',
+        b: 'Tha ceòl mòr wis aye here. Noo ye\'ve a haggis that hears it.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3422,6 +3463,12 @@ export const ui = {
         death_short: '{name} went doon fast. Tha flask rolled on.',
         victory_baseline: '{name} staggered through. Tha barrel minded him.',
         victory_taxman: '{name} outlastit tha Taxman. Tha drams outlastit them baith.',
+      },
+      pibroch: {
+        death_baseline: 'Tha grund-tune ran oot afore {name} did. Tha muir keeps playin.',
+        death_short: '{name} fell mid-bar. Tha ceòl mòr disnae stap for tha player.',
+        victory_baseline: '{name} walked tha full pibroch — grund-note, variations, coda. Tha muir heard aw o it.',
+        victory_taxman: '{name} brocht tha Taxman\'s ledger tae tha final bar. Tha tune outlastit him.',
       },
     },
   },

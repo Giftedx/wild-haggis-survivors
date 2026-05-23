@@ -437,4 +437,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.drouthy.death_short', requires: ['death', 'drouthy', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.drouthy.victory_baseline', requires: ['victory', 'drouthy', 'has_name'] },
   { key: 'ui.weeTale.variant.drouthy.victory_taxman', requires: ['victory', 'drouthy', 'has_name', 'taxman'] },
+  // Every beat a footstep; the ceòl mòr rides this one.
+  { key: 'ui.weeTale.variant.pibroch.death_baseline', requires: ['death', 'pibroch', 'has_name'] },
+  { key: 'ui.weeTale.variant.pibroch.death_short', requires: ['death', 'pibroch', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.pibroch.victory_baseline', requires: ['victory', 'pibroch', 'has_name'] },
+  { key: 'ui.weeTale.variant.pibroch.victory_taxman', requires: ['victory', 'pibroch', 'has_name', 'taxman'] },
 ] as const;
