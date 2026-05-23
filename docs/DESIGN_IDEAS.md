@@ -56,7 +56,7 @@ Candidates worth a sketch (pick 1 max for a content drop):
 
 - ~~**Glaswegian**~~ — ✅ shipped 2026-04-18. Punisher glass cannon (+18% dmg, +5% speed, -20 HP). Urban slate + tram-orange palette. Unlock: 2 000 lifetime kills. Limmy-bite banter across the six variant-scoped pools (EN + SCS).
 - **Hebridean** — water-hazard immune; favours Shore biome. Gaelic banter pool; Hebridean-English voice. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §3.2 + §14.5.*)
-- **Drouthy** — drunk; starts with Whisky stacks; drift doubled.
+- ~~**Drouthy**~~ — ✅ shipped 2026-05-23. Three drams deep; Whisky Breath pre-loaded (8 stacks); drift doubled via `driftAmplifyPct: 1.0`. Unlock: 1,200 lifetime gold earned. Deep Highland red + whisky gold palette.
 - ~~**Cailleach**~~ — ✅ shipped 2026-04-22 (`src/data/variants.ts` key `cailleach`). Winter-crone fantasy with slow-aura near the player. See `2026-04-22-variant-cailleach-design.md` spec.
 - **Engineer** — drops a single cairn-turret that fires main weapon at 50%.
 - ~~**Selkie**~~ — ✅ shipped 2026-05-23 (`src/data/variants.ts` key `selkie`). Wild Living World Initiative. Dash mechanic: slip pelt on (seal = fast) / off (haggis = combat). Full EN + SCS banter, kilt + tartan palette, wee tales. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
