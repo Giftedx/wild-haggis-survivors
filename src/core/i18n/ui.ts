@@ -1372,6 +1372,7 @@ export const ui = {
         pibroch: 'The tune was still going when I stopped.',
         orcadian: 'The geo was here afore the score. It\'s aye here.',
         hebridean: 'A haggis fell here, on the machair.',
+        iron_brew: 'A haggis fell here. Got back up three times first.',
       },
     },
     grandfather: {
@@ -1688,6 +1689,12 @@ export const ui = {
         b: 'Water doesn\'t stop ye. Neither does this.',
         c: 'The stac stands through everything. So do ye.',
         d: 'The Minch never calmed for anyone. Neither does trouble.',
+      },
+      iron_brew: {
+        a: 'Dunted again. Good. Getting harder.',
+        b: 'That dunt counts. The bru stacks.',
+        c: 'Take a hit. Add it to the pile.',
+        d: 'Every wallop\'s a wee bit of iron. Keep going.',
       },
     },
     boss_down: {
@@ -2016,6 +2023,12 @@ export const ui = {
         c: 'Another step out along the stac. Good.',
         d: 'The Calanais stones shift for no one. Ye\'re getting closer.',
       },
+      iron_brew: {
+        a: 'Every dunt adds a layer. Getting good this.',
+        b: 'Levelled up. The bru is working.',
+        c: 'Harder wi every hit — and now a bit stronger tae.',
+        d: 'Dunted tae greatness. A very Scottish biography.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -2146,6 +2159,12 @@ export const ui = {
         b: 'The Minch didn\'t stop ye. They can\'t either.',
         c: 'Shore-side rule: the tide comes first; the rest follows.',
         d: 'The machair has seen harsher openings.',
+      },
+      iron_brew: {
+        a: 'First one doon. Already been dunted twice — worth it.',
+        b: 'The bru cracks the opener. Aye.',
+        c: 'First blood — the stacking\'s already begun.',
+        d: 'Hit first, hit back harder. That\'s the brew way.',
       },
     },
     kill_streak: {
@@ -2279,6 +2298,12 @@ export const ui = {
         c: 'Each one falls to the water-line.',
         d: 'The machair doesn\'t count. It just holds the record.',
       },
+      iron_brew: {
+        a: 'Stack on stack on stack. Unstoppable.',
+        b: 'Every kill after a dunt — that\'s a bru kill.',
+        c: 'Taken so many hits ye\'re dealing them back wi interest.',
+        d: 'This is what the orange does. Fear the orange ane.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2409,6 +2434,12 @@ export const ui = {
         b: 'Came through the crossing before. Come through this.',
         c: 'The machair renews after every tide. So does this.',
         d: 'Island folk know how to endure. Aye — just so.',
+      },
+      iron_brew: {
+        a: 'Bounced back. Harder than before. Classic bru.',
+        b: 'Still standing. Still stacking.',
+        c: 'Every wee recovery adds to the pile.',
+        d: 'Dunted doon and back up again. That\'s the whole recipe.',
       },
     },
     biome_change: {
@@ -3098,6 +3129,12 @@ export const ui = {
         c: 'Listen — that\'s the Minch, not silence.',
         d: 'The machair holds its own counsel. Worth learning from.',
       },
+      iron_brew: {
+        a: 'Each dunt\'s a deposit. Compound interest is braw.',
+        b: 'Just standing here being dunted. Doing great.',
+        c: 'The moor\'s trying tae soften me. It\'s working backwards.',
+        d: 'Orange. Indestructible. Scottish. That\'s the bru.',
+      },
     },
     // W2 Moor Road.
     act_intermission_enter: {
@@ -3632,6 +3669,11 @@ export const ui = {
         // the machair acknowledging someone who has truly learned the shore.
         a: 'Four coastal runs. The Hebridean Haggis answers — water-wise, machair-rooted.',
         b: 'The Minch knew ye\'d be back. The Hebridean Haggis steps out of the sea-fog.',
+      },
+      variant_iron_brew_unlocked: {
+        // 2 cursed victories. Voice: edge — wry, battered, delighted.
+        a: 'Two cursed runs survived. The Iron Brew Haggis steps oot — orange, indestructible, ready tae be dunted.',
+        b: 'Ye took the curse twice and won. The bru respects that. Helps wi the dunts, tae.',
       },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
@@ -4378,6 +4420,12 @@ export const ui = {
         death_short: 'Too brief, {name}. Even the stac takes a season to erode.',
         victory_baseline: '{name} came through it all. The Minch knows a survivor when it sees one.',
         victory_taxman: 'The Taxman found {name} on the shoreline. The island folk don\'t leave easy.',
+      },
+      iron_brew: {
+        death_baseline: '{name} went doon in the end. But not before accumulating something fierce.',
+        death_short: 'Too brief, {name}. Barely got the bru stacking.',
+        victory_baseline: '{name} — dunted, stacked, indestructible. The orange haggis prevails.',
+        victory_taxman: 'The Taxman dunted {name} plenty. Wasted effort. The bru only stacks.',
       },
     },
   },

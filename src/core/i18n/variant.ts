@@ -108,6 +108,11 @@ export const variant = {
     flavor: 'From the machair\'s edge — sand, sea-pink, salt. The Minch does not stop it. Nothing made of water does.',
     lore: 'The Outer Hebrides breed a particular kind of patience — the kind that watches the Atlantic come in for ten thousand years and never once backs away from the stac. This haggis carries that in its bones. Burn water and tidal wrack are old acquaintances, not threats. The machair holds the memory of every shore crossing.',
   },
+  iron_brew: {
+    name: 'Iron Brew Haggis',
+    flavor: 'Gets harder wi every dunt. Aye, it\'s the orange ane.',
+    lore: 'Scotland\'s other national drink — impossibly orange, medically inadvisable, beloved without apology. Every dunt, every wallop, every blow the moor lands just tempers the steel a little further. By the end of a run, what was fragile is iron. The bru does something to ye — nobody\'s entirely sure what.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

@@ -64,6 +64,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Hebridean Haggis — Atlantic blue field, kelp-green stripe,
   // machair marram-grass gold accent thread.
   hebridean:    { field: 0x2e6070, fieldDark: 0x1a3a4a, stripe: 0x6a9878, accent: 0xd0c890 },
+  // Iron Brew Haggis — orange field, Irn-Bru blue stripe,
+  // rust-amber accent. The can in kilt form.
+  iron_brew:    { field: 0xd04010, fieldDark: 0x8a2800, stripe: 0x2040a0, accent: 0xff8040 },
 };
 
 /**

@@ -899,6 +899,7 @@ export const ui = {
         pibroch: 'Tha tune wis still gangin when A stoppit.',
         orcadian: 'Tha geo wis here afore tha score. It\'s aye here.',
         hebridean: 'A haggis fell here, on tha machair.',
+        iron_brew: 'A haggis fell here. Got back up three times first.',
       },
     },
     grandfather: {
@@ -1139,6 +1140,12 @@ export const ui = {
         b: 'Watter disnae stop ye. Neither daes this.',
         c: 'Tha stac staunds through awthing. Sae dae ye.',
         d: 'Tha Minch never calmed for onybody. Neither daes trouble.',
+      },
+      iron_brew: {
+        a: 'Dunted again. Guid. Gettin harder.',
+        b: 'That dunt counts. Tha bru stacks.',
+        c: 'Tak a hit. Add it tae tha pile.',
+        d: 'Ivvery wallop\'s a wee bit o iron. Keep gaun.',
       },
     },
     boss_down: {
@@ -1464,6 +1471,12 @@ export const ui = {
         c: 'Anither step oot alang tha stac. Guid.',
         d: 'Tha Calanais stanes shift for naebody. Ye\'re gettin closer.',
       },
+      iron_brew: {
+        a: 'Ivvery dunt adds a layer. Gettin guid this.',
+        b: 'Levelled up. Tha bru is workin.',
+        c: 'Harder wi ivvery hit — an noo a wee bit stronger tae.',
+        d: 'Dunted tae greatness. A very Scottish biography.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1594,6 +1607,12 @@ export const ui = {
         b: 'Tha Minch didnae stap ye. They cannae either.',
         c: 'Shore-side rule: tha tide comes first; tha rest follaes.',
         d: 'Tha machair haes seen harsher openins.',
+      },
+      iron_brew: {
+        a: 'First ane doon. Already been dunted twice — worth it.',
+        b: 'Tha bru cracks tha opener. Aye.',
+        c: 'First bluid — tha stackin\'s already begun.',
+        d: 'Hit first, hit back harder. That\'s tha brew way.',
       },
     },
     kill_streak: {
@@ -1727,6 +1746,12 @@ export const ui = {
         c: 'They\'re fawin like wracks in tha tide. Let em.',
         d: 'Nae pause on tha machair — tha sea disnae wait either.',
       },
+      iron_brew: {
+        a: 'Stack on stack on stack. Unstappable.',
+        b: 'Ivvery kill efter a dunt — that\'s a bru kill.',
+        c: 'Taen sae mony hits ye\'re dealin em back wi interest.',
+        d: 'This is whit tha orange daes. Fear tha orange ane.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1857,6 +1882,12 @@ export const ui = {
         b: 'Cam through tha crossin afore. Cam through this.',
         c: 'Tha machair renews efter ilka tide. Sae daes this.',
         d: 'Island fowk ken hoo tae endure. Aye — just sae.',
+      },
+      iron_brew: {
+        a: 'Bounced back. Harder than afore. Classic bru.',
+        b: 'Still staunnin. Still stackin.',
+        c: 'Ivvery wee recovery adds tae tha pile.',
+        d: 'Dunted doon an back up again. That\'s tha hale recipe.',
       },
     },
     biome_change: {
@@ -2498,6 +2529,12 @@ export const ui = {
         c: 'Listen — that\'s tha Minch, no silence.',
         d: 'Tha machair hauds its ain counsel. Worth learnin frae.',
       },
+      iron_brew: {
+        a: 'Ilka dunt\'s a deposit. Compound interest is braw.',
+        b: 'Just staunnin here bein dunted. Daein great.',
+        c: 'Tha muir\'s tryin tae soften me. It\'s workin backwards.',
+        d: 'Orange. Indestructible. Scottish. That\'s tha bru.',
+      },
     },
     act_intermission_enter: {
       a: 'Awricht, whit way, big yin?',
@@ -2979,6 +3016,10 @@ export const ui = {
       variant_hebridean_unlocked: {
         a: 'Fower coastal runs. Tha Hebridean Haggis answers — water-wise, machair-rootit.',
         b: 'Tha Minch kent ye\'d be back. Tha Hebridean Haggis steps oot o tha sea-fog.',
+      },
+      variant_iron_brew_unlocked: {
+        a: 'Twa cursed runs survived. Tha Iron Brew Haggis steps oot — orange, indestructible, ready tae be dunted.',
+        b: 'Ye taen tha curse twice an won. Tha bru respects that. Helps wi tha dunts, tae.',
       },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
@@ -3563,6 +3604,12 @@ export const ui = {
         death_short: 'Ower brief, {name}. Even tha stac taks a season tae erode.',
         victory_baseline: '{name} cam through aw o it. Tha Minch kens a survivor when it sees ane.',
         victory_taxman: 'Tha Taxman fund {name} on tha shoreline. Tha island fowk dinnae leave easy.',
+      },
+      iron_brew: {
+        death_baseline: '{name} gaed doon in tha end. But no afore accumulatin somethin fierce.',
+        death_short: 'Ower brief, {name}. Barely got tha bru stackin.',
+        victory_baseline: '{name} — dunted, stacked, indestructible. Tha orange haggis prevails.',
+        victory_taxman: 'Tha Taxman dunted {name} plenty. Wasted effort. Tha bru only stacks.',
       },
     },
   },

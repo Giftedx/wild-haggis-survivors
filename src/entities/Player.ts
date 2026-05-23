@@ -317,6 +317,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   // Set via applyVariantModifiers at run start; reset by class construction.
   private _waterHazardImmune: boolean = false;
 
+  // Iron Brew variant — each hit taken stacks +2% outgoing damage (cap 20 stacks).
+  private _ironBrewStacking = false;
+  private _ironBrewStacks = 0;
+  private static readonly IRON_BREW_DMG_PER_STACK = 0.02;
+  private static readonly IRON_BREW_MAX_STACKS = 20;
+
   private burnLeapActiveRemainingMs: number = 0;
   private burnLeapBoostRemainingMs: number = 0;
   private burnLeapCooldownRemainingMs: number = 0;
@@ -1198,6 +1204,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   takeDamage(amount: number): boolean {
     this.hurtEdgeThisFrame = true;
+    // Iron Brew: each hit stacks +2% outgoing damage (cap 20 stacks).
+    if (this._ironBrewStacking && this._ironBrewStacks < Player.IRON_BREW_MAX_STACKS) {
+      this._ironBrewStacks++;
+      this.addDamageMultiplier(Player.IRON_BREW_DMG_PER_STACK);
+    }
     // Armor reduces incoming damage (minimum 1)
     const mitigated = Math.max(1, amount - this.bonusArmor);
     this.hp -= mitigated;
@@ -1423,6 +1434,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** Hebridean variant — immune to water-type hazards (burn_water / tidal_wrack). */
   isWaterHazardImmune(): boolean { return this._waterHazardImmune; }
   setWaterHazardImmune(v: boolean): void { this._waterHazardImmune = v; }
+
+  /** Iron Brew variant — stacks a +2% damage bonus per hit, cap 20 stacks. */
+  setIronBrewStacking(v: boolean): void { this._ironBrewStacking = v; }
+  getIronBrewStacks(): number { return this._ironBrewStacks; }
   /** 0 when any charge is ready, otherwise fraction of the current charge's regen timer. */
   getDashCooldownFraction(): number {
     if (this.dashCharges >= this.maxDashCharges) return 0;

@@ -452,4 +452,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.hebridean.death_short', requires: ['death', 'hebridean', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.hebridean.victory_baseline', requires: ['victory', 'hebridean', 'has_name'] },
   { key: 'ui.weeTale.variant.hebridean.victory_taxman', requires: ['victory', 'hebridean', 'has_name', 'taxman'] },
+  // Dunted to glory — accumulates damage bonus per hit taken.
+  { key: 'ui.weeTale.variant.iron_brew.death_baseline', requires: ['death', 'iron_brew', 'has_name'] },
+  { key: 'ui.weeTale.variant.iron_brew.death_short', requires: ['death', 'iron_brew', 'has_name', 'short'] },
+  { key: 'ui.weeTale.variant.iron_brew.victory_baseline', requires: ['victory', 'iron_brew', 'has_name'] },
+  { key: 'ui.weeTale.variant.iron_brew.victory_taxman', requires: ['victory', 'iron_brew', 'has_name', 'taxman'] },
 ] as const;

@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -56,6 +56,13 @@ export interface VariantModifier {
    * Used by the Hebridean variant — shore-born, water-wise.
    */
   waterHazardImmune?: boolean;
+  /**
+   * Iron Brew variant — each hit taken stacks a +2% outgoing damage bonus,
+   * capped at +40% (20 stacks). Gets harder the more it suffers.
+   * Applied via `Player.setIronBrewStacking`; stacks accumulate in
+   * `Player.takeDamage` and feed into `addDamageMultiplier`.
+   */
+  ironBrewStacking?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -114,7 +121,8 @@ export type HaggisAccentStyle =
   | 'drouthy'
   | 'pibroch'
   | 'orcadian'
-  | 'hebridean';
+  | 'hebridean'
+  | 'iron_brew';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -757,6 +765,29 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x4a8878, // kelp green-blue
         snout: 0x8ab0a0, // sea foam
         accent: 0xd0c890, // machair marram-grass gold
+      },
+    },
+  },
+  {
+    key: 'iron_brew',
+    nameKey: 'variant.iron_brew.name',
+    flavorKey: 'variant.iron_brew.flavor',
+    textureKey: 'haggis_iron_brew',
+    modifiers: {
+      maxHpFlat: -10,
+      moveSpeedPct: -0.03,
+      ironBrewStacking: true,
+    },
+    unlock: { type: 'cursed_victories', required: 2 },
+    appearance: {
+      accentStyle: 'iron_brew',
+      palette: {
+        outline: 0x3a1800,
+        bodyDark: 0x8a2800,
+        bodyLight: 0xd04010,
+        fur: 0xff6820,
+        snout: 0xffa060,
+        accent: 0x40c0e0, // Irn-Bru blue — the can's secondary colour
       },
     },
   },

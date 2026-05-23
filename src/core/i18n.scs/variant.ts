@@ -89,6 +89,11 @@ export const variant = {
     flavor: 'Fae tha machair\'s edge — sand, sea-pink, saut. Tha Minch disnae stop it. Naethin made o watter daes.',
     lore: 'Tha Outer Hebrides breed a particular kind o patience — tha kind that watches tha Atlantic come in for ten thousand year an never wance backs awa fae tha stac. Burn watter an tidal wrack are auld acquaintances, no threats. Tha machair hauds tha memory o ivvery shore crossin.',
   },
+  iron_brew: {
+    name: 'Iron Brew Haggis',
+    flavor: 'Gets harder wi ivvery dunt. Aye, it\'s tha orange ane.',
+    lore: 'Scotland\'s ither national drink — impossibly orange, medically inadvisable, beloved wi nae apology. Ivvery dunt, ivvery wallop, ivvery blaw tha muir lands jist tempers tha steel a wee bit further. By tha end o a run, whit wis fragile is iron. Tha bru daes somethin tae ye — naebody\'s entirely sure whit.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',
