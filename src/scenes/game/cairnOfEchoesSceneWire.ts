@@ -64,6 +64,9 @@ export function createCairnSpriteForScene(
     .sprite(cairn.x, cairn.y, 'cairn_of_echoes')
     .setDepth(5)
     .setScale(0.85);
+  // Wreathed cairns (Cailleach Gauntlet win) glow gold — matches the
+  // wreathed-candle flame colour in cailleachCandle.ts.
+  if (cairn.wreathedAt !== undefined) sprite.setTint(0xf5d04e);
   const settings = deps.settingsManager.load();
   if (!settings.reduceFlashing) {
     deps.scene.tweens.add({
@@ -122,14 +125,20 @@ export function handleCairnWalkOverOnScene(
   // Caption — the i18nKey is replay-deterministic from `pickWhisper`.
   deps.caption('cairn_walkover', t(whisper.i18nKey), '#a8c4dc', 4000);
 
-  // Floating buff text — slate-blue +1 % marker that rises from the
+  // Wreathed cairns (Cailleach Gauntlet win) grant double buff — spec §4.3.
+  const buffMult = cairn.wreathedAt !== undefined ? 2 : 1;
+  const buffPct = CAIRN_INHERITED_BUFF_PCT * buffMult;
+  const buffLabel = `+${buffMult}% ${cairn.inheritedStat}`;
+
+  // Floating buff text — slate-blue / gold marker that rises from the
   // cairn coord. Pulled from the shared FloatTextPool so combat / pickup
   // feedback channels don't compete for the same slots.
+  const buffColor = cairn.wreathedAt !== undefined ? '#f5d04e' : '#a8c4dc';
   const buffText = deps.floatTextPool.acquire(
     cairn.x,
     cairn.y - 24,
-    `+1% ${cairn.inheritedStat}`,
-    '#a8c4dc',
+    buffLabel,
+    buffColor,
     '14px',
     85,
   );
@@ -148,7 +157,7 @@ export function handleCairnWalkOverOnScene(
 
   // Apply the inherited buff to the live Player. Channel mapping +
   // multiplier folding lives on the Player side.
-  deps.player?.applyInheritedCairnBuff(cairn.inheritedStat, CAIRN_INHERITED_BUFF_PCT);
+  deps.player?.applyInheritedCairnBuff(cairn.inheritedStat, buffPct);
 
   // Banter — pick sub-pool by whisper kind + this-run-touched flag.
   const subPool: string =
