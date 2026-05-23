@@ -878,6 +878,8 @@ export const ui = {
         toast: 'Glacial calm — ilka strike finds its pace.',
       },
     },
+    stoat_unlock_toast: 'A whitret watched fae tha bracken. Stoat Scout companion unlocked.',
+    stoat_unlock_caption: 'Three wagers bound. Tha moor sends a scout.',
     whisper: {
       past_self: {
         first_death: "That's me, doon there.",

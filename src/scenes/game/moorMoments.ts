@@ -40,6 +40,7 @@ import {
   bumpReliquaryCurioPick,
   bumpItemAcquired,
   bumpClootieWagerCommit,
+  unlockCompanion,
 } from '../../utils/save';
 import {
   AncestralEcho,
@@ -57,6 +58,9 @@ import {
 } from '../../entities/clootieRagWager';
 import { crossesMoorMercyHpFrac } from './moorMercyTrigger';
 import { formatRunIdentityToast } from './runIdentityToast';
+
+/** Committed wagers needed to unlock the Stoat Scout companion. */
+const STOAT_UNLOCK_WAGER_THRESHOLD = 3;
 
 /** Mutable state held by the caller, reset per run. */
 export interface MoorMomentsState {
@@ -276,6 +280,13 @@ export function spawnClootieTree(ctx: MoorMomentsContext): ClootieTree {
       const beforeCount = bumpClootieWagerCommit();
       const tag = beforeCount === 0 ? 'bound_first' : 'bound';
       ctx.banter?.request('clootie_wager', { tag });
+      if (beforeCount + 1 >= STOAT_UNLOCK_WAGER_THRESHOLD) {
+        const freshUnlock = unlockCompanion('stoat_scout');
+        if (freshUnlock) {
+          ctx.juice.showToast(t('ui.cairn.stoat_unlock_toast'), '#c8d8c4');
+          ctx.caption('stoat_unlock', t('ui.cairn.stoat_unlock_caption'), '#c8d8c4', 3200);
+        }
+      }
     },
   });
   tree.spawn();
@@ -318,6 +329,13 @@ export function spawnBlackClootieTree(ctx: MoorMomentsContext): ClootieTree {
       const beforeCount = bumpClootieWagerCommit();
       const tag = beforeCount === 0 ? 'bound_first' : 'bound';
       ctx.banter?.request('clootie_wager', { tag });
+      if (beforeCount + 1 >= STOAT_UNLOCK_WAGER_THRESHOLD) {
+        const freshUnlock = unlockCompanion('stoat_scout');
+        if (freshUnlock) {
+          ctx.juice.showToast(t('ui.cairn.stoat_unlock_toast'), '#c8d8c4');
+          ctx.caption('stoat_unlock', t('ui.cairn.stoat_unlock_caption'), '#c8d8c4', 3200);
+        }
+      }
     },
   });
   tree.spawn();

@@ -1342,6 +1342,9 @@ export const ui = {
         toast: 'Glacial calm — every strike finds its pace.',
       },
     },
+    /** Stoat Scout companion unlock — fires after the third committed wager. */
+    stoat_unlock_toast: 'A whitret watched fae the bracken. Stoat Scout companion unlocked.',
+    stoat_unlock_caption: 'Three wagers bound. The moor sends a scout.',
     /**
      * T7 — Cairn-of-Echoes whispers (distinct from Cairn Stacking above).
      * A spectral cairn marks the player's last-death location; touching it
