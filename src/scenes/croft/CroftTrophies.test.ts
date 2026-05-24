@@ -102,7 +102,12 @@ describe('CroftTrophies — computeAllTrophies ordering', () => {
     expect(trophies.map((t) => t.bossKey)).toEqual([...TROPHY_BOSS_KEYS]);
   });
 
-  it('covers all 5 shipped bosses', () => {
+  it('covers the 5 act-sequence bosses (mantelpiece design intent)', () => {
+    // Trophy shelf intentionally covers only the W2 act-sequence bosses
+    // (gordon / tour_bus / the_laird / hunter_general / taxman). Mid-arc
+    // and post-bell bosses (each_uisge, nicnevin, nuckelavee, earl_beardie,
+    // black_douglas, cailleach_boss) are tracked in bossKillCounts but have
+    // no shelf slot — the mantelpiece layout is keyed to the 5-act narrative.
     expect(TROPHY_BOSS_KEYS.length).toBe(5);
     expect(new Set(TROPHY_BOSS_KEYS).size).toBe(5);
   });

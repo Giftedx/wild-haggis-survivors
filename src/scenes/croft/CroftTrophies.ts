@@ -35,9 +35,12 @@ export interface Trophy {
 }
 
 /**
- * Five canonical boss keys aligned with `BOSSES` (src/data/enemies.ts).
- * Mantelpiece renders slots in this order, left-to-right, matching
- * the W2 act sequence (gordon / tour_bus / laird / hunter / taxman).
+ * Five act-sequence boss keys on the mantelpiece shelf, left-to-right
+ * matching the W2 narrative arc (gordon / tour_bus / laird / hunter /
+ * taxman). Mid-arc and post-bell bosses (each_uisge, nicnevin,
+ * nuckelavee, earl_beardie, black_douglas, cailleach_boss) accrue in
+ * `bossKillCounts` but have no shelf slot — the mantelpiece is keyed to
+ * the five mandatory story beats, not the full boss roster.
  */
 export const TROPHY_BOSS_KEYS = [
   'gordon',
