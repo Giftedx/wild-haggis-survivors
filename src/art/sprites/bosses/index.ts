@@ -25,6 +25,7 @@ import { bakeBossTwinStoneA, bakeBossTwinStoneB } from './twinStones';
 import { bakeBossWickerHaggis } from './wickerHaggis';
 import { bakeBossNessie } from './nessie';
 import { bakeBossArenaProps } from './arenaProps';
+import { bakeAuldReekie, bakeGasLamp, bakeLanternOrb } from './auldReekie';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
 export function bakeBosses(scene: Phaser.Scene): void {
@@ -37,6 +38,10 @@ export function bakeBosses(scene: Phaser.Scene): void {
   bakeBossLaird(scene);
   // Orcadian mythos: Nuckelavee slots at 17:00 between the Laird (15:00) and Hunter General (20:00).
   bakeBossNuckelavee(scene);
+  // Urban: Auld Reekie Ghaist slots at 18:30 between Nuckelavee (17:00) and Hunter General (20:00).
+  bakeAuldReekie(scene);
+  bakeGasLamp(scene);
+  bakeLanternOrb(scene);
   bakeBossHunterGeneral(scene);
   // Glamis ghost: Earl Beardie slots at 22:30 between Hunter General (20:00) and Taxman (25:00).
   bakeBossEarlBeardie(scene);

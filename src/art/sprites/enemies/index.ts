@@ -46,6 +46,7 @@ import { bakeNest } from './nest';
 import { bakeDeepFryer } from './deepFryer';
 import { bakeBodachGlas } from './bodachGlas';
 import { bakeBeithir } from './beithir';
+import { bakeTouristGhost } from './touristGhost';
 
 /** Bake every enemy sprite. Called once from BootScene.generateAllTextures. */
 export function bakeEnemies(scene: Phaser.Scene): void {
@@ -84,4 +85,5 @@ export function bakeEnemies(scene: Phaser.Scene): void {
   bakeDeepFryer(scene);
   bakeBodachGlas(scene);
   bakeBeithir(scene);
+  bakeTouristGhost(scene);
 }
