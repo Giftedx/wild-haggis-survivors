@@ -135,6 +135,40 @@ export function downloadPostcard(
 }
 
 /**
+ * Sync dataURL → Blob conversion (base64 decode via atob).
+ * Extracted so `renderPostcardBlob` can stay synchronous and remain
+ * within a user-gesture activation window (required by Web Share API).
+ */
+function dataUrlToBlob(dataUrl: string): Blob {
+  const sep = dataUrl.indexOf(',');
+  const mime = dataUrl.slice(0, sep).match(/:(.*?);/)?.[1] ?? 'image/png';
+  const raw = atob(dataUrl.slice(sep + 1));
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
+/**
+ * Render the postcard to a Blob without triggering a download.
+ * Returns null if the canvas is unavailable or tainted.
+ *
+ * Kept synchronous so callers can invoke it inside a user-gesture handler
+ * and immediately call `navigator.share({ files: [...] })` — async blob
+ * construction breaks the activation window in some browsers.
+ */
+export function renderPostcardBlob(
+  canvas: HTMLCanvasElement | null | undefined,
+  payload: PostcardPayload,
+): Blob | null {
+  if (!canvas) return null;
+  try {
+    return dataUrlToBlob(renderPostcardDataUrl(canvas, payload));
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Render the source canvas into a new offscreen canvas and composite the
  * summary footer. Exposed separately so tests / preview tooling can
  * sanity-check the data URL without triggering a download.

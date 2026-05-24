@@ -1,18 +1,22 @@
 /**
  * Share-run link — W82 viral lever. Sits next to the "↻ same seed"
  * rerun link on Game Over. Clicking builds a deep-link URL that
- * encodes the run's seed + variant + curse and copies it to the
- * clipboard. Anyone who pastes that URL into a browser is dropped
- * straight into the same starting conditions (the receiver still plays
- * their own inputs — this is a setup share, not a replay).
+ * encodes the run's seed + variant + curse.
  *
- * Builds on the deterministic seed/variant/curse contract the rerun-seed
- * link already uses; the only new surface is the URL codec
- * (`src/utils/sharedRunUrl.ts`) + the BootScene `?run=...` router.
+ * Share path (priority order):
+ *   1. Web Share API with postcard image + URL (mobile / Chrome 86+ with
+ *      file-share support) — opens the native share sheet so the player
+ *      can drop the run directly into Discord, Mastodon, iMessage etc.
+ *   2. Web Share API URL-only (browsers with share but no canShare files).
+ *   3. Clipboard URL copy — existing desktop fallback.
+ *
+ * The postcard blob is built synchronously within the click handler so it
+ * stays inside the browser's user-activation window (required by the Web
+ * Share API on many browsers).
  *
  * Render contract mirrors the sibling links (postcard / rerun-seed):
  * pure presentation, payload re-read at click time so late-arriving
- * swaps are honoured, success state is one-shot per link instance.
+ * swaps are honoured.
  */
 import * as Phaser from 'phaser';
 
@@ -25,6 +29,8 @@ import {
   buildSharedRunUrl,
   type SharedRunChallenge,
 } from '../../utils/sharedRunUrl';
+import { renderPostcardBlob } from '../../utils/postcard';
+import { buildPostcardPayloadFromGameOver } from '../gameOverFormatting';
 import { resolveCopyActionLinkPalette } from '../gameOverLinkPalette';
 import type { GameOverPayload } from '../gameOverPayload';
 import { COPY_ACTION_LINK_TEXT_BASE } from './copyActionLinkText';
@@ -77,6 +83,20 @@ function getShareBaseUrl(): string | null {
   }
 }
 
+/** Feature-detect Web Share API (including file-sharing capability). */
+function getWebShareMode(postcardFile: File | null): 'file' | 'url' | 'none' {
+  if (typeof navigator === 'undefined') return 'none';
+  const nav = navigator as Navigator & {
+    share?: (data: ShareData) => Promise<void>;
+    canShare?: (data: ShareData) => boolean;
+  };
+  if (typeof nav.share !== 'function') return 'none';
+  if (postcardFile && typeof nav.canShare === 'function' && nav.canShare({ files: [postcardFile] })) {
+    return 'file';
+  }
+  return 'url';
+}
+
 export function renderGameOverShareRunLink(
   scene: Phaser.Scene,
   opts: RenderGameOverShareRunLinkOpts,
@@ -96,24 +116,32 @@ export function renderGameOverShareRunLink(
     .setInteractive({ useHandCursor: true });
   scene.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
 
-  let copied = false;
+  let done = false;
+
+  const markShared = () => {
+    done = true;
+    text.setText(`↗ ${t('ui.gameOver.share_run_shared')}`);
+    text.setColor(palette.success);
+    audio.playClick();
+  };
+
+  const markCopied = () => {
+    done = true;
+    text.setText(`↗ ${t('ui.gameOver.share_run_copied')}`);
+    text.setColor(palette.success);
+    audio.playClick();
+  };
+
   const doCopy = () => {
-    if (copied) return;
+    if (done) return;
     const p = getPayload();
     if (!p || typeof p.runSeed !== 'number') return;
     const variant = pickVariantKey(p.variantKey);
     if (!variant) return;
     const base = getShareBaseUrl();
     if (!base) return;
-    // Validate the curse key through the curse table so a stale /
-    // build-removed curse falls back to "clean" — same forward-
-    // compat policy the URL codec uses on the recipient side.
+
     const curse = getCurseByKey(p.curseKey ?? null);
-    // V2 — attach the sharer's outcome (time + win/loss flag) so the
-    // recipient lands on a "↗ Shared run · 12:34 to beat" banner.
-    // The codec floors fractional seconds and rejects non-finite /
-    // out-of-range values, so a malformed payload silently degrades
-    // to the V1 (setup-only) share rather than refusing the whole URL.
     const challenge = buildChallengeFromPayload(p);
     const url = buildSharedRunUrl(
       {
@@ -125,15 +153,41 @@ export function renderGameOverShareRunLink(
       base,
       { challenge },
     );
-    const ok = copyTextToClipboard(url);
-    if (ok) {
-      copied = true;
-      text.setText(`↗ ${t('ui.gameOver.share_run_copied')}`);
-      text.setColor(palette.success);
-      audio.playClick();
+
+    // Build postcard blob synchronously — must happen before any async call
+    // so it stays inside the browser's user-activation window.
+    const canvas = scene.game.canvas as HTMLCanvasElement | undefined;
+    const curseDef = curse;
+    let postcardFile: File | null = null;
+    if (canvas) {
+      try {
+        const blob = renderPostcardBlob(canvas, buildPostcardPayloadFromGameOver(p, curseDef ? t(curseDef.nameKey) : null));
+        if (blob) postcardFile = new File([blob], 'wild-haggis-run.png', { type: 'image/png' });
+      } catch { /* non-fatal */ }
     }
+
+    const mode = getWebShareMode(postcardFile);
+
+    if (mode !== 'none') {
+      const shareData: ShareData = {
+        title: 'Wild Haggis Survivors',
+        url,
+      };
+      if (mode === 'file' && postcardFile) shareData.files = [postcardFile];
+      const nav = navigator as Navigator & { share: (data: ShareData) => Promise<void> };
+      nav.share(shareData).then(() => {
+        markShared();
+      }).catch(() => {
+        // User dismissed share sheet — allow retry.
+      });
+      return;
+    }
+
+    // Desktop / unsupported: clipboard URL copy.
+    if (copyTextToClipboard(url)) markCopied();
   };
-  text.on('pointerover', () => { if (!copied) text.setColor(palette.hover); });
-  text.on('pointerout', () => { if (!copied) text.setColor(palette.idle); });
+
+  text.on('pointerover', () => { if (!done) text.setColor(palette.hover); });
+  text.on('pointerout', () => { if (!done) text.setColor(palette.idle); });
   text.on('pointerdown', doCopy);
 }

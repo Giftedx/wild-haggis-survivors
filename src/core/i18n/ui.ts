@@ -487,6 +487,7 @@ export const ui = {
     // and play the same starting conditions (seed + variant + curse).
     share_run_hint: 'share this run',
     share_run_copied: 'link copied · paste to share',
+    share_run_shared: 'shared!',
     // ── Postcard footer labels (W18 Phase B — localized render). ──
     // These ride the exported PNG's summary strip; each label fronts
     // the next field so a Scots postcard reads "culls 432" instead of
