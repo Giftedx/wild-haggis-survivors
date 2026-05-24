@@ -211,7 +211,7 @@ Candidate weapons (pick 4 for a content drop):
 
 ## 6. Cosmetic & identity (ideas)
 
-- Name your haggis (proc-gen names + custom, profanity-filtered).
+- ~~**Name your haggis (proc-gen names + custom, profanity-filtered)**~~ — ✅ shipped 2026-05-24. Proc-gen was already wired (`src/data/haggisNames.ts`); custom input ships via the pause overlay: clicking the run name (shown with a `✎` hint) opens a native `window.prompt()` capped at 24 chars, filtered via `src/utils/filterHaggisName.ts`. Name updates in-place on the pause screen and persists for the rest of the run (written to run history at game-over via the existing `payload.name` path). Focus-ring navigable (keyboard/gamepad).
 - ~~Tartan patterns — algorithmic~~ — ✅ shipped 2026-04-18 (`src/utils/tartan.ts` — postcard footer slice only; mantle half still blocks on W71). ~~Authored patterns + deed-gated unlocks~~ ✅ also shipped 2026-04-18 (`src/utils/tartanAuthored.ts` — three curated presets gated on rare victory conditions: Ironmoor Crown, Cursed Triumph, Taxman's Reckoning). Gallery UI + per-preset i18n labels stay open until a surface needs them.
 - Mantle patterns unlocked by kill/biome/deed thresholds (blocks on W71 rig).
 - Hat/bonnet slot.
@@ -227,7 +227,7 @@ All unlocks through deeds / chronicle milestones / seasonal events. **No monetis
 - Non-combat wildlife — red deer, hares, buzzards, otters, red squirrels, eagles, sheep, rooks. Flee combat; gather at burns. Cheap soul if scoped tight.
 - Environmental storytelling — carved Pictish stones, ruined crofts, trail waymarkers. Touch to read. Pair with a writer.
 - Diegetic glossary — hover any Scots/Gaelic word → small card with meaning, pronunciation, cultural note.
-- Live mood portrait — HUD-corner haggis face that reads HP, stance, weather, recent damage. Distinct from rig work but layered on it.
+- ~~**Live mood portrait**~~ — ✅ shipped 2026-05-24 (`src/ui/hud/moodPortrait.ts`). Tiny procedurally drawn haggis face below the skill-widget column (x=12, below pibroch chip). Five expressions: happy (HP > 75%), neutral (50–75%), worried (25–50%), grimace (≤ 25%), wince (280ms override on HP drop). Redrawn only on state transition. No gameplay impact.
 
 ---
 
@@ -308,8 +308,8 @@ Date-gated content that activates when the real-world date hits. Transforms the 
 - ~~**Bracken-turn (October–November)**~~ — ✅ shipped (`SeasonalEventManager.ts` key `bracken_turn`). Copper-bronze palette overlay.
 - ~~**Tartan Day (Apr 4-8)**~~ — ✅ shipped 2026-05-09 (`SeasonalEventManager.ts` key `tartan_day`). Window Apr 4-8 (5 days, anchored on Apr 6 — date of the Declaration of Arbroath signing in 1320), eleventh event in the cohort lifting bilingual banter coverage to 11/11. Run-start blessing: +14 HP heal + +20 px additive pickup-radius via `Player.addPickupRadius` — eleventh distinct mechanical slot in the cohort, distinct from the prior ten (gold/spawn/dmg-taken/CD/speed/XP/crit/lifesteal/heal-only/AoE-mult). 12-leaf seasonal_event banter sub-pool covers the cloth, the cousins ("Cape Breton, Otago, Manitoba"), and the Declaration's gravity ("for freedom alone, which no honest man gives up but with life itself"). Hearth tone with two grave-edge moments for the Declaration. No anti-English content; warmth without flag-waving. Bundles the originally-separate **Declaration of Arbroath anniversary** sketchpad row into the same date.
 - ~~**Bannockburn anniversary (23–24 June)**~~ — ✅ shipped 2026-05-09 (`SeasonalEventManager.ts` key `bannockburn`). Window Jun 22-25, ninth event in cohort. Run-start blessing: +22 HP heal + +0.5 lifesteal (warrior battlefield-medic mechanic, ninth distinct slot in the blessing-cohort symmetry). 12-leaf seasonal_event banter sub-pool; 9/9 cohort coverage achieved. Ties to the burns_citation.charge sub-pool (Burns "Scots, wha hae" 1793) which Drift Mastery's burst-edge now echoes — Bannockburn-window runs synthesise the wiring. Wallace/Bruce relic drop bump deferred for a future tighter relic pass.
-- **Culloden anniversary (16 April)** — sombre, respectfully handled. Jacobite spectre enemies spawn. No festive banter. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
-- **Stonehaven Fireballs (31 Dec)** — Hogmanay sub-event. Fireball-swing hazard overlay.
+- ~~**Culloden anniversary (16 April)**~~ — ✅ shipped (`SeasonalEventManager.ts` key `culloden`). Memorial toast only — no buff, no fanfare, no Jacobite spectre spawn (respectful scope). Ambient: drizzle overlay. Per Soul Charter cultural sensitivity guidance. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
+- ~~**Stonehaven Fireballs (31 Dec)**~~ — ✅ shipped as hogmanay ambient weather mode (`AmbientWeatherSystem.ts` `stonehaven_fireballs`). Swinging fireball particles fire every 2500 ms during the hogmanay window. Not a separate event — hogmanay owns the date, fireballs are its overlay.
 
 **Scoping rule.** Each seasonal event should be 3–7 days long in real-world calendar and NEVER FOMO-lock content — unlocks available year-round, but the *celebration* is the seasonal window.
 

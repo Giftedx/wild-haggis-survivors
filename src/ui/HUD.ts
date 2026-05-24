@@ -55,6 +55,14 @@ import {
   buildParryChip,
   PARRY_CHIP_PIXEL_WIDTH,
 } from './hud/parryChip';
+import {
+  buildMoodPortrait,
+  applyMoodPortraitState,
+  resolveMood,
+  WINCE_DURATION_MS,
+  type MoodPortraitRefs,
+  type MoodState,
+} from './hud/moodPortrait';
 import { buildLevelGold } from './hud/levelGold';
 import { buildTimerStack } from './hud/timerStack';
 import { buildStatusChips } from './hud/statusChips';
@@ -159,6 +167,13 @@ export class HUD {
   // so the apply helper can update the whole chip atomically.
   private pibrochBeatChip!: PibrochBeatChipRefs;
   private prevSelkieForm: SelkieForm | null = null;
+
+  /** Mood Portrait — tiny haggis face that reacts to HP state (DESIGN_IDEAS §7). */
+  private moodPortraitRefs!: MoodPortraitRefs;
+  private prevMoodState: MoodState | null = null;
+  private moodWinceMs = 0;
+  /** Cached HP from last frame to detect damage events for wince trigger. */
+  private prevFrameHp = -1;
 
   /** Race the Beithir HUD bar refs — top-centre live-tension widget;
    *  hidden by default, appears only while a sting is running. */
@@ -348,6 +363,11 @@ export class HUD {
     // the player holds a Waulking Mallet or Pibroch Hammer (via the
     // `setPibrochBeatState` accessor below).
     this.pibrochBeatChip = buildPibrochBeatChip(ctx);
+
+    // Mood Portrait — tiny haggis face below the full skill-widget
+    // column, always visible. Expression tracks HP fraction + damage
+    // events. Purely cosmetic; no gameplay impact (DESIGN_IDEAS §7).
+    this.moodPortraitRefs = buildMoodPortrait(ctx);
 
     // Race the Beithir bar — top-centre live-tension widget; hidden
     // by default, appears only while a Beithir sting is running. Lives
@@ -609,6 +629,19 @@ export class HUD {
       this.hpText.setColor(this.hcPalette?.text ?? COLORS_CSS.WHITE);
       this.lowHpPulse = 0;
     }
+
+    // Mood Portrait — wince when HP drops this frame, otherwise derive
+    // expression from HP fraction. Decrement wince timer by raw delta
+    // (delta is unavailable here; we approximate with a fixed tick).
+    // The wince check is HP-drop based so it fires without exposing
+    // Player.hurtEdgeThisFrame, which is already consumed by JuiceSystem.
+    if (this.prevFrameHp >= 0 && hp < this.prevFrameHp) {
+      this.moodWinceMs = WINCE_DURATION_MS;
+    }
+    if (this.moodWinceMs > 0) this.moodWinceMs -= 16; // ~1 frame at 60fps
+    const mood = resolveMood(hpFrac, this.moodWinceMs);
+    this.prevMoodState = applyMoodPortraitState(this.moodPortraitRefs, { mood }, this.prevMoodState);
+    this.prevFrameHp = hp;
 
     if (level !== this.prevLevel) {
       this.prevLevel = level;

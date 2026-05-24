@@ -87,6 +87,20 @@ function createScene(): any {
       // chains via `MockObject` to satisfy the type checker.
       circle: (_x: number, _y: number, _radius: number, _fill: number, _alpha: number) =>
         new MockObject(),
+      // Mood Portrait — Graphics object used for procedural face drawing.
+      graphics: () => ({
+        setScrollFactor() { return this; },
+        setDepth() { return this; },
+        setPosition() { return this; },
+        clear() { return this; },
+        fillStyle() { return this; },
+        fillEllipse() { return this; },
+        fillRect() { return this; },
+        fillCircle() { return this; },
+        lineStyle() { return this; },
+        lineBetween() { return this; },
+        destroy() {},
+      }),
     },
     tweens: {
       add: () => ({}),
