@@ -343,36 +343,6 @@ function drawVariantSignature(
       break;
     }
     case 'engineer': {
-      // Copper rivet badge — three rivets in a diagonal column on the
-      // right flank, the toolsmith's mark. Copper accent (0xc8780a) on
-      // the pewter-grey body reads clearly at sprite scale.
-      g.fillStyle(palette.accent, 1);
-      g.fillCircle(cx + 8, cy - 3, 1.1);
-      g.fillCircle(cx + 10, cy + 1, 1.1);
-      g.fillCircle(cx + 8, cy + 5, 1.1);
-      // Rivet shine — bright pip on each head.
-      g.fillStyle(0xffeedd, 0.8);
-      g.fillCircle(cx + 7.5, cy - 3.4, 0.4);
-      g.fillCircle(cx + 9.5, cy + 0.6, 0.4);
-      g.fillCircle(cx + 7.5, cy + 4.6, 0.4);
-      break;
-    }
-    case 'tufted': {
-      // Cream topknot — three fur tufts rising from the crown.
-      // The birth-mark that draws the pup to this haggis's side.
-      // Warm cream (0xe8dcc8) over the pewter brow tufts.
-      g.fillStyle(0xb09070, 0.7);
-      g.fillEllipse(cx, cy - 14, 9, 4);
-      g.fillStyle(palette.accent, 0.9);
-      g.fillEllipse(cx - 1, cy - 15, 5, 3);
-      g.fillEllipse(cx + 2, cy - 15, 5, 3);
-      g.fillEllipse(cx, cy - 17, 4, 3);
-      // Crown highlight — pale shimmer on the tallest tuft.
-      g.fillStyle(0xffffff, 0.5);
-      g.fillCircle(cx, cy - 17.5, 0.7);
-      break;
-    }
-    case 'engineer': {
       // Wee cog-tooth ring on the left flank — a workshop stamp.
       // Eight short strokes around a central hub (cx-13, cy+3),
       // all in the copper accent, well clear of eyes and tail.
@@ -657,6 +627,32 @@ function drawHaggisAccent(
       // Sea-glass bead on the right — pale accent matches palette.
       g.fillStyle(palette.accent, 0.85);
       g.fillCircle(cx + 8, cy - 3, 0.7);
+      break;
+    }
+    case 'engineer': {
+      // Copper rivet badge — three rivets in a diagonal column on the
+      // right flank, the toolsmith's mark. Copper accent on
+      // the pewter-grey body reads clearly at sprite scale.
+      g.fillStyle(palette.accent, 1);
+      g.fillCircle(cx + 8, cy - 3, 1.1);
+      g.fillCircle(cx + 10, cy + 1, 1.1);
+      g.fillCircle(cx + 8, cy + 5, 1.1);
+      g.fillStyle(0xffeedd, 0.8);
+      g.fillCircle(cx + 7.5, cy - 3.4, 0.4);
+      g.fillCircle(cx + 9.5, cy + 0.6, 0.4);
+      g.fillCircle(cx + 7.5, cy + 4.6, 0.4);
+      break;
+    }
+    case 'tufted': {
+      // Cream topknot — three fur tufts rising from the crown.
+      g.fillStyle(0xb09070, 0.7);
+      g.fillEllipse(cx, cy - 14, 9, 4);
+      g.fillStyle(palette.accent, 0.9);
+      g.fillEllipse(cx - 1, cy - 15, 5, 3);
+      g.fillEllipse(cx + 2, cy - 15, 5, 3);
+      g.fillEllipse(cx, cy - 17, 4, 3);
+      g.fillStyle(0xffffff, 0.5);
+      g.fillCircle(cx, cy - 17.5, 0.7);
       break;
     }
     case 'none':

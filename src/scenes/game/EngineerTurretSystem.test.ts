@@ -1,18 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
   EngineerTurretSystem,
+  EngineerTurretHooks,
   TURRET_COOLDOWN_MS,
   TURRET_DAMAGE_MUL,
 } from './EngineerTurretSystem';
 
-function makeHooks(overrides: Partial<Parameters<typeof EngineerTurretSystem.prototype['constructor']>[0]> = {}) {
-  const hooks = {
+function makeHooks(overrides: Partial<EngineerTurretHooks> = {}): EngineerTurretHooks {
+  return {
     getIsVictoryPending: vi.fn(() => false),
     fireTurretShot: vi.fn(),
     spawnTurretSprite: vi.fn(),
     ...overrides,
   };
-  return hooks;
 }
 
 describe('EngineerTurretSystem', () => {
