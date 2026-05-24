@@ -254,6 +254,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_wallace_sword',
     effect: { type: 'add_weapon', weaponKey: 'wallace_sword' },
   },
+  // Coastal Storm — standalone mega-AoE. No evolution, no paired passive.
+  {
+    id: 'add_coastal_storm',
+    name: 'upgradeCard.add_coastal_storm.name',
+    description: 'upgradeCard.add_coastal_storm.description',
+    rarity: 'rare',
+    icon: 'wicon_coastal_storm',
+    effect: { type: 'add_weapon', weaponKey: 'coastal_storm' },
+  },
 ];
 
 // ── Passive item cards ──

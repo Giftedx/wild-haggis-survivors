@@ -64,6 +64,10 @@ export const upgradeCard = {
     name: 'Wallace Sword',
     description: 'A great-sword swing wider than the claymore — slow, brutal. Pair wi the Stirling Medal for the Freedom Blade.',
   },
+  add_coastal_storm: {
+    name: 'Coastal Storm',
+    description: 'A 680-pixel Atlantic tempest. Everything in range gets flattened. Standalone — no evolution required.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',

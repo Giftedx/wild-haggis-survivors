@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 19 weapons (Bagpipe Drone added as slow-aura utility)', () => {
-    expect(keys).toHaveLength(19);
+  it('has exactly 20 weapons (Coastal Storm added as standalone mega-AoE)', () => {
+    expect(keys).toHaveLength(20);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {
@@ -45,11 +45,13 @@ describe('WEAPON_DEFS', () => {
     }
   });
 
-  it('weapon cooldowns are within reasonable range (50ms - 5000ms)', () => {
+  it('weapon cooldowns are within reasonable range (50ms - 25000ms)', () => {
+    // Upper bound raised to 25 000ms to accommodate ult-tier weapons with
+    // intentionally long cooldowns (e.g. Coastal Storm at 22 000ms).
     for (const key of keys) {
       const cd = WEAPON_DEFS[key].cooldownMs;
       expect(cd).toBeGreaterThanOrEqual(50);
-      expect(cd).toBeLessThanOrEqual(5000);
+      expect(cd).toBeLessThanOrEqual(25000);
     }
   });
 

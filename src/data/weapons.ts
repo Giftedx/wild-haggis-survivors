@@ -41,7 +41,8 @@ export type WeaponKey =
   | 'wallace_sword'
   | 'practice_chanter'
   | 'whisky_lob'
-  | 'bagpipe_drone';
+  | 'bagpipe_drone'
+  | 'coastal_storm';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -295,6 +296,35 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.10,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Coastal Storm. The west coast doesn't warn you —
+  // the haar lifts, the sky turns pewter, and then the whole horizon
+  // cracks. A screen-clearing AoE ult: long cooldown (22 s), very wide
+  // radius (680 px ≈ full screen), punishing knockback. Pure force — no
+  // freeze, no puddle, just the storm sweeping the moor clean.
+  // Standalone weapon (no evolution, no paired passive) like bagpipes.
+  coastal_storm: {
+    key: 'coastal_storm',
+    nameKey: 'weapon.coastal_storm.name',
+    descriptionKey: 'weapon.coastal_storm.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 22000,
+    damage: 42,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 680,
+    arcDegrees: 360,
+    knockback: 220,
+    levelScaling: {
+      damage: 1.30,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.06,
     },
   },
 

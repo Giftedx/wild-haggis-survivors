@@ -63,6 +63,10 @@ export const upgradeCard = {
     name: 'Wallace Swurd',
     description: 'A great-swurd swing wider than tha claymore — slaw, brutal. Pair wi tha Stirling Medal fer tha Freedom Blade.',
   },
+  add_coastal_storm: {
+    name: 'Coastal Storm',
+    description: 'A 680-pixel Atlantic tempest. Awthin in range gets flattened. Staundalone — nae evolution needed.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',

@@ -729,19 +729,41 @@ export class WeaponSystem {
   // ── AoE Pulse (Bagpipe Blast) — damages all enemies in radius ──
 
   private fireAoePulse(w: ActiveWeapon, px: number, py: number): void {
+    const isCoastalStorm = w.config.key === 'coastal_storm';
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
 
-    // Visual pulse ring — pooled
-    const ring = this.acquireVfxCircle(px, py, 10, resolveWeaponVfxColor(w.config.behavior), 0.4);
-    this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.85, endScale: 1.8, duration: 340, alpha: 0.78 });
-    this.scene.tweens.add({
-      targets: ring,
-      radius: radius,
-      alpha: 0,
-      duration: 300,
-      onComplete: () => ring.setVisible(false),
-    });
+    // Visual pulse ring — pooled. Coastal Storm gets a wide multi-ring storm effect.
+    if (isCoastalStorm) {
+      // Three concentric rings expanding outward — the Atlantic squall shape.
+      for (let i = 0; i < 3; i++) {
+        const delay = i * 80;
+        const startR = 30 + i * 20;
+        const ringColor = i === 0 ? 0x7aaad4 : i === 1 ? 0x5a8aba : 0x4a7aaa;
+        const ringAlpha = 0.65 - i * 0.12;
+        const ring = this.acquireVfxCircle(px, py, startR, ringColor, ringAlpha);
+        this.scene.time.delayedCall(delay, () => {
+          this.scene.tweens.add({
+            targets: ring,
+            radius,
+            alpha: 0,
+            duration: 500 + i * 80,
+            onComplete: () => ring.setVisible(false),
+          });
+        });
+      }
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 1.4, endScale: 3.2, duration: 580, alpha: 0.55 });
+    } else {
+      const ring = this.acquireVfxCircle(px, py, 10, resolveWeaponVfxColor(w.config.behavior), 0.4);
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.85, endScale: 1.8, duration: 340, alpha: 0.78 });
+      this.scene.tweens.add({
+        targets: ring,
+        radius: radius,
+        alpha: 0,
+        duration: 300,
+        onComplete: () => ring.setVisible(false),
+      });
+    }
 
     // Damage + knockback all enemies in radius. Squared-distance gate
     // skips sqrt for the (majority of) enemies outside the pulse — only
@@ -757,8 +779,11 @@ export class WeaponSystem {
       if (distSq <= radiusSq) {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
 
-        // Bagpipe Blast applies brief freeze (slow 50% for 1s)
-        enemy.applyFreeze(0.5, 1000);
+        // Bagpipe Blast applies brief freeze (slow 50% for 1s).
+        // Coastal Storm relies on knockback alone — no freeze.
+        if (!isCoastalStorm) {
+          enemy.applyFreeze(0.5, 1000);
+        }
 
         // Knockback — uses the impulse system so behaviorChase doesn't wipe it.
         // Divided by mass so tanks resist being pushed.

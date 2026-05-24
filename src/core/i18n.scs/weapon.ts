@@ -94,6 +94,11 @@ export const weapon = {
     description: 'Tha laigh pipes sustain a slow-aura aboot ye. Enemies in range move at twa-thirds speed — they cannae ootpace tha drone.',
     flavour: "Tha piob mòr has a melody pipe, but tha drones wir there first — three bass-an-baritone chanters that haud ane note fer tha haill tune. Tha haggis found a wey tae aim them. Naethin fast can bide fast in tha drone's ring.",
   },
+  coastal_storm: {
+    name: 'Coastal Storm',
+    description: 'A muckle tempest erupts aboot ye — 680-pixel ring o fury. 22-second bawl, then wheesht.',
+    flavour: "Tha Wast Coast gies nae warnin — ae moment haar, tha nixt a waw o Atlantic fury rowin in aff tha Minch. Tha haggis breathed it in aince an nivver forgot tha shape o it. This isnae a weapon; this is weather.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, ane braith. Tha arc that wis three becomes a waw.',

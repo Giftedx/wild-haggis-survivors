@@ -184,7 +184,7 @@ Candidate weapons (pick 4 for a content drop):
 - **Selkie Song** — charm enemy briefly. Paired passive: Seal Pelt.
 - ~~**Grannie's Curse**~~ — ✅ shipped 2026-05-12 (`grannies_curse` → `banshee_wail` evolution, passive `widows_shawl`, B6 Highland Horrors). Homing hex; multiplies on kill via `fireBansheeWail`. `widows_shawl` grants +12 HP.
 - **Clootie Rag** — bleed DoT aura. Paired passive: Rowan Thread.
-- **Coastal Storm** — long-CD screen AoE ult.
+- ~~**Coastal Storm**~~ — ✅ shipped 2026-05-24 (`coastal_storm`, `aoe_pulse`, 680px, 22s CD, rare card, no evolution). Atlantic mega-AoE with three-ring expanding storm visual; massive knockback, no freeze.
 - **Clàrsach (Celtic Harp)** — melodic projectiles fire on strum intervals; synergises with music-as-mechanic. Pre-bagpipe national instrument. Paired passive: Wire Strings. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
 - ~~**Waulking Mallet**~~ — ✅ shipped 2026-05-12 (`waulking_mallet` → `pibroch_hammer` evolution, passive `tuning_fork`, Wild Living World Phase 2 `514f5e9`). Aura-pulse rhythm weapon (2000ms cooldown, 96px radius); Pibroch Hammer evolution lands a crescendo on every fourth beat via `applyPibrochHammerRhythm` in `src/systems/music/waulkingRhythm.ts`. Syncs with the Waulking Rhythm music bed.
 - **Hagstone Sling** — hurls a stone with a hole; enemies hit *through the hole* take bonus damage. Geometry-reward weapon. Paired passive: Rowan Amulet.

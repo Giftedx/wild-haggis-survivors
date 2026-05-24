@@ -103,6 +103,8 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   whisky_lob: '#e07010',
   // Bagpipe Drone — forest-drone green (bass pipe resin)
   bagpipe_drone: '#3a8844',
+  // Coastal Storm — storm-sea slate-blue (North Sea squall)
+  coastal_storm: '#4a7aaa',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

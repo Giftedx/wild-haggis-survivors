@@ -31,6 +31,7 @@ import { drawFreedomBladeIcon } from './freedomBlade';
 import { drawPracticeChanterIcon } from './practiceChanter';
 import { drawWhiskyLobIcon } from './whiskyLob';
 import { drawBagpipeDroneIcon } from './bagpipeDrone';
+import { drawCoastalStormIcon } from './coastalStorm';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -54,6 +55,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawWhiskyLobIcon(scene);
   // Bagpipe Drone — continuous slow-aura utility.
   drawBagpipeDroneIcon(scene);
+  // Coastal Storm — standalone mega-AoE.
+  drawCoastalStormIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);

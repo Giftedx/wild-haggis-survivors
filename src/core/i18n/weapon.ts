@@ -94,6 +94,11 @@ export const weapon = {
     description: 'The low pipes sustain a slow-aura around you. Enemies in range move at two-thirds speed — they cannot outpace the drone.',
     flavour: "The piob mòr has a melody pipe, but the drones were there first — three bass-and-baritone chanters that hold one note for the whole tune. The haggis found a way to aim them. Nothing fast can stay fast in the drone's ring.",
   },
+  coastal_storm: {
+    name: 'Coastal Storm',
+    description: 'A massive tempest erupts around you — 680-pixel ring of fury. 22-second roar, then silence.',
+    flavour: "The West Coast gives no warning — one moment haar, the next a wall of Atlantic fury rolling in off the Minch. The haggis breathed it in once and never forgot the shape of it. This is not a weapon; this is weather.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, one breath. The arc that was three becomes a wall.',
