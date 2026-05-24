@@ -1958,6 +1958,12 @@ export const ui = {
         c: 'Double pulse — amber first, then crimson. The drum learned.',
         d: 'The willow hoop held true. Now the Beltane Drum answers.',
       },
+      selkie_song: {
+        a: 'The pelt held the song in. Shed, it carries three times as far.',
+        b: 'One voice carries across the water. Three voices carry across the world.',
+        c: 'Sandwood Bay, February. Three more voices answered from the skerries.',
+        d: 'The sea held its breath. The Selkie Chorus rose.',
+      },
     },
     curse_start: {
       generic: {

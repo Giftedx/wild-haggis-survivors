@@ -37,6 +37,8 @@ import { drawCullenSkinkLadleIcon } from './cullenSkinkLadle';
 import { drawSteamEngineIcon } from './steamEngine';
 import { drawBodhranIcon } from './bodhran';
 import { drawBeltaneDrumIcon } from './beltaneDrum';
+import { drawSelkieSongIcon } from './selkieSong';
+import { drawSelkieChorusIcon } from './selkieChorus';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -91,6 +93,9 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawDirkFlurryIcon(scene);
   drawBansheeWailIcon(scene);
   drawFreedomBladeIcon(scene);
+  // Selkie Song + Selkie Chorus evolution.
+  drawSelkieSongIcon(scene);
+  drawSelkieChorusIcon(scene);
   // Standalone + utility
   drawClaymoreIcon(scene);
   drawBagpipesUtilityIcon(scene);

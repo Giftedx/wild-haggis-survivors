@@ -147,6 +147,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private poisonDamage: number = 0;
   private poisonTimer: number = 0;
   private poisonTickAccum: number = 0;
+  /** Charm status — charmed enemies walk toward other enemies instead of the player. */
+  private charmTimer: number = 0;
+  private charmTargetEnemy: Enemy | null = null;
   /** Unscaled base speed (config.speed) — reference point for derivative scaling */
   private baseSpeed: number = 0;
   /** Berserker HP-based scaling applied on top of baseSpeed (1.0 = no scaling) */
@@ -313,6 +316,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.piperBuffCooldown = 0;
     this.burnDamage = 0; this.burnTimer = 0; this.burnTickAccum = 0;
     this.freezeTimer = 0; this.freezeSpeedMul = 1;
+    this.charmTimer = 0; this.charmTargetEnemy = null;
     this.berserkerSpeedMul = 1;
     this.buffSpeedMul = 1;
     this.buffSpeedTimer = 0;
@@ -601,6 +605,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.spawnerCooldown -= delta;
       }
       return; // skip behavior — the push is what the enemy is doing this frame
+    }
+
+    // Charm override — charmed enemies chase another enemy instead of the player.
+    if (this.charmTimer > 0) {
+      this.charmTimer -= delta;
+      if (this.charmTimer <= 0) {
+        this.clearCharm();
+      } else {
+        this.behaviorCharm();
+        return;
+      }
     }
 
     switch (this.behavior) {
@@ -1302,6 +1317,45 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.freezeSpeedMul = Math.min(this.freezeSpeedMul, speedMul);
     this.freezeTimer = Math.max(this.freezeTimer, durationMs);
     this.recomputeSpeed();
+  }
+
+  /**
+   * Selkie Song charm — redirect enemy toward other enemies for durationMs.
+   * Charmed enemies stop targeting the player and walk toward the nearest
+   * non-boss enemy instead. Bosses and hazards are immune.
+   */
+  applyCharm(durationMs: number): void {
+    if (this.behavior === 'hazard' || this.bossFlag) return;
+    this.charmTimer = Math.max(this.charmTimer, durationMs);
+    if (!this.charmTargetEnemy?.active) this.pickCharmTarget();
+    this.setTint(0x88ccee);
+  }
+
+  private pickCharmTarget(): void {
+    const pool = this.ctx.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
+    let nearest: Enemy | null = null;
+    let nearestD2 = Infinity;
+    for (const e of pool) {
+      if (!e.active || e === this || e.isBoss()) continue;
+      const dx = e.x - this.x;
+      const dy = e.y - this.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < nearestD2) { nearestD2 = d2; nearest = e; }
+    }
+    this.charmTargetEnemy = nearest;
+  }
+
+  private clearCharm(): void {
+    this.charmTimer = 0;
+    this.charmTargetEnemy = null;
+    if (this.baseTint) this.setTint(this.baseTint);
+    else this.clearTint();
+  }
+
+  private behaviorCharm(): void {
+    if (!this.charmTargetEnemy?.active) this.pickCharmTarget();
+    if (!this.charmTargetEnemy?.active) { this.setVelocity(0, 0); return; }
+    this.setVelocityToward(this.charmTargetEnemy.x, this.charmTargetEnemy.y, this.speed);
   }
 
   /** Temporary speed buff (e.g. Piper aura). Composes through recomputeSpeed

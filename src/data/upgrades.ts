@@ -73,7 +73,12 @@ export type PassiveKey =
   // The bent-willow hoop that tensions the goatskin head. +10% AoE radius
   // — the hoop deepens the resonance and spreads the shockwave. Pairs with
   // a level-5 Bodhrán at chest to unlock the Beltane Drum evolution.
-  | 'drum_hoop';
+  | 'drum_hoop'
+  // Selkie Song paired passive — "Seal Pelt".
+  // The selkie's shed skin, smooth and salt-cold. +2 HP regen per second
+  // — the warmth of the pelt keeps you alive while the song holds them.
+  // Pairs with a level-5 Selkie Song at chest for the Selkie Chorus.
+  | 'seal_pelt';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -319,6 +324,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_bodhran',
     effect: { type: 'add_weapon', weaponKey: 'bodhran' },
   },
+  // Selkie Song — charm aura_pulse. Paired passive: Seal Pelt.
+  {
+    id: 'add_selkie_song',
+    name: 'upgradeCard.add_selkie_song.name',
+    description: 'upgradeCard.add_selkie_song.description',
+    rarity: 'uncommon',
+    icon: 'wicon_selkie_song',
+    effect: { type: 'add_weapon', weaponKey: 'selkie_song' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -509,6 +523,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_drum_hoop',
     effect: { type: 'add_passive', passiveKey: 'drum_hoop' },
+  },
+  // Selkie Song paired passive — Seal Pelt. +2 HP regen / sec.
+  {
+    id: 'add_seal_pelt',
+    name: 'upgradeCard.add_seal_pelt.name',
+    description: 'upgradeCard.add_seal_pelt.description',
+    rarity: 'uncommon',
+    icon: 'ucard_seal_pelt',
+    effect: { type: 'add_passive', passiveKey: 'seal_pelt' },
   },
 ];
 

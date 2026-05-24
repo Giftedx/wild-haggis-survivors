@@ -1385,6 +1385,12 @@ export const ui = {
         c: 'Dooble pulse — amber first, syne crimson. Tha drum learned.',
         d: 'Tha willow hoop held true. Noo tha Beltane Drum answers.',
       },
+      selkie_song: {
+        a: 'Tha pelt held tha sang in. Shed, it cairries three times as faur.',
+        b: 'Ane voice cairries across tha watter. Three voices cairry across tha warld.',
+        c: 'Sandwood Bay, February. Three mair voices answered fae tha skerries.',
+        d: 'Tha sea held its braith. Tha Selkie Chorus rose.',
+      },
     },
     curse_start: {
       generic: {

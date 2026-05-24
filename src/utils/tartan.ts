@@ -115,6 +115,10 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   bodhran: '#c87840',
   // Beltane Drum (evolution) — midsummer crimson-orange fire
   beltane_drum: '#d84820',
+  // Selkie Song — sea-blue charm aura
+  selkie_song: '#4488cc',
+  // Selkie Chorus (evolution) — deeper Atlantic blue
+  selkie_chorus: '#224488',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

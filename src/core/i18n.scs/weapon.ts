@@ -139,4 +139,14 @@ export const weapon = {
     description: "Tha bodhrán at midsummer — fire in tha skin, dooble tha reach, heavier thump on ilka doonbeat.",
     flavour: "Calton Hill, last nicht o April. Tha drum stairts slow an builds till ye canna tell tha hertbeat fae tha beat. Tha fire loup. Tha haggis lowps wi it.",
   },
+  selkie_song: {
+    name: 'Selkie Song',
+    description: "Tha selkie sheds her pelt an sings. Enemies in range tak chip skaith an tha nearest is chairmed — it walks tae its ain kind insteid o ye.",
+    flavour: "She cam ashore at Sandwood Bay, left her skin on tha rock, an sang till tha sea-fog liftit. Tha haggis heard it fae a hill awa. Sae did awthin else on tha moor.",
+  },
+  selkie_chorus: {
+    name: 'Selkie Chorus',
+    description: "Three selkies rise. Chip skaith tae aw enemies in range; up tae three are chairmed at yince. Tha moor gaes quate when tha chorus rises.",
+    flavour: "Ane voice cairries across tha watter. Three voices cairry across tha warld. Tha haggis didnae choose this — tha pelt anely asks tae be held.",
+  },
 } as const;

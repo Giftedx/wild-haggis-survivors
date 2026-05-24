@@ -112,7 +112,8 @@ describe('PASSIVE_KEYS', () => {
     // Cullen Skink Ladle (2026-05-24) added `smoked_haddock` — +12 max HP.
     // Steam Engine (2026-05-24) added `copper_rivet` — +10% attack speed.
     // Bodhrán (2026-05-24) added `drum_hoop` — +10% AoE radius.
-    expect(PASSIVE_KEYS).toHaveLength(22);
+    // Selkie Song (2026-05-24) added `seal_pelt` — +2 HP regen/sec.
+    expect(PASSIVE_KEYS).toHaveLength(23);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');

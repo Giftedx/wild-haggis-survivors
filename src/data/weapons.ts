@@ -47,7 +47,12 @@ export type WeaponKey =
   | 'cullen_skink_ladle'
   | 'steam_engine'
   | 'bodhran'
-  | 'beltane_drum';
+  | 'beltane_drum'
+  // DESIGN_IDEAS §5 — Selkie Song. The selkie sheds her pelt and sings.
+  // Aura-pulse that charms the nearest enemy in range — charmed enemies
+  // walk toward other enemies instead of the player for 3 s. Summon family.
+  | 'selkie_song'
+  | 'selkie_chorus';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -782,6 +787,61 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       radius: 1.10,
     },
   },
+
+  // DESIGN_IDEAS §5 — Selkie Song. The selkie sheds her pelt and sings.
+  // Aura-pulse control weapon: chip damage to all enemies in range, then
+  // charms the nearest non-boss enemy — they walk toward other enemies
+  // for SELKIE_CHARM_DURATION_MS instead of the player. Summon family.
+  // Paired passive: Seal Pelt (+2 HP regen). Evolves to Selkie Chorus
+  // via Seal Pelt at lv5 — charms up to 3 enemies and fires more often.
+  selkie_song: {
+    key: 'selkie_song',
+    nameKey: 'weapon.selkie_song.name',
+    descriptionKey: 'weapon.selkie_song.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 5000,
+    damage: 3,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 130,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+
+  // Selkie Chorus — Selkie Song evolution. The selkie calls her kin.
+  // Faster pulse, bigger radius, charms up to SELKIE_CHORUS_CHARM_COUNT
+  // enemies simultaneously. The moor goes quiet when the chorus rises.
+  selkie_chorus: {
+    key: 'selkie_chorus',
+    nameKey: 'weapon.selkie_chorus.name',
+    descriptionKey: 'weapon.selkie_chorus.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 3800,
+    damage: 6,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 180,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
 };
 
 /**
@@ -811,3 +871,8 @@ export const MONARCH_CHARGE_DASH_STRIKE_DAMAGE_MUL = 3.5;
  *  stag's antler sweep is heavy enough to staggered the wounded. */
 export const MONARCH_CHARGE_DASH_STRIKE_FREEZE_MS = 600;
 export const MONARCH_CHARGE_DASH_STRIKE_FREEZE_FRACTION = 0.4;
+
+/** Selkie Song — duration a charmed enemy walks toward other enemies (ms). */
+export const SELKIE_CHARM_DURATION_MS = 3000;
+/** Selkie Chorus evolution — max enemies charmed per pulse. */
+export const SELKIE_CHORUS_CHARM_COUNT = 3;

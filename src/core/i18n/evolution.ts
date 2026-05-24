@@ -74,4 +74,9 @@ export const evolution = {
     description: "The hoop deepened the drum's reach. Now it speaks twice — amber ring then crimson, the midsummer double-pulse.",
     flavour: "Calton Hill, May Eve. The drum's resonance doubles when the hoop is set right and the skin is stretched true. The willow hoop taught the goatskin to reach further; the Beltane fire taught it to mean something.",
   },
+  selkie_chorus: {
+    name: 'Selkie Chorus',
+    description: "The pelt held the song in. Shed, it carries three times as far. Up to three enemies charmed at once; the moor rearranges itself.",
+    flavour: "Sandwood Bay, February. The pelt on the rock, the song in the air, three more voices answering from the skerries. The haggis held the pelt carefully. The sea held its breath.",
+  },
 } as const;

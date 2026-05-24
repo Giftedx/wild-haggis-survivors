@@ -62,4 +62,7 @@ export const passive = {
   drum_hoop: {
     flavour: "Bent willow — green-cut, steeamed, wrapped roond a form an left tae set. Tha gait-skin's tension depends on tha hoop haudin true. A weel-made hoop an tha bodhrán carries fae tha bar tae tha back waw an oot intae tha caur park. Tha haggis leans intae tha resonance.",
   },
+  seal_pelt: {
+    flavour: "She left it on tha rock at Sandwood Bay an didnae come back fer it. Tha haggis fand it at first licht, still warm, still saut-damp, wi tha sea quate unerneath. Haudin it felt like haudin an apologie. Tha warmth didnae leave.",
+  },
 } as const;

@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { Projectile } from '../entities/Projectile';
 import { Enemy } from '../entities/Enemy';
-import { WEAPON_DEFS, WeaponDef } from '../data/weapons';
+import { WEAPON_DEFS, WeaponDef, SELKIE_CHARM_DURATION_MS, SELKIE_CHORUS_CHARM_COUNT } from '../data/weapons';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
@@ -1408,42 +1408,59 @@ export class WeaponSystem {
     }
   }
 
-  /** Ceòl Mòr bagpipes / Waulking Mallet / Bagpipe Drone / Clootie Rag — aura pulse. */
+  /** Ceòl Mòr bagpipes / Waulking Mallet / Bagpipe Drone / Clootie Rag / Selkie Song — aura pulse. */
   private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
     const isDrone = w.config.key === 'bagpipe_drone';
     const isClootieRag = w.config.key === 'clootie_rag';
+    const isSelkieSong = w.config.key === 'selkie_song' || w.config.key === 'selkie_chorus';
 
+    // Selkie Song: sea-blue pulse, no freeze, no knot. Charms after damage loop.
     // Clootie Rag: wound-red pulse, no flourish, no freeze — pure wounding aura.
     // Drone: subtle hum ring at low alpha. Ceòl Mòr: emphatic pulse with knot.
-    const ringColor = isClootieRag ? 0x8a2a2a : resolveWeaponVfxColor(w.config.behavior);
-    const ringAlpha = isDrone ? 0.22 : isClootieRag ? 0.30 : 0.38;
+    const ringColor = isSelkieSong ? 0x4488cc
+      : isClootieRag ? 0x8a2a2a
+      : resolveWeaponVfxColor(w.config.behavior);
+    const ringAlpha = isDrone ? 0.22 : isClootieRag ? 0.30 : isSelkieSong ? 0.32 : 0.38;
     const ring = this.acquireVfxCircle(px, py, radius, ringColor, ringAlpha);
-    if (!isDrone && !isClootieRag) {
+    if (!isDrone && !isClootieRag && !isSelkieSong) {
       this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipes_drone_knot', { scale: 0.95, endScale: 1.4, duration: 360, alpha: 0.72 });
     }
     this.scene.tweens.add({
       targets: ring,
-      alpha: isDrone ? 0.05 : isClootieRag ? 0.06 : 0.1,
-      duration: isDrone ? 180 : isClootieRag ? 160 : 280,
+      alpha: isDrone ? 0.05 : isClootieRag ? 0.06 : isSelkieSong ? 0.08 : 0.1,
+      duration: isDrone ? 180 : isClootieRag ? 160 : isSelkieSong ? 420 : 280,
       yoyo: true,
       onComplete: () => ring.setVisible(false),
     });
 
     const radiusSq = radius * radius;
     const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const charmCandidates: Array<{ enemy: Enemy; d2: number }> = [];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dx = enemy.x - px;
       const dy = enemy.y - py;
-      if (dx * dx + dy * dy <= radiusSq) {
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= radiusSq) {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
         // Drone: soft continuous slow (refreshes before it expires at 500ms tick).
         // Ceòl Mòr: hard freeze on a longer cooldown.
         // Clootie Rag: no freeze — the rag bleeds, it does not slow.
+        // Selkie Song: collect charm candidates (applied after loop, nearest-first).
         if (isDrone) enemy.applyFreeze(0.70, 700);
-        else if (!isClootieRag) enemy.applyFreeze(0.42, 1400);
+        else if (!isClootieRag && !isSelkieSong) enemy.applyFreeze(0.42, 1400);
+        else if (isSelkieSong && !enemy.isBoss()) charmCandidates.push({ enemy, d2 });
+      }
+    }
+
+    // Selkie Song: charm up to N nearest non-boss enemies collected above.
+    if (isSelkieSong && charmCandidates.length > 0) {
+      const maxCharm = w.config.key === 'selkie_chorus' ? SELKIE_CHORUS_CHARM_COUNT : 1;
+      charmCandidates.sort((a, b) => a.d2 - b.d2);
+      for (let i = 0; i < Math.min(maxCharm, charmCandidates.length); i++) {
+        charmCandidates[i].enemy.applyCharm(SELKIE_CHARM_DURATION_MS);
       }
     }
   }

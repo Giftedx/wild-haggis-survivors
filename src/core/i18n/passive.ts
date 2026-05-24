@@ -62,4 +62,7 @@ export const passive = {
   drum_hoop: {
     flavour: "Bent willow — green-cut, steamed, wrapped round a form and left to set. The goatskin's tension depends on the hoop holding true. A well-made hoop and the bodhrán carries from the bar to the back wall and out into the car park. The haggis leans into the resonance.",
   },
+  seal_pelt: {
+    flavour: "She left it on the rock at Sandwood Bay and did not come back for it. The haggis found it at first light, still warm, still salt-damp, with the sea quiet underneath. Holding it felt like holding an apology. The warmth did not leave.",
+  },
 } as const;

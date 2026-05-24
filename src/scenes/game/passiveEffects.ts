@@ -133,5 +133,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // to unlock the Beltane Drum evolution (midsummer fire-drum).
       player.addAoeMultiplier(0.10);
       break;
+    case 'seal_pelt':
+      // +2 HP regen per second — the selkie's salt-smooth pelt wraps
+      // warmth around the haggis while the song holds enemies at bay.
+      // Pairs with Selkie Song at lv5 for the Selkie Chorus evolution.
+      player.addHpRegen(2.0);
+      break;
   }
 }

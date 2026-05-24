@@ -139,4 +139,14 @@ export const weapon = {
     description: "The bodhrán at midsummer — fire in the skin, double the reach, heavier thump on every downbeat.",
     flavour: "Calton Hill, last night of April. The drum starts slow and builds until you can't tell the heartbeat from the beat. The fire jumps. The haggis leaps with it.",
   },
+  selkie_song: {
+    name: 'Selkie Song',
+    description: "The selkie sheds her pelt and sings. Enemies in range take chip damage and the nearest is charmed — it walks toward its own kind instead of you.",
+    flavour: "She came ashore at Sandwood Bay, left her skin on the rock, and sang until the sea-fog lifted. The haggis heard it from a hill away. So did everything else on the moor.",
+  },
+  selkie_chorus: {
+    name: 'Selkie Chorus',
+    description: "Three selkies rise. Chip damage to all enemies in range; up to three are charmed at once. The moor goes quiet when the chorus rises.",
+    flavour: "One voice carries across the water. Three voices carry across the world. The haggis did not choose this — the pelt only asks to be held.",
+  },
 } as const;

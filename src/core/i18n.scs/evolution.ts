@@ -74,4 +74,9 @@ export const evolution = {
     description: "Tha hoop deepened tha drum's reach. Noo it speaks twice — amber ring syne crimson, tha midsummer dooble-pulse.",
     flavour: "Calton Hill, May Eve. Tha drum's resonance dooblit when tha hoop is set richt an tha skin is stretchit true. Tha willow hoop taucht tha gait-skin tae reach furder; tha Beltane fire taucht it tae mean somethin.",
   },
+  selkie_chorus: {
+    name: 'Selkie Chorus',
+    description: "Tha pelt held tha sang in. Shed, it cairries three times as faur. Up tae three enemies chairmed at yince; tha moor rearranges itsel.",
+    flavour: "Sandwood Bay, February. Tha pelt on tha rock, tha sang in tha air, three mair voices answerin fae tha skerries. Tha haggis held tha pelt canny. Tha sea held its braith.",
+  },
 } as const;

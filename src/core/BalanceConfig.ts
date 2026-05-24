@@ -323,6 +323,18 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.beltane_drum.name',
     descriptionKey: 'evolution.beltane_drum.description',
   },
+  {
+    // DESIGN_IDEAS §5 — Selkie Song + Seal Pelt → Selkie Chorus.
+    // The shed pelt teaches the song to carry further; the selkie calls
+    // her kin. The chorus charms up to 3 enemies per pulse (vs 1 for the
+    // base song), wider radius, more chip damage. The moor goes quiet
+    // when the chorus rises — enemies face each other, not the haggis.
+    baseWeapon: 'selkie_song',
+    requiredPassive: 'seal_pelt',
+    evolvedWeapon: 'selkie_chorus',
+    nameKey: 'evolution.selkie_chorus.name',
+    descriptionKey: 'evolution.selkie_chorus.description',
+  },
   // Highland Horrors — three new weapon family evolutions.
   {
     // Dirk Dance + Gillie's Edge → Dirk Flurry. The gamekeeper's

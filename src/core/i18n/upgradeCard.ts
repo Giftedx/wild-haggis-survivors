@@ -173,6 +173,14 @@ export const upgradeCard = {
     name: 'Drum Hoop',
     description: 'Bent-willow hoop deepens the resonance (+10% AoE radius). Pairs wi the Bodhrán.',
   },
+  add_selkie_song: {
+    name: 'Selkie Song',
+    description: 'Charm aura — chip damage and the nearest enemy turns on its ain kind. Selkie magic.',
+  },
+  add_seal_pelt: {
+    name: 'Seal Pelt',
+    description: "The selkie's shed skin, still warm. +2 HP regen per second. Pairs wi the Selkie Song.",
+  },
   // Stat boost cards
   boost_hp: {
     name: 'Thick Hide',

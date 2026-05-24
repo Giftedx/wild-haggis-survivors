@@ -614,6 +614,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.bodhran.c',
         'ui.banter.weapon_evolve.bodhran.d',
       ],
+      // Selkie Song + Seal Pelt → Selkie Chorus (2026-05-24).
+      // Hearth register — the song carries further, the sea answers.
+      selkie_song: [
+        'ui.banter.weapon_evolve.selkie_song.a',
+        'ui.banter.weapon_evolve.selkie_song.b',
+        'ui.banter.weapon_evolve.selkie_song.c',
+        'ui.banter.weapon_evolve.selkie_song.d',
+      ],
       // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
       // CLAUDE.md "9 of the 10 weapons have a paired passive". Banter pool
       // intentionally omits a `bagpipes` tag so the system can never queue

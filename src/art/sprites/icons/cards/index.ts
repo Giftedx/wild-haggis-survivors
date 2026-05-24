@@ -22,6 +22,7 @@ import { drawRowanThread } from './rowanThread';
 import { drawSmokedHaddock } from './smokedHaddock';
 import { drawCopperRivet } from './copperRivet';
 import { drawDrumHoop } from './drumHoop';
+import { drawSealPelt } from './sealPelt';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -71,6 +72,8 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawCopperRivet(scene);
   // Bodhrán paired passive.
   drawDrumHoop(scene);
+  // Selkie Song paired passive.
+  drawSealPelt(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);
