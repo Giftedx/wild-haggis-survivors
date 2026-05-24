@@ -82,6 +82,7 @@ export type WeeTaleTag =
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
   | 'biome_cairngorm' | 'biome_glen_coe' | 'biome_clyde_shipyard'
+  | 'biome_black_bog' | 'biome_ben_nevis'
   | 'has_name'
   | VariantKey;
 
@@ -394,6 +395,11 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.victory.biome_glen_coe', requires: ['victory', 'biome_glen_coe'] },
   { key: 'ui.weeTale.death.biome_clyde_shipyard', requires: ['death', 'biome_clyde_shipyard'] },
   { key: 'ui.weeTale.victory.biome_clyde_shipyard', requires: ['victory', 'biome_clyde_shipyard'] },
+  // Black Bog + Ben Nevis — added 2026-05-24 with those biome ships.
+  { key: 'ui.weeTale.death.biome_black_bog', requires: ['death', 'biome_black_bog'] },
+  { key: 'ui.weeTale.victory.biome_black_bog', requires: ['victory', 'biome_black_bog'] },
+  { key: 'ui.weeTale.death.biome_ben_nevis', requires: ['death', 'biome_ben_nevis'] },
+  { key: 'ui.weeTale.victory.biome_ben_nevis', requires: ['victory', 'biome_ben_nevis'] },
 
   // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
   // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".
