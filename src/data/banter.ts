@@ -2510,6 +2510,13 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.boss_the_laird_kill.a',
         'ui.banter.first_time.boss_the_laird_kill.b',
       ],
+      // Nuckelavee first-kill — Grave register; the most feared creature
+      // in the northern isles, just driven back to the sea. Mark the
+      // weight of it without making light of the encounter.
+      boss_nuckelavee_kill: [
+        'ui.banter.first_time.boss_nuckelavee_kill.a',
+        'ui.banter.first_time.boss_nuckelavee_kill.b',
+      ],
       boss_hunter_general_kill: [
         'ui.banter.first_time.boss_hunter_general_kill.a',
         'ui.banter.first_time.boss_hunter_general_kill.b',

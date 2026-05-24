@@ -3117,6 +3117,10 @@ export const ui = {
         a: 'Laird\'s fawed ance. Tha tenants are stunned quait.',
         b: 'First stoon tae tha tweed. Moor\'s cheerin laich.',
       },
+      boss_nuckelavee_kill: {
+        a: 'First Nuckelavee driven aff. Tha burn atween ye an it made aw tha differ.',
+        b: 'Tha skinless thing is back in tha sea. First time ony haggis cam back tae say sae.',
+      },
       boss_hunter_general_kill: {
         a: 'Hunter-General met his match. First time. Worth a photo.',
         b: 'Nae mair hunters\' general. First o tha kin tae say it.',

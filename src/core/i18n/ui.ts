@@ -3755,6 +3755,12 @@ export const ui = {
         a: 'Laird\'s fallen ance. The tenants are stunned quiet.',
         b: 'First stoon tae the tweed. Moor\'s cheerin\' low.',
       },
+      // Nuckelavee first-kill — Grave register. The most feared creature
+      // in the northern isles. Mark the weight; the fresh water held.
+      boss_nuckelavee_kill: {
+        a: 'First Nuckelavee driven aff. The burn between ye and it made aw the difference.',
+        b: 'The skinless thing is back in the sea. First time any haggis came back tae say so.',
+      },
       boss_hunter_general_kill: {
         a: 'Hunter-General met his match. First time. Worth a photo.',
         b: 'Nae more hunters\' general. First o kin tae say it.',
