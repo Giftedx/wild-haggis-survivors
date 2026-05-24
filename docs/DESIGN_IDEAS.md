@@ -131,7 +131,7 @@ Families worth sketching (pick one per content drop):
 - ~~**The Nuckelavee**~~ — ✅ shipped 2026-05-24 (`nuckelavee`, commit `20c4a7a`). Orcadian sea-demon at 17:00; HP 4200 / dmg 32 / speed 95 / scale 2.5×. Fresh-water retreat: `tickNuckelaveeRetreat` overrides velocity when within 160px of a heal patch. Full i18n + banter + wee tale. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
 - **Stoor Worm** — Orcadian giant sea-serpent; secret final-final-boss for a hidden route. Scale-shift mechanic — climb the worm and break weak points. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
 - ~~**Earl Beardie**~~ — ✅ shipped 2026-05-24 (`src/entities/cardDealBehaviour.ts` + Enemy.ts `card_deal` behavior). Glamis ghost spawns at 22:30 (spawnTimeSec: 1350) — fires a fan of 3 spectral playing cards every 3.5 s; parryable via Shinty Parry. Full EN + SCS i18n, banter pools, wee-tale entries. (*Ref: `SCOTTISH_RESEARCH.md` §1.4.*)
-- **Black Douglas** — "Hush ye, hush ye, the Black Douglas will not get ye." Borders boss referencing English mothers' lullaby. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
+- ~~**Black Douglas**~~ — ✅ shipped 2026-05-24 (`src/entities/hushBehaviour.ts` + Enemy.ts `hush` behavior). Post-bell exclusive (`postBellOnly: true`); fast chase 130 px/s + 4 s cadence fear-shout (600 ms dark-ring telegraph, 220 px AoE, 18 dmg + 1.5 s net-slow). Full EN + SCS i18n, banter pools, wee-tale entries. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
 - **The Lost Ninth Legion** — wave-boss of Roman spectres emerging from ancient mist. Caledonia's mystery. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.1.*)
 - **The Corryvreckan** — not a boss per se; the Cailleach's washing-pot whirlpool as a hazard-arena mini-boss encounter. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 
