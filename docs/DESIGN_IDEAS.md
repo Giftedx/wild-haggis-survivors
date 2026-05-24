@@ -224,7 +224,7 @@ All unlocks through deeds / chronicle milestones / seasonal events. **No monetis
 
 ## 7. Ambient / atmospheric (ideas)
 
-- Non-combat wildlife — red deer, hares, buzzards, otters, red squirrels, eagles, sheep, rooks. Flee combat; gather at burns. Cheap soul if scoped tight.
+- ~~**Non-combat wildlife**~~ — ✅ shipped (`src/systems/WildlifeSystem.ts`). 18 Scottish species: hare, red deer, buzzard, red squirrel, pine marten, capercaillie, otter, puffin, golden eagle, Scottish wildcat, rook, sheep, grey seal, ptarmigan, common frog, pipistrelle bat, field mouse, salmon. Flee player; aerial species do sine-arc motion. Biome-weighted placement via seeded runRng. Ticked in `tickFrameWorld.ts`.
 - Environmental storytelling — carved Pictish stones, ruined crofts, trail waymarkers. Touch to read. Pair with a writer.
 - Diegetic glossary — hover any Scots/Gaelic word → small card with meaning, pronunciation, cultural note.
 - ~~**Live mood portrait**~~ — ✅ shipped 2026-05-24 (`src/ui/hud/moodPortrait.ts`). Tiny procedurally drawn haggis face below the skill-widget column (x=12, below pibroch chip). Five expressions: happy (HP > 75%), neutral (50–75%), worried (25–50%), grimace (≤ 25%), wince (280ms override on HP drop). Redrawn only on state transition. No gameplay impact.

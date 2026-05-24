@@ -684,8 +684,11 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   tour_bus: 'Tour Bus',
   nicnevin: 'Nicnevin',
   the_laird: 'The Laird',
-  hunter_general: 'Haggis Hunter General',
+  hunter_general: 'The Haggis Hunter General',
   taxman: 'Taxman',
+  nuckelavee: 'The Nuckelavee',
+  earl_beardie: 'Earl Beardie',
+  black_douglas: 'The Black Douglas',
   cailleach_boss: 'The Cailleach',
 };
 
