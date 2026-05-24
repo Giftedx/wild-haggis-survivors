@@ -86,7 +86,15 @@ export type EnemyBehavior =
    * Phase 2 (HP ≤ 50 %): speed ×1.5 + 6-shard plunge burst every 3.8 s.
    * Post-bell exclusive. Refs: SCOTTISH_RESEARCH.md §1.2; _DEEP.md §21.
    */
-  | 'loch_emergence';
+  | 'loch_emergence'
+  /**
+   * Auld Reekie Ghaist — Edinburgh gas-lamp ghost (Urban).
+   * Phase 1 (HP > 65 %): slow glide + lantern lob every 3.5 s + 4 tourist summons.
+   * Phase 2 (HP 65–35 %): lamp-post blink teleport + gas pulse.
+   * Phase 3 (HP < 35 %): speed ×1.4 + triple lantern fan + faster blink/gas.
+   * Slots at 18:30 between Nuckelavee (17:00) and Hunter General (20:00).
+   */
+  | 'auld_reekie';
 
 export interface EnemyConfig {
   key: string;
@@ -668,6 +676,22 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
                         // like the heeland coo / berserker, sells the
                         // "looming" presence on physical contact.
   },
+  // Auld Reekie Ghaist minion — pale blue tourist ghost that orbits the boss
+  // as a living shield in Phase 1. Low HP so they can be popped quickly;
+  // `appearsAt: 9999` keeps them out of the general spawn pool (summoned only
+  // by the boss via `spawnTouristPack`). Chase behavior — drifts toward player
+  // when orphaned after boss phase transition.
+  tourist_ghost: {
+    key: 'tourist_ghost',
+    texture: 'enemy_tourist_ghost',
+    speed: 18,
+    hp: 30,
+    damage: 0,
+    xpValue: 5,
+    appearsAt: 9999,
+    behavior: 'chase',
+    packSize: 1,
+  },
 };
 
 /**
@@ -726,6 +750,8 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   twin_stones: 'An Càraid — the Twin Stones',
   wicker_haggis: 'The Wicker Haggis — Bealltainn\'s Tribute',
   nessie: 'Nessie, Reconsidered',
+  auld_reekie: 'The Auld Reekie Ghaist',
+  tourist_ghost: 'Tourist Ghost',
   cailleach_boss: 'The Cailleach',
 };
 
@@ -907,6 +933,24 @@ export const BOSSES: BossConfig[] = [
     damage: 32,
     xpValue: 85,
     scale: 2.5,
+  },
+  // Urban family boss — Auld Reekie Ghaist. Victorian gas-lamp ghost of
+  // Edinburgh's Old Town. Three phases: tourist-ghost crowd shields (P1),
+  // lamp-post blink teleport + gas pulse (P2), triple lantern fan (P3).
+  // Slots at 18:30 between Nuckelavee (17:00) and Hunter General (20:00).
+  // Refs: SCOTTISH_RESEARCH_DEEP.md §11 (Edinburgh Old Town folklore).
+  {
+    key: 'auld_reekie',
+    nameKey: 'boss.auld_reekie.name',
+    warningKey: 'ui.bossWarning.auld_reekie',
+    spawnTimeSec: 1110,    // 18:30
+    texture: 'boss_auld_reekie',
+    speed: 38,
+    hp: 2600,
+    damage: 26,
+    xpValue: 90,
+    scale: 2.1,
+    behaviorOverride: 'auld_reekie',
   },
   {
     key: 'hunter_general',
