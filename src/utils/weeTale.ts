@@ -371,6 +371,28 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.death.with_name_a', requires: ['death', 'has_name'] },
   { key: 'ui.weeTale.victory.with_name_a', requires: ['victory', 'has_name'] },
 
+  // ── v2 — Biome-contextual lines (tier-2: death/victory + biome) ──
+  // No `has_name` — these are landscape/atmosphere lines, not personalised.
+  // Tier-2 weight keeps them below variant-voiced tier-3 lines in the pool.
+  { key: 'ui.weeTale.death.biome_bog', requires: ['death', 'biome_bog'] },
+  { key: 'ui.weeTale.victory.biome_bog', requires: ['victory', 'biome_bog'] },
+  { key: 'ui.weeTale.death.biome_loch', requires: ['death', 'biome_loch'] },
+  { key: 'ui.weeTale.victory.biome_loch', requires: ['victory', 'biome_loch'] },
+  { key: 'ui.weeTale.death.biome_pine', requires: ['death', 'biome_pine'] },
+  { key: 'ui.weeTale.victory.biome_pine', requires: ['victory', 'biome_pine'] },
+  { key: 'ui.weeTale.death.biome_heather', requires: ['death', 'biome_heather'] },
+  { key: 'ui.weeTale.victory.biome_heather', requires: ['victory', 'biome_heather'] },
+  { key: 'ui.weeTale.death.biome_coastal', requires: ['death', 'biome_coastal'] },
+  { key: 'ui.weeTale.victory.biome_coastal', requires: ['victory', 'biome_coastal'] },
+  { key: 'ui.weeTale.death.biome_haar', requires: ['death', 'biome_haar'] },
+  { key: 'ui.weeTale.victory.biome_haar', requires: ['victory', 'biome_haar'] },
+  { key: 'ui.weeTale.death.biome_frost', requires: ['death', 'biome_frost'] },
+  { key: 'ui.weeTale.victory.biome_frost', requires: ['victory', 'biome_frost'] },
+  { key: 'ui.weeTale.death.biome_cairngorm', requires: ['death', 'biome_cairngorm'] },
+  { key: 'ui.weeTale.victory.biome_cairngorm', requires: ['victory', 'biome_cairngorm'] },
+  { key: 'ui.weeTale.death.biome_glen_coe', requires: ['death', 'biome_glen_coe'] },
+  { key: 'ui.weeTale.victory.biome_glen_coe', requires: ['victory', 'biome_glen_coe'] },
+
   // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
   // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".
   // The mountain crone expects better of ye; she's never cruel.

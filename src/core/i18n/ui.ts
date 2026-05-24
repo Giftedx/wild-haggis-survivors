@@ -4643,6 +4643,16 @@ export const ui = {
       cailleach_boss: 'Seven cairns lit — and then the storm. The moor went quiet at {time}.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
+      // v2 — biome-contextual death lines (tier-2, no {name}).
+      biome_bog: 'The bog at {time} — soft ground, and then softer.',
+      biome_loch: 'Stood at the loch-edge at {time}. The loch does not give back what it takes.',
+      biome_pine: 'The pine forest closed in at {time}. The old trees see a great deal.',
+      biome_heather: 'The heather held a shape a while after {time}. Then the wind came.',
+      biome_coastal: 'The cliff-wind at {time}. Too near the edge — or the edge came too near.',
+      biome_haar: 'The haar closed in at {time}. Walked until there was no moor left to walk.',
+      biome_frost: 'The frost-moor at {time} — slowed, and the moor did not.',
+      biome_cairngorm: 'The plateau wind took the haggis at {time}. The cairngorm keeps its own cold.',
+      biome_glen_coe: 'The glen holds its weather close. Out of moor at {time}.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -4665,6 +4675,16 @@ export const ui = {
       cailleach_boss_kill: 'Stormcrown taken at {time}. The seven cairns hold the memory of it.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
+      // v2 — biome-contextual victory lines (tier-2, no {name}).
+      biome_bog: 'Walked the bog and came back knowing the smell of peat.',
+      biome_loch: 'Kept back from the edge and walked home. The loch noted this.',
+      biome_pine: 'Found a way through the pines. The trees are still there. The haggis too.',
+      biome_heather: 'Walked through the purple at {time}. The heather bent both ways. Kept walking.',
+      biome_coastal: 'Held the coast at {time}. The Atlantic is indifferent; that day it was wrong.',
+      biome_haar: 'Walked the haar by feel — {time} of grey, and then blue sky again.',
+      biome_frost: 'Walked home across the frost. It cracked underfoot the whole way. Home anyway.',
+      biome_cairngorm: 'Crossed the cairngorm and came down the other side at {time}. The wind let it happen.',
+      biome_glen_coe: 'Walked through the glen at {time}. The red hills watched without comment.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".
