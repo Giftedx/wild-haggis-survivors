@@ -109,7 +109,8 @@ describe('PASSIVE_KEYS', () => {
     // Whisky Lob (2026-05-24) added `peated_oak` — +10% damage.
     // Bagpipe Drone (2026-05-24) added `reeds` — +10% cooldown reduction.
     // Clootie Rag (2026-05-24) added `rowan_thread` — +1.5 HP regen/sec.
-    expect(PASSIVE_KEYS).toHaveLength(19);
+    // Cullen Skink Ladle (2026-05-24) added `smoked_haddock` — +12 max HP.
+    expect(PASSIVE_KEYS).toHaveLength(20);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');

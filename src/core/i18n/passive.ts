@@ -53,4 +53,7 @@ export const passive = {
   rowan_thread: {
     flavour: "Red thread cut from a rowan — the tree that turns the hex, that hangs above the door, that the witch cannot pass. Tied at the wrist before going out onto the moor. Gran ties one fresh each run. The haggis stopped asking why.",
   },
+  smoked_haddock: {
+    flavour: "Finnan haddie — cold-smoked over green wood on the shore at Findon, south of Aberdeen, where they've been doing it since before anyone wrote it down. The broth is what you get when you've been walking all day. The haggis takes it every morning.",
+  },
 } as const;

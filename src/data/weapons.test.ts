@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 21 weapons (Clootie Rag added — completes bleed synergy family)', () => {
-    expect(keys).toHaveLength(21);
+  it('has exactly 22 weapons (Cullen Skink Ladle added — comedy slow-lob food weapon)', () => {
+    expect(keys).toHaveLength(22);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {

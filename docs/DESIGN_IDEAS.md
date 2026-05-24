@@ -191,7 +191,7 @@ Candidate weapons (pick 4 for a content drop):
 - ~~**Wallace Sword**~~ — ✅ shipped 2026-05-12 (`wallace_sword` → `freedom_blade` evolution, passive `stirling_medal`, B6 Highland Horrors). Giant two-hander slow sweep via `fireFreedomBlade`. `stirling_medal` grants +10% crit. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
 - **Fingal's Horn** — summons 3 Fianna-warrior allies for 10s. Relic-tier rare. (*Ref: `SCOTTISH_RESEARCH.md` §1.6.*)
 - **Steam Engine (James Watt)** — AoE pulse with chimney-smoke particles. Industrial-era flavour. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §20.2.*)
-- **Cullen Skink Ladle** — sloshing AoE broth that slows enemies. Comedy-food-weapon tradition. Paired passive: Smoked Haddock.
+- ~~**Cullen Skink Ladle**~~ — ✅ shipped 2026-05-24 (`cullen_skink_ladle`, `lob_puddle`, 54px, 3.5s CD, 0 dmg pure slow). Slows enemies 45% for 2.8 s. `spawnSkinkPuddle` sister to `spawnBurnPuddle`. Paired passive `smoked_haddock` (+12 max HP).
 - **Flying Porridge Pot** — thrown pot explodes into oatmeal splash. Comedy weapon.
 - **Deep-Fried Mars Bar** — absurdist heavy projectile; comedy proc (rare but satisfying). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §12.1.*)
 - **Port-à-Beul (Mouth Music) Chant** — area-slow aura that follows player; synced to music system. Gaelic vocal-percussion tradition. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)

@@ -883,8 +883,9 @@ export class WeaponSystem {
       ly = py + Math.sin(this.playerFacing) * w.config.range * 0.65;
     }
 
-    // Visual arc — small amber circle tweened along a parabola.
-    const flaskVfx = this.acquireVfxCircle(px, py, 4, 0xe07010, 0.9);
+    const isSkink = w.config.key === 'cullen_skink_ladle';
+    // Visual arc — amber for whisky lob, cream-yellow for skink ladle.
+    const flaskVfx = this.acquireVfxCircle(px, py, 4, isSkink ? 0xd4c080 : 0xe07010, 0.9);
     flaskVfx.setDepth(4);
 
     const startX = px, startY = py;
@@ -902,7 +903,63 @@ export class WeaponSystem {
       },
       onComplete: () => {
         flaskVfx.setVisible(false);
-        this.spawnBurnPuddle(w, lx, ly);
+        if (isSkink) this.spawnSkinkPuddle(w, lx, ly);
+        else this.spawnBurnPuddle(w, lx, ly);
+      },
+    });
+  }
+
+  /** Spawn a skink-broth puddle at (lx, ly) that slows enemies who stand in it. */
+  private spawnSkinkPuddle(w: ActiveWeapon, lx: number, ly: number): void {
+    if (this.scene.getTimeManager().isGameplayPaused()) return;
+    const radius = this.effectiveAoe(w);
+    const weaponKey = w.config.key;
+    const PUDDLE_DURATION_MS = 2800;
+    const TICK_INTERVAL_MS = 400;
+
+    // Broth puddle visual — cream-yellow pool.
+    const puddle = this.acquireVfxCircle(lx, ly, radius, 0xd4c080, 0.38);
+    puddle.setDepth(1);
+
+    // Splash flourish at landing — reuse caber burst as a soupy splash.
+    this.spawnWeaponFlourish(
+      lx, ly,
+      'fx_weapon_caber_burst',
+      { scale: 0.45, endScale: 0.95, duration: 320, alpha: 0.65, depth: 4 },
+    );
+
+    const repeats = Math.max(1, Math.floor(PUDDLE_DURATION_MS / TICK_INTERVAL_MS) - 1);
+    const slowHandle = this.scene.getUpdateTickers().addInterval(
+      'scaled',
+      TICK_INTERVAL_MS,
+      () => {
+        if (this.scene.getTimeManager().isGameplayPaused()) return;
+        const { damage: dmg, isCrit } = this.effectiveDamage(w);
+        const enemies = this.enemyGroup.getChildren() as Enemy[];
+        const rSq = radius * radius;
+        for (const enemy of enemies) {
+          if (!enemy.active) continue;
+          const edx = enemy.x - lx;
+          const edy = enemy.y - ly;
+          if (edx * edx + edy * edy <= rSq) {
+            this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+            // Slow to 55% speed, refreshes every tick so enemies inside
+            // stay slowed continuously. Longer than the tick interval so
+            // there's no gap between ticks at the boundary.
+            if (enemy.active) enemy.applyFreeze(0.55, TICK_INTERVAL_MS + 80);
+          }
+        }
+      },
+      { repeats },
+    );
+
+    this.scene.tweens.add({
+      targets: puddle,
+      alpha: 0,
+      duration: PUDDLE_DURATION_MS,
+      onComplete: () => {
+        slowHandle.cancel();
+        puddle.setVisible(false);
       },
     });
   }

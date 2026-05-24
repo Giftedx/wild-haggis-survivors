@@ -99,6 +99,11 @@ export const weapon = {
     description: 'A massive tempest erupts around you — 680-pixel ring of fury. 22-second roar, then silence.',
     flavour: "The West Coast gives no warning — one moment haar, the next a wall of Atlantic fury rolling in off the Minch. The haggis breathed it in once and never forgot the shape of it. This is not a weapon; this is weather.",
   },
+  cullen_skink_ladle: {
+    name: 'Cullen Skink Ladle',
+    description: 'Lob a pot of smoked haddock soup. No damage — but the broth slows every enemy that wades through it.',
+    flavour: "Cullen Skink: smoked Finnan haddie, onion, potato, cream. The oldest coastal dish. No one in Cullen would waste a ladle of it on an enemy — but then, no haggis from Cullen ever had this many enemies.",
+  },
   clootie_rag: {
     name: 'Clootie Rag',
     description: 'A blood-soaked cloth tied at the wrist — wounding pulse around you. Fast ticks, no slow.',

@@ -43,7 +43,8 @@ export type WeaponKey =
   | 'whisky_lob'
   | 'bagpipe_drone'
   | 'coastal_storm'
-  | 'clootie_rag';
+  | 'clootie_rag'
+  | 'cullen_skink_ladle';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -355,6 +356,36 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.08,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Cullen Skink Ladle. A pot of smoked haddock
+  // chowder, lobbed at enemies — no damage, pure slowing soup. The
+  // broth splashes on landing and all enemies who wade through it are
+  // slowed to 55% speed for 2.8 s. Comedy food-weapon; sister to
+  // Whisky Lob (lob_puddle that burns) but flipped: slows not burns.
+  // Paired passive: Smoked Haddock (+12 max HP — "the broth that keeps
+  // you alive"). No evolution in v1.
+  cullen_skink_ladle: {
+    key: 'cullen_skink_ladle',
+    nameKey: 'weapon.cullen_skink_ladle.name',
+    descriptionKey: 'weapon.cullen_skink_ladle.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 3500,
+    damage: 1,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 220,
+    aoeRadius: 54,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.0,
+      cooldown: 0.92,
+      countAt: [5],
+      pierce: 0,
+      radius: 1.10,
     },
   },
 

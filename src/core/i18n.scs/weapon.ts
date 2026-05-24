@@ -99,6 +99,11 @@ export const weapon = {
     description: 'A muckle tempest erupts aboot ye — 680-pixel ring o fury. 22-second bawl, then wheesht.',
     flavour: "Tha Wast Coast gies nae warnin — ae moment haar, tha nixt a waw o Atlantic fury rowin in aff tha Minch. Tha haggis breathed it in aince an nivver forgot tha shape o it. This isnae a weapon; this is weather.",
   },
+  cullen_skink_ladle: {
+    name: 'Cullen Skink Ladle',
+    description: 'Lob a pot o smoked haddock soup. Nae dunt — but tha broth slaws ilka enemy that wades throu it.',
+    flavour: "Cullen Skink: reekied Finnan haddie, ingan, tattie, cream. Tha auldest coastal dish. Naebody in Cullen wid waste a ladle o it on an enemy — but then, nae haggis frae Cullen ivver had this mony enemies.",
+  },
   clootie_rag: {
     name: 'Clootie Rag',
     description: 'A bluid-soakit clout tied at tha wrist — woundin pulse aboot ye. Braw fast ticks, nae slow.',

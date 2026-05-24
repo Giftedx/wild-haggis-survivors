@@ -53,4 +53,7 @@ export const passive = {
   rowan_thread: {
     flavour: "Reid threid cut frae a rowan — tha tree that turns tha hex, that hingers abune tha door, that tha witch cannae pass. Tied at tha wrist afore gangin oot ontae tha moor. Gran ties ane fresh each run. Tha haggis stopped askin why.",
   },
+  smoked_haddock: {
+    flavour: "Finnan haddie — cauld-reekied ower green wid on tha shore at Findon, sooth o Aberdeen, whaur they've been daein it sin afore onybody wrote it doon. Tha broth is whit ye get when ye've been walkin aw day. Tha haggis taks it ilka mornin.",
+  },
 } as const;

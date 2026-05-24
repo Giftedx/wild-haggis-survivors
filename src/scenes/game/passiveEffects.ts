@@ -116,5 +116,10 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // future evolution.
       player.addHpRegen(1.5);
       break;
+    case 'smoked_haddock':
+      // +12 max HP — the Finnan haddie broth that keeps you alive.
+      // Pairs with Cullen Skink Ladle at lv5 for the future evolution.
+      player.addMaxHp(12);
+      break;
   }
 }

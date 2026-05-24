@@ -33,6 +33,7 @@ import { drawWhiskyLobIcon } from './whiskyLob';
 import { drawBagpipeDroneIcon } from './bagpipeDrone';
 import { drawCoastalStormIcon } from './coastalStorm';
 import { drawClootieRagIcon } from './clootieRag';
+import { drawCullenSkinkLadleIcon } from './cullenSkinkLadle';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -60,6 +61,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawCoastalStormIcon(scene);
   // Clootie Rag — wounding bleed aura.
   drawClootieRagIcon(scene);
+  // Cullen Skink Ladle — slow lob zone (comedy food weapon).
+  drawCullenSkinkLadleIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);

@@ -71,6 +71,10 @@ export const upgradeCard = {
     name: 'Clootie Rag',
     description: 'A woundin pulse aboot ye — braw fast ticks, nae slow. Pair wi Rowan Thread fer tha evolution.',
   },
+  add_cullen_skink_ladle: {
+    name: 'Cullen Skink Ladle',
+    description: 'Lob a pot o smoked haddock soup. Nae dunt — slaws awthin in tha splash zone.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
@@ -146,6 +150,10 @@ export const upgradeCard = {
   add_rowan_thread: {
     name: 'Rowan Thread',
     description: 'Reid thread frae a rowan tied at tha wrist. +1.5 HP regen per second. Pairs wi tha Clootie Rag.',
+  },
+  add_smoked_haddock: {
+    name: 'Smoked Haddock',
+    description: 'Tha Finnan haddie — broth that keeps ye gangin. +12 max HP. Pairs wi tha Cullen Skink Ladle.',
   },
   boost_hp: {
     name: 'Thick Hide',

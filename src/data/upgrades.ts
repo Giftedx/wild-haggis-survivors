@@ -59,7 +59,11 @@ export type PassiveKey =
   // Red thread from a rowan, tied at the wrist against harm. +1.5 HP regen
   // per second — the tree that protects you while the rag wounds them.
   // Pairs with a level-5 Clootie Rag at chest for the future evolution.
-  | 'rowan_thread';
+  | 'rowan_thread'
+  // Cullen Skink Ladle paired passive — "Smoked Haddock".
+  // The Finnan haddie dried in the smoke — the broth that keeps you alive.
+  // +12 max HP. Pairs with a level-5 Cullen Skink Ladle for the future evo.
+  | 'smoked_haddock';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -277,6 +281,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_clootie_rag',
     effect: { type: 'add_weapon', weaponKey: 'clootie_rag' },
   },
+  // Cullen Skink Ladle — lob_puddle slow zone. Paired passive: Smoked Haddock.
+  {
+    id: 'add_cullen_skink_ladle',
+    name: 'upgradeCard.add_cullen_skink_ladle.name',
+    description: 'upgradeCard.add_cullen_skink_ladle.description',
+    rarity: 'uncommon',
+    icon: 'wicon_cullen_skink_ladle',
+    effect: { type: 'add_weapon', weaponKey: 'cullen_skink_ladle' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -441,6 +454,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_rowan_thread',
     effect: { type: 'add_passive', passiveKey: 'rowan_thread' },
+  },
+  // Cullen Skink Ladle paired passive — Smoked Haddock.
+  {
+    id: 'add_smoked_haddock',
+    name: 'upgradeCard.add_smoked_haddock.name',
+    description: 'upgradeCard.add_smoked_haddock.description',
+    rarity: 'uncommon',
+    icon: 'ucard_smoked_haddock',
+    effect: { type: 'add_passive', passiveKey: 'smoked_haddock' },
   },
 ];
 

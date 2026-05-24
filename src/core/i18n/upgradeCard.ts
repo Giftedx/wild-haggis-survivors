@@ -72,6 +72,10 @@ export const upgradeCard = {
     name: 'Clootie Rag',
     description: 'A wounding pulse around you — fast ticks, no slow. Pair wi Rowan Thread for the evolution.',
   },
+  add_cullen_skink_ladle: {
+    name: 'Cullen Skink Ladle',
+    description: 'Lob a pot of smoked haddock soup. No damage — slows everything in the splash zone.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',
@@ -148,6 +152,10 @@ export const upgradeCard = {
   add_rowan_thread: {
     name: 'Rowan Thread',
     description: 'Red thread from a rowan tied at the wrist. +1.5 HP regen per second. Pairs wi the Clootie Rag.',
+  },
+  add_smoked_haddock: {
+    name: 'Smoked Haddock',
+    description: 'The Finnan haddie — broth that keeps you going. +12 max HP. Pairs wi the Cullen Skink Ladle.',
   },
   // Stat boost cards
   boost_hp: {
