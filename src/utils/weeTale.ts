@@ -408,6 +408,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.burns_wee_beastie.death_short', requires: ['death', 'burns_wee_beastie', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.burns_wee_beastie.victory_baseline', requires: ['victory', 'burns_wee_beastie', 'has_name'] },
   { key: 'ui.weeTale.variant.burns_wee_beastie.victory_epic', requires: ['victory', 'burns_wee_beastie', 'has_name', 'epic'] },
+  // Tier-4 — Burns's wee beastie met the Earl's card table. Best-laid schemes.
+  { key: 'ui.weeTale.variant.burns_wee_beastie.death_earl_beardie', requires: ['death', 'burns_wee_beastie', 'has_name', 'earl_beardie_death'] },
 
   // ── v3 — Moor Runner (Hearth + velocity) ──────────────────────
   // Hearth register; speed and momentum language. classic uses generics only.
@@ -471,6 +473,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.wee_ghostie.death_short', requires: ['death', 'wee_ghostie', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.wee_ghostie.victory_baseline', requires: ['victory', 'wee_ghostie', 'has_name'] },
   { key: 'ui.weeTale.variant.wee_ghostie.victory_epic', requires: ['victory', 'wee_ghostie', 'has_name', 'epic'] },
+  // Tier-4 — The wee ghostie met Nicnevin. Even ghosts need rank in the Queen's court.
+  { key: 'ui.weeTale.variant.wee_ghostie.death_nicnevin', requires: ['death', 'wee_ghostie', 'has_name', 'nicnevin_death'] },
 
   // ── v3 — Laird (estate-Scots formality) ───────────────────────
   // Voice register per `docs/VOICE_CARD.md` §"Laird (shipped)".
@@ -495,6 +499,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.morningside.death_short', requires: ['death', 'morningside', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.morningside.victory_baseline', requires: ['victory', 'morningside', 'has_name'] },
   { key: 'ui.weeTale.variant.morningside.victory_taxman', requires: ['victory', 'morningside', 'has_name', 'taxman'] },
+  // Tier-4 — The Morningsider disputed the Laird's deed. Quietly, firmly, then not at all.
+  { key: 'ui.weeTale.variant.morningside.death_the_laird', requires: ['death', 'morningside', 'has_name', 'the_laird_death'] },
   // Three drams deep and still swinging.
   { key: 'ui.weeTale.variant.drouthy.death_baseline', requires: ['death', 'drouthy', 'has_name'] },
   { key: 'ui.weeTale.variant.drouthy.death_short', requires: ['death', 'drouthy', 'has_name', 'short'] },

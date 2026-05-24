@@ -3825,6 +3825,7 @@ export const ui = {
       burns_wee_beastie: {
         death_baseline: '"Wee, sleekit, cow\'rin, tim\'rous beastie" — an yet {name} ran. Aft tha heather, oot tha door.',
         death_short: '"The best-laid schemes o\' mice an\' men gang aft a-gley." {name} kent it afore tha end.',
+        death_earl_beardie: 'Earl Beardie set a haund at {time}. {name} held wee pooches an high hopes. Tha cairds were, as iver, a-gley.',
         victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. Tha bard wid tip his bunnet.',
         victory_epic: '{name} held tha moor fer {time}. Burns himsel wrote shorter lines.',
       },
@@ -3875,6 +3876,7 @@ export const ui = {
       wee_ghostie: {
         death_baseline: '{name} flickered an wis awa. Tha moor disnae coont ghosties tha same wey.',
         death_short: 'Even a wee ghostie haes a final fade. {name}, briefly.',
+        death_nicnevin: 'Nicnevin claimed {name} at {time}. Even ghosties need rank in tha Queen\'s coort — an a wee ghostie haes nane.',
         victory_baseline: 'Hame at {time}. {name} walked through ivery wa\' that tried tae stop it.',
         victory_epic: '{time} an still shinin. {name} hauded on past tha point a ghost should.',
       },
@@ -3895,6 +3897,7 @@ export const ui = {
       morningside: {
         death_baseline: 'Ane encountered tha moor\'s full schedule tha day. It wis, on reflection, a bittie much.',
         death_short: 'Rather abrupt endin. {name} had expectit rather mair time.',
+        death_the_laird: 'Tha Laird made his claim at {time}. {name} disputed it in tha Morningside manner — quietly, firmly, an then no at aw.',
         victory_baseline: '{name} prevailed. Ane is quietly satisfied. Ane says nae mair.',
         victory_taxman: 'Tha taxman wis seen aff by {name}. Rather efficiently. Ane considers tha matter closed.',
       },

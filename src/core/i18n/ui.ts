@@ -4666,6 +4666,7 @@ export const ui = {
         // `docs/C2_BURNS_PROVENANCE.md` for source attribution.
         death_baseline: '"Wee, sleekit, cow\'rin, tim\'rous beastie" — and yet {name} ran. Aft the heather, oot the door.',
         death_short: '"The best-laid schemes o\' mice an\' men gang aft a-gley." {name} kent it before the end.',
+        death_earl_beardie: 'Earl Beardie set a hand at {time}. {name} held wee pockets and high hopes. The cards were, as ever, a-gley.',
         victory_baseline: '"Fair fa\' your honest, sonsie face," {name}. The bard would tip his bonnet.',
         victory_epic: '{name} held the moor for {time}. Burns himself wrote shorter lines.',
       },
@@ -4716,6 +4717,7 @@ export const ui = {
       wee_ghostie: {
         death_baseline: '{name} flickered and was gone. The moor doesnae count ghosts the same wey.',
         death_short: 'Even a wee ghostie has a final fade. {name}, briefly.',
+        death_nicnevin: 'Nicnevin claimed {name} at {time}. Even ghosts need rank in the Queen\'s court — and a wee ghostie has nane.',
         victory_baseline: 'Hame at {time}. {name} walked through every wa\' that tried to stop it.',
         victory_epic: '{time} and still shinin. {name} hauded on past the point a ghost should.',
       },
@@ -4736,6 +4738,7 @@ export const ui = {
       morningside: {
         death_baseline: 'One encountered the moor\'s full schedule today. It was, on reflection, a bit much.',
         death_short: 'Rather abrupt ending. {name} had expected rather more time.',
+        death_the_laird: 'The Laird made his claim at {time}. {name} disputed it in the Morningside manner — quietly, firmly, and then not at all.',
         victory_baseline: '{name} prevailed. One is quietly satisfied. One says no more.',
         victory_taxman: 'The taxman was seen off by {name}. Rather efficiently. One considers the matter closed.',
       },
