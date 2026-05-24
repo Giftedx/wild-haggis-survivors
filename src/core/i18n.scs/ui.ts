@@ -3927,18 +3927,21 @@ export const ui = {
       hebridean: {
         death_baseline: '{name} gaed oot on tha machair wind. Tha sea haes seen this afore — an tha shore hauds on.',
         death_short: 'Ower brief, {name}. Even tha stac taks a season tae erode.',
+        death_each_uisge: 'Tha watter horse rase frae Hebridean watters at {time}. {name} kent tha sea in aw its moods — but no this ane.',
         victory_baseline: '{name} cam through aw o it. Tha Minch kens a survivor when it sees ane.',
         victory_taxman: 'Tha Taxman fund {name} on tha shoreline. Tha island fowk dinnae leave easy.',
       },
       iron_brew: {
         death_baseline: '{name} gaed doon in tha end. But no afore accumulatin somethin fierce.',
         death_short: 'Ower brief, {name}. Barely got tha bru stackin.',
+        death_nuckelavee: 'Tha Nuckelavee disnae drink. {name} offered a swig at {time}. Tha gesture wisnae reciprocated.',
         victory_baseline: '{name} — dunted, stacked, indestructible. Tha orange haggis prevails.',
         victory_taxman: 'Tha Taxman dunted {name} plenty. Wasted effort. Tha bru only stacks.',
       },
       grans_best: {
         death_baseline: '{name} gaed low an swung hard. Gran wid ca it nearly enough.',
         death_short: '{name}. Gran\'s seen worse runs. No mony.',
+        death_cailleach_boss: 'Tha Cailleach an {name} sat doon at {time}. {name} had shortbread. Tha Cailleach had winter. There wisnae a third option.',
         victory_baseline: '{name} got fierce at tha low end an kept swingin. Gran expectit naethin less.',
         victory_taxman: 'Tha Taxman met {name} on a low-HP rage. Gran wis watchin fae somewhere.',
       },

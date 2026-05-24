@@ -531,16 +531,22 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.hebridean.death_short', requires: ['death', 'hebridean', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.hebridean.victory_baseline', requires: ['victory', 'hebridean', 'has_name'] },
   { key: 'ui.weeTale.variant.hebridean.victory_taxman', requires: ['victory', 'hebridean', 'has_name', 'taxman'] },
+  // Tier-4 — Island variant meets the loch-horse. Knew every sea-mood — not this one.
+  { key: 'ui.weeTale.variant.hebridean.death_each_uisge', requires: ['death', 'hebridean', 'has_name', 'each_uisge_death'] },
   // Dunted to glory — accumulates damage bonus per hit taken.
   { key: 'ui.weeTale.variant.iron_brew.death_baseline', requires: ['death', 'iron_brew', 'has_name'] },
   { key: 'ui.weeTale.variant.iron_brew.death_short', requires: ['death', 'iron_brew', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.iron_brew.victory_baseline', requires: ['victory', 'iron_brew', 'has_name'] },
   { key: 'ui.weeTale.variant.iron_brew.victory_taxman', requires: ['victory', 'iron_brew', 'has_name', 'taxman'] },
+  // Tier-4 — The Nuckelavee doesnae drink. {name} offered a swig anyway.
+  { key: 'ui.weeTale.variant.iron_brew.death_nuckelavee', requires: ['death', 'iron_brew', 'has_name', 'nuckelavee_death'] },
   // Gran's Best — fierce at the low end; Gran's voice throughout.
   { key: 'ui.weeTale.variant.grans_best.death_baseline', requires: ['death', 'grans_best', 'has_name'] },
   { key: 'ui.weeTale.variant.grans_best.death_short', requires: ['death', 'grans_best', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.grans_best.victory_baseline', requires: ['victory', 'grans_best', 'has_name'] },
   { key: 'ui.weeTale.variant.grans_best.victory_taxman', requires: ['victory', 'grans_best', 'has_name', 'taxman'] },
+  // Tier-4 — Gran's shortbread vs the Winter Queen's cold. {name} had nae third option.
+  { key: 'ui.weeTale.variant.grans_best.death_cailleach_boss', requires: ['death', 'grans_best', 'has_name', 'cailleach_boss_death'] },
   // The Pict — ancient warrior; no shop, relies on the moor's drops.
   { key: 'ui.weeTale.variant.the_pict.death_baseline', requires: ['death', 'the_pict', 'has_name'] },
   { key: 'ui.weeTale.variant.the_pict.death_short', requires: ['death', 'the_pict', 'has_name', 'short'] },

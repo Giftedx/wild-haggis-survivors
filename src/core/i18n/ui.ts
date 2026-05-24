@@ -4768,18 +4768,21 @@ export const ui = {
       hebridean: {
         death_baseline: '{name} went out on the machair wind. The sea has seen this before — and the shore holds on.',
         death_short: 'Too brief, {name}. Even the stac takes a season to erode.',
+        death_each_uisge: 'The water horse rose from Hebridean waters at {time}. {name} knew the sea in aw its moods — but no this one.',
         victory_baseline: '{name} came through it all. The Minch knows a survivor when it sees one.',
         victory_taxman: 'The Taxman found {name} on the shoreline. The island folk don\'t leave easy.',
       },
       iron_brew: {
         death_baseline: '{name} went doon in the end. But not before accumulating something fierce.',
         death_short: 'Too brief, {name}. Barely got the bru stacking.',
+        death_nuckelavee: 'The Nuckelavee doesnae drink. {name} offered a swig at {time}. The gesture wasnae reciprocated.',
         victory_baseline: '{name} — dunted, stacked, indestructible. The orange haggis prevails.',
         victory_taxman: 'The Taxman dunted {name} plenty. Wasted effort. The bru only stacks.',
       },
       grans_best: {
         death_baseline: '{name} went low and swung hard. Gran would call it nearly enough.',
         death_short: '{name}. Gran\'s seen worse runs. Not many.',
+        death_cailleach_boss: 'The Cailleach and {name} sat doon at {time}. {name} had shortbread. The Cailleach had winter. There wasnae a third option.',
         victory_baseline: '{name} got fierce at the low end and kept swinging. Gran expected nothing less.',
         victory_taxman: 'The Taxman met {name} on a low-HP rage. Gran was watching from somewhere.',
       },
