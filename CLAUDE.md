@@ -77,7 +77,7 @@ Game balance is defined in data files, not scattered through logic:
 - `src/data/enemies.ts` — Enemy types with `EnemyConfig` (behavior, spawn timing) and `BossConfig` (boss `warningKey` is an i18n path, resolved with `t()` in `SpawnSystem`)
 - `src/data/upgrades.ts` — Level-up card pool with rarity-weighted draws and evolution recipes (`EVOLUTION_RECIPES`)
 - `src/data/permanentUpgrades.ts` — Between-run upgrades bought with Golden Haggis currency
-- `src/data/variants.ts` — 15-strong haggis roster (classic + 14 variants); each declares stat profile, palette, voice register, unlock condition. Lives behind `selectedVariant` save key. Includes Cailleach, Glaswegian, Doric Quinie, Peerie Shetlander, Burns's Wee Beastie, Witch's Hare (15th, shipped 2026-04-28).
+- `src/data/variants.ts` — 28-strong haggis roster (classic + 27 variants); each declares stat profile, palette, voice register, unlock condition. Lives behind `selectedVariant` save key. Full roster: classic, moor_runner, iron_belly, glen_forager, surefoot, pipe_breath, wee_ghostie, laird, glaswegian, anticlockwise, cailleach, doric_quinie, peerie_shetlander, burns_wee_beastie, witch_hare, selkie, morningside, drouthy, pibroch, orcadian, hebridean, iron_brew, grans_best, the_pict, jacobite, tam_o_shanter, engineer, tufted.
 - `src/data/curses.ts` — opt-in run modifiers + bonus gold. `CurseDef` exported.
 - `src/data/biomes.ts` — `BiomeId` union (bog/loch/pine/heather/coastal/haar/frost) + per-biome `BIOMES` defs (tint, weights, modifier, mood, ambientHaarDensity).
 - `src/data/eliteAffixes.ts` — elite enemy modifier roster.

@@ -1162,6 +1162,8 @@ export const ui = {
     save_screenshot: 'Save screenshot',
     save_clip: 'Save last 15s',
     name_header: '{name}',
+    /** window.prompt() label when the player clicks the run name to rename. */
+    rename_prompt: 'Name your haggis (24 chars max):',
   },
   passive: {
     pause_short: {

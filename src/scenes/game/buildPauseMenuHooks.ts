@@ -57,6 +57,7 @@ export function buildPauseMenuHooks(scene: GameScene): PauseMenuHooks {
       try { return t(scene.activeVariant.nameKey); } catch { return ''; }
     },
     getRuneLabels: () => resolveRuneLabels(scene.ownedRuneIds),
+    setRunName: (name) => scene.setRunName(name),
     onResumeRequested: () => scene.toggleUiPause(),
     onQuitRequested: () => scene.runExit.abandonToMainMenu(),
     isWhiskyDramAvailable: () => scene.relicEffectDriver?.isWhiskyDramAvailable() ?? false,

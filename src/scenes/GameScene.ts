@@ -2159,6 +2159,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.runName;
   }
 
+  /** Update the cosmetic run name (e.g. player rename via pause menu). */
+  public setRunName(name: string): void {
+    this.runName = name;
+  }
+
   public getClipRecorder(): ClipRecorder | null {
     return this.clipRecorder;
   }

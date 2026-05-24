@@ -33,6 +33,7 @@ import { resolveToggleTextColor } from '../toggleTextPalette';
 import { createGameButton, resolveTierBorder, type ButtonTier } from '../../ui/gameButton';
 import { textStyle } from '../../ui/typography';
 import { audio } from '../../systems/AudioSystem';
+import { filterHaggisName } from '../../utils/filterHaggisName';
 import { saveScreenshot } from '../../utils/screenshot';
 import { buildCaptureFilename } from '../../utils/captureFilename';
 import { formatLocalYmd } from '../../utils/formatDate';
@@ -110,6 +111,9 @@ export interface PauseMenuHooks {
    * held. Scene summons 3 Fianna spirits + plays the SFX/toast.
    */
   onFingalsHornRequested?: () => void;
+
+  /** Update the cosmetic run name after player renames via the pause overlay. */
+  setRunName?: (name: string) => void;
 }
 
 export class PauseMenu {
@@ -187,13 +191,26 @@ export class PauseMenu {
         textStyle('heading', { fontSize: style.titlePx, color: style.titleColor }),
       ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
     );
-    const runName = scene.getRunName?.() ?? '';
-    if (runName) {
-      this.elements.push(
-        scene.add.text(x + width / 2, y + height * 0.22, t('ui.pause.name_header', { name: runName }),
-          textStyle('subtitle', { fontSize: '14px', color: COLORS_CSS.STATUS_TAN }),
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
-      );
+    let currentRunName = scene.getRunName?.() ?? '';
+    if (currentRunName) {
+      const nameText = scene.add.text(
+        x + width / 2, y + height * 0.22,
+        t('ui.pause.name_header', { name: currentRunName }) + '  ✎',
+        textStyle('subtitle', { fontSize: '14px', color: COLORS_CSS.STATUS_TAN }),
+      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
+        .setInteractive({ useHandCursor: true });
+      const doRename = (): void => {
+        const raw = window.prompt(t('ui.pause.rename_prompt'), currentRunName);
+        if (raw === null) return;
+        const filtered = filterHaggisName(raw);
+        if (!filtered) return;
+        currentRunName = filtered;
+        this.hooks.setRunName?.(filtered);
+        nameText.setText(t('ui.pause.name_header', { name: filtered }) + '  ✎');
+      };
+      nameText.on('pointerdown', doRename);
+      pushTextFocus(nameText, () => COLORS_CSS.STATUS_TAN, doRename);
+      this.elements.push(nameText);
     }
     const quipIndex = Phaser.Math.Between(1, 8);
     const quip = t(`ui.pause.quip_${quipIndex}`);

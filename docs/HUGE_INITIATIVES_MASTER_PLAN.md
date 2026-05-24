@@ -23,7 +23,7 @@ Initiatives that landed in the live build between 2026-04-09 and 2026-05-09.
 | R1 | Relics third tier | 18 handcrafted relics, 3-slot cap, drops from elites + bosses. Shipped 2026-04-24. |
 | V2 | Variants pack | 14 → 15 variants (Witch's Hare added 2026-04-28). 16th variant — Morningside Haggis (posh Edinburgh, pearl brooch, "ane" voice, blank modifier by design) shipped 2026-05-23. Shipped 2026-04-24. |
 | U1 | Runes | 30 rule-stack cards, conditions + effects in evaluator pair. Shipped 2026-04-25. |
-| E1 | Seasonal events | 13 events with calendar gating (Burns Night, Beltane, Samhain, Hogmanay + 9 more). Shipped 2026-04-24/29. |
+| E1 | Seasonal events | 14 events with calendar gating (Burns Night, Beltane, Samhain, Hogmanay + 10 more, incl. Culloden). Shipped 2026-04-24/29; Culloden added 2026-05-24. |
 | C2 | Weapon lore pass | 103 EN flavour leaves + 30 SCS rune overlays. Shipped + truth-up 2026-04-26. |
 | B1 | Banter density push | 5 phases of new authored lines across all contexts. Shipped 2026-04-26. |
 | B5 | Biomes charter | Phases 0–2 (gloaming + seawrack + haar + frost). Shipped 2026-04-29/30. |
