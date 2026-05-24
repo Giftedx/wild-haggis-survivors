@@ -73,27 +73,6 @@ test.describe('Nuckelavee boss — spawn and kill', () => {
     });
     expect(booted, 'GameScene must boot').toBe(true);
 
-    type GameSceneLike = {
-      player?: { heal(n: number): void };
-      spawnSystem?: {
-        getEnemyGroup?(): {
-          getChildren(): Array<{
-            active: boolean;
-            getEnemyKey?(): string;
-            takeDamageWithKillEvents?(n: number): void;
-          }>;
-        };
-      };
-      bossKilledKeys?: string[];
-    };
-
-    const getGameScene = (): GameSceneLike | undefined => {
-      const g = (window as unknown as { game?: {
-        scene: { scenes: Array<{ scene: { key: string } }> };
-      } }).game;
-      return g?.scene.scenes.find((s) => s.scene.key === 'Game') as unknown as GameSceneLike | undefined;
-    };
-
     const healPlayer = async () => {
       await page.evaluate(() => {
         const g = (window as unknown as { game?: {

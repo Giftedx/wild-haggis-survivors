@@ -2091,12 +2091,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.biomeController.currentBiomeAt(this.player.x, this.player.y);
   }
 
-  /**
-   * True iff any active enemy sits within `radiusPx` of the player.
-   * Used by `GameTickers` to gate haggis_ambient banter to quiet
-   * stretches (Task 10). Squared-distance compare keeps this cheap at
-   * the per-frame cadence the ticker runs at.
-   */
   private hasEnemyNearby(radiusPx: number): boolean {
     if (!this.player || !this.spawnSystem) return false;
     const r2 = radiusPx * radiusPx;
@@ -2175,13 +2169,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.clipRecorder;
   }
 
-  /**
-   * W82 Phase 3 — live accessor for the most recent boss-kill
-   * highlight snapshot. Returns `null` until the player kills their
-   * first boss this run, or after `resetTransientRunState` wipes
-   * the field at the top of a fresh `create()` pass. Consumed by
-   * the Game Over save-highlight link.
-   */
   public getBossKillHighlight(): import('./game/bossKillHighlight').BossKillHighlight | null {
     return this.bossKillHighlight;
   }
