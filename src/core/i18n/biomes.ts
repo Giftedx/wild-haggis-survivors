@@ -65,4 +65,10 @@ export const biomes = {
     loreSnippet: 'Raised mire where the peat browned to black. The water holds no reflection.',
     lore: 'Beyond the far edge of the known moor, the peat has compressed to near-stone and the bog goes ink-dark. Not night-dark — deeper than that. No reflection off the water; the surface swallows light. Haggis that wander here say the drift pulls stronger, as if the peat itself is wound the wrong way. They are right. Local creatures avoid the centre. The ink marks every step and does not wash out easily. Go through it or be claimed by it.',
   },
+  ben_nevis: {
+    name: 'The Ben',
+    entry: 'Summit. Thin air, full wind — the Ben disnae care.',
+    loreSnippet: 'Highest in the British Isles. The cloud sits here like it owns the place.',
+    lore: 'Ben Nevis stands 1,345 metres above Fort William and the whole of the British Isles below it. The summit plateau is a different country — granite scree, permanent snow patches, and a cloud that never got the message to leave. Prevailing westerlies push off the Atlantic with nothing to slow them down for three thousand miles. A summit observatory ran here from 1883 to 1904; the records say it rained on 261 days one year. The Ben is not cruel. It is simply indifferent, and that is worse.',
+  },
 } as const;

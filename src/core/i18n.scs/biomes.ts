@@ -65,4 +65,10 @@ export const biomes = {
     loreSnippet: 'Raised mire whaur tha peat brouned tae black. Tha watter hauds nae reflection.',
     lore: 'Ayont tha far edge o tha kent muir, tha peat has compressed tae near-stane an tha bog gangs ink-daurk. No nicht-daurk — deeper nor that. Nae reflection aff tha watter; tha surface swallies licht. Haggis that wander here say tha drift pulls stranger, as if tha peat itsel is wund tha wrang wey. Thay\'re richt. Local craiturs avoid tha centre. Tha ink merks ilka step an disnae wash oot easy. Gang through it or be claimed bi it.',
   },
+  ben_nevis: {
+    name: 'The Ben',
+    entry: 'Summit. Thin air, fou wind — the Ben disnae care.',
+    loreSnippet: 'Heichest in tha British Isles. Tha cloud sits here like it awns the place.',
+    lore: 'Ben Nevis staunts 1,345 metres abuin Fort William an tha hale o tha British Isles ablow it. Tha summit plateau is a different kintra — granite scree, permanent snaw-patches, an a cloud that nivver got tha message tae lea. Prevailin westerlie winds push aff tha Atlantic wi naethin tae slow them doon fer three thoosand mile. A summit observatory ran here fae 1883 tae 1904; tha records say it rained on 261 days yin year. Tha Ben isnae cruel. It is simply indifferent, an that is waur.',
+  },
 } as const;

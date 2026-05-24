@@ -32,9 +32,9 @@ describe('pickHazardForBiome (biome → hazard mapping)', () => {
 });
 
 describe('HAZARDS catalog (config integrity)', () => {
-  it('exposes exactly eleven hazards (Black Bog added ink_pool)', () => {
-    expect(HAZARD_KEYS).toHaveLength(11);
-    expect(Object.keys(HAZARDS)).toHaveLength(11);
+  it('exposes exactly twelve hazards (Ben Nevis added summit_gust)', () => {
+    expect(HAZARD_KEYS).toHaveLength(12);
+    expect(Object.keys(HAZARDS)).toHaveLength(12);
   });
 
   it('each catalog entry self-references its own key', () => {
@@ -45,8 +45,8 @@ describe('HAZARDS catalog (config integrity)', () => {
 
   it('each hazard maps to a distinct biome (1:1 coverage)', () => {
     const biomes = HAZARD_KEYS.map((k) => HAZARDS[k].biome);
-    expect(new Set(biomes).size).toBe(11);
-    expect(biomes.sort()).toEqual(['black_bog', 'bog', 'cairngorm', 'clyde_shipyard', 'coastal', 'frost', 'glen_coe', 'haar', 'heather', 'loch', 'pine']);
+    expect(new Set(biomes).size).toBe(12);
+    expect(biomes.sort()).toEqual(['ben_nevis', 'black_bog', 'bog', 'cairngorm', 'clyde_shipyard', 'coastal', 'frost', 'glen_coe', 'haar', 'heather', 'loch', 'pine']);
   });
 
   it('texture keys follow the validator-locked hazard_* prefix', () => {
@@ -122,6 +122,7 @@ describe('HAZARDS catalog (config integrity)', () => {
       'glen_coe',
       'clyde_shipyard',
       'black_bog',
+      'ben_nevis',
     ]);
     for (const key of HAZARD_KEYS) {
       expect(valid.has(HAZARDS[key].biome)).toBe(true);
@@ -129,7 +130,7 @@ describe('HAZARDS catalog (config integrity)', () => {
   });
 
   it('round-trips: every biome resolves to a hazard whose biome matches', () => {
-    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe'];
+    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis'];
     for (const b of biomes) {
       const k = pickHazardForBiome(b) as HazardKey;
       expect(k).not.toBeNull();

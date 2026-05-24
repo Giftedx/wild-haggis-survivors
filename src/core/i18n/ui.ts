@@ -2775,6 +2775,14 @@ export const ui = {
         c: 'The peat went past brown. Deep breath.',
         d: 'The drift\'s pulling worse here. Hold the line.',
       },
+      // Ben Nevis Summit (2026-05-24) — exposed plateau, wind push, sparse.
+      // Edge register: terse, elemental, no fuss. The Ben doesn't explain itself.
+      ben_nevis: {
+        a: 'Summit. The wind disnae ask permission.',
+        b: 'Up here, everything\'s simpler. Survive or don\'t.',
+        c: 'The Ben\'s been here longer than the word for it.',
+        d: 'Three thousand miles of Atlantic. Nothing between you and it now.',
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',
@@ -4688,6 +4696,7 @@ export const ui = {
       biome_glen_coe: 'The glen holds its weather close. Out of moor at {time}.',
       biome_clyde_shipyard: 'The slag was still warm at {time}. The Clyde remembered.',
       biome_black_bog: 'The ink held the shape a moment at {time}. Then it closed over.',
+      biome_ben_nevis: 'The wind took it at {time}. The Ben didn\'t notice.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -4722,6 +4731,7 @@ export const ui = {
       biome_glen_coe: 'Walked through the glen at {time}. The red hills watched without comment.',
       biome_clyde_shipyard: 'Crossed the dry-dock at {time}. The rivets held. The haggis held too.',
       biome_black_bog: 'Walked out of the black bog at {time}. The ink stayed on the boots but the haggis stayed on the moor.',
+      biome_ben_nevis: 'Came down from the Ben at {time}. The cloud stayed up. The haggis came down.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".

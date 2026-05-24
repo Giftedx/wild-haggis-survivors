@@ -2201,6 +2201,12 @@ export const ui = {
         c: 'Tha peat gaed past broun. Deep breath.',
         d: 'Tha drift\'s haulin waur here. Haud tha line.',
       },
+      ben_nevis: {
+        a: 'Summit. Tha wind disnae ask permission.',
+        b: 'Up here, awthin\'s simpler. Survive or dinnae.',
+        c: 'Tha Ben\'s been here langer nor tha word fer it.',
+        d: 'Three thoosand mile o Atlantic. Naethin atween ye an it nou.',
+      },
     },
     moor_moment: {
       a: 'Tha moor noticed ye. That\'s rare.',
@@ -3838,6 +3844,7 @@ export const ui = {
       biome_glen_coe: 'Tha glen haulds its weather close. Oot o muir at {time}.',
       biome_clyde_shipyard: 'Tha slag wis still warm at {time}. Tha Clyde minded.',
       biome_black_bog: 'Tha ink held tha shape a moment at {time}. Than it closed ower.',
+      biome_ben_nevis: 'Tha wind taen it at {time}. Tha Ben didnae notice.',
     },
     victory: {
       fallback_a: 'Walked hame at {time}. Tha kettle wis oan.',
@@ -3867,6 +3874,7 @@ export const ui = {
       biome_glen_coe: 'Walked through tha glen at {time}. Tha reid hills watched wioot comment.',
       biome_clyde_shipyard: 'Crossed tha dry-dock at {time}. Tha rivets held. Tha haggis held tae.',
       biome_black_bog: 'Walked oot o tha black bog at {time}. Tha ink stayed on tha boots but tha haggis stayed on tha muir.',
+      biome_ben_nevis: 'Cam doon fae tha Ben at {time}. Tha cloud stayed up. Tha haggis cam doon.',
     },
     variant: {
       cailleach: {

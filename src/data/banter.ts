@@ -1487,6 +1487,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.black_bog.c',
         'ui.banter.biome_change.black_bog.d',
       ],
+      // Ben Nevis Summit (2026-05-24) — wind push, exposed plateau.
+      // Edge register: terse, elemental. The Ben doesn't explain itself.
+      ben_nevis: [
+        'ui.banter.biome_change.ben_nevis.a',
+        'ui.banter.biome_change.ben_nevis.b',
+        'ui.banter.biome_change.ben_nevis.c',
+        'ui.banter.biome_change.ben_nevis.d',
+      ],
     },
   },
   {

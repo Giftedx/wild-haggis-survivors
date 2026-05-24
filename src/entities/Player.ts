@@ -193,6 +193,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private biomeXpMul: number = 1;
   /** Biome-driven drift multiplier — baked into recalcStats, not read at use-time. */
   private biomeDriftMul: number = 1;
+  /** Constant wind force applied every frame (px/s). Non-zero only on Ben Nevis. */
+  private biomeWindX: number = 0;
+  private biomeWindY: number = 0;
   private driftDegrees: number = PLAYER.DRIFT_DEGREES;
   /** Pre-baked rotation matrix entries for `driftDegrees`. Refreshed in
    *  `recalcStats()` so the per-frame drift apply collapses to four
@@ -1040,7 +1043,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     if (dir.x === 0 && dir.y === 0) {
-      this.setVelocity(lureVector.pullX, lureVector.pullY);
+      this.setVelocity(lureVector.pullX + this.biomeWindX, lureVector.pullY + this.biomeWindY);
       this.tickAnimationAndSync(scaledDelta);
       return;
     }
@@ -1082,8 +1085,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // muls + allStats); identity when no rune is active.
     const speed = this.getMoveSpeed();
     this.setVelocity(
-      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul * stanceSpeedMul + pushX + lureVector.pullX,
-      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul * stanceSpeedMul + pushY + lureVector.pullY
+      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul * stanceSpeedMul + pushX + lureVector.pullX + this.biomeWindX,
+      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul * stanceSpeedMul + pushY + lureVector.pullY + this.biomeWindY
     );
 
     // Rotate sprite to face movement direction
@@ -1623,13 +1626,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'cairngormWind'
       | 'glenCoeEcho'
       | 'clydeRivets'
-      | 'blackBogInk',
+      | 'blackBogInk'
+      | 'benNevisWind',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
     this.biomeKnockbackBonus = 1;
     this.biomeXpMul = 1;
     this.biomeDriftMul = 1;
+    this.biomeWindX = 0;
+    this.biomeWindY = 0;
     switch (kind) {
       case 'bogSlow':
         this.biomeSpeedMul = 0.85;
@@ -1695,6 +1701,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.biomeSpeedMul = 0.85;
         this.biomeDriftMul = 2.0;
         break;
+      case 'benNevisWind':
+        // Exposed summit — thin air slows the haggis slightly (-8%). The
+        // real mechanic is the constant Atlantic westerly: a push force
+        // added to velocity every frame (east + slight south, in screen
+        // coordinates). Moving with the wind is free; fighting it costs.
+        this.biomeSpeedMul = 0.92;
+        this.biomeWindX = 50;
+        this.biomeWindY = 25;
+        break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we
     // must rebake the drift matrix on every biome change — entering AND
@@ -1707,6 +1722,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   getBiomeXpMultiplier(): number { return this.biomeXpMul; }
   /** Read by damage handlers to amplify knockback at the loch edge. */
   getBiomeKnockbackBonus(): number { return this.biomeKnockbackBonus; }
+  /** Read by tests to assert wind-push values (Ben Nevis biome). */
+  getBiomeWindX(): number { return this.biomeWindX; }
+  getBiomeWindY(): number { return this.biomeWindY; }
+  getBiomeSpeedMul(): number { return this.biomeSpeedMul; }
   getThornsDamage(): number { return this.thornsDamage; }
   getProjectileSpeedMul(): number { return this.bonusProjectileSpeedMul; }
   getKnockbackMul(): number { return this.bonusKnockbackMul; }

@@ -53,7 +53,9 @@ export type HazardKey =
   // Clyde Shipyard — molten runoff from the dry-docks.
   | 'molten_slag'
   // Black Bog — near-black standing peat water; wide chip hazard.
-  | 'ink_pool';
+  | 'ink_pool'
+  // Ben Nevis Summit — sudden rotor gust pocket on the exposed plateau.
+  | 'summit_gust';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -191,6 +193,20 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 14000,
     spawnIntervalMs: 9000,
   },
+  // Ben Nevis Summit — sudden gust pocket on the exposed plateau.
+  // Compact, fast-moving air column (tight hitbox 11 px) that hits hard (9)
+  // and dissolves quickly (4 s). The gust is brief — summit rotors form and
+  // dissipate fast. Pairs with the constant benNevisWind drift: the hazard is
+  // the sudden spike on top of a steady push.
+  summit_gust: {
+    key: 'summit_gust',
+    texture: 'hazard_summit_gust',
+    biome: 'ben_nevis',
+    damage: 9,
+    hitboxRadius: 11,
+    lifetimeMs: 4000,
+    spawnIntervalMs: 8500,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -206,4 +222,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'highland_mist',
   'molten_slag',
   'ink_pool',
+  'summit_gust',
 ];

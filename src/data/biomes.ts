@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -21,7 +21,8 @@ export type BiomeModifierKind =
   | 'cairngormWind'
   | 'glenCoeEcho'
   | 'clydeRivets'
-  | 'blackBogInk';
+  | 'blackBogInk'
+  | 'benNevisWind';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -333,9 +334,44 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // particulate peat spore. Charter §4.3 cap still applies.
     ambientHaarDensity: 0.65,
   },
+  // Ben Nevis Summit — Britain's highest point, 1,345m above Fort William.
+  // Exposed granite plateau above the cloud line. Prevailing Atlantic westerlies
+  // push constantly across the summit; the `benNevisWind` modifier applies a
+  // constant eastward push force on the player every frame — movement with the
+  // wind is free; fighting it costs. Thin-air speed reduction (-8%) is lighter
+  // than frostBite (-25%) or bogSlow (-15%); the wind force is the real tax.
+  // Refs: SCOTTISH_RESEARCH_DEEP.md §4 Highland geography.
+  ben_nevis: {
+    id: 'ben_nevis',
+    nameKey: 'biomes.ben_nevis.name',
+    tint: 0x8899b8,
+    entryToastKey: 'biomes.ben_nevis.entry',
+    loreSnippetKey: 'biomes.ben_nevis.loreSnippet',
+    loreKey: 'biomes.ben_nevis.lore',
+    toastColor: '#9aaccc',
+    spawnWeightMods: {
+      golden_eagle: 2.5,
+      eagle: 2.0,
+      bodach_glas: 1.8,
+      ghost: 1.3,
+      berserker: 1.2,
+      tourist: 0.15,
+      chef: 0.05,
+      sheep: 0.3,
+      highland_cow: 0.1,
+      buckfast_ned: 0.05,
+    },
+    modifier: 'benNevisWind',
+    // Exposed summit — airy and stark. Brighter than any other biome
+    // (1.0 = full Highland brightness); the cloud is overhead, not surrounding.
+    moodTimbre: 0.90,
+    // Wispy summit cloud — lower than haar (0.7) but present; the Ben is
+    // rarely truly clear above 1000 m.
+    ambientHaarDensity: 0.15,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

@@ -663,3 +663,43 @@ export function bakeHazardInkPool(scene: Phaser.Scene): void {
   g.generateTexture('hazard_ink_pool', w, h);
   g.destroy();
 }
+
+// Ben Nevis Summit — sudden gust pocket on the exposed plateau.
+// A compact spinning air column: pale grey-blue concentric rings, a bright
+// white core, and three short directional streaks showing the rotor rotation.
+// Smaller than wind_shear (22 px) — tighter rotor, higher damage per hit.
+export function bakeHazardSummitGust(scene: Phaser.Scene): void {
+  const w = 22, h = 22;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Outer rotor ring — pale sky blue
+  g.fillStyle(0xa8c0d8, 0.25);
+  g.fillCircle(cx, cy, 10);
+
+  // Mid ring — colder blue-white
+  g.fillStyle(0xc8dcea, 0.42);
+  g.fillCircle(cx, cy, 7);
+
+  // Inner column — bright grey-white
+  g.fillStyle(0xe8f2fa, 0.72);
+  g.fillCircle(cx, cy, 4);
+
+  // Core flash — pure white, the rotor eye
+  g.fillStyle(0xffffff, 0.92);
+  g.fillCircle(cx, cy, 2);
+
+  // Three rotation streaks (angled east-southeast — prevailing wind direction)
+  g.lineStyle(1.5, 0xb0ccde, 0.70);
+  const angles = [0.5, 2.6, 4.7]; // roughly E, SW, N offset
+  for (const a of angles) {
+    const r1 = 4, r2 = 9;
+    g.beginPath();
+    g.moveTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
+    g.lineTo(cx + Math.cos(a + 0.3) * r2, cy + Math.sin(a + 0.3) * r2);
+    g.strokePath();
+  }
+
+  g.generateTexture('hazard_summit_gust', w, h);
+  g.destroy();
+}

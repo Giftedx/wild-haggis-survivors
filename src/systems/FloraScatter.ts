@@ -145,6 +145,17 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
   // Black Bog — no story props. The ink swallows markers. The only
   // thing placed here is silence.
   black_bog: [],
+  // Ben Nevis Summit — sparse. The summit has cairns (already a landmark
+  // mechanic) and antler shed (ptarmigan + red deer territory at altitude).
+  // Milestone reused as a survey post — the summit had a Victorian
+  // observatory; the waymarker post feels right. Stone props only.
+  ben_nevis: [
+    'deco_antler_shed',
+    'deco_milestone',
+    'deco_standing_stone_glyph',
+    'deco_pictish_stone',
+    'deco_brahan_eye_stone',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -272,6 +283,19 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_bog_cotton', 0.55],
     ['deco_peat_cut', 0.72],
     ['deco_rock_2', 0.88],
+    ['deco_rock', 1.0],
+  ],
+  // Ben Nevis Summit flora. Almost pure scree — the summit plateau is
+  // exposed quartzite above the tree-line. Rime, wind-grass in corrie
+  // crevices, bare-birch stunted krummholz at lower altitude. Rock-heavy:
+  // ~60% of the visual dressing is stone, as it should be.
+  ben_nevis: [
+    ['deco_rock_3', 0.28],
+    ['deco_rock_2', 0.48],
+    ['deco_rime_bracken', 0.62],
+    ['deco_snow_patch', 0.74],
+    ['deco_wind_grass', 0.86],
+    ['deco_bare_birch', 0.94],
     ['deco_rock', 1.0],
   ],
 };

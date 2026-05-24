@@ -73,6 +73,9 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   clyde_shipyard: 0xc87840,
   // Black Bog — deep ink-purple; iridescent sheen on the dark water.
   black_bog: 0x3a1848,
+  // Ben Nevis Summit — slate-blue, the colour of the summit plateau under
+  // an overcast Atlantic sky. Coldest and greyest of all biome tints.
+  ben_nevis: 0x8899b8,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

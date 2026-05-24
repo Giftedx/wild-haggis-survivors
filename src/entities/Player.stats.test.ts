@@ -332,4 +332,20 @@ describe('Player.setBiomeModifier', () => {
     p.setBiomeModifier('bogSlow');
     expect(p.getDriftDegrees()).toBeCloseTo(baseDrift, 1);
   });
+
+  it('benNevisWind sets wind to (50, 25) and speed mul to 0.92', () => {
+    const p = makePlayer();
+    p.setBiomeModifier('benNevisWind');
+    expect(p.getBiomeWindX()).toBe(50);
+    expect(p.getBiomeWindY()).toBe(25);
+    expect(p.getBiomeSpeedMul()).toBeCloseTo(0.92);
+  });
+
+  it('leaving benNevisWind resets wind to (0, 0)', () => {
+    const p = makePlayer();
+    p.setBiomeModifier('benNevisWind');
+    p.setBiomeModifier('bogSlow');
+    expect(p.getBiomeWindX()).toBe(0);
+    expect(p.getBiomeWindY()).toBe(0);
+  });
 });

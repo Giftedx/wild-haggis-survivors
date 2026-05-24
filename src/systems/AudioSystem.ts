@@ -258,6 +258,10 @@ export class AudioSystem {
       // Black Bog — ink pool, thick and slow. Deep sub-bass swell; the bog
       // barely makes a sound but you feel the darkness close around you.
       ink_pool: { f0: 80, f1: 50, type: 'sine', dur: 0.40, vol: 0.07 },           // sub-bass depth swell
+      // Ben Nevis Summit — rotor gust, sharp and brief. High sawtooth
+      // descending fast; shorter than wind_shear (the plateau gust spikes
+      // and vanishes — no sustained howl, just the sudden pocket).
+      summit_gust: { f0: 1100, f1: 180, type: 'sawtooth', dur: 0.12, vol: 0.09 }, // sharp rotor spike → silence
     };
     const p = presets[hazardKey];
     osc.type = p.type;
