@@ -44,7 +44,15 @@ export type EnemyBehavior =
    * Slow chase + spectral card fan (3 projectiles in a spread) every
    * 3.5 s. Ref: `SCOTTISH_RESEARCH.md` §1.4.
    */
-  | 'card_deal';
+  | 'card_deal'
+  /**
+   * Hush — Black Douglas (post-bell Borders terror).
+   * Fast chase (130 px/s) + periodic "Hush!" fear-shout: 600 ms
+   * telegraph dark ring, then 220 px AoE that deals 18 damage and
+   * applies a 1.5 s net-slow to the player. Post-bell exclusive.
+   * Refs: `SCOTTISH_RESEARCH_DEEP.md` §6.3.
+   */
+  | 'hush';
 
 export interface EnemyConfig {
   key: string;
@@ -752,6 +760,13 @@ export interface BossConfig {
    * `SpawnSystem.spawnBossManually` from the gauntlet scheduler.
    */
   manualSpawn?: boolean;
+  /**
+   * Post-bell only — when true, SpawnSystem excludes this boss from the
+   * regular timed spawn loop (`checkBossSpawns`) but includes it in the
+   * post-bell recurring pool (`tickPostBellBoss`). Use for bosses whose
+   * identity belongs to the endless tail, not the first-25-minute arc.
+   */
+  postBellOnly?: boolean;
 }
 
 // Boss HP rebalanced ~×6 from launch values. Evolved weapon builds were
@@ -889,6 +904,26 @@ export const BOSSES: BossConfig[] = [
     damage: 50,
     xpValue: 200,
     scale: 3.0,
+  },
+  // Post-bell exclusive — Black Douglas (Borders terror). Appears only after
+  // the player has defeated the Taxman and accepted the keep-going offer.
+  // Fastest boss in the timeline (130 px/s). `postBellOnly: true` keeps
+  // him out of the regular 0-25 min arc; `spawnTimeSec: 9999` is a sentinel
+  // that the regular spawn loop never crosses (normal runs end at 25:00).
+  // Refs: SCOTTISH_RESEARCH_DEEP.md §6.3.
+  {
+    key: 'black_douglas',
+    nameKey: 'boss.black_douglas.name',
+    warningKey: 'ui.bossWarning.black_douglas',
+    spawnTimeSec: 9999,
+    postBellOnly: true,
+    texture: 'boss_black_douglas',
+    speed: 130,
+    hp: 3000,
+    damage: 26,
+    xpValue: 90,
+    scale: 2.0,
+    behaviorOverride: 'hush',
   },
   // V2 — Cailleach Gauntlet boss (Moor Remembers V2). Manual-spawn only;
   // wakes via `SpawnSystem.spawnBossManually` from CailleachGauntletScheduler

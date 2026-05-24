@@ -443,6 +443,8 @@ export class SpawnSystem {
       // V2 (Cailleach Gauntlet) — manualSpawn bosses are excluded from
       // the time-based path; they spawn via `spawnBossManually`.
       if (boss.manualSpawn) continue;
+      // Post-bell exclusive bosses never spawn in the regular 0-25 min arc.
+      if (boss.postBellOnly) continue;
       if (this.spawnedBossKeys.has(boss.key)) continue;
       if (this.gameTimeSec < boss.spawnTimeSec) continue;
       if (this.bossSpawnScheduled.has(boss.key)) continue;

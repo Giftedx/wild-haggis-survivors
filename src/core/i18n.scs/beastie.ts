@@ -126,6 +126,9 @@ export const beastie = {
   earl_beardie: {
     lore: 'A 15th-century Earl o Crawford wha played cairds wi tha Deil on a Sabbath at Glamis Castle an tint his sowl. His ghaist plays on eternally in a sealed chaumer, an his cairds — whan he deals them — are nae fer yer haunds.',
   },
+  black_douglas: {
+    lore: 'Tha \'Guid Sir James\' Douglas (c.1286–1330), whas lichtnin Border raids made Inglish mithers hush bairns wi his name. \'Hush ye, hush ye, wee bit bairnie, / Hush ye, hush ye, dinnae greet ye, / Tha Black Douglas sall nae get ye.\' He proved tha lullaby a lee.',
+  },
   taxman: {
     lore: 'Tha final boss. Tha Excise Office weirin a face. Haes a stamp; tha stamp\'s aulder nor tha kingdom. Aince ye face it, tha run is ower either way — defeated or paid.',
   },

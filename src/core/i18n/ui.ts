@@ -1197,6 +1197,8 @@ export const ui = {
     hunter_general: "The Hunter-General — and they've brought pals.",
     /** Glamis ghost — plays cards with the Devil; deals them at you. */
     earl_beardie: "Earl Beardie's out o\' the sealed room. He's dealin\'. Dinnae sit doon.",
+    /** Post-bell only — border raider whose name became a nursery threat. */
+    black_douglas: "Hush. The Black Douglas is here — and he disnae keep the same peace.",
     taxman: "The Taxman's here — and he's no' takin' a cheque.",
     /** V2 — Cailleach Gauntlet boss walks the moor. */
     cailleach_boss: 'THE CAILLEACH WALKS — winter answers what ye called.',
@@ -1239,6 +1241,7 @@ export const ui = {
     boss_killed_the_laird: 'The Laird\'s on his erse! Yer bum\'s oot the windae, pal!',
     boss_killed_nuckelavee: 'The Nuckelavee is doon! Back tae yer sea, ya skinless horror!',
     boss_killed_earl_beardie: 'Earl Beardie is doon! His cards are scattered on the moor — the wager is yours!',
+    boss_killed_black_douglas: "The Black Douglas falls silent! The lullaby's over — nae mair hushing!",
     boss_killed_hunter_general: 'Hunter-General floored! Take yir medals and yir pith helmet!',
     boss_killed_taxman: 'THE TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'The Cailleach is doon! Stormcrown is yours.',
@@ -1569,6 +1572,12 @@ export const ui = {
         b: 'Earl Beardie\'s oot. Last wan that sat wi\' him never left the room.',
         c: 'Ghost fae Glamis. He dealt tae the Devil; noo he deals tae you.',
       },
+      // Post-bell only — the Border raider English mothers used as a threat.
+      black_douglas: {
+        a: 'Hush. He\'s close. The lullaby said he wouldnae — the lullaby lied.',
+        b: 'Black Douglas — raided the Border faster than a rumour.',
+        c: 'Steel an\' silence. He hushed a kingdom; he\'ll try you next.',
+      },
       taxman: {
         a: 'The Taxman\'s here. An\' he\'s no\' takin\' council tax.',
         b: 'Bureaucrat wi\' a scythe. Pure nightmare fuel.',
@@ -1813,6 +1822,12 @@ export const ui = {
         a: 'His cards are on the moor. First time he\'s lost since 1435.',
         b: 'Oot o\' the sealed room an\' back intae it. The wager\'s done.',
         c: 'Never play cairds wi\' a ghaist. But if ye dae — win.',
+      },
+      // Post-bell only — the lullaby proved a lie; hearth warmth in the quiet after.
+      black_douglas: {
+        a: 'The Douglas is doon. The lullaby\'s safe again — for noo.',
+        b: 'He hushed a kingdom once. The haggis got the last word.',
+        c: 'Good Sir James, no\' so guid. But doon\'s doon.',
       },
       taxman: {
         a: 'Taxman took a loss fer once.',
@@ -3786,6 +3801,12 @@ export const ui = {
         a: 'First haggis tae beat Earl Beardie at cairds. The Devil haes noted it.',
         b: 'Glamis sealed room got a new silence. The ghost lost — first time since Bannockburn.',
       },
+      // Post-bell first-kill — Edge register. The lullaby was always a lie;
+      // first haggis to answer it with steel.
+      boss_black_douglas_kill: {
+        a: 'First haggis tae answer the lullaby wi\' steel. The Black Douglas disnae get ye.',
+        b: 'Border raider stopped. The moor kept a mark for the first tae manage it.',
+      },
       boss_taxman_kill: {
         a: 'Taxman paid in full. First time any haggis has done it.',
         b: 'Ledger clean. The moor exhaled — an ye heard it.',
@@ -4585,6 +4606,7 @@ export const ui = {
       taxman_postbell: 'Past the bell-toll. The Taxman caught up at {time} — he always does, eventually.',
       nuckelavee: 'No skin on the thing. It came off the sea at {time}. The burn on the far brae held the rest.',
       earl_beardie: 'Earl Beardie dealt his hand at {time}. The last card was yours.',
+      black_douglas: 'The hush came at {time}. Good Sir James did not need to speak.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
     },
@@ -4600,6 +4622,7 @@ export const ui = {
       three_bosses: 'Three boss-skulls in the heather behind. Home at {time}, walking light.',
       nuckelavee_kill: 'The Nuckelavee went back to the sea. {time} on the moor, and the burns held.',
       earl_beardie_kill: 'Earl Beardie\'s cards scattered on the moor at {time}. The wager was yours.',
+      black_douglas_kill: 'The lullaby was a lie — but the haggis was not. {time} on the moor, and silence kept.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
     },

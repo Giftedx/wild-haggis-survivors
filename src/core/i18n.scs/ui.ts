@@ -785,6 +785,7 @@ export const ui = {
     the_laird: 'Tha Laird strides oot — mind yer manners an yer hide.',
     hunter_general: 'Tha Hunter-General — an they\'ve brought pals.',
     earl_beardie: 'Earl Beardie\'s oot o tha sealed chaumer. He\'s dealin. Dinnae sit doon.',
+    black_douglas: 'Wheesht. Tha Black Douglas is here — an he disnae keep tha same peace.',
     taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
     cailleach_boss: 'THA CAILLEACH WALKS — winter answers whit ye cried.',
   },
@@ -817,6 +818,7 @@ export const ui = {
     boss_killed_the_laird: 'Tha Laird\'s on his erse! Yer bum\'s oot tha windae, pal!',
     boss_killed_nuckelavee: 'Tha Nuckelavee is doon! Back tae yer sea, ya skinless horror!',
     boss_killed_earl_beardie: 'Earl Beardie is doon! His cairds are scattered on tha moor — tha wager is yours!',
+    boss_killed_black_douglas: 'Tha Black Douglas faws silent! Tha lullaby\'s ower — nae mair wheeshtin!',
     boss_killed_hunter_general: 'Hunter-General floored! Tak yer medals an yer pith helmet!',
     boss_killed_taxman: 'THA TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'Tha Cailleach is doon! Stormcrown is yours.',
@@ -1017,6 +1019,11 @@ export const ui = {
         a: 'Cairds on tha moor. That\'s no a gemme ye want tae win.',
         b: 'Earl Beardie\'s oot. Last wan that sat wi him never left tha chaumer.',
         c: 'Ghaist fae Glamis. He dealt tae tha Deil; noo he deals tae you.',
+      },
+      black_douglas: {
+        a: 'Wheesht. He\'s close. Tha lullaby said he wouldnae — tha lullaby lied.',
+        b: 'Black Douglas — raided tha Border faster nor a rumour.',
+        c: 'Steel an silence. He wheeshted a kingdom; he\'ll try you next.',
       },
       taxman: {
         a: 'Tha Taxman\'s here. An he\'s no takin council tax.',
@@ -1253,6 +1260,11 @@ export const ui = {
         a: 'His cairds are on tha moor. First time he\'s lost since 1435.',
         b: 'Oot o tha sealed chaumer an back intae it. Tha wager\'s done.',
         c: 'Never play cairds wi a ghaist. But if ye dae — win.',
+      },
+      black_douglas: {
+        a: 'Tha Douglas is doon. Tha lullaby\'s safe again — fer noo.',
+        b: 'He wheeshted a kingdom wance. Tha haggis got tha last word.',
+        c: 'Guid Sir James, no sae guid. But doon\'s doon.',
       },
       taxman: {
         a: 'Taxman took a loss fer wance.',
@@ -3141,6 +3153,10 @@ export const ui = {
         a: 'First haggis tae beat Earl Beardie at cairds. Tha Deil haes noted it.',
         b: 'Glamis sealed chaumer got a new silence. Tha ghaist lost — first time since Bannockburn.',
       },
+      boss_black_douglas_kill: {
+        a: 'First haggis tae answer tha lullaby wi steel. Tha Black Douglas disnae get ye.',
+        b: 'Border raider stapped. Tha moor kept a merk fer tha first tae manage it.',
+      },
       boss_taxman_kill: {
         a: 'Taxman paid in full. Tha first time ony haggis has done it.',
         b: 'Ledger cleant. Tha moor blew oot — an ye heard it.',
@@ -3758,6 +3774,7 @@ export const ui = {
       taxman_postbell: 'Past tha bell-toll. Tha Taxman caught up at {time} — he aye dis, by-an-by.',
       nuckelavee: 'Nae skin on tha thing. It cam aff tha sea at {time}. Tha burn on tha far brae held tha lave.',
       earl_beardie: 'Earl Beardie dealt his haund at {time}. Tha last caird wis yours.',
+      black_douglas: 'Tha wheesht cam at {time}. Guid Sir James didnae need tae speak.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
     },
     victory: {
@@ -3770,6 +3787,7 @@ export const ui = {
       three_bosses: 'Three boss-skulls in tha heather ahint. Hame at {time}, walkin licht.',
       nuckelavee_kill: 'Tha Nuckelavee gaed back tae tha sea. {time} on tha moor, an tha burns held.',
       earl_beardie_kill: 'Earl Beardie\'s cairds scattered on tha moor at {time}. Tha wager wis yours.',
+      black_douglas_kill: 'Tha lullaby wis a lee — but tha haggis wis no. {time} on tha moor, an silence kept.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
     },
     variant: {

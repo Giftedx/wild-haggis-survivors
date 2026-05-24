@@ -126,6 +126,9 @@ export const beastie = {
   earl_beardie: {
     lore: 'A 15th-century Earl of Crawford who played cards with the Devil on a Sunday at Glamis Castle and lost his soul. His ghost plays on eternally in a sealed room, and his cards — when he deals them — are not for your hands.',
   },
+  black_douglas: {
+    lore: 'The \'Good Sir James\' Douglas (c.1286–1330), whose lightning border raids made English mothers hush children with his name. \'Hush ye, hush ye, little pet ye, / Hush ye, hush ye, do not fret ye, / The Black Douglas shall not get ye.\' He proved the lullaby a lie.',
+  },
   taxman: {
     lore: 'The final boss. The Excise Office wearing a face. Has a stamp; the stamp\'s older than the kingdom. Once you face it, the run is over either way — defeated or paid.',
   },

@@ -73,9 +73,9 @@ export type WeeTaleTag =
   | 'short' | 'long' | 'epic'
   | 'no_boss' | 'any_boss'
   | 'gordon' | 'tour_bus' | 'taxman'
-  | 'each_uisge' | 'nicnevin' | 'the_laird' | 'nuckelavee' | 'hunter_general' | 'earl_beardie'
+  | 'each_uisge' | 'nicnevin' | 'the_laird' | 'nuckelavee' | 'hunter_general' | 'earl_beardie' | 'black_douglas'
   | 'gordon_death' | 'tour_bus_death' | 'taxman_death'
-  | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'nuckelavee_death' | 'hunter_general_death' | 'earl_beardie_death'
+  | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'nuckelavee_death' | 'hunter_general_death' | 'earl_beardie_death' | 'black_douglas_death'
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
@@ -308,6 +308,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Glamis ghost — dealt tae by Earl Beardie.
   { key: 'ui.weeTale.death.earl_beardie', requires: ['death', 'earl_beardie_death'] },
 
+  // Post-bell border raider — the hush came.
+  { key: 'ui.weeTale.death.black_douglas', requires: ['death', 'black_douglas_death'] },
+
   // ── Victory fallbacks (single-tag) ─────────────────────────────
   { key: 'ui.weeTale.victory.fallback_a', requires: ['victory'] },
   { key: 'ui.weeTale.victory.fallback_b', requires: ['victory'] },
@@ -323,6 +326,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
 
   // Glamis ghost — Earl Beardie's cards scattered on the moor.
   { key: 'ui.weeTale.victory.earl_beardie_kill', requires: ['victory', 'earl_beardie'] },
+
+  // Post-bell border raider — the lullaby proved a lie.
+  { key: 'ui.weeTale.victory.black_douglas_kill', requires: ['victory', 'black_douglas'] },
 
   // ── v2 — universal {name}-bearing lines (tier-2) ───────────────
   // Picks ahead of the no-name fallbacks for any run that has a

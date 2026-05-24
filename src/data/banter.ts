@@ -227,6 +227,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.earl_beardie.b',
         'ui.banter.boss_warn.earl_beardie.c',
       ],
+      black_douglas: [
+        'ui.banter.boss_warn.black_douglas.a',
+        'ui.banter.boss_warn.black_douglas.b',
+        'ui.banter.boss_warn.black_douglas.c',
+      ],
       taxman: [
         'ui.banter.boss_warn.taxman.a',
         'ui.banter.boss_warn.taxman.b',
@@ -475,6 +480,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.earl_beardie.a',
         'ui.banter.boss_down.earl_beardie.b',
         'ui.banter.boss_down.earl_beardie.c',
+      ],
+      black_douglas: [
+        'ui.banter.boss_down.black_douglas.a',
+        'ui.banter.boss_down.black_douglas.b',
+        'ui.banter.boss_down.black_douglas.c',
       ],
       taxman: [
         'ui.banter.boss_down.taxman.a',
@@ -2536,6 +2546,10 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       boss_earl_beardie_kill: [
         'ui.banter.first_time.boss_earl_beardie_kill.a',
         'ui.banter.first_time.boss_earl_beardie_kill.b',
+      ],
+      boss_black_douglas_kill: [
+        'ui.banter.first_time.boss_black_douglas_kill.a',
+        'ui.banter.first_time.boss_black_douglas_kill.b',
       ],
       boss_taxman_kill: [
         'ui.banter.first_time.boss_taxman_kill.a',

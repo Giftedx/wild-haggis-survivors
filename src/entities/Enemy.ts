@@ -20,6 +20,7 @@ import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 import { isDiveOffscreen } from './isDiveOffscreen';
 import { simulateWailBehaviour, WAIL_PULSE_RADIUS_PX, WAIL_PULSE_DAMAGE, type WailState } from './wailBehaviour';
 import { simulateCardDealBehaviour, CARD_DEAL_FAN_COUNT, CARD_DEAL_SPREAD_RAD, CARD_DEAL_SPEED, CARD_DEAL_DAMAGE, CARD_DEAL_RANGE_MS, type CardDealState } from './cardDealBehaviour';
+import { simulateHushBehaviour, HUSH_RADIUS_PX, HUSH_DAMAGE, HUSH_SLOW_MS, HUSH_TELEGRAPH_MS, type HushState } from './hushBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -129,6 +130,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private wailState: WailState = { msSinceLastLance: 0, hasWailed: false };
   /** Earl Beardie boss state (only used when behavior === 'card_deal'). */
   private cardDealState: CardDealState = { msSinceLastDeal: 0 };
+  /** Black Douglas boss state (only used when behavior === 'hush'). */
+  private hushState: HushState = { msSinceLastShout: 0, telegraphing: false, msTelegraphElapsed: 0, shouldDamage: false };
   /** Countdown ms within the current three-bay stage. */
   private threeBayTimerMs: number = 0;
   /** Charge target locked at start of stage 3. */
@@ -641,6 +644,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'card_deal':
         this.behaviorCardDeal(targetX, targetY, delta);
         break;
+      case 'hush':
+        this.behaviorHush(targetX, targetY, delta);
+        break;
     }
   }
 
@@ -952,6 +958,49 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       });
 
       this.ctx.getUpdateTickers().addOnce('raw', CARD_DEAL_RANGE_MS, cleanup);
+    }
+  }
+
+  /**
+   * Black Douglas — fast chase with periodic "Hush!" fear-shout.
+   * Telegraph: dark expanding ring over HUSH_TELEGRAPH_MS. Damage: 18
+   * + 1.5 s net-slow if player is within HUSH_RADIUS_PX.
+   * Post-bell exclusive. Refs: SCOTTISH_RESEARCH_DEEP.md §6.3.
+   */
+  private behaviorHush(tx: number, ty: number, delta: number): void {
+    this.behaviorChase(tx, ty);
+    const prev = this.hushState;
+    const next = simulateHushBehaviour(prev, { deltaMs: delta });
+    this.hushState = next;
+    if (next.telegraphing && next.msTelegraphElapsed === 0) {
+      this.showHushTelegraph();
+    }
+    if (next.shouldDamage) {
+      this.fireHushPulse();
+    }
+  }
+
+  private showHushTelegraph(): void {
+    try {
+      const ring = this.scene.add.circle(this.x, this.y, 16, 0x111130, 0.0);
+      ring.setStrokeStyle(3, 0x404090, 0.85);
+      this.scene.tweens.add({
+        targets: ring,
+        radius: HUSH_RADIUS_PX,
+        alpha: { from: 0.85, to: 0 },
+        duration: HUSH_TELEGRAPH_MS,
+        onComplete: () => ring.destroy(),
+      });
+    } catch { /* test stubs without tweens */ }
+  }
+
+  private fireHushPulse(): void {
+    const player = this.ctx.getPlayer();
+    const dx = player.x - this.x;
+    const dy = player.y - this.y;
+    if (dx * dx + dy * dy <= HUSH_RADIUS_PX * HUSH_RADIUS_PX) {
+      player.takeDamage(HUSH_DAMAGE);
+      player.applyNetSlow(HUSH_SLOW_MS);
     }
   }
 
