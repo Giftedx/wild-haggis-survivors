@@ -186,7 +186,7 @@ Candidate weapons (pick 4 for a content drop):
 - **Clootie Rag** — bleed DoT aura. Paired passive: Rowan Thread.
 - **Coastal Storm** — long-CD screen AoE ult.
 - **Clàrsach (Celtic Harp)** — melodic projectiles fire on strum intervals; synergises with music-as-mechanic. Pre-bagpipe national instrument. Paired passive: Wire Strings. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
-- **Waulking Mallet** — rhythmic throw; beat-aligned hits gain bonus damage (tied to music Conductor). Paired passive: Tweed Cloth.
+- ~~**Waulking Mallet**~~ — ✅ shipped 2026-05-12 (`waulking_mallet` → `pibroch_hammer` evolution, passive `tuning_fork`, Wild Living World Phase 2 `514f5e9`). Aura-pulse rhythm weapon (2000ms cooldown, 96px radius); Pibroch Hammer evolution lands a crescendo on every fourth beat via `applyPibrochHammerRhythm` in `src/systems/music/waulkingRhythm.ts`. Syncs with the Waulking Rhythm music bed.
 - **Hagstone Sling** — hurls a stone with a hole; enemies hit *through the hole* take bonus damage. Geometry-reward weapon. Paired passive: Rowan Amulet.
 - ~~**Wallace Sword**~~ — ✅ shipped 2026-05-12 (`wallace_sword` → `freedom_blade` evolution, passive `stirling_medal`, B6 Highland Horrors). Giant two-hander slow sweep via `fireFreedomBlade`. `stirling_medal` grants +10% crit. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
 - **Fingal's Horn** — summons 3 Fianna-warrior allies for 10s. Relic-tier rare. (*Ref: `SCOTTISH_RESEARCH.md` §1.6.*)
