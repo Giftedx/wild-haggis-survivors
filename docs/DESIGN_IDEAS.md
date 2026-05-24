@@ -50,29 +50,29 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 
 ## 2. Playable haggis roster (ideas)
 
-**Current shipped variants (verified in `src/data/variants.ts` 2026-05-09):** `classic`, `moor_runner`, `iron_belly`, `glen_forager`, `surefoot`, `pipe_breath`, `wee_ghostie`, `laird`, `glaswegian`, `anticlockwise`, `cailleach`, `doric_quinie`, `peerie_shetlander`, `burns_wee_beastie`, `witch_hare`. **Fifteen variants.** Sketchpad's earlier "honest cap ~10" was conservative; ship reality grew via cultural-roster expansion (V2 2026-04-24 + Witch's Hare 2026-04-28). Pool is dense enough that further additions should clear a high "what new flavour does this carve?" bar.
+**Current shipped variants (verified in `src/data/variants.ts` 2026-05-24):** `classic`, `moor_runner`, `iron_belly`, `glen_forager`, `surefoot`, `pipe_breath`, `wee_ghostie`, `laird`, `glaswegian`, `anticlockwise`, `cailleach`, `doric_quinie`, `peerie_shetlander`, `burns_wee_beastie`, `witch_hare`, `selkie`, `morningside`, `drouthy`, `pibroch`, `orcadian`, `hebridean`, `iron_brew`, `grans_best`, `the_pict`, `jacobite`, `tam_o_shanter`, `engineer`, `tufted`. **Twenty-eight variants.** Pool is dense enough that further additions should clear a high "what new flavour does this carve?" bar.
 
 Candidates worth a sketch (pick 1 max for a content drop):
 
 - ~~**Glaswegian**~~ — ✅ shipped 2026-04-18. Punisher glass cannon (+18% dmg, +5% speed, -20 HP). Urban slate + tram-orange palette. Unlock: 2 000 lifetime kills. Limmy-bite banter across the six variant-scoped pools (EN + SCS).
-- **Hebridean** — water-hazard immune; favours Shore biome. Gaelic banter pool; Hebridean-English voice. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §3.2 + §14.5.*)
+- ~~**Hebridean**~~ — ✅ shipped 2026-05-23 (`hebridean`, water-hazard immune, +5% speed, +14px pickup, -10 HP). Minch-blue / kelp-green palette. Unlock: 4 coastal-only victories. Hebridean-English voice; Gaelic-tinged measured register. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §3.2 + §14.5.*)
 - ~~**Drouthy**~~ — ✅ shipped 2026-05-23. Three drams deep; Whisky Breath pre-loaded (8 stacks); drift doubled via `driftAmplifyPct: 1.0`. Unlock: 1,200 lifetime gold earned. Deep Highland red + whisky gold palette.
 - ~~**Cailleach**~~ — ✅ shipped 2026-04-22 (`src/data/variants.ts` key `cailleach`). Winter-crone fantasy with slow-aura near the player. See `2026-04-22-variant-cailleach-design.md` spec.
-- **Engineer** — drops a single cairn-turret that fires main weapon at 50%.
+- ~~**Engineer**~~ — ✅ shipped 2026-05-23 (`engineer`, commit `29f2a9d`). Cairn-turret fires main weapon at 50% dmg from a fixed world position. -10% speed, -20 HP. Pewter/copper-rivet palette. Unlock: 15 victories (highest gate).
 - ~~**Selkie**~~ — ✅ shipped 2026-05-23 (`src/data/variants.ts` key `selkie`). Wild Living World Initiative. Dash mechanic: slip pelt on (seal = fast) / off (haggis = combat). Full EN + SCS banter, kilt + tartan palette, wee tales. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
-- **Tufted** — minion summoner; auto-fills familiar slot with a pup.
-- **Iron Brew** — damage-taken buff stacks.
+- ~~**Tufted**~~ — ✅ shipped 2026-05-23 (`tufted`, commit `146ff26`). Wee familiar pup fires main weapon at 30% dmg every 1800 ms. -5% speed, -10 HP, -10% dmg. Warm brown / cream tuft palette. Unlock: 10 victories.
+- ~~**Iron Brew**~~ — ✅ shipped 2026-05-23 (`iron_brew`). `ironBrewStacking` mechanic — damage-taken buff builds stacks. -10 HP, -3% speed. Irn-Bru orange / Bru-blue palette. Unlock: 2 cursed victories.
 - ~~**Pibroch**~~ — ✅ shipped 2026-05-23 (`pibroch`, `pibrochWindowExtensionMs: 70`, unlock: 3 victories). Widens Pibroch Crescendo beat window from ±80ms to ±150ms.
-- **Tam-o'-Shanter** — prestige variant, unlocked endgame.
+- ~~**Tam-o'-Shanter**~~ — ✅ shipped 2026-05-23 (`tam_o_shanter`, commit `8ed839e`). Burns's reckless horseman — +15% speed, +10% dmg, -20 HP, driftAmplifyPct 0.5. Alloway midnight palette (bonnet-blue / whisky-lamp amber). Unlock: 10 victories.
 - ~~**Doric Quinie**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `doric_quinie`). Northeast Aberdonian voice register; native review still open per `project_v2_variants_status` memory.
 - ~~**Peerie Shetlander**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `peerie_shetlander`). Shetlandic-voice register; native review still open per `project_v2_variants_status` memory.
 - ~~**Orcadian**~~ — ✅ shipped 2026-05-23 (`orcadian`, spriteScale 0.78, +18px pickup, +12% XP, +5 HP, -6% speed, unlock: 3 coastal-only victories). Peedie Neolithic-register banter; Orcadian marker set added to Scots fence. (*Ref: §14.6.*)
 - ~~**Morningside Haggis**~~ — ✅ shipped 2026-05-23 (`src/data/variants.ts` key `morningside`). Pearl-brooch accent, grey-gold kilt, cultivated disdain register ("ane" voice, SCS). Stats unchanged from classic (the joke). Unlock: `best_time: 900`. Full 7-pool banter + wee tales. (*Ref: §14.3.*)
 - ~~**Burns's Wee Beastie**~~ — ✅ shipped 2026-04-24 (V2 cultural-roster, `src/data/variants.ts` key `burns_wee_beastie`). Burns-poetry banter pool; Canongate audit still open per `project_v2_variants_status` memory.
 - ~~**Witch's Hare**~~ — ✅ shipped 2026-04-28 (`src/data/variants.ts` key `witch_hare`). Isobel-Gowdie 1662 confession flavour; dash = invincible hop. Unlock gate: `cursed_victories:5`. See `project_witch_hare_variant` memory.
-- **Gran's Best** — bonus damage when low HP; Gran's voice audible throughout the run (rare variant where the hub-NPC rides along). (*Ref: `VOICE_CARD.md` Gran section.*)
-- **The Pict** — ancient-Scotland variant. No shop access — relies on loot. Covered in Pictish symbol tattoos. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.1.*)
-- **The Jacobite** — Prince Charlie-themed variant. Starts with Flora MacDonald's Plaid relic (2s invincibility per minute). Tragic-romantic banter. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
+- ~~**Gran's Best**~~ — ✅ shipped 2026-05-23 (`grans_best`). `granBestLowHpBonus` — bonus damage when HP is low; -15 HP. Oatmeal-gold / sage-green palette. Unlock: 5 victories. (*Ref: `VOICE_CARD.md` Gran section.*)
+- ~~**The Pict**~~ — ✅ shipped 2026-05-23 (`the_pict`). +20 HP, +15% dmg, -8% speed, `noShopAccess` (Gold Shop locked). Woad-blue / ochre warpaint palette. Unlock: 3 runs without healing. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.1.*)
+- ~~**The Jacobite**~~ — ✅ shipped 2026-05-23 (`jacobite`). +10% speed, -10 HP, `floraPlaidPeriodic` (2s invincibility every 60s). Jacobite navy / Stuart crimson palette. Unlock: 7 victories. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
 
 ### Roster ideas cut
 
@@ -128,7 +128,7 @@ Families worth sketching (pick one per content drop):
 - **Nessie, Reconsidered** — full boss form of the existing `nessie_tentacle` weapon flavour.
 - **Father Taxman** — current Taxman expanded with a Grudge-Ledger phase (see mechanics).
 - ~~**Nicnevin, Queen of the Witches**~~ — ✅ shipped 2026-05-09 (`src/data/enemies.ts` key `nicnevin`, sprite `src/art/sprites/bosses/nicnevin.ts`). N1 Tier-2 Mythos boss #2 at 12:30 between Tour Bus and the Laird. Slow `spawner` behavior summons `unseelie_fiddler` minions (configurable `spawnerMinionKey` extension); 50 % HP triggers the **Wild Hunt** — a 3 s gem-pull cycle that redirects every XP gem on screen to the queen instead of the player, repeats every 20 s. Voice register Edge → Hearth on kill. Cailleach variant `low_hp` lines re-read perfectly here as peer-to-peer tension between old-Scottish-power figures, no new banter required. (*Ref: `SCOTTISH_RESEARCH.md` §1.3, `SCOTTISH_RESEARCH_DEEP.md` Part 22.*)
-- **The Nuckelavee** — Orcadian horror. Skinless man-horse, breath causes droughts + plague. Weakness: fresh water (healing circles force retreat). (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
+- ~~**The Nuckelavee**~~ — ✅ shipped 2026-05-24 (`nuckelavee`, commit `20c4a7a`). Orcadian sea-demon at 17:00; HP 4200 / dmg 32 / speed 95 / scale 2.5×. Fresh-water retreat: `tickNuckelaveeRetreat` overrides velocity when within 160px of a heal patch. Full i18n + banter + wee tale. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
 - **Stoor Worm** — Orcadian giant sea-serpent; secret final-final-boss for a hidden route. Scale-shift mechanic — climb the worm and break weak points. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
 - **Earl Beardie** — Glamis-card-game mini-boss. Wager an upgrade vs the devil himself. (*Ref: `SCOTTISH_RESEARCH.md` §1.4.*)
 - **Black Douglas** — "Hush ye, hush ye, the Black Douglas will not get ye." Borders boss referencing English mothers' lullaby. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
