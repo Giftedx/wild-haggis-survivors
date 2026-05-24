@@ -69,4 +69,9 @@ export const evolution = {
     description: 'Tha fou 360° sweep, syne twa shockwaves rowin oot ahint it. Stirling Brig in three hertbeats.',
     flavour: "Tha Stirling Medal wis minted fer valour, no fer keepin. Wi it pinned tae tha haggis's plaid tha Wallace Swurd turns yince an tha moor turns wi it. Tha cry fae tha brig haes been cairryin fer seiven hunner year; this is whit tha cairryin sounds like.",
   },
+  beltane_drum: {
+    name: 'Beltane Drum',
+    description: "Tha hoop deepened tha drum's reach. Noo it speaks twice — amber ring syne crimson, tha midsummer dooble-pulse.",
+    flavour: "Calton Hill, May Eve. Tha drum's resonance dooblit when tha hoop is set richt an tha skin is stretchit true. Tha willow hoop taucht tha gait-skin tae reach furder; tha Beltane fire taucht it tae mean somethin.",
+  },
 } as const;

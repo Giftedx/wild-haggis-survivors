@@ -163,6 +163,14 @@ export const upgradeCard = {
     name: 'Copper Rivet',
     description: 'Hand-riveted Clyde fittin. Every cycle rin faster (+10% attack speed). Pairs wi tha Steam Engine.',
   },
+  add_bodhran: {
+    name: 'Bodhrán',
+    description: 'Celtic frame drum — rapid warm pulse, moderate knockback, nae slow. Hertbeat o tha session.',
+  },
+  add_drum_hoop: {
+    name: 'Drum Hoop',
+    description: 'Bent-willow hoop deepens tha resonance (+10% AoE radius). Pairs wi tha Bodhrán.',
+  },
   boost_hp: {
     name: 'Thick Hide',
     description: 'Room fer a wee bit mair punishment (+10 max HP). Stack as mony as ye like.',

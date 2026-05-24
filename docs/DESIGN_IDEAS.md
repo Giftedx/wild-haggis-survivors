@@ -195,7 +195,7 @@ Candidate weapons (pick 4 for a content drop):
 - **Flying Porridge Pot** — thrown pot explodes into oatmeal splash. Comedy weapon.
 - **Deep-Fried Mars Bar** — absurdist heavy projectile; comedy proc (rare but satisfying). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §12.1.*)
 - **Port-à-Beul (Mouth Music) Chant** — area-slow aura that follows player; synced to music system. Gaelic vocal-percussion tradition. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
-- **Bodhrán (Frame Drum)** — beat-based AoE pulse; syncs to combat tempo.
+- ~~**Bodhrán (Frame Drum)**~~ — ✅ shipped (`bodhran` aoe_pulse, evolves to `beltane_drum` via `drum_hoop` passive, warm amber VFX, no freeze, 1200ms cooldown, 76px radius).
 - ~~**Practice Chanter**~~ — ✅ shipped (`practice_chanter`). Fast weak projectile (4 dmg, 900ms cooldown, 320px range, count +1 at lv3/5). Pibroch variant's starter weapon via `startWithWeapons: ['practice_chanter']` in `VariantDef`; all other variants keep Thistle Shot. No evolution (the pibroch's upgrade axis is the Waulking Mallet line).
 
 ### Synergy families (for balance sanity)

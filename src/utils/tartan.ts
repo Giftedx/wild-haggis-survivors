@@ -111,6 +111,10 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   cullen_skink_ladle: '#d4c080',
   // Steam Engine — Victorian boiler-iron grey (Clyde shipyard soot)
   steam_engine: '#6a6a6a',
+  // Bodhrán — warm amber drum-skin (goatskin + beltane heat)
+  bodhran: '#c87840',
+  // Beltane Drum (evolution) — midsummer crimson-orange fire
+  beltane_drum: '#d84820',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

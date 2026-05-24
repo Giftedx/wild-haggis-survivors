@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 23 weapons (Steam Engine added — Clyde-built pressure burst)', () => {
-    expect(keys).toHaveLength(23);
+  it('has exactly 25 weapons (Bodhrán + Beltane Drum added 2026-05-24)', () => {
+    expect(keys).toHaveLength(25);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {

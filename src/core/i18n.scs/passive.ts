@@ -59,4 +59,7 @@ export const passive = {
   copper_rivet: {
     flavour: "Ilka Clyde-biggit hull wis haud thegither by haund — a heater laddie, a haunder-on, a rivetman, an a catch-laddie workin in order wi tha din sae constant tha yairds-men gaed deef by forty. Tha rivet minds tha rhythm. Tha haggis keeps tha beat.",
   },
+  drum_hoop: {
+    flavour: "Bent willow — green-cut, steeamed, wrapped roond a form an left tae set. Tha gait-skin's tension depends on tha hoop haudin true. A weel-made hoop an tha bodhrán carries fae tha bar tae tha back waw an oot intae tha caur park. Tha haggis leans intae tha resonance.",
+  },
 } as const;

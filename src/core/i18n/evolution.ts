@@ -69,4 +69,9 @@ export const evolution = {
     description: 'The full 360° sweep, then two shockwaves rolling out behind it. Stirling Bridge in three heartbeats.',
     flavour: "The Stirling Medal was minted for valour, not for keeping. With it pinned to the haggis's plaid the Wallace Sword turns once and the moor turns with it. The cry from the bridge has been carrying for seven hundred years; this is what the carrying sounds like.",
   },
+  beltane_drum: {
+    name: 'Beltane Drum',
+    description: "The hoop deepened the drum's reach. Now it speaks twice — amber ring then crimson, the midsummer double-pulse.",
+    flavour: "Calton Hill, May Eve. The drum's resonance doubles when the hoop is set right and the skin is stretched true. The willow hoop taught the goatskin to reach further; the Beltane fire taught it to mean something.",
+  },
 } as const;

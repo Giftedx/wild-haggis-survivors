@@ -129,4 +129,14 @@ export const weapon = {
     description: 'A burst o Clyde-biggit pressure — heavy knockback, nae slow. Shorter range nor tha Storm, faster cycle.',
     flavour: "Biggit on tha Clyde, launcht at Partick, scrapped at Dalmuir. Atween launch an scrap: enough pressure tae move a nation. Tha haggis tapped tha boiler aince. It hasnae needed tae tap it again.",
   },
+  bodhran: {
+    name: 'Bodhrán',
+    description: 'A Celtic frame drum that shaks tha moor wi ilka beat. Rapid warm pulse, moderate knockback, nae slow.',
+    flavour: "Tha bodhrán is modren — invented or revived in tha 1960s, tha scholars still argie — but tha pulse it maks is auld. Back waw o tha session, hertbeat o tha tune. Tha haggis disnae need a tipper. Tha loof works fine.",
+  },
+  beltane_drum: {
+    name: 'Beltane Drum',
+    description: "Tha bodhrán at midsummer — fire in tha skin, dooble tha reach, heavier thump on ilka doonbeat.",
+    flavour: "Calton Hill, last nicht o April. Tha drum stairts slow an builds till ye canna tell tha hertbeat fae tha beat. Tha fire loup. Tha haggis lowps wi it.",
+  },
 } as const;

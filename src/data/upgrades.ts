@@ -68,7 +68,12 @@ export type PassiveKey =
   // A hand-riveted boiler fitting from the Clyde shipyards. +10% attack
   // speed — every rivet tightened, every cycle runs faster. Pairs with a
   // level-5 Steam Engine at chest for the future evolution.
-  | 'copper_rivet';
+  | 'copper_rivet'
+  // Bodhrán paired passive — "Drum Hoop".
+  // The bent-willow hoop that tensions the goatskin head. +10% AoE radius
+  // — the hoop deepens the resonance and spreads the shockwave. Pairs with
+  // a level-5 Bodhrán at chest to unlock the Beltane Drum evolution.
+  | 'drum_hoop';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -305,6 +310,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_steam_engine',
     effect: { type: 'add_weapon', weaponKey: 'steam_engine' },
   },
+  // Bodhrán — rapid warm aoe_pulse rhythm weapon. Paired passive: Drum Hoop.
+  {
+    id: 'add_bodhran',
+    name: 'upgradeCard.add_bodhran.name',
+    description: 'upgradeCard.add_bodhran.description',
+    rarity: 'uncommon',
+    icon: 'wicon_bodhran',
+    effect: { type: 'add_weapon', weaponKey: 'bodhran' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -487,6 +501,14 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_copper_rivet',
     effect: { type: 'add_passive', passiveKey: 'copper_rivet' },
+  },
+  {
+    id: 'add_drum_hoop',
+    name: 'upgradeCard.add_drum_hoop.name',
+    description: 'upgradeCard.add_drum_hoop.description',
+    rarity: 'uncommon',
+    icon: 'ucard_drum_hoop',
+    effect: { type: 'add_passive', passiveKey: 'drum_hoop' },
   },
 ];
 

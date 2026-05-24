@@ -45,7 +45,9 @@ export type WeaponKey =
   | 'coastal_storm'
   | 'clootie_rag'
   | 'cullen_skink_ladle'
-  | 'steam_engine';
+  | 'steam_engine'
+  | 'bodhran'
+  | 'beltane_drum';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -726,6 +728,60 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       radius: 1.10,
     },
   },
+
+  // DESIGN_IDEAS §5 — Bodhrán. Rapid warm AoE pulse; rhythm weapon with
+  // no freeze (pure percussion). Faster cadence than Steam Engine but
+  // smaller radius — feels like tapping a heartbeat into the moor.
+  bodhran: {
+    key: 'bodhran',
+    nameKey: 'weapon.bodhran.name',
+    descriptionKey: 'weapon.bodhran.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 1200,
+    damage: 8,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 76,
+    arcDegrees: 360,
+    knockback: 55,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.93,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Beltane Drum (Bodhrán evolution). Midsummer
+  // fire-drum — larger amber ring, higher damage, heavier knockback.
+  // The resonance expands when the Drum Hoop teaches the haggis to
+  // lean into the downbeat. VFX: two concentric rings (inner amber /
+  // outer crimson) — the Beltane bonfire shape.
+  beltane_drum: {
+    key: 'beltane_drum',
+    nameKey: 'weapon.beltane_drum.name',
+    descriptionKey: 'weapon.beltane_drum.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 1000,
+    damage: 18,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 140,
+    arcDegrees: 360,
+    knockback: 85,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
 };
 
 /**
@@ -737,6 +793,15 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
  * every weapon entry to think about a mechanic only one weapon uses.
  */
 export const STAG_ANTLER_DASH_STRIKE_COOLDOWN_MS = 1500;
+
+// DESIGN_IDEAS §5 — Bodhrán. The Celtic frame drum at the heart of every
+// trad session. Its deep pulse resonates outward — a wide, rhythmic AoE
+// burst that shakes enemies loose before weapons close. Pairs with Drum Hoop
+// (expanded resonance ring = +10% AoE) to evolve into the Beltane Drum:
+// the midsummer fire-drum that clears the whole field on every fourth beat.
+// Distinct from Steam Engine (industrial knockback ult, 7s CD) and Bagpipe
+// Blast (freeze burst) — the bodhran is rapid, warm, and persistent.
+export const BODHRAN_VFX_COLOR = 0xc87840;   // warm amber — drum skin + beltane fire
 export const MONARCH_CHARGE_DASH_STRIKE_COOLDOWN_MS = 1300;
 /** Damage multiplier the dash-strike applies on top of the weapon's
  *  rolled effective-damage. Base form gores; the evolution charges. */

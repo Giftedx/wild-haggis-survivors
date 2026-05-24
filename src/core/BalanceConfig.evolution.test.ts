@@ -6,16 +6,17 @@ import { EN_STRINGS, t, type LocaleTree } from './i18n';
 import { SCS_STRINGS } from './i18n.scs';
 
 describe('EVOLUTION_RECIPES', () => {
-  it('has 14 evolution recipes (Highland Horrors added 3: Dirk Flurry, Banshee Wail, Freedom Blade)', () => {
+  it('has 15 evolution recipes (Bodhrán + Drum Hoop → Beltane Drum added)', () => {
     // Wild Living World Phase 2 (2026-05-11) added Pibroch Hammer
     // (`waulking_mallet` + `tuning_fork`). Highland Horrors (2026-05-12)
     // added dirk_dance + gillies_edge → dirk_flurry, grannies_curse +
     // widows_shawl → banshee_wail, wallace_sword + stirling_medal →
-    // freedom_blade. The Burns Wee Beastie unlock threshold remains
-    // hand-pinned at 10 in `BalanceConfig.ts` (not derived from this
-    // length) so adding a new evolution doesn't silently raise the
-    // achievement bar — see `BURNS_EVOLUTION_THRESHOLD === 10` below.
-    expect(EVOLUTION_RECIPES).toHaveLength(14);
+    // freedom_blade. 2026-05-24 added bodhran + drum_hoop → beltane_drum.
+    // The Burns Wee Beastie unlock threshold remains hand-pinned at 10 in
+    // `BalanceConfig.ts` (not derived from this length) so adding a new
+    // evolution doesn't silently raise the achievement bar — see
+    // `BURNS_EVOLUTION_THRESHOLD === 10` below.
+    expect(EVOLUTION_RECIPES).toHaveLength(15);
   });
 
   it('every recipe references a valid base weapon', () => {

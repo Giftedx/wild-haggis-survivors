@@ -606,6 +606,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.wallace_sword.c',
         'ui.banter.weapon_evolve.wallace_sword.d',
       ],
+      // Bodhrán + Drum Hoop → Beltane Drum (2026-05-24).
+      // Hearth register — the drum deepens, the fire rises.
+      bodhran: [
+        'ui.banter.weapon_evolve.bodhran.a',
+        'ui.banter.weapon_evolve.bodhran.b',
+        'ui.banter.weapon_evolve.bodhran.c',
+        'ui.banter.weapon_evolve.bodhran.d',
+      ],
       // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
       // CLAUDE.md "9 of the 10 weapons have a paired passive". Banter pool
       // intentionally omits a `bagpipes` tag so the system can never queue

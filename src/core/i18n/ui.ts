@@ -1952,6 +1952,12 @@ export const ui = {
         c: 'Freedom\'s a heavy word for a heavy blade. Lifted clean.',
         d: 'The swing, then the answer, then the answer to the answer.',
       },
+      bodhran: {
+        a: 'The hoop\'s set. The drum speaks twice now.',
+        b: 'Beltane fire in the skin. The moor leans in.',
+        c: 'Double pulse — amber first, then crimson. The drum learned.',
+        d: 'The willow hoop held true. Now the Beltane Drum answers.',
+      },
     },
     curse_start: {
       generic: {

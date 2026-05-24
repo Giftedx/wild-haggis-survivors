@@ -127,5 +127,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // lv5 for the future evolution.
       player.addAttackSpeedMultiplier(0.10);
       break;
+    case 'drum_hoop':
+      // +10% AoE radius — the willow hoop deepens the drum's resonance
+      // and spreads the shockwave further. Pairs with Bodhrán at lv5
+      // to unlock the Beltane Drum evolution (midsummer fire-drum).
+      player.addAoeMultiplier(0.10);
+      break;
   }
 }

@@ -731,6 +731,8 @@ export class WeaponSystem {
   private fireAoePulse(w: ActiveWeapon, px: number, py: number): void {
     const isCoastalStorm = w.config.key === 'coastal_storm';
     const isSteamEngine = w.config.key === 'steam_engine';
+    const isBodhran = w.config.key === 'bodhran';
+    const isBeltaneDrum = w.config.key === 'beltane_drum';
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
 
@@ -773,6 +775,28 @@ export class WeaponSystem {
         onComplete: () => outer.setVisible(false),
       });
       this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.9, endScale: 2.0, duration: 440, alpha: 0.45 });
+    } else if (isBodhran || isBeltaneDrum) {
+      // Bodhrán / Beltane Drum — warm amber percussion ring. The Beltane
+      // Drum adds a second outer crimson ring (the midsummer fire-circle).
+      const inner = this.acquireVfxCircle(px, py, 8, 0xc87840, 0.55);
+      this.scene.tweens.add({
+        targets: inner,
+        radius: radius * 0.90,
+        alpha: 0,
+        duration: 260,
+        onComplete: () => inner.setVisible(false),
+      });
+      if (isBeltaneDrum) {
+        const outer = this.acquireVfxCircle(px, py, 12, 0xd44020, 0.38);
+        this.scene.tweens.add({
+          targets: outer,
+          radius,
+          alpha: 0,
+          duration: 360,
+          onComplete: () => outer.setVisible(false),
+        });
+      }
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.80, endScale: 1.7, duration: 300, alpha: 0.68 });
     } else {
       const ring = this.acquireVfxCircle(px, py, 10, resolveWeaponVfxColor(w.config.behavior), 0.4);
       this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.85, endScale: 1.8, duration: 340, alpha: 0.78 });
@@ -800,8 +824,9 @@ export class WeaponSystem {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
 
         // Bagpipe Blast applies brief freeze (slow 50% for 1s).
-        // Coastal Storm and Steam Engine rely on knockback alone — no freeze.
-        if (!isCoastalStorm && !isSteamEngine) {
+        // Coastal Storm, Steam Engine, and Bodhrán family rely on knockback
+        // alone — pure percussion weapons hit hard but don't slow.
+        if (!isCoastalStorm && !isSteamEngine && !isBodhran && !isBeltaneDrum) {
           enemy.applyFreeze(0.5, 1000);
         }
 

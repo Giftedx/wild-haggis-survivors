@@ -312,6 +312,17 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.pibroch_hammer.name',
     descriptionKey: 'evolution.pibroch_hammer.description',
   },
+  {
+    // DESIGN_IDEAS §5 — Bodhrán + Drum Hoop → Beltane Drum. The willow
+    // hoop teaches the drum to reach further; midsummer fire amplifies
+    // the beat. Mechanically: wider radius, more damage, two concentric
+    // rings (inner amber / outer crimson) on each pulse.
+    baseWeapon: 'bodhran',
+    requiredPassive: 'drum_hoop',
+    evolvedWeapon: 'beltane_drum',
+    nameKey: 'evolution.beltane_drum.name',
+    descriptionKey: 'evolution.beltane_drum.description',
+  },
   // Highland Horrors — three new weapon family evolutions.
   {
     // Dirk Dance + Gillie's Edge → Dirk Flurry. The gamekeeper's

@@ -21,6 +21,7 @@ import { drawReeds } from './reeds';
 import { drawRowanThread } from './rowanThread';
 import { drawSmokedHaddock } from './smokedHaddock';
 import { drawCopperRivet } from './copperRivet';
+import { drawDrumHoop } from './drumHoop';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -68,6 +69,8 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawSmokedHaddock(scene);
   // Steam Engine paired passive.
   drawCopperRivet(scene);
+  // Bodhrán paired passive.
+  drawDrumHoop(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

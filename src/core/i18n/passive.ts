@@ -59,4 +59,7 @@ export const passive = {
   copper_rivet: {
     flavour: "Every Clyde-built hull was held together by hand — a heater boy, a holder-on, a riveter, and a catch-boy working in sequence with the noise so constant the shipyard men went deaf by forty. The rivet remembers the rhythm. The haggis keeps the beat.",
   },
+  drum_hoop: {
+    flavour: "Bent willow — green-cut, steamed, wrapped round a form and left to set. The goatskin's tension depends on the hoop holding true. A well-made hoop and the bodhrán carries from the bar to the back wall and out into the car park. The haggis leans into the resonance.",
+  },
 } as const;

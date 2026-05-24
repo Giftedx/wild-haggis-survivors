@@ -129,4 +129,14 @@ export const weapon = {
     description: 'A burst of Clyde-built pressure — heavy knockback, no slow. Shorter range than the Storm, faster cycle.',
     flavour: "Built on the Clyde, launched at Partick, scrapped at Dalmuir. Between launch and scrap: enough pressure to move a nation. The haggis tapped the boiler once. It has not needed to tap it again.",
   },
+  bodhran: {
+    name: 'Bodhrán',
+    description: 'A Celtic frame drum that shakes the moor with every beat. Rapid warm pulse, moderate knockback, no slow.',
+    flavour: "The bodhrán is modern — invented or revived in the 1960s, the scholars still argue — but the pulse it makes is old. Back wall of the session, heartbeat of the tune. The haggis does not need a tipper. The palm works fine.",
+  },
+  beltane_drum: {
+    name: 'Beltane Drum',
+    description: "The bodhrán at midsummer — fire in the skin, double the reach, heavier thump on every downbeat.",
+    flavour: "Calton Hill, last night of April. The drum starts slow and builds until you can't tell the heartbeat from the beat. The fire jumps. The haggis leaps with it.",
+  },
 } as const;

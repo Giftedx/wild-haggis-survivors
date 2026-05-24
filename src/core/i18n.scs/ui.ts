@@ -1379,6 +1379,12 @@ export const ui = {
         c: 'Freedom\'s a heavy wurd fer a heavy blade. Liftit clean.',
         d: 'Tha swing, syne tha answer, syne tha answer tae tha answer.',
       },
+      bodhran: {
+        a: 'Tha hoop\'s set. Tha drum speaks twice noo.',
+        b: 'Beltane fire in tha skin. Tha moor leans in.',
+        c: 'Dooble pulse — amber first, syne crimson. Tha drum learned.',
+        d: 'Tha willow hoop held true. Noo tha Beltane Drum answers.',
+      },
     },
     curse_start: {
       generic: {

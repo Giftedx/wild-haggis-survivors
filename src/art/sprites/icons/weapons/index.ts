@@ -35,6 +35,8 @@ import { drawCoastalStormIcon } from './coastalStorm';
 import { drawClootieRagIcon } from './clootieRag';
 import { drawCullenSkinkLadleIcon } from './cullenSkinkLadle';
 import { drawSteamEngineIcon } from './steamEngine';
+import { drawBodhranIcon } from './bodhran';
+import { drawBeltaneDrumIcon } from './beltaneDrum';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -66,6 +68,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawCullenSkinkLadleIcon(scene);
   // Steam Engine — Clyde-built pressure burst.
   drawSteamEngineIcon(scene);
+  // Bodhrán — Celtic frame drum rhythm weapon.
+  drawBodhranIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);
@@ -81,6 +85,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawSgianGealIcon(scene);
   drawMonarchChargeIcon(scene);
   drawPibrochHammerIcon(scene);
+  // Bodhrán evolution.
+  drawBeltaneDrumIcon(scene);
   // Highland Horrors evolutions.
   drawDirkFlurryIcon(scene);
   drawBansheeWailIcon(scene);
