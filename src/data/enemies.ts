@@ -61,7 +61,17 @@ export type EnemyBehavior =
    *  Phase 3: Hail Storm — speed ×1.7 + hail burst ×8 every 3.5 s.
    * Post-bell exclusive. Refs: `SCOTTISH_RESEARCH.md` §1.1.
    */
-  | 'storm_phases';
+  | 'storm_phases'
+  /**
+   * Twin Stones — An Càraid, the Twin Stones of Callanish (post-bell).
+   * A cosmetic Stone B image orbits / flanks the main boss entity.
+   * Phase 1 (HP > 55 %): chase + 6-shard ring burst every 7 s.
+   *   Stone B orbits and fires a delayed ring 1 s after Stone A.
+   * Phase 2 (HP ≤ 55 %): speed ×1.5 + 3-shard fan every 4.2 s.
+   *   Stone B flanks perpendicular; both fire simultaneously.
+   * Post-bell exclusive. Refs: `SCOTTISH_RESEARCH.md` §1.8.
+   */
+  | 'twin_stones';
 
 export interface EnemyConfig {
   key: string;
@@ -698,6 +708,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   nuckelavee: 'The Nuckelavee',
   earl_beardie: 'Earl Beardie',
   black_douglas: 'The Black Douglas',
+  twin_stones: 'An Càraid — the Twin Stones',
   cailleach_boss: 'The Cailleach',
 };
 
@@ -954,6 +965,25 @@ export const BOSSES: BossConfig[] = [
     xpValue: 140,
     scale: 2.8,
     behaviorOverride: 'storm_phases',
+  },
+  // Post-bell — Twin Stones of Callanish. Two Fir Bhreige (False Men) —
+  // one HP bar, one primary entity (Stone A), one cosmetic shadow (Stone B).
+  // Phase 1: ring bursts from both stone positions. Phase 2: fan attacks,
+  // Stone B flanks perpendicular to player direction.
+  // Refs: SCOTTISH_RESEARCH.md §1.8 (Callanish Standing Stones).
+  {
+    key: 'twin_stones',
+    nameKey: 'boss.twin_stones.name',
+    warningKey: 'ui.bossWarning.twin_stones',
+    spawnTimeSec: 9999,
+    postBellOnly: true,
+    texture: 'boss_twin_stone_a',
+    speed: 40,
+    hp: 4000,
+    damage: 32,
+    xpValue: 120,
+    scale: 2.4,
+    behaviorOverride: 'twin_stones',
   },
   // V2 — Cailleach Gauntlet boss (Moor Remembers V2). Manual-spawn only;
   // wakes via `SpawnSystem.spawnBossManually` from CailleachGauntletScheduler

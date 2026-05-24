@@ -1217,6 +1217,8 @@ export const ui = {
     storm_cailleach: "The Old Wife rides the gale — haar, ice, and hail. She's here.",
     /** Orcadian mythos boss — no skin, one eye, breath is plague. */
     nuckelavee: 'Something comin\' fae the sea — no\' right, no\' human, no\' stopped.',
+    /** Post-bell — Twin Stones of Callanish. They've been standing since before the language. */
+    twin_stones: 'An Càraid stand apart no longer — the Callanish stones have memory, and the haggis is in it.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a chest and let it loose!',
@@ -1259,6 +1261,7 @@ export const ui = {
     boss_killed_taxman: 'THE TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'The Cailleach is doon! Stormcrown is yours.',
     boss_killed_storm_cailleach: 'The Storm Cailleach is doon! The gale died wi\' her!',
+    boss_killed_twin_stones: 'An Càraid is doon! The heartstone goes cold — and the circle is yours.',
     boss_killed_generic: 'Boss doon! Get it right round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it right round them!',
@@ -1611,6 +1614,13 @@ export const ui = {
         b: 'Three phases. She gave ye the first one free.',
         c: 'The gale is a her. She\'s clocked ye.',
       },
+      // Post-bell — Twin Stones of Callanish. Ancient, certain, unhurried.
+      // Hearth register; the horror is the patience, not the rage.
+      twin_stones: {
+        a: 'Two stones. One fate. Walk into the circle.',
+        b: 'They\'ve been standing there longer than the language. Now they\'re moving.',
+        c: 'The Fir Bhreige — the False Men. Not so false today.',
+      },
     },
     low_hp: {
       a: 'Yer on the last shred, wee yin.',
@@ -1866,6 +1876,12 @@ export const ui = {
         a: 'Three phases and she still couldnae hold it.',
         b: 'The haar cleared. That\'s on her.',
         c: 'Post-bell, post-gale. The moor\'s got its weather back.',
+      },
+      // Post-bell — Twin Stones doon. The heartstone went cold.
+      twin_stones: {
+        a: 'The circle\'s quiet. The moor holds that, for a wee bit.',
+        b: 'An Càraid. Both gone. The heartstone went cold at the haggis\'s feet.',
+        c: 'Stood since before the Gaels named them. Now they lie. The moor minds it.',
       },
     },
     weapon_evolve: {
@@ -4700,6 +4716,8 @@ export const ui = {
       cailleach_boss: 'Seven cairns lit — and then the storm. The moor went quiet at {time}.',
       /** Post-bell Tier-3 — Storm Cailleach. The haar closed at {time}. */
       storm_cailleach: 'The storm took it at {time}. Not weather — something older.',
+      /** Post-bell — Twin Stones. The circle caught the haggis at {time}. */
+      twin_stones: 'An Càraid caught it at {time}. The stones were standing when the islands had no name. They\'ll stand again.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
       // v2 — biome-contextual death lines (tier-2, no {name}).
@@ -4737,6 +4755,8 @@ export const ui = {
       cailleach_boss_kill: 'Stormcrown taken at {time}. The seven cairns hold the memory of it.',
       /** Post-bell Tier-3 — Storm Cailleach defeated; the gale unravelled. */
       storm_cailleach_kill: 'The Cailleach of the Storm unravelled at {time}. The gale remembered a different ending.',
+      /** Post-bell — Twin Stones defeated; the heartstone is cold. */
+      twin_stones_kill: 'An Càraid doon at {time}. The heartstone is cold. The circle is yours.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
       // v2 — biome-contextual victory lines (tier-2, no {name}).

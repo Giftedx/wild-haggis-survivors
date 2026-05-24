@@ -138,4 +138,7 @@ export const beastie = {
   storm_cailleach: {
     lore: 'Tha storm-aspect o tha Cailleach Bheur. No tha patient cauld o tha mountain but tha active gale: haar veil, ice lances, hail burst. Three phases, ilk ane waur nor tha last. She disnae explain tha progression — tha Auld Wife has been shappin Scottish wather sin afore there were Scots tae notice. Tha lore says she hammers tha hills intae shape in winter; this is tha hammerin. SCOTTISH_RESEARCH.md §1.1.',
   },
+  twin_stones: {
+    lore: 'Twa o tha Fir Bhreige — tha False Men o Callanish, Isle o Lewis. A giant race turnt tae stane fer refusin baptism, sae tha legend says; tha aulder account says they were aye stane, aye watchin. Lewisian gneiss, aulder nor tha Cambrian. Lichen-patched, spiral-cairved, amber-eed. They share ane heartstone buried beneath tha circle\'s flair. They share ane fate. Post-bell exclusive. SCOTTISH_RESEARCH.md §1.8.',
+  },
 } as const;

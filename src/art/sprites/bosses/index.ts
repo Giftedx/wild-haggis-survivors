@@ -21,6 +21,7 @@ import { bakeBossNuckelavee } from './nuckelavee';
 import { bakeBossEarlBeardie } from './earl_beardie';
 import { bakeBossBlackDouglas } from './black_douglas';
 import { bakeBossStormCailleach } from './stormCailleach';
+import { bakeBossTwinStoneA, bakeBossTwinStoneB } from './twinStones';
 import { bakeBossArenaProps } from './arenaProps';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
@@ -44,5 +45,8 @@ export function bakeBosses(scene: Phaser.Scene): void {
   bakeBossBlackDouglas(scene);
   // Post-bell only — Storm Cailleach (Tier-3 multi-phase: haar / ice / hail).
   bakeBossStormCailleach(scene);
+  // Post-bell only — Twin Stones of Callanish (2 stones, 1 HP bar).
+  bakeBossTwinStoneA(scene);
+  bakeBossTwinStoneB(scene);
   bakeBossArenaProps(scene);
 }

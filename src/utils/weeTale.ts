@@ -74,10 +74,10 @@ export type WeeTaleTag =
   | 'no_boss' | 'any_boss'
   | 'gordon' | 'tour_bus' | 'taxman'
   | 'each_uisge' | 'nicnevin' | 'the_laird' | 'nuckelavee' | 'hunter_general' | 'earl_beardie' | 'black_douglas'
-  | 'cailleach_boss' | 'storm_cailleach'
+  | 'cailleach_boss' | 'storm_cailleach' | 'twin_stones'
   | 'gordon_death' | 'tour_bus_death' | 'taxman_death'
   | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'nuckelavee_death' | 'hunter_general_death' | 'earl_beardie_death' | 'black_douglas_death'
-  | 'cailleach_boss_death' | 'storm_cailleach_death'
+  | 'cailleach_boss_death' | 'storm_cailleach_death' | 'twin_stones_death'
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
@@ -370,6 +370,12 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
 
   // Storm Cailleach defeated — the gale unravelled.
   { key: 'ui.weeTale.victory.storm_cailleach_kill', requires: ['victory', 'storm_cailleach'] },
+
+  // Twin Stones (post-bell) — the circle closed on the haggis.
+  { key: 'ui.weeTale.death.twin_stones', requires: ['death', 'twin_stones_death'] },
+
+  // Twin Stones defeated — the heartstone goes cold.
+  { key: 'ui.weeTale.victory.twin_stones_kill', requires: ['victory', 'twin_stones'] },
 
   // ── v2 — universal {name}-bearing lines (tier-2) ───────────────
   // Picks ahead of the no-name fallbacks for any run that has a

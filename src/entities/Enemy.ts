@@ -29,6 +29,14 @@ import {
   STORM_HAIL_COUNT, STORM_HAIL_SPEED, STORM_HAIL_DAMAGE, STORM_HAIL_SPREAD_RAD,
   type StormCailleachState,
 } from './stormCailleachBehaviour';
+import {
+  simulateTwinStoneBehaviour,
+  initialTwinStoneState,
+  TWIN_RING_SHARD_COUNT, TWIN_RING_SHARD_SPEED, TWIN_RING_SHARD_DAMAGE,
+  TWIN_FAN_SHARD_COUNT, TWIN_FAN_SHARD_SPEED, TWIN_FAN_SHARD_DAMAGE, TWIN_FAN_SPREAD_RAD,
+  TWIN_SHADOW_ORBIT_RAD_PER_SEC, TWIN_SHADOW_ORBIT_RADIUS, TWIN_SHADOW_FLANK_DIST, TWIN_SHADOW_RING_DELAY_MS,
+  type TwinStoneState,
+} from './twinStoneBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -142,6 +150,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private hushState: HushState = { msSinceLastShout: 0, telegraphing: false, msTelegraphElapsed: 0, shouldDamage: false };
   /** Storm Cailleach boss state (only used when behavior === 'storm_phases'). */
   private stormCailleachState: StormCailleachState = initialStormCailleachState();
+  /** Twin Stones of Callanish boss state (only used when behavior === 'twin_stones'). */
+  private twinStoneState: TwinStoneState = initialTwinStoneState();
+  /** Cosmetic Stone B image — created on first tick, destroyed in die(). */
+  private twinStoneShadow: Phaser.GameObjects.Image | null = null;
+  /** Orbit angle for Stone B (radians). */
+  private twinStoneShadowAngle: number = 0;
+  /** True once the shadow image has been created for the current spawn. */
+  private twinStoneShadowInitialized: boolean = false;
   /** Countdown ms within the current three-bay stage. */
   private threeBayTimerMs: number = 0;
   /** Charge target locked at start of stage 3. */
@@ -675,6 +691,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'storm_phases':
         this.behaviorStormCailleach(targetX, targetY, delta);
         break;
+      case 'twin_stones':
+        this.behaviorTwinStones(targetX, targetY, delta);
+        break;
     }
   }
 
@@ -1146,6 +1165,122 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         cur.takeDamage(STORM_HAIL_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 1400, cleanup);
+    }
+  }
+
+  /**
+   * Twin Stones of Callanish — two Fir Bhreige with one shared HP bar.
+   * Stone A is this entity. Stone B is a cosmetic Image that orbits (P1)
+   * or flanks perpendicular to the player (P2). Both fire shards.
+   * Post-bell exclusive. Refs: SCOTTISH_RESEARCH.md §1.8.
+   */
+  private behaviorTwinStones(tx: number, ty: number, delta: number): void {
+    const hpPct = this.maxHp > 0 ? this.hp / this.maxHp : 1.0;
+    const next = simulateTwinStoneBehaviour(this.twinStoneState, { deltaMs: delta, hpPct });
+    this.twinStoneState = next;
+
+    this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+
+    // Lazy-create Stone B shadow image on first tick (BootScene must have run).
+    if (!this.twinStoneShadowInitialized && this.scene?.sys.isActive()) {
+      try {
+        if (this.scene.textures.exists('boss_twin_stone_b')) {
+          this.twinStoneShadow = this.scene.add.image(this.x, this.y, 'boss_twin_stone_b');
+          this.twinStoneShadow.setScale(2.4);
+          this.twinStoneShadow.setDepth(this.depth - 1);
+          this.twinStoneShadowInitialized = true;
+        }
+      } catch { /* test stubs without scene */ }
+    }
+
+    // Position Stone B.
+    if (this.twinStoneShadow?.active) {
+      if (next.phase === 1) {
+        this.twinStoneShadowAngle += TWIN_SHADOW_ORBIT_RAD_PER_SEC * (delta / 1000);
+        this.twinStoneShadow.setPosition(
+          this.x + Math.cos(this.twinStoneShadowAngle) * TWIN_SHADOW_ORBIT_RADIUS,
+          this.y + Math.sin(this.twinStoneShadowAngle) * TWIN_SHADOW_ORBIT_RADIUS,
+        );
+      } else {
+        const perp = Phaser.Math.Angle.Between(this.x, this.y, tx, ty) + Math.PI / 2;
+        this.twinStoneShadow.setPosition(
+          this.x + Math.cos(perp) * TWIN_SHADOW_FLANK_DIST,
+          this.y + Math.sin(perp) * TWIN_SHADOW_FLANK_DIST,
+        );
+      }
+    }
+
+    if (next.shouldFireRing) {
+      this.fireTwinStoneRing(this.x, this.y);
+      const sx = this.twinStoneShadow?.x ?? this.x;
+      const sy = this.twinStoneShadow?.y ?? this.y;
+      this.ctx.getUpdateTickers().addOnce('raw', TWIN_SHADOW_RING_DELAY_MS, () => {
+        this.fireTwinStoneRing(sx, sy);
+      });
+    }
+    if (next.shouldFireFan) {
+      this.fireTwinStoneFan(this.x, this.y, tx, ty);
+      const sx = this.twinStoneShadow?.x ?? this.x;
+      const sy = this.twinStoneShadow?.y ?? this.y;
+      this.fireTwinStoneFan(sx, sy, tx, ty);
+    }
+  }
+
+  /** Stone shard ring — TWIN_RING_SHARD_COUNT evenly-spread shards from (fromX, fromY). */
+  private fireTwinStoneRing(fromX: number, fromY: number): void {
+    const step = (Math.PI * 2) / TWIN_RING_SHARD_COUNT;
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < TWIN_RING_SHARD_COUNT; i++) {
+      const angle = step * i;
+      const shard = this.scene.add.circle(fromX, fromY, 5, 0x8c7858, 0.88);
+      this.scene.physics.add.existing(shard);
+      const body = shard.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * TWIN_RING_SHARD_SPEED, Math.sin(angle) * TWIN_RING_SHARD_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (shard.active) shard.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(TWIN_RING_SHARD_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
+    }
+  }
+
+  /** Stone shard fan — TWIN_FAN_SHARD_COUNT shards in a spread toward the player. */
+  private fireTwinStoneFan(fromX: number, fromY: number, tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(fromX, fromY, tx, ty);
+    const halfSpread = TWIN_FAN_SPREAD_RAD / 2;
+    const step = TWIN_FAN_SHARD_COUNT > 1 ? TWIN_FAN_SPREAD_RAD / (TWIN_FAN_SHARD_COUNT - 1) : 0;
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < TWIN_FAN_SHARD_COUNT; i++) {
+      const angle = baseAngle - halfSpread + step * i;
+      const shard = this.scene.add.circle(fromX, fromY, 5, 0x8c7858, 0.90);
+      this.scene.physics.add.existing(shard);
+      const body = shard.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * TWIN_FAN_SHARD_SPEED, Math.sin(angle) * TWIN_FAN_SHARD_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (shard.active) shard.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(TWIN_FAN_SHARD_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
     }
   }
 
@@ -1931,6 +2066,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hpBarFill?.setVisible(false);
     this.eliteAffixNameText?.setVisible(false);
     this.shadow?.setVisible(false);
+    // Twin Stones — destroy cosmetic Stone B so pool re-use gets a fresh shadow.
+    if (this.twinStoneShadow) {
+      try { this.twinStoneShadow.destroy(); } catch { /* scene restart */ }
+      this.twinStoneShadow = null;
+      this.twinStoneShadowInitialized = false;
+    }
   }
 
   destroy(fromScene?: boolean): void {
@@ -1941,10 +2082,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hpBarFill?.destroy();
     this.eliteAffixNameText?.destroy();
     this.shadow?.destroy();
+    this.twinStoneShadow?.destroy();
     this.hpBarBg = null;
     this.hpBarFill = null;
     this.eliteAffixNameText = null;
     this.shadow = null;
+    this.twinStoneShadow = null;
+    this.twinStoneShadowInitialized = false;
     super.destroy(fromScene);
   }
 

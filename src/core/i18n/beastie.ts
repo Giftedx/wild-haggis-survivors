@@ -138,4 +138,7 @@ export const beastie = {
   storm_cailleach: {
     lore: 'The storm-aspect of the Cailleach Bheur. Not the patient cold of the mountain but the active gale: haar veil, ice lances, hail burst. Three phases, each worse than the last. She does not explain the progression — the Blue Hag has been shaping Scottish weather since before there were Scots to notice. The lore says she hammers the hills into shape in winter; this is the hammering. SCOTTISH_RESEARCH.md §1.1.',
   },
+  twin_stones: {
+    lore: 'Two of the Fir Bhreige — the False Men of Callanish, Isle of Lewis. A giant race petrified for refusing baptism, so the legend goes; the older account says they were always stone, always watching. Lewisian gneiss, older than the Cambrian. Lichen-patched, spiral-carved, amber-eyed. They share one heartstone buried beneath the circle\'s floor. They share one fate. Post-bell exclusive. SCOTTISH_RESEARCH.md §1.8.',
+  },
 } as const;

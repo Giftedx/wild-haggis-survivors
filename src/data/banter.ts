@@ -248,6 +248,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.storm_cailleach.b',
         'ui.banter.boss_warn.storm_cailleach.c',
       ],
+      // Post-bell — Twin Stones of Callanish. Ancient, certain, unhurried.
+      twin_stones: [
+        'ui.banter.boss_warn.twin_stones.a',
+        'ui.banter.boss_warn.twin_stones.b',
+        'ui.banter.boss_warn.twin_stones.c',
+      ],
     },
   },
   {
@@ -507,6 +513,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.storm_cailleach.a',
         'ui.banter.boss_down.storm_cailleach.b',
         'ui.banter.boss_down.storm_cailleach.c',
+      ],
+      // Post-bell — Twin Stones of Callanish, quiet after the circle falls.
+      twin_stones: [
+        'ui.banter.boss_down.twin_stones.a',
+        'ui.banter.boss_down.twin_stones.b',
+        'ui.banter.boss_down.twin_stones.c',
       ],
     },
   },

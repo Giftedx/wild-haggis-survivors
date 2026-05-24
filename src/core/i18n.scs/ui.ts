@@ -790,6 +790,7 @@ export const ui = {
     cailleach_boss: 'THA CAILLEACH WALKS — winter answers whit ye cried.',
     storm_cailleach: 'Tha Auld Wife rides tha gale — haar, ice, an hail. She\'s here.',
     nuckelavee: 'Somethin comin fae tha sea — no richt, no human, no stoppit.',
+    twin_stones: 'An Càraid staund apairted nae langer — tha Callanish stanes hae memory, an tha haggis is in it.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
@@ -825,6 +826,7 @@ export const ui = {
     boss_killed_taxman: 'THA TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'Tha Cailleach is doon! Stormcrown is yours.',
     boss_killed_storm_cailleach: 'Tha Storm Cailleach is doon! Tha gale deed wi her!',
+    boss_killed_twin_stones: 'An Càraid is doon! Tha heartstone gangs cauld — an tha circle is yours.',
     boss_killed_generic: 'Boss doon! Get it richt round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it richt round them!',
@@ -1044,6 +1046,12 @@ export const ui = {
         a: 'Tha haar has een the nicht. Auld een.',
         b: 'Three phases. She gied ye tha first yin free.',
         c: 'Tha gale is a her. She\'s clocked ye.',
+      },
+      // Post-bell — Twin Stanes o Callanish. Auld, certain, unhurried.
+      twin_stones: {
+        a: 'Twa stanes. Ane fate. Walk intae tha circle.',
+        b: 'They\'ve been staundin there langer nor tha language. Noo they\'re muivin.',
+        c: 'Tha Fir Bhreige — tha False Men. No sae false the day.',
       },
     },
     low_hp: {
@@ -1291,6 +1299,12 @@ export const ui = {
         a: 'Three phases an she still couldnae haud it.',
         b: 'Tha haar cleared. That\'s on her.',
         c: 'Post-bell, post-gale. Tha moor\'s got its wather back.',
+      },
+      // Post-bell — Twin Stanes doon. Tha heartstone gaed cauld.
+      twin_stones: {
+        a: 'Tha circle\'s quait. Tha moor haulds that, fer a wee bit.',
+        b: 'An Càraid. Baith gaen. Tha heartstone gaed cauld at tha haggis\'s feet.',
+        c: 'Stood sin afore tha Gaels named them. Noo they lie. Tha moor minds it.',
       },
     },
     weapon_evolve: {
@@ -3847,6 +3861,7 @@ export const ui = {
       hunter_general: 'Tha Hunter-General closed tha chase at {time}. Tha quarry ran oot o\' muir.',
       cailleach_boss: 'Seeven cairns lit — an than tha storm. Tha moor gaed quiet at {time}.',
       storm_cailleach: 'Tha storm taen it at {time}. No wather — something aulder.',
+      twin_stones: 'An Càraid caught it at {time}. Tha stanes were staundin when tha islands had nae name. They\'ll staund again.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
       biome_bog: 'Tha bog at {time} — saft grund, an than safter.',
       biome_loch: 'Stood at tha loch-edge at {time}. Tha loch disnae gie back whit it taks.',
@@ -3878,6 +3893,7 @@ export const ui = {
       hunter_general_kill: 'Tha Hunter-General\'s medals are on tha muir at {time}. Tha quarry gaed hame.',
       cailleach_boss_kill: 'Stormcrown taen at {time}. Tha seeven cairns hauld tha memory o it.',
       storm_cailleach_kill: 'Tha Cailleach o tha Storm unravelled at {time}. Tha gale mindit a different endin.',
+      twin_stones_kill: 'An Càraid doon at {time}. Tha heartstone is cauld. Tha circle is yours.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
       biome_bog: 'Walked tha bog an cam back kennin tha smell o peat.',
       biome_loch: 'Kept back fae tha edge an walked hame. Tha loch noted this.',
