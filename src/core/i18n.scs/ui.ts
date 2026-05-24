@@ -3813,12 +3813,14 @@ export const ui = {
       glaswegian: {
         death_baseline: 'Aye, {name} swung haird. Swung haurder than tha moor wid let.',
         death_short: '{name} didnae mak it past tha kerb. Git up. Try again.',
+        death_nuckelavee: 'Tha Nuckelavee came in aff tha coast at {time}. {name} gave it tha look. Tha look didnae work.',
         victory_baseline: 'Richt then. {name} walked it. Dinnae get a heid aboot it.',
         victory_taxman: '{name} bested tha taxman. Even Glesga keeps a wee receipt.',
       },
       doric_quinie: {
         death_baseline: 'Fit like, {name}? Awa hame nou. Tha sea minds its ain.',
         death_long: '{name} hauded weel. Tha quinie\'s bonnet bides on tha hairbour wa\'.',
+        death_hunter_general: 'Tha Hunter-General fund tha quinie at {time}. She\'d been watchin his tykes aw afternoon. She should\'ve watched him.',
         victory_baseline: 'Aye, {name}. Tha loons doun tha pier will hear o\' this ane.',
         victory_epic: '{time} on tha moor, {name}. Tha smokie\'s still warm at tha kitchie.',
       },
@@ -3911,6 +3913,7 @@ export const ui = {
       pibroch: {
         death_baseline: 'Tha grund-tune ran oot afore {name} did. Tha muir keeps playin.',
         death_short: '{name} fell mid-bar. Tha ceòl mòr disnae stap for tha player.',
+        death_cailleach_boss: 'Tha Cailleach heard tha pibroch at {time} an answered. {name} played intae tha storm — tha storm played louder.',
         victory_baseline: '{name} walked tha full pibroch — grund-note, variations, coda. Tha muir heard aw o it.',
         victory_taxman: '{name} brocht tha Taxman\'s ledger tae tha final bar. Tha tune outlastit him.',
       },

@@ -4652,12 +4652,14 @@ export const ui = {
       glaswegian: {
         death_baseline: 'Aye, {name} swung hard. Swung harder than the moor would let.',
         death_short: '{name} didnae make it past the kerb. Get up. Try again.',
+        death_nuckelavee: 'The Nuckelavee came in aff the coast at {time}. {name} gave it the look. The look didnae work.',
         victory_baseline: 'Right then. {name} walked it. Dinnae get a heid aboot it.',
         victory_taxman: '{name} bested the taxman. Even Glasgow keeps a wee receipt.',
       },
       doric_quinie: {
         death_baseline: 'Fit like, {name}? Awa hame nou. The sea minds its ain.',
         death_long: '{name} hauded weel. The quinie\'s bonnet bides on the harbour wa\'.',
+        death_hunter_general: 'The Hunter-General found the quinie at {time}. She\'d been watching his dogs aw afternoon. She should\'ve watched him.',
         victory_baseline: 'Aye, {name}. The loons doun the pier will hear o\' this ane.',
         victory_epic: '{time} on the moor, {name}. The smokie\'s still warm at the kitchie.',
       },
@@ -4752,6 +4754,7 @@ export const ui = {
       pibroch: {
         death_baseline: 'The ground-tune ran out before {name} did. The moor keeps playing.',
         death_short: '{name} fell mid-bar. The ceòl mòr doesn\'t stop for the player.',
+        death_cailleach_boss: 'The Cailleach heard the pibroch at {time} and answered. {name} played into the storm — the storm played louder.',
         victory_baseline: '{name} walked the full pibroch — ground-note, variations, coda. The moor heard all of it.',
         victory_taxman: '{name} brought the Taxman\'s ledger to the final bar. The tune outlasted him.',
       },

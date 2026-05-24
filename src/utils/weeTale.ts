@@ -390,6 +390,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.glaswegian.death_short', requires: ['death', 'glaswegian', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.glaswegian.victory_baseline', requires: ['victory', 'glaswegian', 'has_name'] },
   { key: 'ui.weeTale.variant.glaswegian.victory_taxman', requires: ['victory', 'glaswegian', 'has_name', 'taxman'] },
+  // Tier-4 — Glasgow wit meets the Nuckelavee. The look didn't work.
+  { key: 'ui.weeTale.variant.glaswegian.death_nuckelavee', requires: ['death', 'glaswegian', 'has_name', 'nuckelavee_death'] },
 
   // ── v2 — Doric Quinie (Aberdeenshire fishing-village stoic) ────
   // Voice register per `docs/VOICE_CARD.md` §"Doric / Aberdonian
@@ -398,6 +400,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.doric_quinie.death_long', requires: ['death', 'doric_quinie', 'has_name', 'long'] },
   { key: 'ui.weeTale.variant.doric_quinie.victory_baseline', requires: ['victory', 'doric_quinie', 'has_name'] },
   { key: 'ui.weeTale.variant.doric_quinie.victory_epic', requires: ['victory', 'doric_quinie', 'has_name', 'epic'] },
+  // Tier-4 — The quinie watched his dogs aw afternoon; should've watched him.
+  { key: 'ui.weeTale.variant.doric_quinie.death_hunter_general', requires: ['death', 'doric_quinie', 'has_name', 'hunter_general_death'] },
 
   // ── v2 — Burns's Wee Beastie (citational) ──────────────────────
   // Voice register per `docs/VOICE_CARD.md` §"Burns's voice
@@ -513,6 +517,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.pibroch.death_short', requires: ['death', 'pibroch', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.pibroch.victory_baseline', requires: ['victory', 'pibroch', 'has_name'] },
   { key: 'ui.weeTale.variant.pibroch.victory_taxman', requires: ['victory', 'pibroch', 'has_name', 'taxman'] },
+  // Tier-4 — The pibroch played into the Cailleach's storm. The storm played louder.
+  { key: 'ui.weeTale.variant.pibroch.death_cailleach_boss', requires: ['death', 'pibroch', 'has_name', 'cailleach_boss_death'] },
   // Peedie as a standing stone; patient as the Ring o' Brodgar.
   { key: 'ui.weeTale.variant.orcadian.death_baseline', requires: ['death', 'orcadian', 'has_name'] },
   { key: 'ui.weeTale.variant.orcadian.death_short', requires: ['death', 'orcadian', 'has_name', 'short'] },
