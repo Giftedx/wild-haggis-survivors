@@ -4754,6 +4754,7 @@ export const ui = {
       orcadian: {
         death_baseline: '{name} fell out there on the muir. The stones keep no score — they abide.',
         death_short: '{name} was down. Like the midwinter dark at Maeshowe — first the dark, then the solstice beam.',
+        death_nuckelavee: 'The Nuckelavee rose from Orcadian waters at {time}. {name} kent the legend. The legend kent {name} back.',
         victory_baseline: '{name} walked the whole ring and came out the other side. The Brodgar Folk would\'ve nodded.',
         victory_taxman: '{name} settled the Taxman\'s ledger. Orcadians don\'t run from accounts.',
       },
@@ -4784,12 +4785,14 @@ export const ui = {
       jacobite: {
         death_baseline: '{name} fell on the moor. The plaid couldnae hold. The Cause goes on.',
         death_short: '{name}. Flora will no forget.',
+        death_black_douglas: 'The hush came for {name} at {time}. Good Sir James has nae politics — only the quiet.',
         victory_baseline: '{name} crossed the moor, for the Cause, and came oot the ither side.',
         victory_taxman: 'The Taxman found a Jacobite. The Jacobite had a plaid. The Taxman lost.',
       },
       tam_o_shanter: {
         death_baseline: '{name} fell on the Alloway road. Near enough the Brig o\' Doon.',
         death_short: '{name}. The bonnet rolled on.',
+        death_earl_beardie: 'Earl Beardie dealt a hand at {time}. {name} rode into Glamis on a night like this one.',
         victory_baseline: '{name} made it ower the brig. The witches couldnae follow. Meg wid\'ve been proud.',
         victory_taxman: 'The Taxman tried tae stop {name} on the Alloway road. Tam was faster. Tam\'s aye faster.',
       },

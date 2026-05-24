@@ -3913,6 +3913,7 @@ export const ui = {
       orcadian: {
         death_baseline: '{name} fell oot there on tha muir. Tha stanes keep nae score — they abide.',
         death_short: '{name} wis doon. Like tha midwinter dark at Maeshowe — first tha dark, then tha solstice beam.',
+        death_nuckelavee: 'Tha Nuckelavee rase frae Orcadian watters at {time}. {name} kent tha legend. Tha legend kent {name} back.',
         victory_baseline: '{name} walked tha hale ring an cam oot tha ither side. Tha Brodgar Folk wid\'ve nod\'d.',
         victory_taxman: '{name} settled tha Taxman\'s ledger. Orcadians dinnae run frae accounts.',
       },
@@ -3943,12 +3944,14 @@ export const ui = {
       jacobite: {
         death_baseline: '{name} fell on tha muir. Tha plaid couldna haud. Tha Cause gaes on.',
         death_short: '{name}. Flora will no forget.',
+        death_black_douglas: 'Tha wheesht cam for {name} at {time}. Guid Sir James haes nae politics — anely tha quiet.',
         victory_baseline: '{name} crossed tha muir, for tha Cause, an came oot tha ither side.',
         victory_taxman: 'Tha Taxman fund a Jacobite. Tha Jacobite had a plaid. Tha Taxman lost.',
       },
       tam_o_shanter: {
         death_baseline: '{name} fell on tha Alloway road. Near enough tha Brig o\' Doon.',
         death_short: '{name}. Tha bonnet rolled on.',
+        death_earl_beardie: 'Earl Beardie dealt a haund at {time}. {name} rode intae Glamis on a nicht like this ane.',
         victory_baseline: '{name} made it ower tha brig. Tha witches couldna follow. Meg wid\'ve been proud.',
         victory_taxman: 'Tha Taxman tried tae stap {name} on tha Alloway stretch. Tam wis faster. Tam\'s aye faster.',
       },

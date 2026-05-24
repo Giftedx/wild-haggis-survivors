@@ -508,6 +508,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Peedie as a standing stone; patient as the Ring o' Brodgar.
   { key: 'ui.weeTale.variant.orcadian.death_baseline', requires: ['death', 'orcadian', 'has_name'] },
   { key: 'ui.weeTale.variant.orcadian.death_short', requires: ['death', 'orcadian', 'has_name', 'short'] },
+  // Tier-4 — Orcadian haggis fell to the Nuckelavee. The island's own beast.
+  { key: 'ui.weeTale.variant.orcadian.death_nuckelavee', requires: ['death', 'orcadian', 'has_name', 'nuckelavee_death'] },
   { key: 'ui.weeTale.variant.orcadian.victory_baseline', requires: ['victory', 'orcadian', 'has_name'] },
   { key: 'ui.weeTale.variant.orcadian.victory_taxman', requires: ['victory', 'orcadian', 'has_name', 'taxman'] },
   // From the machair's edge — water-born, shore-wise.
@@ -533,11 +535,15 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // The Jacobite — Flora's Plaid; for the Cause; tragic-romantic.
   { key: 'ui.weeTale.variant.jacobite.death_baseline', requires: ['death', 'jacobite', 'has_name'] },
   { key: 'ui.weeTale.variant.jacobite.death_short', requires: ['death', 'jacobite', 'has_name', 'short'] },
+  // Tier-4 — The Jacobite met Good Sir James Douglas. Old Scotland versus older Scotland.
+  { key: 'ui.weeTale.variant.jacobite.death_black_douglas', requires: ['death', 'jacobite', 'has_name', 'black_douglas_death'] },
   { key: 'ui.weeTale.variant.jacobite.victory_baseline', requires: ['victory', 'jacobite', 'has_name'] },
   { key: 'ui.weeTale.variant.jacobite.victory_taxman', requires: ['victory', 'jacobite', 'has_name', 'taxman'] },
   // Tam-o'-Shanter — Burns's reckless horseman; prestige; Alloway road.
   { key: 'ui.weeTale.variant.tam_o_shanter.death_baseline', requires: ['death', 'tam_o_shanter', 'has_name'] },
   { key: 'ui.weeTale.variant.tam_o_shanter.death_short', requires: ['death', 'tam_o_shanter', 'has_name', 'short'] },
+  // Tier-4 — Tam met Earl Beardie's cards on the Glamis road. Burns found this one too.
+  { key: 'ui.weeTale.variant.tam_o_shanter.death_earl_beardie', requires: ['death', 'tam_o_shanter', 'has_name', 'earl_beardie_death'] },
   { key: 'ui.weeTale.variant.tam_o_shanter.victory_baseline', requires: ['victory', 'tam_o_shanter', 'has_name'] },
   { key: 'ui.weeTale.variant.tam_o_shanter.victory_taxman', requires: ['victory', 'tam_o_shanter', 'has_name', 'taxman'] },
   // The Engineer — Scotland's great builders; the turret; two shooters on the moor.
