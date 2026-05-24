@@ -76,6 +76,8 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   // Ben Nevis Summit — slate-blue, the colour of the summit plateau under
   // an overcast Atlantic sky. Coldest and greyest of all biome tints.
   ben_nevis: 0x8899b8,
+  // Glasgow Close — sodium amber, the close's defining streetlight colour.
+  glasgow_close: 0xf06010,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

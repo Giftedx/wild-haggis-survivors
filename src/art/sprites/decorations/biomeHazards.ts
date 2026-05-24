@@ -703,3 +703,48 @@ export function bakeHazardSummitGust(scene: Phaser.Scene): void {
   g.generateTexture('hazard_summit_gust', w, h);
   g.destroy();
 }
+
+// Glasgow Close — Buckfast bottle-pool on the flagstone close-floor.
+// A puddled amber-tonic spill around a stubby dark-green bottle: the bottle
+// lies on its side (dark glass cylinder), the liquid spreads in an amber
+// teardrop to the east. Broken glass glints catch the sodium-light.
+// Silhouette: asymmetric — bottle bulk west, liquid spill east.
+export function bakeHazardBuckfastPool(scene: Phaser.Scene): void {
+  const w = 30, h = 24;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Ground shadow — sticky liquid clings to the flagstone
+  g.fillStyle(0x3a1800, 0.50);
+  g.fillEllipse(cx + 3, cy + 1, 26, 16);
+
+  // Main liquid pool — amber tonic, spreading east
+  g.fillStyle(0xc86000, 0.82);
+  g.fillEllipse(cx + 4, cy, 22, 13);
+
+  // Lighter amber highlight — sodium-light catch on the surface
+  g.fillStyle(0xe88020, 0.60);
+  g.fillEllipse(cx + 5, cy - 1, 15, 7);
+  g.fillStyle(0xf0a040, 0.40);
+  g.fillEllipse(cx + 6, cy - 1.5, 9, 4);
+
+  // Bottle body — dark green glass, lying on its side (pointing west)
+  g.fillStyle(0x1a4010, 1);
+  g.fillRoundedRect(cx - 12, cy - 3, 14, 6, 3);
+
+  // Bottle neck
+  g.fillStyle(0x143008, 1);
+  g.fillRoundedRect(cx - 14, cy - 1.5, 4, 3, 1);
+
+  // Glass shards — two tiny glints near the bottle mouth
+  g.fillStyle(0xd0e8b0, 0.75);
+  g.fillRect(cx - 15, cy + 2, 2, 1);
+  g.fillRect(cx - 10, cy + 3, 1.5, 1);
+
+  // Specular highlight on bottle glass
+  g.fillStyle(0x60b840, 0.35);
+  g.fillEllipse(cx - 7, cy - 2, 5, 2);
+
+  g.generateTexture('hazard_buckfast_pool', w, h);
+  g.destroy();
+}

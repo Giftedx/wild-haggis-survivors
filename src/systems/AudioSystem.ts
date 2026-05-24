@@ -262,6 +262,11 @@ export class AudioSystem {
       // descending fast; shorter than wind_shear (the plateau gust spikes
       // and vanishes — no sustained howl, just the sudden pocket).
       summit_gust: { f0: 1100, f1: 180, type: 'sawtooth', dur: 0.12, vol: 0.09 }, // sharp rotor spike → silence
+      // Glasgow Close — Buckfast bottle-pool. A short glassy clink + amber
+      // liquid splash: high triangle glint (bottle glass), descending to a
+      // wet mid gurgle. Lighter than burn_water (0.08→0.07 vol) — the
+      // close doesn't announce itself.
+      buckfast_pool: { f0: 1400, f1: 300, type: 'triangle', dur: 0.16, vol: 0.07 }, // glass clink → liquid splash
     };
     const p = presets[hazardKey];
     osc.type = p.type;

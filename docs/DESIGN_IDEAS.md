@@ -150,11 +150,11 @@ Candidates:
 - ~~**Glen Coe**~~ — ✅ shipped 2026-05-12 (`glen_coe` biome, B6 Highland Horrors). Mourning red-black; `glenCoeEcho` modifier (+20% knockback); highland_mist hazard. Cultural sensitivity per Soul Charter observed.
 - **Cairngorm Woods** — dense, root-trip hazards, LOS blockers.
 - **Hebridean Shore** — tide-like boundary changes (opt-in).
-- **Glasgow Close** — sodium-amber urban; fluorescent flicker = vision spike.
+- ~~**Glasgow Close**~~ — ✅ shipped 2026-05-24 (`glasgow_close`, tint 0xf06010, `glasgowClose`: +18% XP / -12% speed. Hazard: `buckfast_pool` (8 dmg, 15px, 8s, 9.5s interval). Banter + i18n wired.)
 - **Skye Fairy Pool** — buff/debuff water tiles.
-- **Ben Nevis Summit** — wind push, low enemy density.
+- ~~**Ben Nevis Summit**~~ — ✅ shipped 2026-05-24 (`ben_nevis`, tint 0x8899b8, `benNevisWind`: -8% speed + Atlantic wind push (biomeWindX=50, biomeWindY=25). Hazard: `summit_gust` (9 dmg, 11px, 4s, 8.5s interval). Banter + i18n wired.)
 - **Edinburgh Old Town** — smoke-grey, chimney-smoke visibility debuff.
-- **The Black Bog (post-bell)** — black/blood palette; ink hazards; drift doubled.
+- ~~**The Black Bog (post-bell)**~~ — ✅ shipped 2026-05-24 (`black_bog`, tint 0x100808, `blackBogInk`: -15% speed + ×2 drift. Hazard: `ink_pool` (3 dmg, 22px, 14s, 9s interval). Banter + i18n wired.)
 - **Iona Peaceful Isle** — reverent palette (soft gold, sea-blue); *no combat biome* — puzzle/exploration only. A rare reward route. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §3.1.*)
 - **Callanish Standing Stones** — Neolithic site, twilight purple palette. Stones fire aligned beams (mechanical). The Pech (dwarves) emerge if circled. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 - **Orkney Neolithic** — Skara Brae / Maeshowe / Ring of Brodgar inspired. Wind-swept green, stone, ancient-cairn hazards. (*Ref: §2.7.*)

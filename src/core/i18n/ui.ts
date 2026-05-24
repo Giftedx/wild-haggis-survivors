@@ -2849,6 +2849,14 @@ export const ui = {
         c: 'The Ben\'s been here longer than the word for it.',
         d: 'Three thousand miles of Atlantic. Nothing between you and it now.',
       },
+      // Glasgow Close — sodium-amber urban close. Hearth register: warm,
+      // practical, working-class Glesga. Short, observational.
+      glasgow_close: {
+        a: 'The closes are ticht here. Watch yir step on the flagstanes.',
+        b: 'Buckfast on the close-flair. Classic Glesga hazard.',
+        c: 'Three flights up, midden at the back. Welcome tae the close.',
+        d: 'Sodium licht, wet cobbles, a ned on every corner. Home.',
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',
@@ -4771,6 +4779,7 @@ export const ui = {
       biome_clyde_shipyard: 'The slag was still warm at {time}. The Clyde remembered.',
       biome_black_bog: 'The ink held the shape a moment at {time}. Then it closed over.',
       biome_ben_nevis: 'The wind took it at {time}. The Ben didn\'t notice.',
+      biome_glasgow_close: 'The close took it at {time}. The flagstanes were still wet.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -4814,6 +4823,7 @@ export const ui = {
       biome_clyde_shipyard: 'Crossed the dry-dock at {time}. The rivets held. The haggis held too.',
       biome_black_bog: 'Walked out of the black bog at {time}. The ink stayed on the boots but the haggis stayed on the moor.',
       biome_ben_nevis: 'Came down from the Ben at {time}. The cloud stayed up. The haggis came down.',
+      biome_glasgow_close: 'Walked out the close at {time}. The midden was still there. So was the haggis.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".

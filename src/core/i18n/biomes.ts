@@ -71,4 +71,10 @@ export const biomes = {
     loreSnippet: 'Highest in the British Isles. The cloud sits here like it owns the place.',
     lore: 'Ben Nevis stands 1,345 metres above Fort William and the whole of the British Isles below it. The summit plateau is a different country — granite scree, permanent snow patches, and a cloud that never got the message to leave. Prevailing westerlies push off the Atlantic with nothing to slow them down for three thousand miles. A summit observatory ran here from 1883 to 1904; the records say it rained on 261 days one year. The Ben is not cruel. It is simply indifferent, and that is worse.',
   },
+  glasgow_close: {
+    name: 'The Glasgow Close',
+    entry: 'Intae the close — tight, amber-lit, alive.',
+    loreSnippet: 'Sodium light on wet flagstones. Three flights up and a midden at the back.',
+    lore: 'A Glasgow close is a shared entrance passage running through a tenement block — flagstone floor, tiled walls, the smell of damp stone and last night\'s carry-out. They run from street to backcourt, five storeys above and a midden below. The sodium streetlight turns everything amber after dark; the rain keeps the flagstones glossy all year. Neighbours share the stair, the washing green, and a working understanding of each other\'s hours. Cities built from necessity make communities built from necessity; Glasgow\'s closes are still standing two hundred years later, and the folk inside them are no\' going anywhere either.',
+  },
 } as const;

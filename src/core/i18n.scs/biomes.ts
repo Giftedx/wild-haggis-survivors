@@ -71,4 +71,10 @@ export const biomes = {
     loreSnippet: 'Heichest in tha British Isles. Tha cloud sits here like it awns the place.',
     lore: 'Ben Nevis staunts 1,345 metres abuin Fort William an tha hale o tha British Isles ablow it. Tha summit plateau is a different kintra — granite scree, permanent snaw-patches, an a cloud that nivver got tha message tae lea. Prevailin westerlie winds push aff tha Atlantic wi naethin tae slow them doon fer three thoosand mile. A summit observatory ran here fae 1883 tae 1904; tha records say it rained on 261 days yin year. Tha Ben isnae cruel. It is simply indifferent, an that is waur.',
   },
+  glasgow_close: {
+    name: 'Tha Glasgow Close',
+    entry: 'Intae tha close — ticht, amber-lit, alive.',
+    loreSnippet: 'Sodium licht on weet flagstanes. Three flights up an a midden at tha back.',
+    lore: 'A Glasgow close is a shared entrance passage rinnin through a tenement block — flagstane flair, tiled waws, tha smell o damp stane an last nicht\'s cairry-oot. Thay rin fae street tae backcourt, five storeys abuin an a midden ablow. Tha sodium streetlicht turns awthin amber efter dark; tha rain keeps tha flagstanes glossy aw year. Neebors share tha stair, tha washin green, an a workin unnerstaunin o each ither\'s oors. Cities biggit fae necessity mak communities biggit fae necessity; Glasgow\'s closes ar still staunin twa hunner year later, an tha folk inside them are no gaun onieway.',
+  },
 } as const;

@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -22,7 +22,8 @@ export type BiomeModifierKind =
   | 'glenCoeEcho'
   | 'clydeRivets'
   | 'blackBogInk'
-  | 'benNevisWind';
+  | 'benNevisWind'
+  | 'glasgowClose';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -369,9 +370,39 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // rarely truly clear above 1000 m.
     ambientHaarDensity: 0.15,
   },
+  // Glasgow Close — sodium-amber urban canyon. Cramped tenement closes,
+  // puddled flagstones, the warm glow of chip-shop neon on wet stone.
+  // `glasgowClose` modifier: −12% speed (the closes are tight — ye cannae
+  // run at full tilt doon a shared stair), +18% XP (urban kill density;
+  // every ned on the close-mouth counts). Distinct from clydeRivets (−8%/+15%).
+  glasgow_close: {
+    id: 'glasgow_close',
+    nameKey: 'biomes.glasgow_close.name',
+    tint: 0xf06010,
+    entryToastKey: 'biomes.glasgow_close.entry',
+    loreSnippetKey: 'biomes.glasgow_close.loreSnippet',
+    loreKey: 'biomes.glasgow_close.lore',
+    toastColor: '#f09040',
+    spawnWeightMods: {
+      buckfast_ned: 1.8,
+      traffic_cone_totem: 1.5,
+      edinburgh_ghost_guide: 1.4,
+      ceilidh_caller: 1.3,
+      sheep: 0.05,
+      highland_cow: 0.05,
+      eagle: 0.3,
+    },
+    modifier: 'glasgowClose',
+    // Urban energy — higher than clyde_shipyard (0.35); the close has rhythm
+    // and noise, a lively bustle even at midnight.
+    moodTimbre: 0.7,
+    // Sodium light cuts through the haar; urban heat dries the close-mouth
+    // mist. Lowest ambient haar of any biome with an urban flavour.
+    ambientHaarDensity: 0.05,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

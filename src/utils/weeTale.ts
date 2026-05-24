@@ -82,7 +82,7 @@ export type WeeTaleTag =
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
   | 'biome_cairngorm' | 'biome_glen_coe' | 'biome_clyde_shipyard'
-  | 'biome_black_bog' | 'biome_ben_nevis'
+  | 'biome_black_bog' | 'biome_ben_nevis' | 'biome_glasgow_close'
   | 'has_name'
   | VariantKey;
 
@@ -424,6 +424,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.victory.biome_black_bog', requires: ['victory', 'biome_black_bog'] },
   { key: 'ui.weeTale.death.biome_ben_nevis', requires: ['death', 'biome_ben_nevis'] },
   { key: 'ui.weeTale.victory.biome_ben_nevis', requires: ['victory', 'biome_ben_nevis'] },
+  // Glasgow Close — added 2026-05-24.
+  { key: 'ui.weeTale.death.biome_glasgow_close', requires: ['death', 'biome_glasgow_close'] },
+  { key: 'ui.weeTale.victory.biome_glasgow_close', requires: ['victory', 'biome_glasgow_close'] },
 
   // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
   // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".

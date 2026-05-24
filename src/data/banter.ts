@@ -1540,6 +1540,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.ben_nevis.c',
         'ui.banter.biome_change.ben_nevis.d',
       ],
+      // Glasgow Close — sodium-amber urban close. Hearth register: warm,
+      // practical, working-class Glesga. Short, observational, no melodrama.
+      glasgow_close: [
+        'ui.banter.biome_change.glasgow_close.a',
+        'ui.banter.biome_change.glasgow_close.b',
+        'ui.banter.biome_change.glasgow_close.c',
+        'ui.banter.biome_change.glasgow_close.d',
+      ],
     },
   },
   {

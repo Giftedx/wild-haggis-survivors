@@ -39,6 +39,7 @@ import {
   bakeHazardMoltenSlag,
   bakeHazardInkPool,
   bakeHazardSummitGust,
+  bakeHazardBuckfastPool,
 } from './biomeHazards';
 import {
   bakeAutumnLeafScatter,
@@ -81,6 +82,8 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeHazardInkPool(scene);
   // Ben Nevis Summit hazard.
   bakeHazardSummitGust(scene);
+  // Glasgow Close hazard.
+  bakeHazardBuckfastPool(scene);
   bakeAutumnLeafScatter(scene);
   bakeSpringShoot(scene);
   bakeThawPuddle(scene);

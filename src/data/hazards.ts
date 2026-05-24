@@ -55,7 +55,9 @@ export type HazardKey =
   // Black Bog — near-black standing peat water; wide chip hazard.
   | 'ink_pool'
   // Ben Nevis Summit — sudden rotor gust pocket on the exposed plateau.
-  | 'summit_gust';
+  | 'summit_gust'
+  // Glasgow Close — Buckfast bottle-pool on the close flagstones.
+  | 'buckfast_pool';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -207,6 +209,20 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 4000,
     spawnIntervalMs: 8500,
   },
+  // Glasgow Close — Buckfast bottle-pool on the flagstone close-floor.
+  // Amber glass and sticky tonic-wine puddle; medium damage (8), medium
+  // hitbox (15 px). 8 s lifetime — it sits on the close-floor long enough
+  // to punish a player who isnae paying attention. 9.5 s interval matches
+  // tidal_wrack's cadence: not oppressive, but always somewhere underfoot.
+  buckfast_pool: {
+    key: 'buckfast_pool',
+    texture: 'hazard_buckfast_pool',
+    biome: 'glasgow_close',
+    damage: 8,
+    hitboxRadius: 15,
+    lifetimeMs: 8000,
+    spawnIntervalMs: 9500,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -223,4 +239,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'molten_slag',
   'ink_pool',
   'summit_gust',
+  'buckfast_pool',
 ];

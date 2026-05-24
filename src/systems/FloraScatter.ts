@@ -156,6 +156,18 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_pictish_stone',
     'deco_brahan_eye_stone',
   ],
+  // Glasgow Close story props. Urban archaeology: close door (the shared
+  // tenement entry — the defining visual of the biome), scaffold post
+  // (perpetual Glesga maintenance), newsprint (Daily Record, chipped),
+  // bus stop (close-mouth waiting), waymarker post (yellow brick road →
+  // painted direction arrow on close wall). Traffic cone always present.
+  glasgow_close: [
+    'deco_close_door',
+    'deco_scaffold_post',
+    'deco_newsprint',
+    'deco_bus_stop',
+    'deco_waymarker_post',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -297,6 +309,21 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_wind_grass', 0.86],
     ['deco_bare_birch', 0.94],
     ['deco_rock', 1.0],
+  ],
+  // Glasgow Close flora. Hard urban surfaces — no heather, no bog-cotton.
+  // Rock rubble (broken flagstone and close-wall chip), traffic cones
+  // (the quintessential Glasgow street prop), wind grass (grows through
+  // every crack in the close floor), thistles (resilient as the city),
+  // abandoned pint (the close-mouth public). Sodium-lit flagstones hold
+  // the whole composition.
+  glasgow_close: [
+    ['deco_rock', 0.20],
+    ['deco_traffic_cone', 0.40],
+    ['deco_wind_grass', 0.58],
+    ['deco_thistle', 0.72],
+    ['deco_abandoned_pint', 0.84],
+    ['deco_rock_2', 0.94],
+    ['deco_rock_3', 1.0],
   ],
 };
 

@@ -1627,7 +1627,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'glenCoeEcho'
       | 'clydeRivets'
       | 'blackBogInk'
-      | 'benNevisWind',
+      | 'benNevisWind'
+      | 'glasgowClose',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1709,6 +1710,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.biomeSpeedMul = 0.92;
         this.biomeWindX = 50;
         this.biomeWindY = 25;
+        break;
+      case 'glasgowClose':
+        // Cramped tenement closes — tight, fast, urban. -12% speed (you
+        // cannae sprint doon a shared stair). +18% XP (urban kill density
+        // pays; every ned on the close-mouth counts). Distinct from
+        // clydeRivets (-8%/+15%) — the close is tighter and more alive.
+        this.biomeSpeedMul = 0.88;
+        this.biomeXpMul = 1.18;
         break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we
