@@ -4607,6 +4607,10 @@ export const ui = {
       nuckelavee: 'No skin on the thing. It came off the sea at {time}. The burn on the far brae held the rest.',
       earl_beardie: 'Earl Beardie dealt his hand at {time}. The last card was yours.',
       black_douglas: 'The hush came at {time}. Good Sir James did not need to speak.',
+      each_uisge: 'The Each-Uisge came bonny from the loch at {time}. Touch it once and the grip doesnae let go.',
+      nicnevin: 'Nicnevin\'s parliament closed at {time}. The moor offered nae appeal.',
+      the_laird: 'The Laird made his claim at {time}. Auld deeds, auld rights. The haggis had nae title.',
+      hunter_general: 'The Hunter-General closed the chase at {time}. The quarry ran oot of moor.',
       /** Cailleach Gauntlet — ritual failed; the winter returned. */
       cailleach_boss: 'Seven cairns lit — and then the storm. The moor went quiet at {time}.',
       // v2 — universal {name}-bearing death line (tier-2).
@@ -4625,6 +4629,10 @@ export const ui = {
       nuckelavee_kill: 'The Nuckelavee went back to the sea. {time} on the moor, and the burns held.',
       earl_beardie_kill: 'Earl Beardie\'s cards scattered on the moor at {time}. The wager was yours.',
       black_douglas_kill: 'The lullaby was a lie — but the haggis was not. {time} on the moor, and silence kept.',
+      each_uisge_kill: 'The loch-horse went back to the water at {time}. The haggis kept its skin.',
+      nicnevin_kill: 'Nicnevin\'s court dissolved at {time}. The moor breathes its ain air again.',
+      the_laird_kill: 'The Laird went doon at {time}. The haggis disputes the deed — and won.',
+      hunter_general_kill: 'The Hunter-General\'s medals are on the moor at {time}. The quarry went home.',
       /** Cailleach Gauntlet won — Stormcrown taken, winter answered. */
       cailleach_boss_kill: 'Stormcrown taken at {time}. The seven cairns hold the memory of it.',
       // v2 — universal {name}-bearing victory line (tier-2).

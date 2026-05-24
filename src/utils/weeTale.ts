@@ -314,6 +314,18 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Post-bell border raider — the hush came.
   { key: 'ui.weeTale.death.black_douglas', requires: ['death', 'black_douglas_death'] },
 
+  // Loch-horse — got too close to the beautiful thing.
+  { key: 'ui.weeTale.death.each_uisge', requires: ['death', 'each_uisge_death'] },
+
+  // Queen of the Unblessed — her parliament sat in judgement.
+  { key: 'ui.weeTale.death.nicnevin', requires: ['death', 'nicnevin_death'] },
+
+  // The Laird — auld deeds, auld rights, no title for the haggis.
+  { key: 'ui.weeTale.death.the_laird', requires: ['death', 'the_laird_death'] },
+
+  // The Hunt — the quarry ran out of moor.
+  { key: 'ui.weeTale.death.hunter_general', requires: ['death', 'hunter_general_death'] },
+
   // ── Victory fallbacks (single-tag) ─────────────────────────────
   { key: 'ui.weeTale.victory.fallback_a', requires: ['victory'] },
   { key: 'ui.weeTale.victory.fallback_b', requires: ['victory'] },
@@ -324,6 +336,19 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.victory.ironmoor', requires: ['victory', 'ironmoor'] },
   { key: 'ui.weeTale.victory.taxman_kill', requires: ['victory', 'taxman'] },
   { key: 'ui.weeTale.victory.three_bosses', requires: ['victory', 'gordon', 'tour_bus', 'taxman'] },
+
+  // Loch-horse defeated — the haggis kept its skin.
+  { key: 'ui.weeTale.victory.each_uisge_kill', requires: ['victory', 'each_uisge'] },
+
+  // Queen of the Unblessed dissolved — the moor breathes again.
+  { key: 'ui.weeTale.victory.nicnevin_kill', requires: ['victory', 'nicnevin'] },
+
+  // The Laird went doon — the haggis disputes the deed.
+  { key: 'ui.weeTale.victory.the_laird_kill', requires: ['victory', 'the_laird'] },
+
+  // The Hunt hunted — the quarry went home.
+  { key: 'ui.weeTale.victory.hunter_general_kill', requires: ['victory', 'hunter_general'] },
+
   // Orcadian mythos — Nuckelavee beaten on the way to the Taxman.
   { key: 'ui.weeTale.victory.nuckelavee_kill', requires: ['victory', 'nuckelavee'] },
 
