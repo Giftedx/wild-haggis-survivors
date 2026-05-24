@@ -254,6 +254,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.twin_stones.b',
         'ui.banter.boss_warn.twin_stones.c',
       ],
+      wicker_haggis: [
+        'ui.banter.boss_warn.wicker_haggis.a',
+        'ui.banter.boss_warn.wicker_haggis.b',
+        'ui.banter.boss_warn.wicker_haggis.c',
+      ],
     },
   },
   {
@@ -519,6 +524,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.twin_stones.a',
         'ui.banter.boss_down.twin_stones.b',
         'ui.banter.boss_down.twin_stones.c',
+      ],
+      wicker_haggis: [
+        'ui.banter.boss_down.wicker_haggis.a',
+        'ui.banter.boss_down.wicker_haggis.b',
+        'ui.banter.boss_down.wicker_haggis.c',
       ],
     },
   },

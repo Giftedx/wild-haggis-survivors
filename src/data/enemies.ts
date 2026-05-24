@@ -71,7 +71,15 @@ export type EnemyBehavior =
    *   Stone B flanks perpendicular; both fire simultaneously.
    * Post-bell exclusive. Refs: `SCOTTISH_RESEARCH.md` §1.8.
    */
-  | 'twin_stones';
+  | 'twin_stones'
+  /**
+   * Wicker Haggis — Bealltainn's Tribute (post-bell).
+   * Phase 1 (HP > 55 %): chase + 6-shard fire-ring every 4.8 s.
+   * Phase 2 (HP ≤ 55 %): speed ×1.35 + 4-shard ember scatter every 3 s.
+   * Phase transition fires a one-time 8-shard slow ember burst.
+   * Post-bell exclusive. Refs: SCOTTISH_RESEARCH_DEEP.md §22.1 (Beltane).
+   */
+  | 'wicker_haggis';
 
 export interface EnemyConfig {
   key: string;
@@ -709,6 +717,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   earl_beardie: 'Earl Beardie',
   black_douglas: 'The Black Douglas',
   twin_stones: 'An Càraid — the Twin Stones',
+  wicker_haggis: 'The Wicker Haggis — Bealltainn\'s Tribute',
   cailleach_boss: 'The Cailleach',
 };
 
@@ -984,6 +993,24 @@ export const BOSSES: BossConfig[] = [
     xpValue: 120,
     scale: 2.4,
     behaviorOverride: 'twin_stones',
+  },
+  // Post-bell — Wicker Haggis. Bealltainn's Tribute: a burning wicker effigy
+  // with a haggis inside. Phase 1 outward fire-ring; phase 2 ember scatter +
+  // speed boost. Transition ignition burst on HP crossing 55%.
+  // Refs: SCOTTISH_RESEARCH_DEEP.md §22.1 (Beltane / Calton Hill).
+  {
+    key: 'wicker_haggis',
+    nameKey: 'boss.wicker_haggis.name',
+    warningKey: 'ui.bossWarning.wicker_haggis',
+    spawnTimeSec: 9999,
+    postBellOnly: true,
+    texture: 'boss_wicker_haggis',
+    speed: 60,
+    hp: 3600,
+    damage: 28,
+    xpValue: 110,
+    scale: 2.3,
+    behaviorOverride: 'wicker_haggis',
   },
   // V2 — Cailleach Gauntlet boss (Moor Remembers V2). Manual-spawn only;
   // wakes via `SpawnSystem.spawnBossManually` from CailleachGauntletScheduler

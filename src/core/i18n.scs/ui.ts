@@ -791,6 +791,7 @@ export const ui = {
     storm_cailleach: 'Tha Auld Wife rides tha gale — haar, ice, an hail. She\'s here.',
     nuckelavee: 'Somethin comin fae tha sea — no richt, no human, no stoppit.',
     twin_stones: 'An Càraid staund apairted nae langer — tha Callanish stanes hae memory, an tha haggis is in it.',
+    wicker_haggis: 'Tha Wicker Haggis rises on tha brae — Bealltainn\'s tribute is awake, an it is no happy aboot it.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
@@ -827,6 +828,7 @@ export const ui = {
     boss_killed_cailleach_boss: 'Tha Cailleach is doon! Stormcrown is yours.',
     boss_killed_storm_cailleach: 'Tha Storm Cailleach is doon! Tha gale deed wi her!',
     boss_killed_twin_stones: 'An Càraid is doon! Tha heartstone gangs cauld — an tha circle is yours.',
+    boss_killed_wicker_haggis: 'Tha Wicker Haggis is doon! Tha moor smells o woodsmoke — an somethin worth celebratin.',
     boss_killed_generic: 'Boss doon! Get it richt round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it richt round them!',
@@ -1052,6 +1054,12 @@ export const ui = {
         a: 'Twa stanes. Ane fate. Walk intae tha circle.',
         b: 'They\'ve been staundin there langer nor tha language. Noo they\'re muivin.',
         c: 'Tha Fir Bhreige — tha False Men. No sae false the day.',
+      },
+      // Post-bell — Wicker Haggis. Black comedy + alarm.
+      wicker_haggis: {
+        a: 'That\'s a wicker structure. That\'s me inside it. This is no how Bealltainn wis supposed tae gang.',
+        b: 'Tha lattice is burnin. Tha haggis is burnin. Tha haggis has thochts aboot this.',
+        c: 'It\'s Bealltainn\'s tribute. Tha tribute is me. We hae a conflict o interest here.',
       },
     },
     low_hp: {
@@ -1305,6 +1313,12 @@ export const ui = {
         a: 'Tha circle\'s quait. Tha moor haulds that, fer a wee bit.',
         b: 'An Càraid. Baith gaen. Tha heartstone gaed cauld at tha haggis\'s feet.',
         c: 'Stood sin afore tha Gaels named them. Noo they lie. Tha moor minds it.',
+      },
+      // Post-bell — Wicker Haggis doon. Tha ceremony is complete.
+      wicker_haggis: {
+        a: 'Tha tribute fell. Tha haggis is still staundin. That\'s no in tha auld buiks.',
+        b: 'Bealltainn\'s effigy is ash. Tha haggis that wis inside it is no ash. Ceremonially awkward.',
+        c: 'Tha moor smells o woodsmoke. Tha haggis smells o it an aw. Worth it.',
       },
     },
     weapon_evolve: {
@@ -3862,6 +3876,7 @@ export const ui = {
       cailleach_boss: 'Seeven cairns lit — an than tha storm. Tha moor gaed quiet at {time}.',
       storm_cailleach: 'Tha storm taen it at {time}. No wather — something aulder.',
       twin_stones: 'An Càraid caught it at {time}. Tha stanes were staundin when tha islands had nae name. They\'ll staund again.',
+      wicker_haggis: 'Tha wicker effigy did its job at {time}. Bealltainn got its tribute. Tha haggis wis no consulted.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
       biome_bog: 'Tha bog at {time} — saft grund, an than safter.',
       biome_loch: 'Stood at tha loch-edge at {time}. Tha loch disnae gie back whit it taks.',
@@ -3894,6 +3909,7 @@ export const ui = {
       cailleach_boss_kill: 'Stormcrown taen at {time}. Tha seeven cairns hauld tha memory o it.',
       storm_cailleach_kill: 'Tha Cailleach o tha Storm unravelled at {time}. Tha gale mindit a different endin.',
       twin_stones_kill: 'An Càraid doon at {time}. Tha heartstone is cauld. Tha circle is yours.',
+      wicker_haggis_kill: 'Tha wicker fell at {time}. Bealltainn got its ceremony — tha haggis got its moor back.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
       biome_bog: 'Walked tha bog an cam back kennin tha smell o peat.',
       biome_loch: 'Kept back fae tha edge an walked hame. Tha loch noted this.',

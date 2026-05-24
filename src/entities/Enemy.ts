@@ -37,6 +37,15 @@ import {
   TWIN_SHADOW_ORBIT_RAD_PER_SEC, TWIN_SHADOW_ORBIT_RADIUS, TWIN_SHADOW_FLANK_DIST, TWIN_SHADOW_RING_DELAY_MS,
   type TwinStoneState,
 } from './twinStoneBehaviour';
+import {
+  simulateWickerHaggisBehaviour,
+  initialWickerHaggisState,
+  WICKER_RING_SHARD_COUNT, WICKER_RING_SHARD_SPEED, WICKER_RING_SHARD_DAMAGE,
+  WICKER_SCATTER_SHARD_COUNT, WICKER_SCATTER_SHARD_SPEED, WICKER_SCATTER_SHARD_DAMAGE,
+  WICKER_SCATTER_INNER_SPREAD_RAD, WICKER_SCATTER_OUTER_SPREAD_RAD,
+  WICKER_TRANSITION_SHARD_COUNT, WICKER_TRANSITION_SHARD_SPEED, WICKER_TRANSITION_SHARD_DAMAGE,
+  type WickerHaggisState,
+} from './wickerHaggisBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -158,6 +167,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private twinStoneShadowAngle: number = 0;
   /** True once the shadow image has been created for the current spawn. */
   private twinStoneShadowInitialized: boolean = false;
+  /** Wicker Haggis boss state (only used when behavior === 'wicker_haggis'). */
+  private wickerHaggisState: WickerHaggisState = initialWickerHaggisState();
+  /** True once the phase-2 burning tint has been applied (avoid re-applying each tick). */
+  private wickerPhaseTwoTinted: boolean = false;
   /** Countdown ms within the current three-bay stage. */
   private threeBayTimerMs: number = 0;
   /** Charge target locked at start of stage 3. */
@@ -693,6 +706,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         break;
       case 'twin_stones':
         this.behaviorTwinStones(targetX, targetY, delta);
+        break;
+      case 'wicker_haggis':
+        this.behaviorWickerHaggis(targetX, targetY, delta);
         break;
     }
   }
@@ -1279,6 +1295,116 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (cur !== spawnedPlayer) return;
         if (cur.tryParryProjectile()) return;
         cur.takeDamage(TWIN_FAN_SHARD_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
+    }
+  }
+
+  /** Wicker Haggis — Bealltainn's Tribute (post-bell, two-phase fire boss). */
+  private behaviorWickerHaggis(tx: number, ty: number, delta: number): void {
+    const hpPct = this.maxHp > 0 ? this.hp / this.maxHp : 1.0;
+    const next = simulateWickerHaggisBehaviour(this.wickerHaggisState, { deltaMs: delta, hpPct });
+    this.wickerHaggisState = next;
+
+    // Phase-2 burning tint — brighter amber-orange over the default boss orange.
+    if (next.phase === 2 && !this.wickerPhaseTwoTinted) {
+      this.baseTint = 0xff3300;
+      this.setTint(0xff3300);
+      this.wickerPhaseTwoTinted = true;
+    }
+
+    this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+
+    if (next.shouldFireTransitionBurst) this.fireWickerTransitionBurst(this.x, this.y);
+    if (next.shouldFireRing) this.fireWickerRing(this.x, this.y);
+    if (next.shouldFireScatter) this.fireWickerScatter(this.x, this.y, tx, ty);
+  }
+
+  /** Phase 1 — 6-shard outward fire ring. */
+  private fireWickerRing(fromX: number, fromY: number): void {
+    const step = (Math.PI * 2) / WICKER_RING_SHARD_COUNT;
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < WICKER_RING_SHARD_COUNT; i++) {
+      const angle = step * i;
+      const shard = this.scene.add.circle(fromX, fromY, 5, 0xf05a00, 0.90);
+      this.scene.physics.add.existing(shard);
+      const body = shard.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * WICKER_RING_SHARD_SPEED, Math.sin(angle) * WICKER_RING_SHARD_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (shard.active) shard.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(WICKER_RING_SHARD_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2200, cleanup);
+    }
+  }
+
+  /** Phase transition — 8 slow ember shards radiate outward as the wicker ignites. */
+  private fireWickerTransitionBurst(fromX: number, fromY: number): void {
+    const step = (Math.PI * 2) / WICKER_TRANSITION_SHARD_COUNT;
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < WICKER_TRANSITION_SHARD_COUNT; i++) {
+      const angle = step * i;
+      const shard = this.scene.add.circle(fromX, fromY, 6, 0xffb830, 0.85);
+      this.scene.physics.add.existing(shard);
+      const body = shard.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * WICKER_TRANSITION_SHARD_SPEED, Math.sin(angle) * WICKER_TRANSITION_SHARD_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (shard.active) shard.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(WICKER_TRANSITION_SHARD_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 3200, cleanup);
+    }
+  }
+
+  /** Phase 2 — 4-shard ember scatter: 2 inner (±20°) + 2 outer (±60°) from player bearing. */
+  private fireWickerScatter(fromX: number, fromY: number, tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(fromX, fromY, tx, ty);
+    const offsets = [
+      -WICKER_SCATTER_INNER_SPREAD_RAD,
+      WICKER_SCATTER_INNER_SPREAD_RAD,
+      -WICKER_SCATTER_OUTER_SPREAD_RAD,
+      WICKER_SCATTER_OUTER_SPREAD_RAD,
+    ];
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < WICKER_SCATTER_SHARD_COUNT; i++) {
+      const angle = baseAngle + offsets[i];
+      const shard = this.scene.add.circle(fromX, fromY, 5, 0xf05a00, 0.92);
+      this.scene.physics.add.existing(shard);
+      const body = shard.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * WICKER_SCATTER_SHARD_SPEED, Math.sin(angle) * WICKER_SCATTER_SHARD_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (shard.active) shard.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(WICKER_SCATTER_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
     }
@@ -2072,6 +2198,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.twinStoneShadow = null;
       this.twinStoneShadowInitialized = false;
     }
+    // Wicker Haggis — reset phase state so pool re-use starts in Phase 1.
+    this.wickerHaggisState = initialWickerHaggisState();
+    this.wickerPhaseTwoTinted = false;
   }
 
   destroy(fromScene?: boolean): void {
@@ -2089,6 +2218,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.shadow = null;
     this.twinStoneShadow = null;
     this.twinStoneShadowInitialized = false;
+    this.wickerHaggisState = initialWickerHaggisState();
+    this.wickerPhaseTwoTinted = false;
     super.destroy(fromScene);
   }
 

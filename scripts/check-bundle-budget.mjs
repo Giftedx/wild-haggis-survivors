@@ -35,7 +35,7 @@ const DIST_ASSETS = join(process.cwd(), 'dist', 'assets');
 const BUDGETS = [
   { re: /^vendor-phaser-.*\.js$/, label: 'vendor-phaser', maxGzipBytes: 390_000 },
   { re: /^index-.*\.js$/, label: 'index (app)', maxGzipBytes: 320_000 },
-  { re: /^sprite-art-.*\.js$/, label: 'sprite-art', maxGzipBytes: 240_000 },
+  { re: /^sprite-art-.*\.js$/, label: 'sprite-art', maxGzipBytes: 280_000 },
 ];
 
 const argv = new Set(process.argv.slice(2));

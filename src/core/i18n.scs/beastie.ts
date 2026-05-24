@@ -141,4 +141,7 @@ export const beastie = {
   twin_stones: {
     lore: 'Twa o tha Fir Bhreige — tha False Men o Callanish, Isle o Lewis. A giant race turnt tae stane fer refusin baptism, sae tha legend says; tha aulder account says they were aye stane, aye watchin. Lewisian gneiss, aulder nor tha Cambrian. Lichen-patched, spiral-cairved, amber-eed. They share ane heartstone buried beneath tha circle\'s flair. They share ane fate. Post-bell exclusive. SCOTTISH_RESEARCH.md §1.8.',
   },
+  wicker_haggis: {
+    lore: 'Tha wicker effigy is raised on tha brae abuin Calton Hill on Bealltainn\'s eve — a latticed figure o crossed hazel-rods, packed wi kindlin an green straw. Tha auld buiks call it an offerin; tha auld practice called it a warnin tae tha moor. Ane wild haggis runs in o its ain free will, sae tha tradition insists. Whether tha haggis unnerstaunds tha arrangement is, historically, unclear. It burns wi some vigour. Post-bell exclusive. SCOTTISH_RESEARCH_DEEP.md §22.1.',
+  },
 } as const;

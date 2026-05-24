@@ -74,10 +74,10 @@ export type WeeTaleTag =
   | 'no_boss' | 'any_boss'
   | 'gordon' | 'tour_bus' | 'taxman'
   | 'each_uisge' | 'nicnevin' | 'the_laird' | 'nuckelavee' | 'hunter_general' | 'earl_beardie' | 'black_douglas'
-  | 'cailleach_boss' | 'storm_cailleach' | 'twin_stones'
+  | 'cailleach_boss' | 'storm_cailleach' | 'twin_stones' | 'wicker_haggis'
   | 'gordon_death' | 'tour_bus_death' | 'taxman_death'
   | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'nuckelavee_death' | 'hunter_general_death' | 'earl_beardie_death' | 'black_douglas_death'
-  | 'cailleach_boss_death' | 'storm_cailleach_death' | 'twin_stones_death'
+  | 'cailleach_boss_death' | 'storm_cailleach_death' | 'twin_stones_death' | 'wicker_haggis_death'
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
@@ -376,6 +376,12 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
 
   // Twin Stones defeated — the heartstone goes cold.
   { key: 'ui.weeTale.victory.twin_stones_kill', requires: ['victory', 'twin_stones'] },
+
+  // Wicker Haggis (post-bell) — the tribute consumed the haggis.
+  { key: 'ui.weeTale.death.wicker_haggis', requires: ['death', 'wicker_haggis_death'] },
+
+  // Wicker Haggis defeated — the ceremony survived its subject.
+  { key: 'ui.weeTale.victory.wicker_haggis_kill', requires: ['victory', 'wicker_haggis'] },
 
   // ── v2 — universal {name}-bearing lines (tier-2) ───────────────
   // Picks ahead of the no-name fallbacks for any run that has a

@@ -1219,6 +1219,8 @@ export const ui = {
     nuckelavee: 'Something comin\' fae the sea — no\' right, no\' human, no\' stopped.',
     /** Post-bell — Twin Stones of Callanish. They've been standing since before the language. */
     twin_stones: 'An Càraid stand apart no longer — the Callanish stones have memory, and the haggis is in it.',
+    /** Post-bell — Wicker Haggis. The effigy is lit. The haggis inside has opinions about this. */
+    wicker_haggis: 'The Wicker Haggis rises on the brae — Bealltainn\'s tribute is awake, and it is not happy about it.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a chest and let it loose!',
@@ -1262,6 +1264,7 @@ export const ui = {
     boss_killed_cailleach_boss: 'The Cailleach is doon! Stormcrown is yours.',
     boss_killed_storm_cailleach: 'The Storm Cailleach is doon! The gale died wi\' her!',
     boss_killed_twin_stones: 'An Càraid is doon! The heartstone goes cold — and the circle is yours.',
+    boss_killed_wicker_haggis: 'The Wicker Haggis is doon! The moor smells of woodsmoke — and something worth celebrating.',
     boss_killed_generic: 'Boss doon! Get it right round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it right round them!',
@@ -1621,6 +1624,13 @@ export const ui = {
         b: 'They\'ve been standing there longer than the language. Now they\'re moving.',
         c: 'The Fir Bhreige — the False Men. Not so false today.',
       },
+      // Post-bell — Wicker Haggis. Black comedy + alarm. The haggis is
+      // disconcerted to be both the target AND the effigy.
+      wicker_haggis: {
+        a: 'That\'s a wicker structure. That\'s me inside it. This is not how Bealltainn was supposed to go.',
+        b: 'The lattice is burning. The haggis is burning. The haggis has thoughts about this.',
+        c: 'It\'s Bealltainn\'s tribute. The tribute is me. We have a conflict of interest here.',
+      },
     },
     low_hp: {
       a: 'Yer on the last shred, wee yin.',
@@ -1882,6 +1892,13 @@ export const ui = {
         a: 'The circle\'s quiet. The moor holds that, for a wee bit.',
         b: 'An Càraid. Both gone. The heartstone went cold at the haggis\'s feet.',
         c: 'Stood since before the Gaels named them. Now they lie. The moor minds it.',
+      },
+      // Post-bell — Wicker Haggis doon. The ceremony is complete.
+      // The haggis survived what it was supposed to be consumed by.
+      wicker_haggis: {
+        a: 'The tribute fell. The haggis is still standing. That\'s not in the old books.',
+        b: 'Bealltainn\'s effigy is ash. The haggis that was inside it is not ash. Ceremonially awkward.',
+        c: 'The moor smells of woodsmoke. The haggis smells of it too. Worth it.',
       },
     },
     weapon_evolve: {
@@ -4718,6 +4735,8 @@ export const ui = {
       storm_cailleach: 'The storm took it at {time}. Not weather — something older.',
       /** Post-bell — Twin Stones. The circle caught the haggis at {time}. */
       twin_stones: 'An Càraid caught it at {time}. The stones were standing when the islands had no name. They\'ll stand again.',
+      /** Post-bell — Wicker Haggis. The tribute was completed at {time}. */
+      wicker_haggis: 'The wicker effigy did its job at {time}. Bealltainn got its tribute. The haggis was not consulted.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
       // v2 — biome-contextual death lines (tier-2, no {name}).
@@ -4757,6 +4776,8 @@ export const ui = {
       storm_cailleach_kill: 'The Cailleach of the Storm unravelled at {time}. The gale remembered a different ending.',
       /** Post-bell — Twin Stones defeated; the heartstone is cold. */
       twin_stones_kill: 'An Càraid doon at {time}. The heartstone is cold. The circle is yours.',
+      /** Post-bell — Wicker Haggis defeated; survived the tribute. */
+      wicker_haggis_kill: 'The wicker fell at {time}. Bealltainn got its ceremony — the haggis got its moor back.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
       // v2 — biome-contextual victory lines (tier-2, no {name}).

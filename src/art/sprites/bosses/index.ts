@@ -22,6 +22,7 @@ import { bakeBossEarlBeardie } from './earl_beardie';
 import { bakeBossBlackDouglas } from './black_douglas';
 import { bakeBossStormCailleach } from './stormCailleach';
 import { bakeBossTwinStoneA, bakeBossTwinStoneB } from './twinStones';
+import { bakeBossWickerHaggis } from './wickerHaggis';
 import { bakeBossArenaProps } from './arenaProps';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
@@ -48,5 +49,7 @@ export function bakeBosses(scene: Phaser.Scene): void {
   // Post-bell only — Twin Stones of Callanish (2 stones, 1 HP bar).
   bakeBossTwinStoneA(scene);
   bakeBossTwinStoneB(scene);
+  // Post-bell only — Wicker Haggis (Bealltainn's Tribute, fire-phase boss).
+  bakeBossWickerHaggis(scene);
   bakeBossArenaProps(scene);
 }

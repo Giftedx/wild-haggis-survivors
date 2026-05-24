@@ -141,4 +141,7 @@ export const beastie = {
   twin_stones: {
     lore: 'Two of the Fir Bhreige — the False Men of Callanish, Isle of Lewis. A giant race petrified for refusing baptism, so the legend goes; the older account says they were always stone, always watching. Lewisian gneiss, older than the Cambrian. Lichen-patched, spiral-carved, amber-eyed. They share one heartstone buried beneath the circle\'s floor. They share one fate. Post-bell exclusive. SCOTTISH_RESEARCH.md §1.8.',
   },
+  wicker_haggis: {
+    lore: 'The wicker effigy is raised on the hillside above Calton Hill on Bealltainn\'s eve — a latticed figure of crossed hazel-rods, packed with kindling and green straw. The old books call it an offering; the old practice called it a warning to the moor. One wild haggis runs in of its own free will, so the tradition insists. Whether the haggis understands the arrangement is, historically, unclear. It burns with some vigour. Post-bell exclusive. SCOTTISH_RESEARCH_DEEP.md §22.1.',
+  },
 } as const;
