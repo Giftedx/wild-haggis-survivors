@@ -403,6 +403,17 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Tier-4 — The quinie watched his dogs aw afternoon; should've watched him.
   { key: 'ui.weeTale.variant.doric_quinie.death_hunter_general', requires: ['death', 'doric_quinie', 'has_name', 'hunter_general_death'] },
 
+  // ── v2 — Peerie Shetlander (Shetlandic, Norse-inflected, sea-stoic) ─
+  // "da" (the), "du" (you/thou), "peerie" (small), "voe" (fjord-inlet),
+  // "skerry" (rocky reef). Terse; sea imagery; stoic without sentiment.
+  { key: 'ui.weeTale.variant.peerie_shetlander.death_baseline', requires: ['death', 'peerie_shetlander', 'has_name'] },
+  { key: 'ui.weeTale.variant.peerie_shetlander.death_short', requires: ['death', 'peerie_shetlander', 'has_name', 'short'] },
+  // Tier-4 — Shetland's Nuckelavee is a sea-creature. Knowing the name
+  // is not protection; the legend is older than the name.
+  { key: 'ui.weeTale.variant.peerie_shetlander.death_nuckelavee', requires: ['death', 'peerie_shetlander', 'has_name', 'nuckelavee_death'] },
+  { key: 'ui.weeTale.variant.peerie_shetlander.victory_baseline', requires: ['victory', 'peerie_shetlander', 'has_name'] },
+  { key: 'ui.weeTale.variant.peerie_shetlander.victory_epic', requires: ['victory', 'peerie_shetlander', 'has_name', 'epic'] },
+
   // ── v2 — Burns's Wee Beastie (citational) ──────────────────────
   // Voice register per `docs/VOICE_CARD.md` §"Burns's voice
   // (citational)" — every citation is verbatim Robert Burns,

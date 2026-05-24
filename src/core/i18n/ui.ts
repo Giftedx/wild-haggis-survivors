@@ -4691,6 +4691,16 @@ export const ui = {
         victory_baseline: 'Aye, {name}. The loons doun the pier will hear o\' this ane.',
         victory_epic: '{time} on the moor, {name}. The smokie\'s still warm at the kitchie.',
       },
+      peerie_shetlander: {
+        // Shetlandic register — "da" (the), "du" (thou/you), "peerie"
+        // (small), "voe" (fjord-inlet), "skerry" (rocky reef), "muir"
+        // (moor). Terse, Norse-inflected, stoic. C4 native review pending.
+        death_baseline: 'Da voe makes nae record o\' {name}. That\'s all right. The moor does.',
+        death_short: 'A peerie while, {name}. Even da skerries tak time tae form.',
+        death_nuckelavee: 'Da Nuckelavee came aff da sea at {time}. {name} kent da name. Kening disnae keep it.',
+        victory_baseline: '{name} held. Da simmer wind carried word back tae da voe.',
+        victory_epic: '{time} on da muir, {name}. Da fulmar widnae believe du had da breath for it.',
+      },
       burns_wee_beastie: {
         // Citations verbatim from Robert Burns — see
         // `docs/C2_BURNS_PROVENANCE.md` for source attribution.

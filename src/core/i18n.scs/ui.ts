@@ -3841,6 +3841,13 @@ export const ui = {
         victory_baseline: 'Aye, {name}. Tha loons doun tha pier will hear o\' this ane.',
         victory_epic: '{time} on tha moor, {name}. Tha smokie\'s still warm at tha kitchie.',
       },
+      peerie_shetlander: {
+        death_baseline: 'Da voe maks nae record o\' {name}. That\'s aw richt. Tha moor dis.',
+        death_short: 'A peerie while, {name}. Even da skerries tak time tae form.',
+        death_nuckelavee: 'Da Nuckelavee cam aff da sea at {time}. {name} kent da name. Kening disnae keep it.',
+        victory_baseline: '{name} held. Da simmer wind cairrit word back tae da voe.',
+        victory_epic: '{time} on da muir, {name}. Da fulmar widnae believe du had da breath for it.',
+      },
       burns_wee_beastie: {
         death_baseline: '"Wee, sleekit, cow\'rin, tim\'rous beastie" — an yet {name} ran. Aft tha heather, oot tha door.',
         death_short: '"The best-laid schemes o\' mice an\' men gang aft a-gley." {name} kent it afore tha end.',
