@@ -259,6 +259,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.wicker_haggis.b',
         'ui.banter.boss_warn.wicker_haggis.c',
       ],
+      nessie: [
+        'ui.banter.boss_warn.nessie.a',
+        'ui.banter.boss_warn.nessie.b',
+        'ui.banter.boss_warn.nessie.c',
+      ],
     },
   },
   {
@@ -529,6 +534,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.wicker_haggis.a',
         'ui.banter.boss_down.wicker_haggis.b',
         'ui.banter.boss_down.wicker_haggis.c',
+      ],
+      // Post-bell — Nessie, Reconsidered. The loch got its creature back.
+      nessie: [
+        'ui.banter.boss_down.nessie.a',
+        'ui.banter.boss_down.nessie.b',
+        'ui.banter.boss_down.nessie.c',
       ],
     },
   },

@@ -13,4 +13,5 @@ export const boss = {
   storm_cailleach: { name: 'Tha Cailleach o tha Storm' },
   twin_stones: { name: 'An Càraid — tha Twin Stanes o Callanish' },
   wicker_haggis: { name: 'Tha Wicker Haggis — Bealltainn\'s Tribute' },
+  nessie: { name: 'Nessie, Reconsidered' },
 } as const;

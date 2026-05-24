@@ -144,4 +144,7 @@ export const beastie = {
   wicker_haggis: {
     lore: 'The wicker effigy is raised on the hillside above Calton Hill on Bealltainn\'s eve — a latticed figure of crossed hazel-rods, packed with kindling and green straw. The old books call it an offering; the old practice called it a warning to the moor. One wild haggis runs in of its own free will, so the tradition insists. Whether the haggis understands the arrangement is, historically, unclear. It burns with some vigour. Post-bell exclusive. SCOTTISH_RESEARCH_DEEP.md §22.1.',
   },
+  nessie: {
+    lore: 'The Loch Ness Monster has had a long career as a sonar anomaly, a regional economic policy, and a national myth. That is not what this is. This is the actual animal, and the bell-toll disturbed its sleep. Long-necked, mottled green, with one amber eye that has been watching the loch for longer than the name "Loch Ness" has existed. It surfaces for a specific haggis. It does not explain why. Post-bell exclusive. SCOTTISH_RESEARCH.md §1.2; SCOTTISH_RESEARCH_DEEP.md §21.',
+  },
 } as const;

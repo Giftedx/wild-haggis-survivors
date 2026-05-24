@@ -792,6 +792,7 @@ export const ui = {
     nuckelavee: 'Somethin comin fae tha sea — no richt, no human, no stoppit.',
     twin_stones: 'An Càraid staund apairted nae langer — tha Callanish stanes hae memory, an tha haggis is in it.',
     wicker_haggis: 'Tha Wicker Haggis rises on tha brae — Bealltainn\'s tribute is awake, an it is no happy aboot it.',
+    nessie: 'Somethin lang jist brak tha surface. That is no a log.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
@@ -829,6 +830,7 @@ export const ui = {
     boss_killed_storm_cailleach: 'Tha Storm Cailleach is doon! Tha gale deed wi her!',
     boss_killed_twin_stones: 'An Càraid is doon! Tha heartstone gangs cauld — an tha circle is yours.',
     boss_killed_wicker_haggis: 'Tha Wicker Haggis is doon! Tha moor smells o woodsmoke — an somethin worth celebratin.',
+    boss_killed_nessie: 'Nessie is doon! Tha loch haes it back. Tha postcairds were wrang tha hale time.',
     boss_killed_generic: 'Boss doon! Get it richt round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it richt round them!',
@@ -1060,6 +1062,12 @@ export const ui = {
         a: 'That\'s a wicker structure. That\'s me inside it. This is no how Bealltainn wis supposed tae gang.',
         b: 'Tha lattice is burnin. Tha haggis is burnin. Tha haggis has thochts aboot this.',
         c: 'It\'s Bealltainn\'s tribute. Tha tribute is me. We hae a conflict o interest here.',
+      },
+      // Post-bell — Nessie, Reconsidered. No tha souvenir. Terse, calm.
+      nessie: {
+        a: 'Tha loch haes a neck. Tha neck haes an ee. Tha ee is on me.',
+        b: 'That is no a tourist attraction. That is an animal.',
+        c: 'Nessie is real. Nessie is here. Nessie is gey muckle.',
       },
     },
     low_hp: {
@@ -1319,6 +1327,12 @@ export const ui = {
         a: 'Tha tribute fell. Tha haggis is still staundin. That\'s no in tha auld buiks.',
         b: 'Bealltainn\'s effigy is ash. Tha haggis that wis inside it is no ash. Ceremonially awkward.',
         c: 'Tha moor smells o woodsmoke. Tha haggis smells o it an aw. Worth it.',
+      },
+      // Post-bell — Nessie doon. Tha loch got its creature back.
+      nessie: {
+        a: 'Tha neck gaed under. Tha ee closed. Tha loch is quait again.',
+        b: 'Nessie, reconsidered — by a haggis. Tha postcairds never saw this comin.',
+        c: 'Whitiver that wis, it\'s gaen back doon. Tha haggis will no mention it in future.',
       },
     },
     weapon_evolve: {
@@ -3877,6 +3891,7 @@ export const ui = {
       storm_cailleach: 'Tha storm taen it at {time}. No wather — something aulder.',
       twin_stones: 'An Càraid caught it at {time}. Tha stanes were staundin when tha islands had nae name. They\'ll staund again.',
       wicker_haggis: 'Tha wicker effigy did its job at {time}. Bealltainn got its tribute. Tha haggis wis no consulted.',
+      nessie: 'Tha neck rose at {time}. Tha ee wis amber. Tha haggis didnae run fast enough, an tha loch disnae gie receipts.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
       biome_bog: 'Tha bog at {time} — saft grund, an than safter.',
       biome_loch: 'Stood at tha loch-edge at {time}. Tha loch disnae gie back whit it taks.',
@@ -3910,6 +3925,7 @@ export const ui = {
       storm_cailleach_kill: 'Tha Cailleach o tha Storm unravelled at {time}. Tha gale mindit a different endin.',
       twin_stones_kill: 'An Càraid doon at {time}. Tha heartstone is cauld. Tha circle is yours.',
       wicker_haggis_kill: 'Tha wicker fell at {time}. Bealltainn got its ceremony — tha haggis got its moor back.',
+      nessie_kill: 'Tha neck gaed under at {time}. Nessie is real — an it lost tae a haggis. Tha postcairds were aye wrang.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
       biome_bog: 'Walked tha bog an cam back kennin tha smell o peat.',
       biome_loch: 'Kept back fae tha edge an walked hame. Tha loch noted this.',

@@ -23,6 +23,7 @@ import { bakeBossBlackDouglas } from './black_douglas';
 import { bakeBossStormCailleach } from './stormCailleach';
 import { bakeBossTwinStoneA, bakeBossTwinStoneB } from './twinStones';
 import { bakeBossWickerHaggis } from './wickerHaggis';
+import { bakeBossNessie } from './nessie';
 import { bakeBossArenaProps } from './arenaProps';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
@@ -51,5 +52,7 @@ export function bakeBosses(scene: Phaser.Scene): void {
   bakeBossTwinStoneB(scene);
   // Post-bell only — Wicker Haggis (Bealltainn's Tribute, fire-phase boss).
   bakeBossWickerHaggis(scene);
+  // Post-bell only — Nessie, Reconsidered (loch-emergence, sweep + plunge).
+  bakeBossNessie(scene);
   bakeBossArenaProps(scene);
 }

@@ -1221,6 +1221,8 @@ export const ui = {
     twin_stones: 'An Càraid stand apart no longer — the Callanish stones have memory, and the haggis is in it.',
     /** Post-bell — Wicker Haggis. The effigy is lit. The haggis inside has opinions about this. */
     wicker_haggis: 'The Wicker Haggis rises on the brae — Bealltainn\'s tribute is awake, and it is not happy about it.',
+    /** Post-bell — Nessie, Reconsidered. Not the souvenir. The actual animal. */
+    nessie: 'Something long just broke the surface. That is not a log.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a chest and let it loose!',
@@ -1265,6 +1267,7 @@ export const ui = {
     boss_killed_storm_cailleach: 'The Storm Cailleach is doon! The gale died wi\' her!',
     boss_killed_twin_stones: 'An Càraid is doon! The heartstone goes cold — and the circle is yours.',
     boss_killed_wicker_haggis: 'The Wicker Haggis is doon! The moor smells of woodsmoke — and something worth celebrating.',
+    boss_killed_nessie: 'Nessie is doon! The loch has it back. The postcards were wrong the whole time.',
     boss_killed_generic: 'Boss doon! Get it right round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it right round them!',
@@ -1631,6 +1634,13 @@ export const ui = {
         b: 'The lattice is burning. The haggis is burning. The haggis has thoughts about this.',
         c: 'It\'s Bealltainn\'s tribute. The tribute is me. We have a conflict of interest here.',
       },
+      // Post-bell — Nessie, Reconsidered. Not the souvenir. Terse, calm,
+      // slightly wrongfooted. The haggis was not expecting an actual plesiosaur.
+      nessie: {
+        a: 'The loch has a neck. The neck has an eye. The eye is on me.',
+        b: 'That is not a tourist attraction. That is an animal.',
+        c: 'Nessie is real. Nessie is here. Nessie is very large.',
+      },
     },
     low_hp: {
       a: 'Yer on the last shred, wee yin.',
@@ -1899,6 +1909,13 @@ export const ui = {
         a: 'The tribute fell. The haggis is still standing. That\'s not in the old books.',
         b: 'Bealltainn\'s effigy is ash. The haggis that was inside it is not ash. Ceremonially awkward.',
         c: 'The moor smells of woodsmoke. The haggis smells of it too. Worth it.',
+      },
+      // Post-bell — Nessie doon. The loch got its creature back.
+      // The haggis is quietly stunned that this happened.
+      nessie: {
+        a: 'The neck went under. The eye closed. The loch is quiet again.',
+        b: 'Nessie, reconsidered — by a haggis. The postcards never saw this coming.',
+        c: 'Whatever that was, it\'s gone back doon. The haggis will not mention it in future.',
       },
     },
     weapon_evolve: {
@@ -4737,6 +4754,8 @@ export const ui = {
       twin_stones: 'An Càraid caught it at {time}. The stones were standing when the islands had no name. They\'ll stand again.',
       /** Post-bell — Wicker Haggis. The tribute was completed at {time}. */
       wicker_haggis: 'The wicker effigy did its job at {time}. Bealltainn got its tribute. The haggis was not consulted.',
+      /** Post-bell — Nessie. The loch has depth at {time}. */
+      nessie: 'The neck rose at {time}. The eye was amber. The haggis did not run fast enough, and the loch does not give receipts.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
       // v2 — biome-contextual death lines (tier-2, no {name}).
@@ -4778,6 +4797,8 @@ export const ui = {
       twin_stones_kill: 'An Càraid doon at {time}. The heartstone is cold. The circle is yours.',
       /** Post-bell — Wicker Haggis defeated; survived the tribute. */
       wicker_haggis_kill: 'The wicker fell at {time}. Bealltainn got its ceremony — the haggis got its moor back.',
+      /** Post-bell — Nessie defeated; the loch got its creature back. */
+      nessie_kill: 'The neck went under at {time}. Nessie is real — and it lost to a haggis. The postcards were always wrong.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
       // v2 — biome-contextual victory lines (tier-2, no {name}).

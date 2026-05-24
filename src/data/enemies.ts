@@ -79,7 +79,14 @@ export type EnemyBehavior =
    * Phase transition fires a one-time 8-shard slow ember burst.
    * Post-bell exclusive. Refs: SCOTTISH_RESEARCH_DEEP.md §22.1 (Beltane).
    */
-  | 'wicker_haggis';
+  | 'wicker_haggis'
+  /**
+   * Loch Emergence — Nessie, Reconsidered (post-bell).
+   * Phase 1 (HP > 50 %): surface chase + 5-shard tentacle sweep every 6 s.
+   * Phase 2 (HP ≤ 50 %): speed ×1.5 + 6-shard plunge burst every 3.8 s.
+   * Post-bell exclusive. Refs: SCOTTISH_RESEARCH.md §1.2; _DEEP.md §21.
+   */
+  | 'loch_emergence';
 
 export interface EnemyConfig {
   key: string;
@@ -718,6 +725,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   black_douglas: 'The Black Douglas',
   twin_stones: 'An Càraid — the Twin Stones',
   wicker_haggis: 'The Wicker Haggis — Bealltainn\'s Tribute',
+  nessie: 'Nessie, Reconsidered',
   cailleach_boss: 'The Cailleach',
 };
 
@@ -1011,6 +1019,24 @@ export const BOSSES: BossConfig[] = [
     xpValue: 110,
     scale: 2.3,
     behaviorOverride: 'wicker_haggis',
+  },
+  // Post-bell — Nessie, Reconsidered. The actual animal, not the tourism
+  // mascot. Surfaces when the bell-toll makes the loch restless. Phase 1:
+  // surface chase + tentacle sweep. Phase 2: speed ×1.5 + plunge burst.
+  // Refs: SCOTTISH_RESEARCH.md §1.2; SCOTTISH_RESEARCH_DEEP.md §21.
+  {
+    key: 'nessie',
+    nameKey: 'boss.nessie.name',
+    warningKey: 'ui.bossWarning.nessie',
+    spawnTimeSec: 9999,
+    postBellOnly: true,
+    texture: 'boss_nessie',
+    speed: 55,
+    hp: 4800,
+    damage: 30,
+    xpValue: 130,
+    scale: 2.6,
+    behaviorOverride: 'loch_emergence',
   },
   // V2 — Cailleach Gauntlet boss (Moor Remembers V2). Manual-spawn only;
   // wakes via `SpawnSystem.spawnBossManually` from CailleachGauntletScheduler
