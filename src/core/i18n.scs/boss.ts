@@ -6,6 +6,7 @@ export const boss = {
   the_laird: { name: 'Tha Laird' },
   nuckelavee: { name: 'Tha Nuckelavee' },
   hunter_general: { name: 'Tha Haggis Hunter General' },
+  earl_beardie: { name: 'Earl Beardie' },
   taxman: { name: 'Daith (Tha Taxman)' },
   cailleach_boss: { name: 'Tha Cailleach' },
 } as const;

@@ -222,6 +222,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.hunter_general.b',
         'ui.banter.boss_warn.hunter_general.c',
       ],
+      earl_beardie: [
+        'ui.banter.boss_warn.earl_beardie.a',
+        'ui.banter.boss_warn.earl_beardie.b',
+        'ui.banter.boss_warn.earl_beardie.c',
+      ],
       taxman: [
         'ui.banter.boss_warn.taxman.a',
         'ui.banter.boss_warn.taxman.b',
@@ -465,6 +470,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.hunter_general.a',
         'ui.banter.boss_down.hunter_general.b',
         'ui.banter.boss_down.hunter_general.c',
+      ],
+      earl_beardie: [
+        'ui.banter.boss_down.earl_beardie.a',
+        'ui.banter.boss_down.earl_beardie.b',
+        'ui.banter.boss_down.earl_beardie.c',
       ],
       taxman: [
         'ui.banter.boss_down.taxman.a',
@@ -2520,6 +2530,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       boss_hunter_general_kill: [
         'ui.banter.first_time.boss_hunter_general_kill.a',
         'ui.banter.first_time.boss_hunter_general_kill.b',
+      ],
+      // Earl Beardie first-kill — Edge-Grave register. The Devil's card
+      // game was supposed to be unwinnable; mark the first upset.
+      boss_earl_beardie_kill: [
+        'ui.banter.first_time.boss_earl_beardie_kill.a',
+        'ui.banter.first_time.boss_earl_beardie_kill.b',
       ],
       boss_taxman_kill: [
         'ui.banter.first_time.boss_taxman_kill.a',

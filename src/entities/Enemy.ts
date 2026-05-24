@@ -19,6 +19,7 @@ import {
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 import { isDiveOffscreen } from './isDiveOffscreen';
 import { simulateWailBehaviour, WAIL_PULSE_RADIUS_PX, WAIL_PULSE_DAMAGE, type WailState } from './wailBehaviour';
+import { simulateCardDealBehaviour, CARD_DEAL_FAN_COUNT, CARD_DEAL_SPREAD_RAD, CARD_DEAL_SPEED, CARD_DEAL_DAMAGE, CARD_DEAL_RANGE_MS, type CardDealState } from './cardDealBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -126,6 +127,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private threeBayStage: 0 | 1 | 2 | 3 | 4 = 0;
   /** V2 — Cailleach Gauntlet boss state (only used when behavior === 'wail'). */
   private wailState: WailState = { msSinceLastLance: 0, hasWailed: false };
+  /** Earl Beardie boss state (only used when behavior === 'card_deal'). */
+  private cardDealState: CardDealState = { msSinceLastDeal: 0 };
   /** Countdown ms within the current three-bay stage. */
   private threeBayTimerMs: number = 0;
   /** Charge target locked at start of stage 3. */
@@ -635,6 +638,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'wail':
         this.behaviorWail(targetX, targetY, delta);
         break;
+      case 'card_deal':
+        this.behaviorCardDeal(targetX, targetY, delta);
+        break;
     }
   }
 
@@ -888,6 +894,65 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         onComplete: () => ring.destroy(),
       });
     } catch { /* test stubs without tweens */ }
+  }
+
+  /**
+   * Earl Beardie — slow chase with spectral card-fan projectile every
+   * 3.5 s. Mirrors `behaviorWail` shape. The sealed-room ghost is not
+   * fast; the danger is the card fan, not the chase speed.
+   */
+  private behaviorCardDeal(tx: number, ty: number, delta: number): void {
+    this.behaviorChase(tx, ty);
+    const next = simulateCardDealBehaviour(this.cardDealState, { deltaMs: delta });
+    this.cardDealState = next;
+    if (next.shouldDeal) {
+      this.fireCardFan(tx, ty);
+    }
+  }
+
+  /**
+   * Fire a fan of spectral playing cards toward the player.
+   * Three cards at evenly-spaced angles around the aim vector — like
+   * a card deal flicked across a table. Parryable via Shinty Parry.
+   */
+  private fireCardFan(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const spawnedPlayer = this.ctx.getPlayer();
+
+    for (let i = 0; i < CARD_DEAL_FAN_COUNT; i++) {
+      const offset = (i - Math.floor(CARD_DEAL_FAN_COUNT / 2)) * CARD_DEAL_SPREAD_RAD;
+      const angle = baseAngle + offset;
+      const vx = Math.cos(angle) * CARD_DEAL_SPEED;
+      const vy = Math.sin(angle) * CARD_DEAL_SPEED;
+
+      // Spectral card: small rectangle (6×9) with baize-green tint.
+      const card = this.scene.add.rectangle(this.x, this.y, 6, 9, 0x40904a, 0.90);
+      this.scene.physics.add.existing(card);
+      const body = card.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(vx, vy);
+      card.setRotation(angle + Math.PI / 2);
+
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try {
+          this.scene.physics.world.removeCollider(overlapRef);
+          if (card.active) card.destroy();
+        } catch { /* scene may have restarted */ }
+      };
+
+      const overlapRef = this.scene.physics.add.overlap(card, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const currentPlayer = this.ctx.getPlayer();
+        if (currentPlayer !== spawnedPlayer) return;
+        if (currentPlayer.tryParryProjectile()) return;
+        currentPlayer.takeDamage(CARD_DEAL_DAMAGE);
+      });
+
+      this.ctx.getUpdateTickers().addOnce('raw', CARD_DEAL_RANGE_MS, cleanup);
+    }
   }
 
   private behaviorRanged(tx: number, ty: number, delta: number): void {

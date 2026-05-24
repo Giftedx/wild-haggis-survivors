@@ -38,7 +38,13 @@ export type EnemyBehavior =
    * radial slow-pulse at 50 % HP. Spec:
    * `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
    */
-  | 'wail';
+  | 'wail'
+  /**
+   * Card deal — Earl Beardie (Glamis ghost boss).
+   * Slow chase + spectral card fan (3 projectiles in a spread) every
+   * 3.5 s. Ref: `SCOTTISH_RESEARCH.md` §1.4.
+   */
+  | 'card_deal';
 
 export interface EnemyConfig {
   key: string;
@@ -858,6 +864,19 @@ export const BOSSES: BossConfig[] = [
     damage: 35,
     xpValue: 100,
     scale: 2.3,
+  },
+  {
+    key: 'earl_beardie',
+    nameKey: 'boss.earl_beardie.name',
+    warningKey: 'ui.bossWarning.earl_beardie',
+    spawnTimeSec: 1350,    // 22:30
+    texture: 'boss_earl_beardie',
+    speed: 60,
+    hp: 3800,
+    damage: 28,
+    xpValue: 80,
+    scale: 2.0,
+    behaviorOverride: 'card_deal',
   },
   {
     key: 'taxman',

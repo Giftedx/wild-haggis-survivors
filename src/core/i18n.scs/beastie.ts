@@ -123,6 +123,9 @@ export const beastie = {
   hunter_general: {
     lore: 'Tha supervisin haggis-hunter. Haes a rifle aulder nor tha Empire an a crew aulder nor that. Treats tha hunt as inheritance. Treats tha haggis as a ledger entry.',
   },
+  earl_beardie: {
+    lore: 'A 15th-century Earl o Crawford wha played cairds wi tha Deil on a Sabbath at Glamis Castle an tint his sowl. His ghaist plays on eternally in a sealed chaumer, an his cairds — whan he deals them — are nae fer yer haunds.',
+  },
   taxman: {
     lore: 'Tha final boss. Tha Excise Office weirin a face. Haes a stamp; tha stamp\'s aulder nor tha kingdom. Aince ye face it, tha run is ower either way — defeated or paid.',
   },

@@ -123,6 +123,9 @@ export const beastie = {
   hunter_general: {
     lore: 'The supervising haggis-hunter. Has a rifle older than the Empire and a crew older than that. Treats the hunt as inheritance. Treats the haggis as a ledger entry.',
   },
+  earl_beardie: {
+    lore: 'A 15th-century Earl of Crawford who played cards with the Devil on a Sunday at Glamis Castle and lost his soul. His ghost plays on eternally in a sealed room, and his cards — when he deals them — are not for your hands.',
+  },
   taxman: {
     lore: 'The final boss. The Excise Office wearing a face. Has a stamp; the stamp\'s older than the kingdom. Once you face it, the run is over either way — defeated or paid.',
   },

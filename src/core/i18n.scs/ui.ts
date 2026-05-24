@@ -784,6 +784,7 @@ export const ui = {
     nicnevin: 'Tha Unblesst court rides oot — an she\'s brocht her parliament.',
     the_laird: 'Tha Laird strides oot — mind yer manners an yer hide.',
     hunter_general: 'Tha Hunter-General — an they\'ve brought pals.',
+    earl_beardie: 'Earl Beardie\'s oot o tha sealed chaumer. He\'s dealin. Dinnae sit doon.',
     taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
     cailleach_boss: 'THA CAILLEACH WALKS — winter answers whit ye cried.',
   },
@@ -815,6 +816,7 @@ export const ui = {
     boss_killed_nicnevin: 'Nicnevin\'s court dissolved. Tha muir braithes again.',
     boss_killed_the_laird: 'Tha Laird\'s on his erse! Yer bum\'s oot tha windae, pal!',
     boss_killed_nuckelavee: 'Tha Nuckelavee is doon! Back tae yer sea, ya skinless horror!',
+    boss_killed_earl_beardie: 'Earl Beardie is doon! His cairds are scattered on tha moor — tha wager is yours!',
     boss_killed_hunter_general: 'Hunter-General floored! Tak yer medals an yer pith helmet!',
     boss_killed_taxman: 'THA TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'Tha Cailleach is doon! Stormcrown is yours.',
@@ -1010,6 +1012,11 @@ export const ui = {
         a: 'Tha General\'s got yer scent.',
         b: 'Proper sodger noo. Nae mair eejits.',
         c: 'Musket an medals. Mind they\'re loaded.',
+      },
+      earl_beardie: {
+        a: 'Cairds on tha moor. That\'s no a gemme ye want tae win.',
+        b: 'Earl Beardie\'s oot. Last wan that sat wi him never left tha chaumer.',
+        c: 'Ghaist fae Glamis. He dealt tae tha Deil; noo he deals tae you.',
       },
       taxman: {
         a: 'Tha Taxman\'s here. An he\'s no takin council tax.',
@@ -1241,6 +1248,11 @@ export const ui = {
         a: 'General\'s aff-duty. Permanently.',
         b: 'Ootranked tha big yin.',
         c: 'That\'s him decommissioned.',
+      },
+      earl_beardie: {
+        a: 'His cairds are on tha moor. First time he\'s lost since 1435.',
+        b: 'Oot o tha sealed chaumer an back intae it. Tha wager\'s done.',
+        c: 'Never play cairds wi a ghaist. But if ye dae — win.',
       },
       taxman: {
         a: 'Taxman took a loss fer wance.',
@@ -3125,6 +3137,10 @@ export const ui = {
         a: 'Hunter-General met his match. First time. Worth a photo.',
         b: 'Nae mair hunters\' general. First o tha kin tae say it.',
       },
+      boss_earl_beardie_kill: {
+        a: 'First haggis tae beat Earl Beardie at cairds. Tha Deil haes noted it.',
+        b: 'Glamis sealed chaumer got a new silence. Tha ghaist lost — first time since Bannockburn.',
+      },
       boss_taxman_kill: {
         a: 'Taxman paid in full. Tha first time ony haggis has done it.',
         b: 'Ledger cleant. Tha moor blew oot — an ye heard it.',
@@ -3741,6 +3757,7 @@ export const ui = {
       taxman: 'Tha Taxman closed tha ledger at {time}. A debt cried but the wance.',
       taxman_postbell: 'Past tha bell-toll. Tha Taxman caught up at {time} — he aye dis, by-an-by.',
       nuckelavee: 'Nae skin on tha thing. It cam aff tha sea at {time}. Tha burn on tha far brae held tha lave.',
+      earl_beardie: 'Earl Beardie dealt his haund at {time}. Tha last caird wis yours.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
     },
     victory: {
@@ -3752,6 +3769,7 @@ export const ui = {
       taxman_kill: 'Steekit tha Taxman\'s ledger at {time}. He\'ll no forget; tha haggis winnae either.',
       three_bosses: 'Three boss-skulls in tha heather ahint. Hame at {time}, walkin licht.',
       nuckelavee_kill: 'Tha Nuckelavee gaed back tae tha sea. {time} on tha moor, an tha burns held.',
+      earl_beardie_kill: 'Earl Beardie\'s cairds scattered on tha moor at {time}. Tha wager wis yours.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
     },
     variant: {
