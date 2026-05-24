@@ -788,6 +788,7 @@ export const ui = {
     black_douglas: 'Wheesht. Tha Black Douglas is here — an he disnae keep tha same peace.',
     taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
     cailleach_boss: 'THA CAILLEACH WALKS — winter answers whit ye cried.',
+    nuckelavee: 'Somethin comin fae tha sea — no richt, no human, no stoppit.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
