@@ -74,10 +74,10 @@ export type WeeTaleTag =
   | 'no_boss' | 'any_boss'
   | 'gordon' | 'tour_bus' | 'taxman'
   | 'each_uisge' | 'nicnevin' | 'the_laird' | 'nuckelavee' | 'hunter_general' | 'earl_beardie' | 'black_douglas'
-  | 'cailleach_boss' | 'storm_cailleach' | 'twin_stones' | 'wicker_haggis' | 'nessie'
+  | 'cailleach_boss' | 'storm_cailleach' | 'twin_stones' | 'wicker_haggis' | 'nessie' | 'auld_reekie'
   | 'gordon_death' | 'tour_bus_death' | 'taxman_death'
   | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'nuckelavee_death' | 'hunter_general_death' | 'earl_beardie_death' | 'black_douglas_death'
-  | 'cailleach_boss_death' | 'storm_cailleach_death' | 'twin_stones_death' | 'wicker_haggis_death' | 'nessie_death'
+  | 'cailleach_boss_death' | 'storm_cailleach_death' | 'twin_stones_death' | 'wicker_haggis_death' | 'nessie_death' | 'auld_reekie_death'
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
@@ -388,6 +388,12 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
 
   // Nessie defeated — the loch got its creature back.
   { key: 'ui.weeTale.victory.nessie_kill', requires: ['victory', 'nessie'] },
+
+  // Auld Reekie Ghaist (urban) — the lamp-ghost consumed the haggis.
+  { key: 'ui.weeTale.death.auld_reekie', requires: ['death', 'auld_reekie_death'] },
+
+  // Auld Reekie defeated — the Old Town close exhales.
+  { key: 'ui.weeTale.victory.auld_reekie_kill', requires: ['victory', 'auld_reekie'] },
 
   // ── v2 — universal {name}-bearing lines (tier-2) ───────────────
   // Picks ahead of the no-name fallbacks for any run that has a

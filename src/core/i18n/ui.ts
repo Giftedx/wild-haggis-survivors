@@ -4781,6 +4781,8 @@ export const ui = {
       wicker_haggis: 'The wicker effigy did its job at {time}. Bealltainn got its tribute. The haggis was not consulted.',
       /** Post-bell — Nessie. The loch has depth at {time}. */
       nessie: 'The neck rose at {time}. The eye was amber. The haggis did not run fast enough, and the loch does not give receipts.',
+      /** Urban — Auld Reekie Ghaist. The lamp found the haggis at {time}. */
+      auld_reekie: 'The lantern found the haggis at {time}. The Old Town keeps the ones it catches.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
       // v2 — biome-contextual death lines (tier-2, no {name}).
@@ -4825,6 +4827,8 @@ export const ui = {
       wicker_haggis_kill: 'The wicker fell at {time}. Bealltainn got its ceremony — the haggis got its moor back.',
       /** Post-bell — Nessie defeated; the loch got its creature back. */
       nessie_kill: 'The neck went under at {time}. Nessie is real — and it lost to a haggis. The postcards were always wrong.',
+      /** Urban — Auld Reekie defeated; the lamp-ghost gone. */
+      auld_reekie_kill: 'The lamp went out at {time}. The close is just a close. The haggis is still standing in it.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
       // v2 — biome-contextual victory lines (tier-2, no {name}).
