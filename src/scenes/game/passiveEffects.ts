@@ -121,5 +121,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // Pairs with Cullen Skink Ladle at lv5 for the future evolution.
       player.addMaxHp(12);
       break;
+    case 'copper_rivet':
+      // +10% attack speed — a hand-riveted Clyde fitting; every rivet
+      // tightened, every cycle runs faster. Pairs with Steam Engine at
+      // lv5 for the future evolution.
+      player.addAttackSpeedMultiplier(0.10);
+      break;
   }
 }

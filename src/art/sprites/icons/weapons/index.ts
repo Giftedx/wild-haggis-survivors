@@ -34,6 +34,7 @@ import { drawBagpipeDroneIcon } from './bagpipeDrone';
 import { drawCoastalStormIcon } from './coastalStorm';
 import { drawClootieRagIcon } from './clootieRag';
 import { drawCullenSkinkLadleIcon } from './cullenSkinkLadle';
+import { drawSteamEngineIcon } from './steamEngine';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -63,6 +64,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawClootieRagIcon(scene);
   // Cullen Skink Ladle — slow lob zone (comedy food weapon).
   drawCullenSkinkLadleIcon(scene);
+  // Steam Engine — Clyde-built pressure burst.
+  drawSteamEngineIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);

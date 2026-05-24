@@ -56,4 +56,7 @@ export const passive = {
   smoked_haddock: {
     flavour: "Finnan haddie — cauld-reekied ower green wid on tha shore at Findon, sooth o Aberdeen, whaur they've been daein it sin afore onybody wrote it doon. Tha broth is whit ye get when ye've been walkin aw day. Tha haggis taks it ilka mornin.",
   },
+  copper_rivet: {
+    flavour: "Ilka Clyde-biggit hull wis haud thegither by haund — a heater laddie, a haunder-on, a rivetman, an a catch-laddie workin in order wi tha din sae constant tha yairds-men gaed deef by forty. Tha rivet minds tha rhythm. Tha haggis keeps tha beat.",
+  },
 } as const;

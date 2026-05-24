@@ -109,6 +109,8 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   clootie_rag: '#8a2a2a',
   // Cullen Skink Ladle — broth cream-yellow (smoked haddock chowder)
   cullen_skink_ladle: '#d4c080',
+  // Steam Engine — Victorian boiler-iron grey (Clyde shipyard soot)
+  steam_engine: '#6a6a6a',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

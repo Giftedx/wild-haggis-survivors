@@ -730,6 +730,7 @@ export class WeaponSystem {
 
   private fireAoePulse(w: ActiveWeapon, px: number, py: number): void {
     const isCoastalStorm = w.config.key === 'coastal_storm';
+    const isSteamEngine = w.config.key === 'steam_engine';
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
 
@@ -753,6 +754,25 @@ export class WeaponSystem {
         });
       }
       this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 1.4, endScale: 3.2, duration: 580, alpha: 0.55 });
+    } else if (isSteamEngine) {
+      // Two grey smoke rings — inner burst + outer haze — scalding pressure wave.
+      const inner = this.acquireVfxCircle(px, py, 15, 0x6a6a6a, 0.50);
+      const outer = this.acquireVfxCircle(px, py, 8, 0x9a9a9a, 0.28);
+      this.scene.tweens.add({
+        targets: inner,
+        radius: radius * 0.85,
+        alpha: 0,
+        duration: 380,
+        onComplete: () => inner.setVisible(false),
+      });
+      this.scene.tweens.add({
+        targets: outer,
+        radius,
+        alpha: 0,
+        duration: 520,
+        onComplete: () => outer.setVisible(false),
+      });
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.9, endScale: 2.0, duration: 440, alpha: 0.45 });
     } else {
       const ring = this.acquireVfxCircle(px, py, 10, resolveWeaponVfxColor(w.config.behavior), 0.4);
       this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.85, endScale: 1.8, duration: 340, alpha: 0.78 });
@@ -780,8 +800,8 @@ export class WeaponSystem {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
 
         // Bagpipe Blast applies brief freeze (slow 50% for 1s).
-        // Coastal Storm relies on knockback alone — no freeze.
-        if (!isCoastalStorm) {
+        // Coastal Storm and Steam Engine rely on knockback alone — no freeze.
+        if (!isCoastalStorm && !isSteamEngine) {
           enemy.applyFreeze(0.5, 1000);
         }
 

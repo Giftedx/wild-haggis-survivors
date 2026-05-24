@@ -190,7 +190,7 @@ Candidate weapons (pick 4 for a content drop):
 - **Hagstone Sling** — hurls a stone with a hole; enemies hit *through the hole* take bonus damage. Geometry-reward weapon. Paired passive: Rowan Amulet.
 - ~~**Wallace Sword**~~ — ✅ shipped 2026-05-12 (`wallace_sword` → `freedom_blade` evolution, passive `stirling_medal`, B6 Highland Horrors). Giant two-hander slow sweep via `fireFreedomBlade`. `stirling_medal` grants +10% crit. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
 - **Fingal's Horn** — summons 3 Fianna-warrior allies for 10s. Relic-tier rare. (*Ref: `SCOTTISH_RESEARCH.md` §1.6.*)
-- **Steam Engine (James Watt)** — AoE pulse with chimney-smoke particles. Industrial-era flavour. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §20.2.*)
+- ~~**Steam Engine (James Watt)**~~ — ✅ shipped 2026-05-24 (`steam_engine`, `aoe_pulse`, 165px, 7s CD, 18 dmg, heavy knockback, no freeze). Two grey smoke rings (0x6a6a6a). Paired passive `copper_rivet` (+10% attack speed). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §20.2.*)
 - ~~**Cullen Skink Ladle**~~ — ✅ shipped 2026-05-24 (`cullen_skink_ladle`, `lob_puddle`, 54px, 3.5s CD, 0 dmg pure slow). Slows enemies 45% for 2.8 s. `spawnSkinkPuddle` sister to `spawnBurnPuddle`. Paired passive `smoked_haddock` (+12 max HP).
 - **Flying Porridge Pot** — thrown pot explodes into oatmeal splash. Comedy weapon.
 - **Deep-Fried Mars Bar** — absurdist heavy projectile; comedy proc (rare but satisfying). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §12.1.*)

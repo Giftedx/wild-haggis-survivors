@@ -63,7 +63,12 @@ export type PassiveKey =
   // Cullen Skink Ladle paired passive — "Smoked Haddock".
   // The Finnan haddie dried in the smoke — the broth that keeps you alive.
   // +12 max HP. Pairs with a level-5 Cullen Skink Ladle for the future evo.
-  | 'smoked_haddock';
+  | 'smoked_haddock'
+  // Steam Engine paired passive — "Copper Rivet".
+  // A hand-riveted boiler fitting from the Clyde shipyards. +10% attack
+  // speed — every rivet tightened, every cycle runs faster. Pairs with a
+  // level-5 Steam Engine at chest for the future evolution.
+  | 'copper_rivet';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -290,6 +295,16 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_cullen_skink_ladle',
     effect: { type: 'add_weapon', weaponKey: 'cullen_skink_ladle' },
   },
+  // Steam Engine — heavy Clyde-built aoe_pulse, knockback-heavy, no freeze.
+  // Paired passive: Copper Rivet.
+  {
+    id: 'add_steam_engine',
+    name: 'upgradeCard.add_steam_engine.name',
+    description: 'upgradeCard.add_steam_engine.description',
+    rarity: 'uncommon',
+    icon: 'wicon_steam_engine',
+    effect: { type: 'add_weapon', weaponKey: 'steam_engine' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -463,6 +478,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_smoked_haddock',
     effect: { type: 'add_passive', passiveKey: 'smoked_haddock' },
+  },
+  // Steam Engine paired passive — Copper Rivet.
+  {
+    id: 'add_copper_rivet',
+    name: 'upgradeCard.add_copper_rivet.name',
+    description: 'upgradeCard.add_copper_rivet.description',
+    rarity: 'uncommon',
+    icon: 'ucard_copper_rivet',
+    effect: { type: 'add_passive', passiveKey: 'copper_rivet' },
   },
 ];
 

@@ -44,7 +44,8 @@ export type WeaponKey =
   | 'bagpipe_drone'
   | 'coastal_storm'
   | 'clootie_rag'
-  | 'cullen_skink_ladle';
+  | 'cullen_skink_ladle'
+  | 'steam_engine';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -386,6 +387,38 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [5],
       pierce: 0,
       radius: 1.10,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Steam Engine (James Watt). Victorian industrial
+  // Scotland — the Clyde shipyards, Watt's separate-condenser steam
+  // engine, Boulton & Watt. A pressure-vent AoE blast: a cloud of
+  // scalding steam erupts from the haggis, knocking back everything
+  // in range. Medium cooldown (the boiler needs time to build pressure),
+  // medium radius (the steam disperses fast), significant knockback.
+  // No freeze — this is scalding steam, not cold. Paired passive:
+  // Copper Rivet (+10% attack speed — the rivet holds the mechanism
+  // together, speeds up the cycle).
+  steam_engine: {
+    key: 'steam_engine',
+    nameKey: 'weapon.steam_engine.name',
+    descriptionKey: 'weapon.steam_engine.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 7000,
+    damage: 18,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 165,
+    arcDegrees: 360,
+    knockback: 120,
+    levelScaling: {
+      damage: 1.25,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
     },
   },
 

@@ -124,4 +124,9 @@ export const weapon = {
     description: 'A full 360° swing followed by two shockwaves rolling out across the moor.',
     flavour: "The cry from Stirling Bridge carried across the glens; the answer rang back two heartbeats later. This is that. The sword turns once and the moor remembers it twice more.",
   },
+  steam_engine: {
+    name: 'Steam Engine',
+    description: 'A burst of Clyde-built pressure — heavy knockback, no slow. Shorter range than the Storm, faster cycle.',
+    flavour: "Built on the Clyde, launched at Partick, scrapped at Dalmuir. Between launch and scrap: enough pressure to move a nation. The haggis tapped the boiler once. It has not needed to tap it again.",
+  },
 } as const;

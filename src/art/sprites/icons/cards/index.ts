@@ -20,6 +20,7 @@ import { drawPeatedOak } from './peatedOak';
 import { drawReeds } from './reeds';
 import { drawRowanThread } from './rowanThread';
 import { drawSmokedHaddock } from './smokedHaddock';
+import { drawCopperRivet } from './copperRivet';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -65,6 +66,8 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawRowanThread(scene);
   // Cullen Skink Ladle paired passive.
   drawSmokedHaddock(scene);
+  // Steam Engine paired passive.
+  drawCopperRivet(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

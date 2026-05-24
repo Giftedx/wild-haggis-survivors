@@ -56,4 +56,7 @@ export const passive = {
   smoked_haddock: {
     flavour: "Finnan haddie — cold-smoked over green wood on the shore at Findon, south of Aberdeen, where they've been doing it since before anyone wrote it down. The broth is what you get when you've been walking all day. The haggis takes it every morning.",
   },
+  copper_rivet: {
+    flavour: "Every Clyde-built hull was held together by hand — a heater boy, a holder-on, a riveter, and a catch-boy working in sequence with the noise so constant the shipyard men went deaf by forty. The rivet remembers the rhythm. The haggis keeps the beat.",
+  },
 } as const;

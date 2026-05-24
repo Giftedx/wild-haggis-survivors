@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 22 weapons (Cullen Skink Ladle added — comedy slow-lob food weapon)', () => {
-    expect(keys).toHaveLength(22);
+  it('has exactly 23 weapons (Steam Engine added — Clyde-built pressure burst)', () => {
+    expect(keys).toHaveLength(23);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {

@@ -124,4 +124,9 @@ export const weapon = {
     description: 'A fou 360° swing follaed by twa shockwaves rowin oot athort tha moor.',
     flavour: "Tha cry fae Stirling Brig cairried athort tha glens; tha answer rang back twa hertbeats efter. This is that. Tha swurd turns aince an tha moor minds it twa times mair.",
   },
+  steam_engine: {
+    name: 'Steam Engine',
+    description: 'A burst o Clyde-biggit pressure — heavy knockback, nae slow. Shorter range nor tha Storm, faster cycle.',
+    flavour: "Biggit on tha Clyde, launcht at Partick, scrapped at Dalmuir. Atween launch an scrap: enough pressure tae move a nation. Tha haggis tapped tha boiler aince. It hasnae needed tae tap it again.",
+  },
 } as const;

@@ -155,6 +155,14 @@ export const upgradeCard = {
     name: 'Smoked Haddock',
     description: 'Tha Finnan haddie — broth that keeps ye gangin. +12 max HP. Pairs wi tha Cullen Skink Ladle.',
   },
+  add_steam_engine: {
+    name: 'Steam Engine',
+    description: 'Clyde-biggit pressure burst — heavy knockback. Shorter range nor tha Coastal Storm, faster cycle.',
+  },
+  add_copper_rivet: {
+    name: 'Copper Rivet',
+    description: 'Hand-riveted Clyde fittin. Every cycle rin faster (+10% attack speed). Pairs wi tha Steam Engine.',
+  },
   boost_hp: {
     name: 'Thick Hide',
     description: 'Room fer a wee bit mair punishment (+10 max HP). Stack as mony as ye like.',
