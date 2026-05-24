@@ -262,6 +262,8 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'deco_machair_shell',
     // Clyde Shipyard hazard.
     'hazard_molten_slag',
+    // Black Bog hazard.
+    'hazard_ink_pool',
   ] as const) {
     pushKey(out, seen, 'decoration', k, k);
   }

@@ -191,6 +191,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private biomeKnockbackBonus: number = 1;
   /** Biome-driven XP gem value multiplier — read by XPSystem at collect time. */
   private biomeXpMul: number = 1;
+  /** Biome-driven drift multiplier — baked into recalcStats, not read at use-time. */
+  private biomeDriftMul: number = 1;
   private driftDegrees: number = PLAYER.DRIFT_DEGREES;
   /** Pre-baked rotation matrix entries for `driftDegrees`. Refreshed in
    *  `recalcStats()` so the per-frame drift apply collapses to four
@@ -1178,7 +1180,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // amplifies it (rush). recalcStats is called on stance cycle so
     // the per-frame hot path keeps the cheap pre-baked sin/cos.
     const stanceDriftMul = getStanceModifiers(this.stance).driftMul;
-    this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction) * stanceDriftMul;
+    this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction) * stanceDriftMul * this.biomeDriftMul;
     // Pre-bake the drift rotation matrix so per-frame movement skips the trig.
     // Sign flip mirrors the Drift (anticlockwise subspecies) without changing magnitude.
     const driftRad = this.driftDegrees * (Math.PI / 180) * this.driftSign;
@@ -1620,12 +1622,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'frostBite'
       | 'cairngormWind'
       | 'glenCoeEcho'
-      | 'clydeRivets',
+      | 'clydeRivets'
+      | 'blackBogInk',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
     this.biomeKnockbackBonus = 1;
     this.biomeXpMul = 1;
+    this.biomeDriftMul = 1;
     switch (kind) {
       case 'bogSlow':
         this.biomeSpeedMul = 0.85;
@@ -1685,7 +1689,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.biomeSpeedMul = 0.92;
         this.biomeXpMul = 1.15;
         break;
+      case 'blackBogInk':
+        // Ink-dark compressed mire — the drift doubles (×2) as the darkness
+        // disorients. -15% speed (same tax as bogSlow).
+        this.biomeSpeedMul = 0.85;
+        this.biomeDriftMul = 2.0;
+        break;
     }
+    // biomeDriftMul is baked in recalcStats (not read at use-time), so we
+    // must rebake the drift matrix on every biome change — entering AND
+    // leaving a drift-modifying biome both need to update the pre-baked
+    // sin/cos values.
+    this.recalcStats();
   }
 
   /** Read by XPSystem to bump gem value when collected in heather bloom. */

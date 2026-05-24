@@ -142,6 +142,9 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_bus_stop',
     'deco_waymarker_post',
   ],
+  // Black Bog — no story props. The ink swallows markers. The only
+  // thing placed here is silence.
+  black_bog: [],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -260,6 +263,16 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_wind_grass', 0.72],
     ['deco_thistle', 0.88],
     ['deco_rock_3', 1.0],
+  ],
+  // Black Bog flora. Near-featureless ink-dark mire. The sphagnum is
+  // black here; the bog-cotton grows but looks wrong. Almost no
+  // dressing — the absence is the atmosphere.
+  black_bog: [
+    ['deco_sphagnum', 0.30],
+    ['deco_bog_cotton', 0.55],
+    ['deco_peat_cut', 0.72],
+    ['deco_rock_2', 0.88],
+    ['deco_rock', 1.0],
   ],
 };
 

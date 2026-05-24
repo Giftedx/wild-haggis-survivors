@@ -609,3 +609,57 @@ export function bakeHazardMoltenSlag(scene: Phaser.Scene): void {
   g.generateTexture('hazard_molten_slag', w, h);
   g.destroy();
 }
+
+// Black Bog — ink pool from compressed peat water.
+// Near-black wide oval, iridescent blue-purple sheen on the surface.
+// Silhouette: a dark mirror that holds no reflection — the absence of
+// light is the warning. Faint oil-slick shimmer distinguishes it from
+// shadow on the ground.
+export function bakeHazardInkPool(scene: Phaser.Scene): void {
+  const w = 44, h = 30;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Ground shadow — ink bleeds into the peat around it
+  g.fillStyle(0x0a0508, 0.55);
+  g.fillEllipse(cx, cy + 1, 42, 26);
+
+  // Outer ink body — near-black
+  g.fillStyle(0x100808, 1);
+  g.fillEllipse(cx, cy, 38, 22);
+
+  // Mid depth — slightly bluer black (the peat is deeper here)
+  g.fillStyle(0x0c0810, 1);
+  g.fillEllipse(cx - 1, cy - 1, 32, 17);
+
+  // Inner pool — the bottomless dark
+  g.fillStyle(0x080612, 1);
+  g.fillEllipse(cx, cy - 0.5, 24, 12);
+
+  // Iridescent sheen: blue-purple oil slick on the surface
+  // The sheen sits off-centre (east-north) — where light catches a pool
+  g.fillStyle(0x4a2878, 0.30);
+  g.fillEllipse(cx + 5, cy - 3, 16, 7);
+  g.fillStyle(0x3a1860, 0.20);
+  g.fillEllipse(cx + 7, cy - 4, 10, 4);
+
+  // Blue shimmer highlights — iridescent peak
+  g.fillStyle(0x8050c0, 0.22);
+  g.fillEllipse(cx + 6, cy - 4, 7, 2.5);
+  g.fillStyle(0xb080e8, 0.16);
+  g.fillEllipse(cx + 7, cy - 4.5, 4, 1.2);
+
+  // Tiny specular fleck — the only bright point on the whole hazard
+  g.fillStyle(0xd8c0f0, 0.50);
+  g.fillCircle(cx + 8, cy - 5, 0.8);
+  g.fillStyle(0xffffff, 0.35);
+  g.fillCircle(cx + 8.5, cy - 5.5, 0.4);
+
+  // Edge detail: a slight lighter seam on the west bank (where peat
+  // meets water — wet exposed edge, barely distinguishable)
+  g.fillStyle(0x1c1018, 0.70);
+  g.fillEllipse(cx - 14, cy + 1, 6, 3);
+
+  g.generateTexture('hazard_ink_pool', w, h);
+  g.destroy();
+}

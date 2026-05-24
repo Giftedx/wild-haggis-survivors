@@ -255,6 +255,9 @@ export class AudioSystem {
       highland_mist: { f0: 280, f1: 220, type: 'sine', dur: 0.32, vol: 0.06 },    // long, soft, low
       // Clyde Shipyard — molten slag hiss-crack.
       molten_slag: { f0: 800, f1: 400, type: 'sawtooth', dur: 0.14, vol: 0.10 },  // iron-heat shriek → runoff burble
+      // Black Bog — ink pool, thick and slow. Deep sub-bass swell; the bog
+      // barely makes a sound but you feel the darkness close around you.
+      ink_pool: { f0: 80, f1: 50, type: 'sine', dur: 0.40, vol: 0.07 },           // sub-bass depth swell
     };
     const p = presets[hazardKey];
     osc.type = p.type;

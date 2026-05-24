@@ -59,4 +59,10 @@ export const biomes = {
     loreSnippet: 'Iron, fire, an Clyde watter. Three million ton o ship launched here.',
     lore: 'Three million ton o ship launched fae this stretch o tha Clyde — warships, liners, tha Lusitania, tha QE2. Tha din wis total: heater laddies tossed rivets, hauder-ons catched them bare-haundit in iron cups, riveters hammered them hame sixty times a meenit fer ten oors a day til thay gaed deaf bi forty. Tha river is quaet nou. Tha dry-docks haud still watter an rustin cranes. Tha haggis picks its wey across slag that still hauds tha heat o industry; tha keel is awa but tha warmth stays in tha grund.',
   },
+  black_bog: {
+    name: 'The Black Bog',
+    entry: 'Ink aneath yer feet. Tha drift\'s waur here.',
+    loreSnippet: 'Raised mire whaur tha peat brouned tae black. Tha watter hauds nae reflection.',
+    lore: 'Ayont tha far edge o tha kent muir, tha peat has compressed tae near-stane an tha bog gangs ink-daurk. No nicht-daurk — deeper nor that. Nae reflection aff tha watter; tha surface swallies licht. Haggis that wander here say tha drift pulls stranger, as if tha peat itsel is wund tha wrang wey. Thay\'re richt. Local craiturs avoid tha centre. Tha ink merks ilka step an disnae wash oot easy. Gang through it or be claimed bi it.',
+  },
 } as const;

@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -20,7 +20,8 @@ export type BiomeModifierKind =
   | 'frostBite'
   | 'cairngormWind'
   | 'glenCoeEcho'
-  | 'clydeRivets';
+  | 'clydeRivets'
+  | 'blackBogInk';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -302,9 +303,39 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // River Clyde carries light mist at dawn; heavy smoke has cleared.
     ambientHaarDensity: 0.05,
   },
+  // Black Bog — raised mire compressed to near-stone; peat went past brown
+  // to ink-dark. The water holds no reflection. The drift pulls harder here.
+  // `blackBogInk` modifier: −15% speed, ×2 drift (the darkness disorients).
+  // Post-bell exclusive; ink_pool hazard spawns around the player.
+  black_bog: {
+    id: 'black_bog',
+    nameKey: 'biomes.black_bog.name',
+    tint: 0x100808,
+    entryToastKey: 'biomes.black_bog.entry',
+    loreSnippetKey: 'biomes.black_bog.loreSnippet',
+    loreKey: 'biomes.black_bog.lore',
+    toastColor: '#502020',
+    spawnWeightMods: {
+      ghost: 2.5,
+      haar_wraith: 1.8,
+      ledger_wraith: 1.8,
+      edinburgh_ghost_guide: 1.3,
+      tourist: 0.1,
+      sheep: 0.1,
+      highland_cow: 0.1,
+      chef: 0.1,
+    },
+    modifier: 'blackBogInk',
+    // Darkest biome in the catalog — below cairngorm (0.08). The ink muffles
+    // everything; the music should feel like drowning in slow oil.
+    moodTimbre: 0.05,
+    // Dense murk — near-haar level. The fog isn't water mist here; it's
+    // particulate peat spore. Charter §4.3 cap still applies.
+    ambientHaarDensity: 0.65,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

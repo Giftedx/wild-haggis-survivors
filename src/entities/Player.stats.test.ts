@@ -310,4 +310,26 @@ describe('Player.setBiomeModifier', () => {
     p.setBiomeModifier('bogSlow');
     expect(p.getBiomeXpMultiplier()).toBe(1);
   });
+
+  it('blackBogInk sets speed mul to 0.85 and leaves XP/knockback neutral', () => {
+    const p = makePlayer();
+    p.setBiomeModifier('blackBogInk');
+    expect(p.getBiomeXpMultiplier()).toBe(1);
+    expect(p.getBiomeKnockbackBonus()).toBe(1);
+  });
+
+  it('blackBogInk doubles drift — driftDegrees larger than base after setBiomeModifier', () => {
+    const p = makePlayer();
+    const baseDrift = p.getDriftDegrees();
+    p.setBiomeModifier('blackBogInk');
+    expect(p.getDriftDegrees()).toBeCloseTo(baseDrift * 2, 1);
+  });
+
+  it('leaving blackBogInk resets drift back to base', () => {
+    const p = makePlayer();
+    const baseDrift = p.getDriftDegrees();
+    p.setBiomeModifier('blackBogInk');
+    p.setBiomeModifier('bogSlow');
+    expect(p.getDriftDegrees()).toBeCloseTo(baseDrift, 1);
+  });
 });

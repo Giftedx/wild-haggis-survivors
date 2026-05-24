@@ -71,6 +71,8 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   glen_coe: 0x9a6048,
   // Clyde Shipyard — copper-orange, the colour of a hot rivet just caught.
   clyde_shipyard: 0xc87840,
+  // Black Bog — deep ink-purple; iridescent sheen on the dark water.
+  black_bog: 0x3a1848,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

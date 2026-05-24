@@ -59,4 +59,10 @@ export const biomes = {
     loreSnippet: 'Iron, fire, and Clyde water. Three million tons of ship launched here.',
     lore: 'Three million tons of ship launched from this stretch of the Clyde — warships, liners, the Lusitania, the QE2. The noise was total: heater boys tossed rivets, holder-ons caught them bare-handed in iron cups, riveters hammered them home sixty times a minute for ten hours a day until they went deaf by forty. The river is quiet now. The dry-docks hold still water and rusting cranes. The haggis picks its way across slag that still holds the heat of industry; the keel is gone but the warmth stays in the ground.',
   },
+  black_bog: {
+    name: 'The Black Bog',
+    entry: 'Ink underfoot. The drift\'s worse here.',
+    loreSnippet: 'Raised mire where the peat browned to black. The water holds no reflection.',
+    lore: 'Beyond the far edge of the known moor, the peat has compressed to near-stone and the bog goes ink-dark. Not night-dark — deeper than that. No reflection off the water; the surface swallows light. Haggis that wander here say the drift pulls stronger, as if the peat itself is wound the wrong way. They are right. Local creatures avoid the centre. The ink marks every step and does not wash out easily. Go through it or be claimed by it.',
+  },
 } as const;

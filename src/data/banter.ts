@@ -1471,6 +1471,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.clyde_shipyard.c',
         'ui.banter.biome_change.clyde_shipyard.d',
       ],
+      // Black Bog — ink-dark compressed peat mire, drift ×2.
+      // Edge register: sparse, foreboding, tactile. No comedy.
+      black_bog: [
+        'ui.banter.biome_change.black_bog.a',
+        'ui.banter.biome_change.black_bog.b',
+        'ui.banter.biome_change.black_bog.c',
+        'ui.banter.biome_change.black_bog.d',
+      ],
     },
   },
   {

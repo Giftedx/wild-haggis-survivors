@@ -51,7 +51,9 @@ export type HazardKey =
   | 'wind_shear'
   | 'highland_mist'
   // Clyde Shipyard — molten runoff from the dry-docks.
-  | 'molten_slag';
+  | 'molten_slag'
+  // Black Bog — near-black standing peat water; wide chip hazard.
+  | 'ink_pool';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -175,6 +177,20 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 5000,
     spawnIntervalMs: 10000,
   },
+  // Black Bog — ink pool from the compressed peat.
+  // Wide hitbox (22 px) mirrors highland_mist — the pool spreads further
+  // than it looks. Long lifetime (14 s) and medium chip (3) — the bog is
+  // patient. Pairs with the ×2 drift modifier: disoriented movement keeps
+  // the player standing in it longer than they intend to.
+  ink_pool: {
+    key: 'ink_pool',
+    texture: 'hazard_ink_pool',
+    biome: 'black_bog',
+    damage: 3,
+    hitboxRadius: 22,
+    lifetimeMs: 14000,
+    spawnIntervalMs: 9000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -189,4 +205,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'wind_shear',
   'highland_mist',
   'molten_slag',
+  'ink_pool',
 ];
