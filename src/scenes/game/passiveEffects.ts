@@ -98,5 +98,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // (360° sweep + two shockwaves).
       player.addCritChance(0.10);
       break;
+    case 'peated_oak':
+      // +10% global damage — the smoke and barrel tannins sharpen every
+      // edge. Pairs with Whisky Lob at lv5 for the future evolution.
+      // No accessory equip — the oak cask is conceptual, not worn.
+      player.addDamageMultiplier(0.10);
+      break;
   }
 }

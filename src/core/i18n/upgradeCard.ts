@@ -44,6 +44,10 @@ export const upgradeCard = {
     name: 'Waulking Mallet',
     description: 'A weighted oak beater. Hits on the beat land harder; off-beat hits still hit.',
   },
+  add_whisky_lob: {
+    name: 'Whisky Lob',
+    description: 'Lob a flask — it shatters and burns. Zone-denial on a slow cooldown. Pair wi Peated Oak.',
+  },
   add_dirk_dance: {
     name: 'Dirk Dance',
     description: 'Three quick slashes — centre, left, right. Pair wi Gillie\'s Edge for the legendary Dirk Flurry.',
@@ -120,6 +124,10 @@ export const upgradeCard = {
   add_stirling_medal: {
     name: 'Stirling Medal',
     description: 'Valour at Stirling Bridge, 1297. +10% crit chance. Evolves Wallace Sword.',
+  },
+  add_peated_oak: {
+    name: 'Peated Oak',
+    description: 'Aged spirit on charred oak. +10% damage to everything. Pairs wi the Whisky Lob.',
   },
   // Stat boost cards
   boost_hp: {

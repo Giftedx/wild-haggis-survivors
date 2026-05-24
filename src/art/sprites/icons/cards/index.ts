@@ -16,6 +16,7 @@ import { drawTuningFork } from './tuningFork';
 import { drawGilliesEdge } from './gilliesEdge';
 import { drawWidowsShawl } from './widowsShawl';
 import { drawStirlingMedal } from './stirlingMedal';
+import { drawPeatedOak } from './peatedOak';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -53,6 +54,8 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawGilliesEdge(scene);
   drawWidowsShawl(scene);
   drawStirlingMedal(scene);
+  // Whisky Lob paired passive.
+  drawPeatedOak(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

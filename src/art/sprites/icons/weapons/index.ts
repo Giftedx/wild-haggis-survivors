@@ -29,6 +29,7 @@ import { drawDirkFlurryIcon } from './dirkFlurry';
 import { drawBansheeWailIcon } from './bansheeWail';
 import { drawFreedomBladeIcon } from './freedomBlade';
 import { drawPracticeChanterIcon } from './practiceChanter';
+import { drawWhiskyLobIcon } from './whiskyLob';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -48,6 +49,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawWaulkingMalletIcon(scene);
   // Practice Chanter — Pibroch variant starter weapon.
   drawPracticeChanterIcon(scene);
+  // Whisky Lob — zone-denial lob weapon.
+  drawWhiskyLobIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);

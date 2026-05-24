@@ -84,6 +84,11 @@ export const weapon = {
     description: 'The melody pipe before the bag. Short breath, quick fingering — learns fast.',
     flavour: "Every piper starts here — the chanter alone, no bag, no drones, just the scale up and down the moorland track. The Pibroch haggis never put it down. Why would it? The moor listens to the chanter first.",
   },
+  whisky_lob: {
+    name: 'Whisky Lob',
+    description: 'Lob a hip flask. It shatters on landing and burns whatever stands in the puddle.',
+    flavour: "A good dram is wasted on the enemy — but the moor has never been precious about its whisky. The flask goes in the air, the spirit goes on the ground, and the ground holds onto it.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, one breath. The arc that was three becomes a wall.',

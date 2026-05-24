@@ -554,6 +554,9 @@ export class WeaponSystem {
       case 'aura_pulse':
         this.fireAuraPulse(w, px, py);
         break; // aura has its own visual
+      case 'lob_puddle':
+        this.fireLobPuddle(w, px, py);
+        return; // owns its own VFX; skip the muzzle flash below
     }
     const flashColor = resolveMuzzleFlashColor(w.config.behavior);
     if (flashColor !== null) this.spawnMuzzleFlash(px, py, flashColor);
@@ -820,6 +823,112 @@ export class WeaponSystem {
       onComplete: () => {
         damageHandle.cancel();
         zone.setVisible(false);
+      },
+    });
+  }
+
+  // ── Lob Puddle (Whisky Lob) — throw a flask that burns on landing ──
+
+  /**
+   * Lob a flask toward the nearest enemy (or in player-facing direction if
+   * none found). A parabolic arc animation travels from the player to the
+   * landing spot over `FLASK_FLIGHT_MS`, then `spawnBurnPuddle` places a
+   * 3 s DoT zone at the landing position. No projectile pool is used —
+   * the arc is a tween on a pooled VFX circle, the puddle is a second
+   * pooled circle with an UpdateTickers interval for damage.
+   *
+   * Return without firing if no valid landing position can be resolved.
+   */
+  private fireLobPuddle(w: ActiveWeapon, px: number, py: number): void {
+    const FLASK_FLIGHT_MS = 650;
+    const ARC_HEIGHT = 40;
+
+    // Resolve landing position — toward closest enemy within range,
+    // or player-facing direction at 65% of range when no enemy found.
+    const target = this.findClosestEnemy(px, py, w.config.range);
+    let lx: number, ly: number;
+    if (target) {
+      const dist = Phaser.Math.Distance.Between(px, py, target.x, target.y);
+      const clamped = Math.min(dist, w.config.range);
+      const angle = Phaser.Math.Angle.Between(px, py, target.x, target.y);
+      lx = px + Math.cos(angle) * clamped;
+      ly = py + Math.sin(angle) * clamped;
+    } else {
+      lx = px + Math.cos(this.playerFacing) * w.config.range * 0.65;
+      ly = py + Math.sin(this.playerFacing) * w.config.range * 0.65;
+    }
+
+    // Visual arc — small amber circle tweened along a parabola.
+    const flaskVfx = this.acquireVfxCircle(px, py, 4, 0xe07010, 0.9);
+    flaskVfx.setDepth(4);
+
+    const startX = px, startY = py;
+    const dx = lx - startX, dy = ly - startY;
+    const arcProxy = { t: 0 };
+    this.scene.tweens.add({
+      targets: arcProxy,
+      t: 1,
+      duration: FLASK_FLIGHT_MS,
+      ease: 'Linear',
+      onUpdate: (tween: Phaser.Tweens.Tween) => {
+        const t = (tween.targets[0] as { t: number }).t;
+        flaskVfx.x = startX + dx * t;
+        flaskVfx.y = startY + dy * t - Math.sin(t * Math.PI) * ARC_HEIGHT;
+      },
+      onComplete: () => {
+        flaskVfx.setVisible(false);
+        this.spawnBurnPuddle(w, lx, ly);
+      },
+    });
+  }
+
+  /** Spawn a burn puddle at (lx, ly) that ticks DoT to enemies within range. */
+  private spawnBurnPuddle(w: ActiveWeapon, lx: number, ly: number): void {
+    if (this.scene.getTimeManager().isGameplayPaused()) return;
+    const radius = this.effectiveAoe(w);
+    const weaponKey = w.config.key;
+    const PUDDLE_DURATION_MS = 3200;
+    const TICK_INTERVAL_MS = 500;
+
+    // Burn puddle visual — amber-orange pool.
+    const puddle = this.acquireVfxCircle(lx, ly, radius, 0xe07010, 0.32);
+    puddle.setDepth(1);
+
+    // Shatter flourish at landing site — reuse caber burst as a visual-only splash.
+    this.spawnWeaponFlourish(
+      lx, ly,
+      'fx_weapon_caber_burst',
+      { scale: 0.55, endScale: 1.1, duration: 350, alpha: 0.75, depth: 4 },
+    );
+
+    const repeats = Math.max(1, Math.floor(PUDDLE_DURATION_MS / TICK_INTERVAL_MS) - 1);
+    const damageHandle = this.scene.getUpdateTickers().addInterval(
+      'scaled',
+      TICK_INTERVAL_MS,
+      () => {
+        if (this.scene.getTimeManager().isGameplayPaused()) return;
+        const { damage: dmg, isCrit } = this.effectiveDamage(w);
+        const enemies = this.enemyGroup.getChildren() as Enemy[];
+        const rSq = radius * radius;
+        for (const enemy of enemies) {
+          if (!enemy.active) continue;
+          const edx = enemy.x - lx;
+          const edy = enemy.y - ly;
+          if (edx * edx + edy * edy <= rSq) {
+            this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+          }
+        }
+      },
+      { repeats },
+    );
+
+    this.scene.tweens.add({
+      targets: puddle,
+      alpha: 0,
+      duration: PUDDLE_DURATION_MS,
+      onComplete: () => {
+        damageHandle.cancel();
+        puddle.setVisible(false);
       },
     });
   }

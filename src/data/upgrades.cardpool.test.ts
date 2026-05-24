@@ -106,7 +106,8 @@ describe('PASSIVE_KEYS', () => {
     // Highland Horrors (2026-05-12) added `gillies_edge`, `widows_shawl`,
     // `stirling_medal` — pairings for Dirk Flurry, Banshee Wail,
     // Freedom Blade.
-    expect(PASSIVE_KEYS).toHaveLength(16);
+    // Whisky Lob (2026-05-24) added `peated_oak` — +10% damage.
+    expect(PASSIVE_KEYS).toHaveLength(17);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');

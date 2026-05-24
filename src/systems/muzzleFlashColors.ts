@@ -29,6 +29,9 @@ export const VFX_COLOR_MIST = 0x99bbcc;
 /** Ceòl Mòr bagpipes (aura_pulse) — forest drone green. */
 export const VFX_COLOR_AURA = 0x44aa66;
 
+/** Whisky Lob (lob_puddle) — amber spirit orange. */
+export const VFX_COLOR_WHISKY_LOB = 0xe07010;
+
 export function resolveMuzzleFlashColor(behavior: WeaponBehavior): number | null {
   switch (behavior) {
     case 'projectile': return MUZZLE_FLASH_THISTLE;
@@ -48,5 +51,6 @@ export function resolveWeaponVfxColor(behavior: WeaponBehavior): number {
     case 'aoe_pulse':  return VFX_COLOR_BAGPIPE;
     case 'trail':      return VFX_COLOR_MIST;
     case 'aura_pulse': return VFX_COLOR_AURA;
+    case 'lob_puddle': return VFX_COLOR_WHISKY_LOB;
   }
 }

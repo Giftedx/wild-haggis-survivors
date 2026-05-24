@@ -44,4 +44,7 @@ export const passive = {
   stirling_medal: {
     flavour: "Struck after the bridge at Stirling fell in September 1297 — Wallace and Murray standing on the English bones of an army that wouldn't cross. The medal is small and unmarked beyond the saltire; the men who earned them gave them away. The haggis got this one from a chest dredged from the Forth.",
   },
+  peated_oak: {
+    flavour: "The cask does more than hold it — it changes it. Years in charred Highland oak round off the young spirit's fury, replace fire with smoke, replace bite with warmth. The haggis carries a stave, says nothing, hits differently.",
+  },
 } as const;

@@ -44,4 +44,7 @@ export const passive = {
   stirling_medal: {
     flavour: "Struck efter tha brig at Stirling fell in September 1297 — Wallace an Murray staundin on tha English banes o an airmy that widnae cross. Tha medal is wee an unmarked ayont tha saltire; tha men wha earned them gae them awa. Tha haggis got this ane fae a kist drudged fae tha Forth.",
   },
+  peated_oak: {
+    flavour: "Tha cask dis mair than hauld it — it changes it. Years in chairred Heiland aik roon aff tha young spirit's fury, replace fire wi reek, replace bite wi wairm. Tha haggis cairries a stave, says naethin, hits different.",
+  },
 } as const;

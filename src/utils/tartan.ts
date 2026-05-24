@@ -99,6 +99,8 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   wallace_sword:   '#3a4a5a', // patriot steel (Stirling Bridge grey-blue)
   // Practice Chanter — chanter-ivory (bone-pale pipe body)
   practice_chanter: '#c8b878',
+  // Whisky Lob — amber-spirit orange (aged-malt pour)
+  whisky_lob: '#e07010',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

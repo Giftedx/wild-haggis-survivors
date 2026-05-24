@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 17 weapons (Practice Chanter added as Pibroch starter)', () => {
-    expect(keys).toHaveLength(17);
+  it('has exactly 18 weapons (Whisky Lob added as zone-denial lob)', () => {
+    expect(keys).toHaveLength(18);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {

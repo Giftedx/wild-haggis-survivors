@@ -18,7 +18,8 @@ export type WeaponBehavior =
   | 'aoe_pulse'
   | 'trail'
   | 'arc_sweep'
-  | 'aura_pulse';
+  | 'aura_pulse'
+  | 'lob_puddle';
 
 /** All valid weapon keys — single source of truth. */
 export type WeaponKey =
@@ -38,7 +39,8 @@ export type WeaponKey =
   | 'dirk_dance'
   | 'grannies_curse'
   | 'wallace_sword'
-  | 'practice_chanter';
+  | 'practice_chanter'
+  | 'whisky_lob';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -417,6 +419,35 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [3, 5],
       pierce: 0,
       radius: 1,
+    },
+  },
+
+  // Whisky Lob — throw a hip flask that shatters on impact, leaving
+  // a burning puddle of aged spirit on the ground. Slow cooldown but
+  // the burn zone lingers, punishing enemies that clump or chase.
+  // Zone-denial in the survivors style: plant a puddle, kite through
+  // it. Peated Oak paired passive rounds the damage edges (+10% dmg);
+  // the evolution line is reserved for a future "aged malt" form.
+  whisky_lob: {
+    key: 'whisky_lob',
+    nameKey: 'weapon.whisky_lob.name',
+    descriptionKey: 'weapon.whisky_lob.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 4000,
+    damage: 4,
+    projectileSpeed: 220,
+    projectileCount: 1,
+    pierce: 0,
+    range: 260,
+    aoeRadius: 58,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.28,
+      cooldown: 0.90,
+      countAt: [5],
+      pierce: 0,
+      radius: 1.12,
     },
   },
 

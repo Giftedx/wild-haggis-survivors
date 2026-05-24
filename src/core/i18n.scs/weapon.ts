@@ -84,6 +84,11 @@ export const weapon = {
     description: 'Tha melody pipe afore tha bag. Short braith, quick fingerin — learns fest.',
     flavour: "Ivvery piper starts here — tha chanter alane, nae bag, nae drones, jist tha scale up an doon tha moorlan track. Tha Piobaireachd haggis nivver pit it doon. Why wid it? Tha moor hears tha chanter first.",
   },
+  whisky_lob: {
+    name: 'Whisky Lob',
+    description: 'Lob a hip flask. It shatters on landin an burns onythin standin in tha puddle.',
+    flavour: "A guid dram is wasted on tha enemy — but tha moor hasnae ivver been precious aboot its whisky. Tha flask gangs in tha air, tha spirit gangs on tha grun, an tha grun hauds ontae it.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, ane braith. Tha arc that wis three becomes a waw.',

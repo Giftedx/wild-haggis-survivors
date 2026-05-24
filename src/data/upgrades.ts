@@ -44,7 +44,12 @@ export type PassiveKey =
   // Highland Horrors — Wallace Sword evolution paired passive.
   // "Stirling Medal" — valor at Stirling Bridge, 1297.
   // +10% crit chance. Paired with a level-5 Wallace Sword at chest → Freedom Blade.
-  | 'stirling_medal';
+  | 'stirling_medal'
+  // Whisky Lob paired passive — "Peated Oak".
+  // Aged spirit on charred oak. +10% global damage — the smoke and barrel
+  // tannins sharpen every edge the haggis carries. Pairs with a level-5
+  // Whisky Lob at chest for the future evolution.
+  | 'peated_oak';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -200,6 +205,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'wicon_bagpipes',
     effect: { type: 'add_weapon', weaponKey: 'waulking_mallet' },
+  },
+  // Whisky Lob — zone-denial lob weapon, shatters on landing.
+  {
+    id: 'add_whisky_lob',
+    name: 'upgradeCard.add_whisky_lob.name',
+    description: 'upgradeCard.add_whisky_lob.description',
+    rarity: 'uncommon',
+    icon: 'wicon_whisky_lob',
+    effect: { type: 'add_weapon', weaponKey: 'whisky_lob' },
   },
   // Highland Horrors — three new weapon families.
   {
@@ -363,6 +377,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'rare',
     icon: 'ucard_stirling_medal',
     effect: { type: 'add_passive', passiveKey: 'stirling_medal' },
+  },
+  // Whisky Lob paired passive — Peated Oak.
+  {
+    id: 'add_peated_oak',
+    name: 'upgradeCard.add_peated_oak.name',
+    description: 'upgradeCard.add_peated_oak.description',
+    rarity: 'uncommon',
+    icon: 'ucard_peated_oak',
+    effect: { type: 'add_passive', passiveKey: 'peated_oak' },
   },
 ];
 

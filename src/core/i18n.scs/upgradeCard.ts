@@ -43,6 +43,10 @@ export const upgradeCard = {
     name: 'Waulkin Mallet',
     description: 'A heavy aik beater. Hits on tha beat laund harder; aff-beat hits still hit.',
   },
+  add_whisky_lob: {
+    name: 'Whisky Lob',
+    description: 'Lob a flask — it shatters an burns. Zone-denial on a slaw cooldown. Pair wi Peated Oak.',
+  },
   add_dirk_dance: {
     name: 'Dirk Daunce',
     description: "Three quick slashes — centre, left, richt. Pair wi Gillie's Edge fer tha legendary Dirk Flurry.",
@@ -118,6 +122,10 @@ export const upgradeCard = {
   add_stirling_medal: {
     name: 'Stirling Medal',
     description: 'Valour at Stirling Brig, 1297. +10% crit chance. Evolves Wallace Swurd.',
+  },
+  add_peated_oak: {
+    name: 'Peated Oak',
+    description: 'Aged spirit on chairred aik. +10% dunt tae awthin. Pairs wi tha Whisky Lob.',
   },
   boost_hp: {
     name: 'Thick Hide',
