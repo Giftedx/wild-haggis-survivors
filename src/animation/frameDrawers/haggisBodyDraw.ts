@@ -400,6 +400,116 @@ function drawVariantSignature(
       g.fillCircle(cx - 8, cy - 4, 0.35);
       break;
     }
+    case 'drouthy': {
+      // Woozy swirl — drunken counter-clockwise spiral at the left flank,
+      // whisky-gold. Amber drip below the flask area.
+      g.fillStyle(0xf0c828, 0.6);
+      g.fillCircle(cx - 14, cy - 2, 0.9);
+      g.fillCircle(cx - 16, cy - 1, 0.8);
+      g.fillCircle(cx - 16, cy + 1, 0.7);
+      g.fillCircle(cx - 14, cy + 2, 0.6);
+      g.fillCircle(cx - 12, cy + 1, 0.5);
+      g.fillStyle(0xf0c828, 0.8);
+      g.fillCircle(cx + 14, cy + 10, 0.8);
+      g.fillStyle(0xf0c828, 0.5);
+      g.fillCircle(cx + 14, cy + 12, 0.5);
+      break;
+    }
+    case 'pibroch': {
+      // Drone bag — the bagpipe bag silhouette tucked under the left arm,
+      // with a silver blowpipe and a brown drone stem.
+      g.fillStyle(0x2a1808, 1);
+      g.fillEllipse(cx - 15, cy + 5, 8, 5);
+      g.fillStyle(0xc8c8c8, 0.9);
+      g.fillRect(cx - 13, cy, 1, 6);
+      g.fillStyle(0x6a4020, 0.85);
+      g.fillRect(cx - 16, cy + 2, 1, 6);
+      break;
+    }
+    case 'orcadian': {
+      // Standing stone — a miniature menhir silhouette at the right,
+      // lichen-marked teal-grey Orcadian sandstone.
+      g.fillStyle(0x4a7080, 1);
+      g.fillRect(cx + 18, cy - 6, 4, 12);
+      g.fillRect(cx + 17, cy - 8, 6, 3);
+      g.fillStyle(0x6a9090, 0.6);
+      g.fillCircle(cx + 20, cy - 3, 1.2);
+      g.fillCircle(cx + 18, cy + 2, 0.8);
+      break;
+    }
+    case 'hebridean': {
+      // Cockle shell — a pale white shell at the feet, beachcomber's token.
+      g.fillStyle(0xe8e4d8, 0.9);
+      g.fillCircle(cx - 16, cy + 20, 1.8);
+      g.fillStyle(0xb8b4a8, 0.8);
+      g.fillRect(cx - 16, cy + 18, 0.6, 3);
+      g.fillRect(cx - 17.2, cy + 18.5, 0.5, 2.5);
+      g.fillRect(cx - 14.8, cy + 18.5, 0.5, 2.5);
+      break;
+    }
+    case 'iron_brew': {
+      // Can tab — a tiny Irn-Bru-blue pull-ring at the body crown.
+      g.fillStyle(0x40c0e0, 0.9);
+      g.fillCircle(cx + 10, cy - 16, 1.8);
+      g.fillStyle(0x2a90b0, 1);
+      g.fillRect(cx + 8, cy - 15, 4, 0.8);
+      g.fillStyle(0x80e8f8, 0.6);
+      g.fillCircle(cx + 9.5, cy - 16.5, 0.6);
+      break;
+    }
+    case 'grans_best': {
+      // Ball of yarn with knitting needles — sage wool, bone needles.
+      g.fillStyle(0x4a6840, 0.85);
+      g.fillCircle(cx + 16, cy + 8, 3);
+      g.fillStyle(0x7aa870, 0.6);
+      g.fillCircle(cx + 15, cy + 7, 1.5);
+      g.fillStyle(0xc8a860, 1);
+      g.fillRect(cx + 13, cy + 3, 0.8, 7);
+      g.fillRect(cx + 15, cy + 2, 0.8, 6);
+      g.fillStyle(0xd4b870, 1);
+      g.fillCircle(cx + 13.4, cy + 3, 0.7);
+      g.fillCircle(cx + 15.4, cy + 2, 0.7);
+      break;
+    }
+    case 'the_pict': {
+      // Pictish beast glyph — simplified animal mark in woad blue,
+      // like a stone slab inscription in miniature.
+      g.fillStyle(0x2a4a6a, 0.85);
+      g.fillCircle(cx - 18, cy - 2, 0.8);
+      g.fillRect(cx - 18, cy - 1, 5, 0.7);
+      g.fillCircle(cx - 14, cy, 0.9);
+      g.fillRect(cx - 17, cy + 1, 4, 0.6);
+      g.fillCircle(cx - 13, cy + 2, 0.7);
+      g.fillCircle(cx - 12, cy, 0.5);
+      break;
+    }
+    case 'jacobite': {
+      // White rose — the Jacobite flower, four petals with a gold centre.
+      // "The white rose of the Stewart line."
+      g.fillStyle(0xffffff, 0.9);
+      g.fillCircle(cx + 15, cy - 14, 1.0);
+      g.fillCircle(cx + 17, cy - 12, 1.0);
+      g.fillCircle(cx + 15, cy - 10, 1.0);
+      g.fillCircle(cx + 13, cy - 12, 1.0);
+      g.fillStyle(0xf0c828, 0.9);
+      g.fillCircle(cx + 15, cy - 12, 0.8);
+      g.fillStyle(0x3a7020, 0.7);
+      g.fillRect(cx + 14.5, cy - 10, 0.8, 4);
+      break;
+    }
+    case 'tam_o_shanter': {
+      // Pub lantern — the candle that saw Tam off from the alehouse.
+      // Warm amber glow on a dark lantern post at (cx+15, cy).
+      g.fillStyle(0xd08010, 1);
+      g.fillRect(cx + 15, cy - 1, 3, 5);
+      g.fillStyle(0xf0c828, 0.85);
+      g.fillCircle(cx + 16, cy - 2, 1.2);
+      g.fillStyle(0xfff0c0, 0.7);
+      g.fillCircle(cx + 16, cy - 2, 0.5);
+      g.fillStyle(0x8a5a10, 1);
+      g.fillRect(cx + 14, cy - 1, 1, 6);
+      break;
+    }
     default:
       break;
   }
@@ -653,6 +763,132 @@ function drawHaggisAccent(
       g.fillEllipse(cx, cy - 17, 4, 3);
       g.fillStyle(0xffffff, 0.5);
       g.fillCircle(cx, cy - 17.5, 0.7);
+      break;
+    }
+    case 'morningside': {
+      // Lace ruff — sage dots in a collar arc, Morningside propriety
+      // made visible at sprite scale. Pearl brooch from drawVariantSignature.
+      g.fillStyle(palette.accent, 0.7);
+      g.fillCircle(cx - 4, cy - 7, 0.7);
+      g.fillCircle(cx - 1, cy - 8, 0.7);
+      g.fillCircle(cx + 2, cy - 8, 0.7);
+      g.fillCircle(cx + 5, cy - 7, 0.7);
+      g.fillStyle(0xffffff, 0.4);
+      g.fillCircle(cx - 3, cy - 7.4, 0.3);
+      g.fillCircle(cx + 1, cy - 8.4, 0.3);
+      break;
+    }
+    case 'drouthy': {
+      // Hip flask — whisky-gold rectangle on the right flank with a
+      // rounded shoulder, the dram-carrier's mark.
+      g.fillStyle(palette.accent, 0.9);
+      g.fillRect(cx + 10, cy - 2, 5, 8);
+      g.fillCircle(cx + 12, cy - 2, 2.5);
+      g.fillStyle(0x9a6010, 1);
+      g.fillRect(cx + 10, cy - 4, 5, 2);
+      g.fillStyle(0xffffff, 0.5);
+      g.fillRect(cx + 11, cy - 1, 1, 5);
+      break;
+    }
+    case 'pibroch': {
+      // Chanter pipe — silver vertical bar with three finger-hole dots
+      // and a bell flare. The ceòl mòr in miniature.
+      g.fillStyle(palette.accent, 1);
+      g.fillRect(cx + 12, cy - 8, 2, 14);
+      g.fillStyle(0x3a2010, 0.8);
+      g.fillCircle(cx + 13, cy - 5, 0.6);
+      g.fillCircle(cx + 13, cy - 2, 0.6);
+      g.fillCircle(cx + 13, cy + 1, 0.6);
+      g.fillStyle(palette.accent, 0.8);
+      g.fillEllipse(cx + 13, cy + 6, 5, 2);
+      break;
+    }
+    case 'orcadian': {
+      // Norse knotwork ring — four compass pips around an open gold ring,
+      // Orkney jewellery at haggis scale.
+      g.fillStyle(palette.accent, 0.3);
+      g.fillCircle(cx - 10, cy + 2, 4);
+      g.fillStyle(palette.accent, 0.85);
+      g.fillCircle(cx - 10, cy - 1.5, 0.8);
+      g.fillCircle(cx - 10, cy + 5.5, 0.8);
+      g.fillCircle(cx - 13.5, cy + 2, 0.8);
+      g.fillCircle(cx - 6.5, cy + 2, 0.8);
+      g.fillStyle(0x1a3040, 0.8);
+      g.fillCircle(cx - 10, cy + 2, 2);
+      break;
+    }
+    case 'hebridean': {
+      // Machair grass — marram-gold tufts at the body base, Atlantic
+      // shoreline colour on both flanks.
+      g.fillStyle(palette.accent, 0.9);
+      g.fillRect(cx - 14, cy + 13, 1, 5);
+      g.fillRect(cx - 13, cy + 11, 1, 7);
+      g.fillRect(cx - 12, cy + 13, 1, 5);
+      g.fillRect(cx + 11, cy + 13, 1, 5);
+      g.fillRect(cx + 12, cy + 11, 1, 7);
+      g.fillRect(cx + 13, cy + 13, 1, 5);
+      break;
+    }
+    case 'iron_brew': {
+      // Irn-Bru stripe — the can's blue band across the orange body.
+      g.fillStyle(palette.accent, 0.9);
+      g.fillRect(cx - 16, cy + 3, 32, 3);
+      g.fillStyle(0xffffff, 0.3);
+      g.fillRect(cx - 14, cy + 4, 7, 1);
+      g.fillRect(cx + 2, cy + 4, 7, 1);
+      break;
+    }
+    case 'grans_best': {
+      // Fair Isle X-stitch — four tiny sage crosses on the body,
+      // a knitted sweater motif at sprite scale.
+      const pts: [number, number][] = [
+        [cx - 8, cy - 1], [cx + 4, cy - 3], [cx - 3, cy + 5], [cx + 7, cy + 4],
+      ];
+      for (const [x, y] of pts) {
+        g.fillStyle(palette.accent, 0.75);
+        g.fillRect(x - 1, y, 3, 0.8);
+        g.fillRect(x, y - 1, 0.8, 3);
+      }
+      break;
+    }
+    case 'the_pict': {
+      // Woad spiral — Pictish body-paint mark on the right flank,
+      // a simplified swirl in woad blue-grey.
+      g.fillStyle(palette.accent, 0.85);
+      g.fillCircle(cx + 9, cy + 3, 1.2);
+      g.fillCircle(cx + 11, cy + 1, 0.9);
+      g.fillCircle(cx + 12, cy - 1, 0.7);
+      g.fillCircle(cx + 12, cy - 3, 0.7);
+      g.fillCircle(cx + 11, cy - 5, 0.9);
+      g.fillCircle(cx + 9, cy - 6, 0.7);
+      g.fillStyle(0xb07840, 0.5);
+      g.fillCircle(cx + 9, cy + 3, 0.5);
+      break;
+    }
+    case 'jacobite': {
+      // Crimson sash + white cockade pip — the diagonal Stuart-red
+      // band and the white rose are the Jacobite sigils.
+      g.fillStyle(palette.accent, 0.85);
+      g.fillRect(cx - 8, cy - 10, 16, 2);
+      g.fillStyle(0xffffff, 0.7);
+      g.fillRect(cx - 6, cy - 9.5, 4, 0.7);
+      g.fillStyle(0xffffff, 0.9);
+      g.fillCircle(cx - 4, cy - 5, 1.1);
+      g.fillStyle(0xf0c828, 0.8);
+      g.fillCircle(cx - 4, cy - 5, 0.4);
+      break;
+    }
+    case 'tam_o_shanter': {
+      // Tam-o'-shanter bonnet — the flat Alloway-blue cap with amber
+      // toorie (pompom). Burns's horseman's most visible mark.
+      g.fillStyle(0x1e3a6a, 1);
+      g.fillEllipse(cx, cy - 14, 22, 6);
+      g.fillStyle(0x10203c, 0.8);
+      g.fillRect(cx - 10, cy - 12, 20, 1.5);
+      g.fillStyle(palette.accent, 1);
+      g.fillCircle(cx, cy - 17, 2.5);
+      g.fillStyle(0xfff0c0, 0.7);
+      g.fillCircle(cx - 0.4, cy - 17.6, 1.0);
       break;
     }
     case 'none':
