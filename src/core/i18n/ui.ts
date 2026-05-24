@@ -4001,6 +4001,12 @@ export const ui = {
         a: 'Ten victories. The Tufted Haggis earns the pup — the wee familiar that follows, finds, and fights on the moor.',
         b: 'Ye won ten times. The tuft-mark holds. The pup is yours — and it bites.',
       },
+      variant_selkie_unlocked: {
+        // 2 coastal-only runs. Voice: hearth, tidal-lyrical — the selkie
+        // seal-folk myth (shed the skin, walk as human, always drawn back).
+        a: 'Two coastal runs. The Selkie Haggis emerges — kelp-grey, shore-patient, one foot already in the tide.',
+        b: 'Ye walked the coast twice and came back. Something came back wi ye. The selkie nods.',
+      },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
       route_up_the_brae_first: {

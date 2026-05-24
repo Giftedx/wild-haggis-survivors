@@ -3316,6 +3316,10 @@ export const ui = {
         a: 'Ten victories. Tha Tufted Haggis earns tha pup — tha wee familiar that follows, finds, an fechts on tha muir.',
         b: 'Ye won ten times. Tha tuft-merk hauds. Tha pup is yours — an it bites.',
       },
+      variant_selkie_unlocked: {
+        a: 'Twa coastal runs. Tha Selkie Haggis emerges — kelp-grey, shore-patient, ane fit already in tha tide.',
+        b: 'Ye walked tha coast twice an cam back. Something cam back wi ye. Tha selkie nods.',
+      },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
         b: 'Climbed it ance. Winnae forget tha air.',

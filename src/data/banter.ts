@@ -2676,6 +2676,55 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.variant_morningside_unlocked.a',
         'ui.banter.first_time.variant_morningside_unlocked.b',
       ],
+      // ── Post-morningside batch — variants shipped after the V2 cohort. ──
+      variant_selkie_unlocked: [
+        'ui.banter.first_time.variant_selkie_unlocked.a',
+        'ui.banter.first_time.variant_selkie_unlocked.b',
+      ],
+      variant_drouthy_unlocked: [
+        'ui.banter.first_time.variant_drouthy_unlocked.a',
+        'ui.banter.first_time.variant_drouthy_unlocked.b',
+      ],
+      variant_pibroch_unlocked: [
+        'ui.banter.first_time.variant_pibroch_unlocked.a',
+        'ui.banter.first_time.variant_pibroch_unlocked.b',
+      ],
+      variant_orcadian_unlocked: [
+        'ui.banter.first_time.variant_orcadian_unlocked.a',
+        'ui.banter.first_time.variant_orcadian_unlocked.b',
+      ],
+      variant_hebridean_unlocked: [
+        'ui.banter.first_time.variant_hebridean_unlocked.a',
+        'ui.banter.first_time.variant_hebridean_unlocked.b',
+      ],
+      variant_iron_brew_unlocked: [
+        'ui.banter.first_time.variant_iron_brew_unlocked.a',
+        'ui.banter.first_time.variant_iron_brew_unlocked.b',
+      ],
+      variant_grans_best_unlocked: [
+        'ui.banter.first_time.variant_grans_best_unlocked.a',
+        'ui.banter.first_time.variant_grans_best_unlocked.b',
+      ],
+      variant_the_pict_unlocked: [
+        'ui.banter.first_time.variant_the_pict_unlocked.a',
+        'ui.banter.first_time.variant_the_pict_unlocked.b',
+      ],
+      variant_jacobite_unlocked: [
+        'ui.banter.first_time.variant_jacobite_unlocked.a',
+        'ui.banter.first_time.variant_jacobite_unlocked.b',
+      ],
+      variant_tam_o_shanter_unlocked: [
+        'ui.banter.first_time.variant_tam_o_shanter_unlocked.a',
+        'ui.banter.first_time.variant_tam_o_shanter_unlocked.b',
+      ],
+      variant_engineer_unlocked: [
+        'ui.banter.first_time.variant_engineer_unlocked.a',
+        'ui.banter.first_time.variant_engineer_unlocked.b',
+      ],
+      variant_tufted_unlocked: [
+        'ui.banter.first_time.variant_tufted_unlocked.a',
+        'ui.banter.first_time.variant_tufted_unlocked.b',
+      ],
       // ── B1 Phase 4 expansion — first-pick of each W2 route. Fires
       //    once per route via
       //    `bumpFirstTimeEvent('route_${routeKey}_first')` on the
