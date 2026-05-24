@@ -116,14 +116,15 @@ Families worth sketching (pick one per content drop):
 | ~~`dean_apparition`~~ | Academic | ✅ shipped 2026-04-18. Chase at 12:45 with mass override 5 — formal dean in mortarboard + gown, contact-shoves the player as "the academy does not wait". |
 | ~~`ledger_wraith`~~ | Taxman | ✅ shipped 2026-04-18. Chase enemy at 15:30; ghostly auditor with floating ledger + red-ink drips. "Immune until Taxman takes damage" deferred pending an event-bus gate. |
 | ~~`auditor_priest`~~ | Taxman | ✅ shipped 2026-04-18. Ranged cleric at 17:30 with a censer-tipped staff (glowing amber telegraph). "Beam ranged, tests drift skill" deferred pending a beam-weapon class. |
+| ~~`bodach_glas`~~ | Weather / Cairngorm | ✅ shipped 2026-05-24. Late-game frost-biome solo threat at 18:00. Chase behaviour, massOverride 5 (shoves the player on contact). HP 60, speed 35. "Alone with him on the moor" register — packSize 1. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.1.*)  |
 
 **Honest cap:** 4–6 new enemies per release. Retire weak ones.
 
 ### Boss sketches (pick 1–2 per arc)
 
-- **Cailleach of the Storm** — haar + ice + hail phases; pairs with winter liturgy.
-- **Twin Stones of Callanish** — two bosses, one HP bar; swap and re-unite phases.
-- **The Wicker Haggis** — fire boss; phase 2 scatters animated torches; phase 3 is a fire-worm.
+- ~~**Cailleach of the Storm**~~ — ✅ shipped 2026-05-24 (`storm_cailleach`, key `storm_phases` behaviour). Tier-3 post-bell boss (postBellOnly). HP 5800 / dmg 36 / speed 55 / scale 2.8×. Three escalating phases: haar veil → ice fury → hail storm. Full EN + SCS i18n, banter pools, wee-tale entries.
+- ~~**Twin Stones of Callanish**~~ — ✅ shipped 2026-05-24 (`twin_stones`, key `twin_stones` behaviour). An Càraid — two Fir Bhreige (False Men). Post-bell boss, one HP bar, Stone B is a cosmetic shadow. Phase 1: ring bursts from both stones. Phase 2: fan attacks, Stone B flanks perpendicular. HP 4000 / dmg 32 / speed 40 / scale 2.4×. Full EN + SCS i18n, banter pools, wee-tale entries. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
+- ~~**The Wicker Haggis**~~ — ✅ shipped 2026-05-24 (`wicker_haggis`, key `wicker_haggis` behaviour). Bealltainn's Tribute: burning wicker effigy, post-bell. Phase 1: outward fire-ring. Phase 2: ember scatter + speed boost. Ignition burst at 55% HP transition. HP 3600 / dmg 28 / speed 60 / scale 2.3×. Full EN + SCS i18n, banter pools, wee-tale entries. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.1.*)
 - **The Auld Reekie Ghaist** — Edinburgh gas-lamp boss; LOS pillars; ghost-tour-crowd shields.
 - **Nessie, Reconsidered** — full boss form of the existing `nessie_tentacle` weapon flavour.
 - **Father Taxman** — current Taxman expanded with a Grudge-Ledger phase (see mechanics).
@@ -181,7 +182,7 @@ Candidate weapons (pick 4 for a content drop):
 - ~~**Dirk Dance**~~ — ✅ shipped 2026-05-12 (`dirk_dance` → `dirk_flurry` evolution, passive `gillies_edge`, B6 Highland Horrors). 3-hit arc-combo; last hit bleeds. Evolution fires `fireDirkFlurry` rapid multi-strike. `gillies_edge` grants +8% speed.
 - ~~**Whisky Flask**~~ — ✅ shipped (`whisky_lob`). Lob a hip flask — shatters on landing and burns whatever stands in the puddle for 3.2 s (4 dmg / 500ms ticks, 58px radius). Parabolic arc animation. Paired passive `peated_oak` (+10% damage globally). Zone-denial weapon; `lob_puddle` is a new behavior in `WeaponSystem`. No evolution in v1 — the evolution slot is reserved for a future "aged malt" form. Count at lv5 (two flasks).
 - ~~**Bagpipe Drone**~~ — ✅ shipped (`bagpipe_drone`). Continuous slow-aura (500ms cooldown, 80px radius, 2 dmg/tick). Forks inside `fireAuraPulse` by weapon key: applies `applyFreeze(0.70, 700)` — 30% slow that refreshes before expiry, keeping enemies permanently slowed while in range. Minimal ring VFX (lower alpha than ceòl mòr, no knot flourish). Paired passive `reeds` (+10% cooldown reduction). No evolution in v1 — the "tuned" form is reserved for later.
-- **Selkie Song** — charm enemy briefly. Paired passive: Seal Pelt.
+- ~~**Selkie Song**~~ — ✅ shipped 2026-05-24 (`selkie_song` → `selkie_chorus` evolution, passive `seal_pelt`, +2 HP regen/s). Aura-pulse charm weapon: deals chip damage per pulse and charms the nearest non-boss enemy for 3 s (flees player, chases other enemies). Sea-blue tint (0x88ccee) marks charmed state. Selkie Chorus evolution charms up to 3 per pulse at 15% tighter cooldown. In the Summon synergy family.
 - ~~**Grannie's Curse**~~ — ✅ shipped 2026-05-12 (`grannies_curse` → `banshee_wail` evolution, passive `widows_shawl`, B6 Highland Horrors). Homing hex; multiplies on kill via `fireBansheeWail`. `widows_shawl` grants +12 HP.
 - ~~**Clootie Rag**~~ — ✅ shipped 2026-05-24 (`clootie_rag`, `aura_pulse`, 72px, 350ms CD, uncommon card). Wounding aura — fast-tick damage, no slow, no freeze. Completes the bleed synergy family (with `dirk_dance` + `sgian_dubh`). Paired passive `rowan_thread` (+1.5 HP regen/sec).
 - ~~**Coastal Storm**~~ — ✅ shipped 2026-05-24 (`coastal_storm`, `aoe_pulse`, 680px, 22s CD, rare card, no evolution). Atlantic mega-AoE with three-ring expanding storm visual; massive knockback, no freeze.
