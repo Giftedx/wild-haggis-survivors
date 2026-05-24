@@ -4644,8 +4644,10 @@ export const ui = {
       cailleach: {
         death_baseline: 'Winter is patient, {name}. Ye werena.',
         death_short: 'The mountain was here before {name}. And after.',
+        death_cailleach_boss: 'Two winters met on the moor at {time}. {name} was the younger one.',
         victory_baseline: 'Ye did well, {name}. Winter expects more next time.',
         victory_taxman: 'The taxman bowed to {name} at last. Even the mountain blinked.',
+        victory_cailleach_boss: '{name} walked into her ain storm and came back oot. The cairns remember it.',
       },
       glaswegian: {
         death_baseline: 'Aye, {name} swung hard. Swung harder than the moor would let.',
@@ -4700,6 +4702,7 @@ export const ui = {
       witch_hare: {
         death_baseline: 'Awa in the hare\'s shape, {name}. The form undid afore the yard was gained.',
         death_short: '"Ay quhill I com hom againe." {name} didnae.',
+        death_nicnevin: '{name} ran oot of shapes in Nicnevin\'s court at {time}. Even the hare kens when to kneel.',
         victory_baseline: '{name} ran oot a hare and cam hame a haggis. The confession held its end.',
         victory_epic: 'All the witch\'s miles at {time}. {name} kent baith hame and the hill.',
       },
@@ -4718,12 +4721,14 @@ export const ui = {
       laird: {
         death_baseline: 'The estate closes at dusk. {name} miscounted the hours.',
         death_short: '{name} fell. The deer, naturally, scattered.',
+        death_the_laird: 'The Laird\'s estate claimed its ain at {time}. Old land has long memory, {name}.',
         victory_baseline: '{name} walked the whole length o\' it. The Laird goes where the Laird goes.',
         victory_taxman: 'The Taxman sent a bill tae the Laird. {name} returned it — signed and dusted.',
       },
       selkie: {
         death_baseline: 'Somewhere between the water and the moor, {name}. The tide makes its ain decision.',
         death_short: 'The skin was left at the wrang stone. {name} couldnae mak the distance.',
+        death_each_uisge: 'Two creatures of the deep water at {time}. {name} was the one who came ashore.',
         victory_baseline: '{name} came hame — which form, the moor disnae say.',
         victory_epic: '{time} between the tide-line and the heather. {name} held baith weys clean.',
       },
@@ -4736,6 +4741,7 @@ export const ui = {
       drouthy: {
         death_baseline: 'The bottle didnae help. {name} sleeps where he fell.',
         death_short: '{name} went doon fast. The flask rolled on.',
+        death_each_uisge: 'The loch-horse waits for the ones who stray near water. {name} should\'ve kent better.',
         victory_baseline: '{name} staggered through. The barrel remembered him.',
         victory_taxman: '{name} outlasted the Taxman. The drams outlasted them baith.',
       },

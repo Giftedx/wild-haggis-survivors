@@ -3805,8 +3805,10 @@ export const ui = {
       cailleach: {
         death_baseline: 'Winter\'s patient, {name}. Ye werena.',
         death_short: 'Tha mountain wis here afore {name}. An efter.',
+        death_cailleach_boss: 'Twa winters on tha moor at {time}. {name} wis tha younger ane.',
         victory_baseline: 'Ye did weel, {name}. Winter expects mair next time.',
         victory_taxman: 'Tha taxman boued tae {name} at last. Even tha mountain blinkit.',
+        victory_cailleach_boss: '{name} walked intae her ain storm an came back oot. Tha cairns mind it.',
       },
       glaswegian: {
         death_baseline: 'Aye, {name} swung haird. Swung haurder than tha moor wid let.',
@@ -3859,6 +3861,7 @@ export const ui = {
       witch_hare: {
         death_baseline: 'Awa in tha hare\'s shape, {name}. Tha form undid afore tha yaird wis gained.',
         death_short: '"Ay quhill I com hom againe." {name} didnae.',
+        death_nicnevin: '{name} ran oot o\' shapes in Nicnevin\'s coort at {time}. Even tha hare kens when tae kneel.',
         victory_baseline: '{name} ran oot a hare an cam hame a haggis. Tha confession held its end.',
         victory_epic: 'Aw tha witch\'s miles at {time}. {name} kent baith hame an tha hill.',
       },
@@ -3877,12 +3880,14 @@ export const ui = {
       laird: {
         death_baseline: 'Tha estate closes at dusk. {name} miscounted tha hours.',
         death_short: '{name} fell. Tha deer, naiturally, scatterit.',
+        death_the_laird: 'Tha Laird\'s estate claimed its ain at {time}. Auld laund haes lang memory, {name}.',
         victory_baseline: '{name} walked tha hale length o\' it. Tha Laird gangs whaur tha Laird gangs.',
         victory_taxman: 'Tha Taxman sent a bill tae tha Laird. {name} returned it — signed an dusted.',
       },
       selkie: {
         death_baseline: 'Somewhere atween tha watter an tha moor, {name}. Tha tide maks its ain decision.',
         death_short: 'Tha skin wis left at tha wrang stane. {name} couldnae mak tha distance.',
+        death_each_uisge: 'Twa craiturs o\' tha deep watter at {time}. {name} wis tha ane wha cam ashore.',
         victory_baseline: '{name} cam hame — which form, tha moor disnae say.',
         victory_epic: '{time} atween tha tide-line an tha heather. {name} held baith weys clean.',
       },
@@ -3895,6 +3900,7 @@ export const ui = {
       drouthy: {
         death_baseline: 'Tha bottle didnae help. {name} sleeps whaur he fell.',
         death_short: '{name} went doon fast. Tha flask rolled on.',
+        death_each_uisge: 'Tha loch-horse waits for tha anes wha stray near watter. {name} should\'ve kent better.',
         victory_baseline: '{name} staggered through. Tha barrel minded him.',
         victory_taxman: '{name} outlastit tha Taxman. Tha drams outlastit them baith.',
       },

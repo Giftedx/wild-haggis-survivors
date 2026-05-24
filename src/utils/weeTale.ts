@@ -376,8 +376,12 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // The mountain crone expects better of ye; she's never cruel.
   { key: 'ui.weeTale.variant.cailleach.death_baseline', requires: ['death', 'cailleach', 'has_name'] },
   { key: 'ui.weeTale.variant.cailleach.death_short', requires: ['death', 'cailleach', 'has_name', 'short'] },
+  // Tier-4 — Cailleach variant died to the Cailleach boss. Two winters met.
+  { key: 'ui.weeTale.variant.cailleach.death_cailleach_boss', requires: ['death', 'cailleach', 'has_name', 'cailleach_boss_death'] },
   { key: 'ui.weeTale.variant.cailleach.victory_baseline', requires: ['victory', 'cailleach', 'has_name'] },
   { key: 'ui.weeTale.variant.cailleach.victory_taxman', requires: ['victory', 'cailleach', 'has_name', 'taxman'] },
+  // Tier-4 — Cailleach variant won the Gauntlet. She walked into her own storm.
+  { key: 'ui.weeTale.variant.cailleach.victory_cailleach_boss', requires: ['victory', 'cailleach', 'has_name', 'cailleach_boss'] },
 
   // ── v2 — Glaswegian (urban-aggressive, Limmy-bite) ─────────────
   // Voice register per `docs/VOICE_CARD.md` §"Glaswegian (shipped)".
@@ -445,6 +449,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Named for Margaret Gowdie; older Scots grammar; terse, breathless.
   { key: 'ui.weeTale.variant.witch_hare.death_baseline', requires: ['death', 'witch_hare', 'has_name'] },
   { key: 'ui.weeTale.variant.witch_hare.death_short', requires: ['death', 'witch_hare', 'has_name', 'short'] },
+  // Tier-4 — Isobel Gowdie's hare met the Queen of the Unblessed.
+  { key: 'ui.weeTale.variant.witch_hare.death_nicnevin', requires: ['death', 'witch_hare', 'has_name', 'nicnevin_death'] },
   { key: 'ui.weeTale.variant.witch_hare.victory_baseline', requires: ['victory', 'witch_hare', 'has_name'] },
   { key: 'ui.weeTale.variant.witch_hare.victory_epic', requires: ['victory', 'witch_hare', 'has_name', 'epic'] },
 
@@ -469,6 +475,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Landed gentry cadence; unhurried; mildly imperious; dry understatement.
   { key: 'ui.weeTale.variant.laird.death_baseline', requires: ['death', 'laird', 'has_name'] },
   { key: 'ui.weeTale.variant.laird.death_short', requires: ['death', 'laird', 'has_name', 'short'] },
+  // Tier-4 — The Laird variant died to The Laird boss. The estate claimed its ain.
+  { key: 'ui.weeTale.variant.laird.death_the_laird', requires: ['death', 'laird', 'has_name', 'the_laird_death'] },
   { key: 'ui.weeTale.variant.laird.victory_baseline', requires: ['victory', 'laird', 'has_name'] },
   { key: 'ui.weeTale.variant.laird.victory_taxman', requires: ['victory', 'laird', 'has_name', 'taxman'] },
 
@@ -477,6 +485,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Between-worlds; paired opposites; never resolves cleanly.
   { key: 'ui.weeTale.variant.selkie.death_baseline', requires: ['death', 'selkie', 'has_name'] },
   { key: 'ui.weeTale.variant.selkie.death_short', requires: ['death', 'selkie', 'has_name', 'short'] },
+  // Tier-4 — The selkie met the Each-Uisge. Two water-creatures; the wrong one surfaced.
+  { key: 'ui.weeTale.variant.selkie.death_each_uisge', requires: ['death', 'selkie', 'has_name', 'each_uisge_death'] },
   { key: 'ui.weeTale.variant.selkie.victory_baseline', requires: ['victory', 'selkie', 'has_name'] },
   { key: 'ui.weeTale.variant.selkie.victory_epic', requires: ['victory', 'selkie', 'has_name', 'epic'] },
   { key: 'ui.weeTale.variant.morningside.death_baseline', requires: ['death', 'morningside', 'has_name'] },
@@ -486,6 +496,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Three drams deep and still swinging.
   { key: 'ui.weeTale.variant.drouthy.death_baseline', requires: ['death', 'drouthy', 'has_name'] },
   { key: 'ui.weeTale.variant.drouthy.death_short', requires: ['death', 'drouthy', 'has_name', 'short'] },
+  // Tier-4 — The drunk haggis strayed near the water. The loch-horse waits for that.
+  { key: 'ui.weeTale.variant.drouthy.death_each_uisge', requires: ['death', 'drouthy', 'has_name', 'each_uisge_death'] },
   { key: 'ui.weeTale.variant.drouthy.victory_baseline', requires: ['victory', 'drouthy', 'has_name'] },
   { key: 'ui.weeTale.variant.drouthy.victory_taxman', requires: ['victory', 'drouthy', 'has_name', 'taxman'] },
   // Every beat a footstep; the ceòl mòr rides this one.
