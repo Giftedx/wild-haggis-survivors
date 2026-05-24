@@ -1593,6 +1593,90 @@ export class AudioSystem {
   stopAmbientWind(): void {
     this.fadeOutAmbientWind(800);
   }
+
+  // ── Auld Reekie Ghaist SFX ──
+
+  /** Entry moan — low sine sweep rising: fog-horn ghost groan. */
+  playAuldReekieEntry(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(80, t0);
+    osc.frequency.exponentialRampToValueAtTime(220, t0 + 0.6);
+    osc.frequency.exponentialRampToValueAtTime(110, t0 + 1.1);
+    gain.gain.setValueAtTime(0.0, t0);
+    gain.gain.linearRampToValueAtTime(0.16, t0 + 0.25);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.2);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 1.3);
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckBoss);
+  }
+
+  /** Lantern lob — amber flick: short bright triangle pop. */
+  playLanternLob(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(880, t0);
+    osc.frequency.exponentialRampToValueAtTime(440, t0 + 0.12);
+    gain.gain.setValueAtTime(0.13, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.15);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.18);
+  }
+
+  /** Gas leak — low hiss: sawtooth rumble fading into silence. */
+  playGasLeak(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(160, t0);
+    osc.frequency.exponentialRampToValueAtTime(80, t0 + 0.4);
+    gain.gain.setValueAtTime(0.10, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.45);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.5);
+  }
+
+  /** Ghaist blink — short descending whine: telegraph warp. */
+  playGhaistBlink(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'square';
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(1200, t0);
+    osc.frequency.exponentialRampToValueAtTime(200, t0 + 0.18);
+    gain.gain.setValueAtTime(0.09, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.20);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.22);
+  }
 }
 
 /** Singleton instance shared across all scenes */

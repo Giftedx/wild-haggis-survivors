@@ -793,6 +793,7 @@ export const ui = {
     twin_stones: 'An Càraid staund apairted nae langer — tha Callanish stanes hae memory, an tha haggis is in it.',
     wicker_haggis: 'Tha Wicker Haggis rises on tha brae — Bealltainn\'s tribute is awake, an it is no happy aboot it.',
     nessie: 'Somethin lang jist brak tha surface. That is no a log.',
+    auld_reekie: "Tha Auld Toun's ghaist is oot — an tha lamps are on.",
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
@@ -831,6 +832,7 @@ export const ui = {
     boss_killed_twin_stones: 'An Càraid is doon! Tha heartstone gangs cauld — an tha circle is yours.',
     boss_killed_wicker_haggis: 'Tha Wicker Haggis is doon! Tha moor smells o woodsmoke — an somethin worth celebratin.',
     boss_killed_nessie: 'Nessie is doon! Tha loch haes it back. Tha postcairds were wrang tha hale time.',
+    boss_killed_auld_reekie: 'Tha Auld Reekie Ghaist is doon! Tha lamps gang cauld. Tha close breathes again.',
     boss_killed_generic: 'Boss doon! Get it richt round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it richt round them!',
@@ -1068,6 +1070,11 @@ export const ui = {
         a: 'Tha loch haes a neck. Tha neck haes an ee. Tha ee is on me.',
         b: 'That is no a tourist attraction. That is an animal.',
         c: 'Nessie is real. Nessie is here. Nessie is gey muckle.',
+      },
+      auld_reekie: {
+        a: 'Victorian ghaist wi a lantern. Tha lamp\'s lit. That\'s bad.',
+        b: 'Ghaist frae tha Auld Toun closes. Amber een, nae face, definitely hauntin me.',
+        c: 'Yer tourists are orbitin it. That happens noo.',
       },
     },
     low_hp: {
@@ -1333,6 +1340,12 @@ export const ui = {
         a: 'Tha neck gaed under. Tha ee closed. Tha loch is quait again.',
         b: 'Nessie, reconsidered — by a haggis. Tha postcairds never saw this comin.',
         c: 'Whitiver that wis, it\'s gaen back doon. Tha haggis will no mention it in future.',
+      },
+      // Urban — Auld Reekie Ghaist doon. Tha Auld Toun close breathes again.
+      auld_reekie: {
+        a: 'Lamps oot. Close is jist a close again.',
+        b: 'Victorian ghaist telt tae muive oan. Tha amber licht gaed wi it.',
+        c: 'Tha tourists dispersed. Tha ghaist dispersed. Tha moor smells o naethin.',
       },
     },
     weapon_evolve: {

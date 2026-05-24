@@ -147,4 +147,10 @@ export const beastie = {
   nessie: {
     lore: 'Tha Loch Ness Monster haes haed a lang career as a sonar anomaly, a regional economic policy, an a national myth. That is nae whit this is. This is tha actual animal, an tha bell-toll disturbit its sleep. Lang-neckit, mottled green, wi ane amber ee that haes been watchin tha loch fer langer nor tha name "Loch Ness" haes existit. It surfaces fer a specific haggis. It disnae explain why. Post-bell exclusive. SCOTTISH_RESEARCH.md §1.2; SCOTTISH_RESEARCH_DEEP.md §21.',
   },
+  auld_reekie: {
+    lore: 'A Victorian gentleman-ghaist frae tha Auld Toun closes o Edinburgh. Gas-lamp hauled aloft; tap hat; frock coat wi nae visible face inside it. Tha lamps o tha Royal Mile keep lichtin fer it lang efter tha gas wis cut. In life it shawed visitors tha closes; in daith it shaws them tae tha closes. Tha amber corona aroond its lantern is no warm licht. Slots at 18:30. Urban faimily. SCOTTISH_RESEARCH_DEEP.md §11.',
+  },
+  tourist_ghost: {
+    lore: 'Visitors tae Edinburgh\'s ghaist tours wha didnae leave whan tha tour endit. Pale blue an translucent; still cairryin tha camera. They orbit tha Auld Reekie Ghaist in tha first phase o tha fecht — damage shield through sheer tourist density. Low HP; easy tae pop, gin ye can reach them.',
+  },
 } as const;

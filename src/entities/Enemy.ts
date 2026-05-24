@@ -46,6 +46,22 @@ import {
   WICKER_TRANSITION_SHARD_COUNT, WICKER_TRANSITION_SHARD_SPEED, WICKER_TRANSITION_SHARD_DAMAGE,
   type WickerHaggisState,
 } from './wickerHaggisBehaviour';
+import {
+  simulateNessieBehaviour,
+  initialNessieState,
+  NESSIE_SWEEP_SHARD_COUNT, NESSIE_SWEEP_SHARD_SPEED, NESSIE_SWEEP_SHARD_DAMAGE, NESSIE_SWEEP_SPREAD_RAD,
+  NESSIE_PLUNGE_SHARD_COUNT, NESSIE_PLUNGE_SHARD_SPEED, NESSIE_PLUNGE_SHARD_DAMAGE, NESSIE_PLUNGE_SPREAD_RAD,
+  type NessieState,
+} from './nessieBehaviour';
+import {
+  simulateAuldReekieBehaviour,
+  initialAuldReekieState,
+  LANTERN_SPEED, LANTERN_DAMAGE,
+  TRIPLE_FAN_COUNT, TRIPLE_FAN_SPREAD_RAD,
+  GAS_RADIUS_PX, GAS_DAMAGE, GAS_SLOW_MS,
+  LAMP_ANCHOR_RADIUS_PX, LAMP_ANCHOR_RNG_JITTER,
+  type AuldReekieState,
+} from './auldReekieBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -171,6 +187,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private wickerHaggisState: WickerHaggisState = initialWickerHaggisState();
   /** True once the phase-2 burning tint has been applied (avoid re-applying each tick). */
   private wickerPhaseTwoTinted: boolean = false;
+  /** Nessie boss state (only used when behavior === 'loch_emergence'). */
+  private nessieState: NessieState = initialNessieState();
+  /** Auld Reekie Ghaist boss state (only used when behavior === 'auld_reekie'). */
+  private auldReekieState: AuldReekieState = initialAuldReekieState();
+  /** Gas-lamp post sprites anchored near the Auld Reekie arena. Destroyed in die(). */
+  private lampPostSprites: Phaser.GameObjects.Image[] = [];
+  /** Seeded anchor positions for lamp posts — set once on first tick. */
+  private lampAnchorPositions: Array<{ x: number; y: number }> = [];
+  /** True once lamp posts have been spawned for the current boss encounter. */
+  private auldReekieInitialized: boolean = false;
   /** Countdown ms within the current three-bay stage. */
   private threeBayTimerMs: number = 0;
   /** Charge target locked at start of stage 3. */
@@ -709,6 +735,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         break;
       case 'wicker_haggis':
         this.behaviorWickerHaggis(targetX, targetY, delta);
+        break;
+      case 'loch_emergence':
+        this.behaviorNessie(targetX, targetY, delta);
+        break;
+      case 'auld_reekie':
+        this.behaviorAuldReekie(targetX, targetY, delta);
         break;
     }
   }
@@ -1407,6 +1439,248 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         cur.takeDamage(WICKER_SCATTER_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
+    }
+  }
+
+  // ── Nessie, Reconsidered (loch_emergence) ──
+
+  private behaviorNessie(tx: number, ty: number, delta: number): void {
+    const hpPct = this.maxHp > 0 ? this.hp / this.maxHp : 1.0;
+    const next = simulateNessieBehaviour(this.nessieState, { deltaMs: delta, hpPct });
+    this.nessieState = next;
+    this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+    if (next.shouldFireSweep) this.fireNessieSweep(this.x, this.y, tx, ty);
+    if (next.shouldFirePlunge) this.fireNessiePlunge(this.x, this.y, tx, ty);
+  }
+
+  private fireNessieSweep(fromX: number, fromY: number, tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(fromX, fromY, tx, ty);
+    const step = (NESSIE_SWEEP_SPREAD_RAD * 2) / (NESSIE_SWEEP_SHARD_COUNT - 1);
+    const startAngle = baseAngle - NESSIE_SWEEP_SPREAD_RAD;
+    const spawnedPlayer = this.ctx.getPlayer();
+    this.ctx.getSFXManager().tryPlay('nessie_sweep', () => audio.playHit());
+    for (let i = 0; i < NESSIE_SWEEP_SHARD_COUNT; i++) {
+      const angle = startAngle + step * i;
+      const shard = this.scene.add.circle(fromX, fromY, 6, 0x4a8c7e, 0.88);
+      this.scene.physics.add.existing(shard);
+      const body = shard.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * NESSIE_SWEEP_SHARD_SPEED, Math.sin(angle) * NESSIE_SWEEP_SHARD_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (shard.active) shard.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(NESSIE_SWEEP_SHARD_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
+    }
+  }
+
+  private fireNessiePlunge(fromX: number, fromY: number, tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(fromX, fromY, tx, ty);
+    const step = (NESSIE_PLUNGE_SPREAD_RAD * 2) / (NESSIE_PLUNGE_SHARD_COUNT - 1);
+    const startAngle = baseAngle - NESSIE_PLUNGE_SPREAD_RAD;
+    const spawnedPlayer = this.ctx.getPlayer();
+    this.ctx.getSFXManager().tryPlay('nessie_plunge', () => audio.playHit());
+    for (let i = 0; i < NESSIE_PLUNGE_SHARD_COUNT; i++) {
+      const angle = startAngle + step * i;
+      const shard = this.scene.add.circle(fromX, fromY, 5, 0x2a5e52, 0.92);
+      this.scene.physics.add.existing(shard);
+      const body = shard.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * NESSIE_PLUNGE_SHARD_SPEED, Math.sin(angle) * NESSIE_PLUNGE_SHARD_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (shard.active) shard.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(NESSIE_PLUNGE_SHARD_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 1800, cleanup);
+    }
+  }
+
+  // ── Auld Reekie Ghaist (auld_reekie) ──
+
+  private behaviorAuldReekie(tx: number, ty: number, delta: number): void {
+    // Lazy-init lamp posts on first tick (seeded positions for replay determinism).
+    if (!this.auldReekieInitialized) {
+      this.auldReekieInitialized = true;
+      const rng = this.ctx.getRunRng();
+      const LAMP_COUNT = 4;
+      this.lampAnchorPositions = [];
+      for (let i = 0; i < LAMP_COUNT; i++) {
+        const baseAngle = ((Math.PI * 2) / LAMP_COUNT) * i;
+        const jitter = (rng.int(-LAMP_ANCHOR_RNG_JITTER, LAMP_ANCHOR_RNG_JITTER));
+        const angle = baseAngle + (jitter / LAMP_ANCHOR_RNG_JITTER) * 0.4;
+        const pos = {
+          x: this.x + Math.cos(angle) * LAMP_ANCHOR_RADIUS_PX,
+          y: this.y + Math.sin(angle) * LAMP_ANCHOR_RADIUS_PX,
+        };
+        this.lampAnchorPositions.push(pos);
+        if (this.scene.textures.exists('prop_gas_lamp')) {
+          const lamp = this.scene.add.image(pos.x, pos.y, 'prop_gas_lamp');
+          lamp.setDepth(0.5);
+          this.lampPostSprites.push(lamp);
+        }
+      }
+      this.ctx.caption('auld_reekie_entry', t('ui.boss.auld_reekie.entryCaption'));
+      this.ctx.getSFXManager().tryPlay('auld_reekie_entry', () => audio.playAuldReekieEntry());
+    }
+
+    const hpPct = this.maxHp > 0 ? this.hp / this.maxHp : 1.0;
+    const next = simulateAuldReekieBehaviour(this.auldReekieState, { deltaMs: delta, hpPct });
+    this.auldReekieState = next;
+
+    this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+
+    if (next.shouldSummonPack > 0) this.spawnTouristPack(next.shouldSummonPack);
+    if (next.shouldFireLantern)    this.fireLanternOrb(tx, ty);
+    if (next.shouldFireTripleFan)  this.fireLanternFan(tx, ty);
+    if (next.shouldStartBlinkTelegraph) this.showBlinkTelegraph();
+    if (next.shouldExecuteBlink)   this.executeBlink(tx, ty);
+    if (next.shouldStartGasTelegraph) this.showGasTelegraph();
+    if (next.shouldFireGas)        this.fireGasPulse();
+  }
+
+  private spawnTouristPack(count: number): void {
+    const spawnSystem = this.ctx.getSpawnSystem();
+    const pool = spawnSystem.getEnemyGroup();
+    const config = ENEMY_TYPES['tourist_ghost'];
+    if (!config) return;
+    const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
+    for (let i = 0; i < count; i++) {
+      const minion = Enemy.acquireFromPool(pool, this.ctxScene);
+      if (!minion) break;
+      const angle = ((Math.PI * 2) / count) * i;
+      minion.spawn(
+        this.x + Math.cos(angle) * 35,
+        this.y + Math.sin(angle) * 35,
+        config,
+        gameTime,
+      );
+    }
+  }
+
+  private fireLanternOrb(tx: number, ty: number): void {
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    this.ctx.getSFXManager().tryPlay('lantern_lob', () => audio.playLanternLob());
+    const spawnedPlayer = this.ctx.getPlayer();
+    const orb = this.scene.add.circle(this.x, this.y, 8, 0xf5a623, 0.88);
+    this.scene.physics.add.existing(orb);
+    const body = orb.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(Math.cos(angle) * LANTERN_SPEED, Math.sin(angle) * LANTERN_SPEED);
+    let hit = false;
+    const cleanup = () => {
+      if (hit) return;
+      hit = true;
+      try { this.scene.physics.world.removeCollider(overlapRef); if (orb.active) orb.destroy(); } catch { /* scene restart */ }
+    };
+    const overlapRef = this.scene.physics.add.overlap(orb, spawnedPlayer, () => {
+      if (hit) return;
+      cleanup();
+      const cur = this.ctx.getPlayer();
+      if (cur !== spawnedPlayer) return;
+      if (cur.tryParryProjectile()) return;
+      cur.takeDamage(LANTERN_DAMAGE);
+    });
+    this.ctx.getUpdateTickers().addOnce('raw', 2500, cleanup);
+  }
+
+  private fireLanternFan(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    this.ctx.getSFXManager().tryPlay('lantern_lob', () => audio.playLanternLob());
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < TRIPLE_FAN_COUNT; i++) {
+      const offset = (i - 1) * TRIPLE_FAN_SPREAD_RAD;
+      const angle = baseAngle + offset;
+      const orb = this.scene.add.circle(this.x, this.y, 8, 0xf5a623, 0.88);
+      this.scene.physics.add.existing(orb);
+      const body = orb.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * LANTERN_SPEED, Math.sin(angle) * LANTERN_SPEED);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (orb.active) orb.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(orb, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(LANTERN_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2500, cleanup);
+    }
+  }
+
+  private showBlinkTelegraph(): void {
+    // Flash the boss amber for the telegraph window.
+    this.setTint(0xf5a623);
+    this.ctx.getSFXManager().tryPlay('ghaist_blink', () => audio.playGhaistBlink());
+    this.ctx.getUpdateTickers().addOnce('raw', 600, () => {
+      if (this.active) this.setTint(this.baseTint);
+    });
+  }
+
+  private executeBlink(tx: number, ty: number): void {
+    // Blink to the nearest lamp anchor position that isn't right on top of the player.
+    if (this.lampAnchorPositions.length === 0) return;
+    let best = this.lampAnchorPositions[0];
+    let bestDistSq = Infinity;
+    for (const pos of this.lampAnchorPositions) {
+      const dx = pos.x - tx;
+      const dy = pos.y - ty;
+      const distSq = dx * dx + dy * dy;
+      if (distSq < bestDistSq && distSq > 60 * 60) {
+        bestDistSq = distSq;
+        best = pos;
+      }
+    }
+    this.setPosition(best.x, best.y);
+    (this.body as Phaser.Physics.Arcade.Body).reset(best.x, best.y);
+  }
+
+  private showGasTelegraph(): void {
+    // Amber ring expanding from boss position — warns of AoE.
+    this.ctx.getSFXManager().tryPlay('gas_leak', () => audio.playGasLeak());
+    if (this.scene.textures.exists('arc')) {
+      const fx = this.ctx.getStatusFxPool();
+      const ring = fx.acquireArc(this.x, this.y, GAS_RADIUS_PX * 0.15, 0xb8e04a, 0.4);
+      this.scene.tweens.add({
+        targets: ring,
+        scaleX: GAS_RADIUS_PX / (GAS_RADIUS_PX * 0.15),
+        scaleY: GAS_RADIUS_PX / (GAS_RADIUS_PX * 0.15),
+        alpha: 0,
+        duration: 1000,
+        ease: 'Cubic.easeOut',
+        onComplete: () => ring.setVisible(false),
+      });
+    }
+  }
+
+  private fireGasPulse(): void {
+    const player = this.ctx.getPlayer();
+    const dx = player.x - this.x;
+    const dy = player.y - this.y;
+    if (dx * dx + dy * dy <= GAS_RADIUS_PX * GAS_RADIUS_PX) {
+      player.takeDamage(GAS_DAMAGE);
+      player.applyNetSlow(GAS_SLOW_MS);
     }
   }
 
@@ -2201,6 +2475,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Wicker Haggis — reset phase state so pool re-use starts in Phase 1.
     this.wickerHaggisState = initialWickerHaggisState();
     this.wickerPhaseTwoTinted = false;
+    // Nessie — reset so pool re-use starts in Phase 1.
+    this.nessieState = initialNessieState();
+    // Auld Reekie — destroy lamp posts and reset state.
+    for (const lamp of this.lampPostSprites) {
+      try { lamp.destroy(); } catch { /* scene restart */ }
+    }
+    this.lampPostSprites = [];
+    this.lampAnchorPositions = [];
+    this.auldReekieInitialized = false;
+    this.auldReekieState = initialAuldReekieState();
   }
 
   destroy(fromScene?: boolean): void {
@@ -2220,6 +2504,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.twinStoneShadowInitialized = false;
     this.wickerHaggisState = initialWickerHaggisState();
     this.wickerPhaseTwoTinted = false;
+    this.nessieState = initialNessieState();
+    for (const lamp of this.lampPostSprites) {
+      try { lamp.destroy(); } catch { /* scene restart */ }
+    }
+    this.lampPostSprites = [];
+    this.lampAnchorPositions = [];
+    this.auldReekieInitialized = false;
+    this.auldReekieState = initialAuldReekieState();
     super.destroy(fromScene);
   }
 

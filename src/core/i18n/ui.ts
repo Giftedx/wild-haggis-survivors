@@ -1223,6 +1223,8 @@ export const ui = {
     wicker_haggis: 'The Wicker Haggis rises on the brae — Bealltainn\'s tribute is awake, and it is not happy about it.',
     /** Post-bell — Nessie, Reconsidered. Not the souvenir. The actual animal. */
     nessie: 'Something long just broke the surface. That is not a log.',
+    /** Urban — Auld Reekie Ghaist. Victorian gas-lamp ghost of the Old Town. */
+    auld_reekie: "The Old Town's ghaist is oot — and the lamps are on.",
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a chest and let it loose!',
@@ -1268,6 +1270,7 @@ export const ui = {
     boss_killed_twin_stones: 'An Càraid is doon! The heartstone goes cold — and the circle is yours.',
     boss_killed_wicker_haggis: 'The Wicker Haggis is doon! The moor smells of woodsmoke — and something worth celebrating.',
     boss_killed_nessie: 'Nessie is doon! The loch has it back. The postcards were wrong the whole time.',
+    boss_killed_auld_reekie: 'The Auld Reekie Ghaist is doon! The lamps go cold. The close breathes again.',
     boss_killed_generic: 'Boss doon! Get it right round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it right round them!',
@@ -1641,6 +1644,13 @@ export const ui = {
         b: 'That is not a tourist attraction. That is an animal.',
         c: 'Nessie is real. Nessie is here. Nessie is very large.',
       },
+      // Urban — Auld Reekie Ghaist. Gas-lamp ghost of Edinburgh Old Town.
+      // Limmy bite. Surprised at the situation while already dealing with it.
+      auld_reekie: {
+        a: "Victorian ghost wi' a lantern. The lamp's lit. That's bad.",
+        b: 'Ghaist fae the Old Town closes. Amber eyes, nae face, definitely haunting me.',
+        c: 'Yer tourists are orbiting it. That happens noo.',
+      },
     },
     low_hp: {
       a: 'Yer on the last shred, wee yin.',
@@ -1916,6 +1926,13 @@ export const ui = {
         a: 'The neck went under. The eye closed. The loch is quiet again.',
         b: 'Nessie, reconsidered — by a haggis. The postcards never saw this coming.',
         c: 'Whatever that was, it\'s gone back doon. The haggis will not mention it in future.',
+      },
+      // Urban — Auld Reekie Ghaist doon. The Old Town close exhales.
+      // Hearth warmth; the cobblestones are just cobblestones again.
+      auld_reekie: {
+        a: 'Lamps oot. Close is just a close again.',
+        b: 'Victorian ghaist telt tae move oan. The amber light went wi\' it.',
+        c: 'The tourists dispersed. The ghaist dispersed. The moor smells of nothing.',
       },
     },
     weapon_evolve: {

@@ -264,6 +264,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.nessie.b',
         'ui.banter.boss_warn.nessie.c',
       ],
+      auld_reekie: [
+        'ui.banter.boss_warn.auld_reekie.a',
+        'ui.banter.boss_warn.auld_reekie.b',
+        'ui.banter.boss_warn.auld_reekie.c',
+      ],
     },
   },
   {
@@ -540,6 +545,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.nessie.a',
         'ui.banter.boss_down.nessie.b',
         'ui.banter.boss_down.nessie.c',
+      ],
+      // Urban — Auld Reekie Ghaist doon. The Old Town exhales.
+      auld_reekie: [
+        'ui.banter.boss_down.auld_reekie.a',
+        'ui.banter.boss_down.auld_reekie.b',
+        'ui.banter.boss_down.auld_reekie.c',
       ],
     },
   },

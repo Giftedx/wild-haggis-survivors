@@ -147,4 +147,10 @@ export const beastie = {
   nessie: {
     lore: 'The Loch Ness Monster has had a long career as a sonar anomaly, a regional economic policy, and a national myth. That is not what this is. This is the actual animal, and the bell-toll disturbed its sleep. Long-necked, mottled green, with one amber eye that has been watching the loch for longer than the name "Loch Ness" has existed. It surfaces for a specific haggis. It does not explain why. Post-bell exclusive. SCOTTISH_RESEARCH.md §1.2; SCOTTISH_RESEARCH_DEEP.md §21.',
   },
+  auld_reekie: {
+    lore: 'A Victorian gentleman-ghost from the Old Town closes of Edinburgh. Gas-lamp held aloft; top hat; frock coat with no visible face inside it. The lamps of the Royal Mile keep lighting for it long after the gas was cut. In life it showed visitors the closes; in death it shows them to the closes. The amber corona around its lantern is not warm light. Slots at 18:30. Urban family. SCOTTISH_RESEARCH_DEEP.md §11.',
+  },
+  tourist_ghost: {
+    lore: 'Visitors to Edinburgh\'s ghost tours who did not leave when the tour ended. Pale blue and translucent; still carrying the camera. They orbit the Auld Reekie Ghaist in the first phase of the fight — damage shield through sheer tourist density. Low HP; easy to pop, if you can reach them.',
+  },
 } as const;

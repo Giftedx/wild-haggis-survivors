@@ -75,7 +75,12 @@ describe('WAVE_TIMELINE', () => {
     // wave-spawn pool until their biome ships. Mirrors the rune-offer
     // gate at `runeCards.test.ts` (`biome_urban`). Re-enable when the
     // matching biome lands (B5 charter Phase 3 for Edinburgh).
-    const biomeGatedKeys = new Set<string>(['edinburgh_ghost_guide']);
+    const biomeGatedKeys = new Set<string>([
+      'edinburgh_ghost_guide',
+      // Boss-summoned minion — spawned by Auld Reekie Ghaist only, never in
+      // the open-world wave pool. appearsAt: 9999 is a sentinel, not a mistake.
+      'tourist_ghost',
+    ]);
     for (const key of Object.keys(ENEMY_TYPES)) {
       if (bossKeys.has(key)) continue;
       if (biomeGatedKeys.has(key)) continue;
