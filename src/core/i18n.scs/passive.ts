@@ -47,4 +47,7 @@ export const passive = {
   peated_oak: {
     flavour: "Tha cask dis mair than hauld it — it changes it. Years in chairred Heiland aik roon aff tha young spirit's fury, replace fire wi reek, replace bite wi wairm. Tha haggis cairries a stave, says naethin, hits different.",
   },
+  reeds: {
+    flavour: "Tha double-reed sits whaur naebody sees it — inside tha drone pipe's socket, twa blades o cane bund wi waxed threid. Tha piper blaws. Tha reeds vibrate. Naethin else has tae move fer tha drone tae soun. Tha haggis cairries a spare set in a wee tin.",
+  },
 } as const;

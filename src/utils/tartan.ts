@@ -101,6 +101,8 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   practice_chanter: '#c8b878',
   // Whisky Lob — amber-spirit orange (aged-malt pour)
   whisky_lob: '#e07010',
+  // Bagpipe Drone — forest-drone green (bass pipe resin)
+  bagpipe_drone: '#3a8844',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

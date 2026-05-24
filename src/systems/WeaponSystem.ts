@@ -1281,16 +1281,23 @@ export class WeaponSystem {
     }
   }
 
-  /** Ceòl Mòr bagpipes — pulse damage + slow in a standing ring. */
+  /** Ceòl Mòr bagpipes / Waulking Mallet / Bagpipe Drone — aura pulse. */
   private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
-    const ring = this.acquireVfxCircle(px, py, radius, resolveWeaponVfxColor(w.config.behavior), 0.38);
-    this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipes_drone_knot', { scale: 0.95, endScale: 1.4, duration: 360, alpha: 0.72 });
+    const isDrone = w.config.key === 'bagpipe_drone';
+
+    // Drone ring is subtler — lower alpha, smaller flourish, to read as
+    // a persistent hum rather than an emphatic ceòl mòr pulse.
+    const ringAlpha = isDrone ? 0.22 : 0.38;
+    const ring = this.acquireVfxCircle(px, py, radius, resolveWeaponVfxColor(w.config.behavior), ringAlpha);
+    if (!isDrone) {
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipes_drone_knot', { scale: 0.95, endScale: 1.4, duration: 360, alpha: 0.72 });
+    }
     this.scene.tweens.add({
       targets: ring,
-      alpha: 0.1,
-      duration: 280,
+      alpha: isDrone ? 0.05 : 0.1,
+      duration: isDrone ? 180 : 280,
       yoyo: true,
       onComplete: () => ring.setVisible(false),
     });
@@ -1303,7 +1310,10 @@ export class WeaponSystem {
       const dy = enemy.y - py;
       if (dx * dx + dy * dy <= radiusSq) {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
-        enemy.applyFreeze(0.42, 1400);
+        // Drone: soft continuous slow (refreshes before it expires at 500ms tick).
+        // Ceòl Mòr: hard freeze on a longer cooldown.
+        if (isDrone) enemy.applyFreeze(0.70, 700);
+        else enemy.applyFreeze(0.42, 1400);
       }
     }
   }

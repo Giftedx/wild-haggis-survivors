@@ -49,7 +49,12 @@ export type PassiveKey =
   // Aged spirit on charred oak. +10% global damage — the smoke and barrel
   // tannins sharpen every edge the haggis carries. Pairs with a level-5
   // Whisky Lob at chest for the future evolution.
-  | 'peated_oak';
+  | 'peated_oak'
+  // Bagpipe Drone paired passive — "Reeds".
+  // The drone pipe's double-reed, dipped and tuned. +10% cooldown reduction
+  // — the reed settles faster, the drone cycle tightens. Pairs with a
+  // level-5 Bagpipe Drone at chest for the future evolution.
+  | 'reeds';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -205,6 +210,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'wicon_bagpipes',
     effect: { type: 'add_weapon', weaponKey: 'waulking_mallet' },
+  },
+  // Bagpipe Drone — continuous slow-aura utility weapon.
+  {
+    id: 'add_bagpipe_drone',
+    name: 'upgradeCard.add_bagpipe_drone.name',
+    description: 'upgradeCard.add_bagpipe_drone.description',
+    rarity: 'uncommon',
+    icon: 'wicon_bagpipe_drone',
+    effect: { type: 'add_weapon', weaponKey: 'bagpipe_drone' },
   },
   // Whisky Lob — zone-denial lob weapon, shatters on landing.
   {
@@ -386,6 +400,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_peated_oak',
     effect: { type: 'add_passive', passiveKey: 'peated_oak' },
+  },
+  // Bagpipe Drone paired passive — Reeds.
+  {
+    id: 'add_reeds',
+    name: 'upgradeCard.add_reeds.name',
+    description: 'upgradeCard.add_reeds.description',
+    rarity: 'uncommon',
+    icon: 'ucard_reeds',
+    effect: { type: 'add_passive', passiveKey: 'reeds' },
   },
 ];
 

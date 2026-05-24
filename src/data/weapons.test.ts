@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 18 weapons (Whisky Lob added as zone-denial lob)', () => {
-    expect(keys).toHaveLength(18);
+  it('has exactly 19 weapons (Bagpipe Drone added as slow-aura utility)', () => {
+    expect(keys).toHaveLength(19);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {

@@ -47,4 +47,7 @@ export const passive = {
   peated_oak: {
     flavour: "The cask does more than hold it — it changes it. Years in charred Highland oak round off the young spirit's fury, replace fire with smoke, replace bite with warmth. The haggis carries a stave, says nothing, hits differently.",
   },
+  reeds: {
+    flavour: "The double-reed sits where nobody sees it — inside the drone pipe's socket, two blades of cane bound with waxed thread. The piper blows. The reeds vibrate. Nothing else has to move for the drone to sound. The haggis carries a spare set in a wee tin.",
+  },
 } as const;

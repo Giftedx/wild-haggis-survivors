@@ -43,6 +43,10 @@ export const upgradeCard = {
     name: 'Waulkin Mallet',
     description: 'A heavy aik beater. Hits on tha beat laund harder; aff-beat hits still hit.',
   },
+  add_bagpipe_drone: {
+    name: 'Bagpipe Drone',
+    description: 'Slow-aura aboot ye — enemies in range aye move at twa-thirds speed. Pair wi Reeds.',
+  },
   add_whisky_lob: {
     name: 'Whisky Lob',
     description: 'Lob a flask — it shatters an burns. Zone-denial on a slaw cooldown. Pair wi Peated Oak.',
@@ -126,6 +130,10 @@ export const upgradeCard = {
   add_peated_oak: {
     name: 'Peated Oak',
     description: 'Aged spirit on chairred aik. +10% dunt tae awthin. Pairs wi tha Whisky Lob.',
+  },
+  add_reeds: {
+    name: 'Reeds',
+    description: "Tha drone pipe's double-reed. +10% cooldown reduction — tha hum tichtens. Pairs wi tha Bagpipe Drone.",
   },
   boost_hp: {
     name: 'Thick Hide',

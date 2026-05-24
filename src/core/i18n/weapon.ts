@@ -89,6 +89,11 @@ export const weapon = {
     description: 'Lob a hip flask. It shatters on landing and burns whatever stands in the puddle.',
     flavour: "A good dram is wasted on the enemy — but the moor has never been precious about its whisky. The flask goes in the air, the spirit goes on the ground, and the ground holds onto it.",
   },
+  bagpipe_drone: {
+    name: 'Bagpipe Drone',
+    description: 'The low pipes sustain a slow-aura around you. Enemies in range move at two-thirds speed — they cannot outpace the drone.',
+    flavour: "The piob mòr has a melody pipe, but the drones were there first — three bass-and-baritone chanters that hold one note for the whole tune. The haggis found a way to aim them. Nothing fast can stay fast in the drone's ring.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, one breath. The arc that was three becomes a wall.',

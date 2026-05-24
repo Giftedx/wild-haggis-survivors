@@ -40,7 +40,8 @@ export type WeaponKey =
   | 'grannies_curse'
   | 'wallace_sword'
   | 'practice_chanter'
-  | 'whisky_lob';
+  | 'whisky_lob'
+  | 'bagpipe_drone';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -263,6 +264,37 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.14,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Bagpipe Drone. The low sustained drone pipes
+  // (bass + baritone chanters) beneath the melody — not the piob mòr
+  // but the constant harmonic foundation that slows the air around it.
+  // Mechanically: a continuous slow-aura with a short tick cooldown
+  // (500ms) and minimal damage. Enemies in range are always slightly
+  // slowed (30%) as long as the haggis fires on schedule. A crowd-
+  // control utility pick that pairs with Reeds for the evolution slot.
+  // No evolution in v1 — the "tuned" form is reserved for later.
+  bagpipe_drone: {
+    key: 'bagpipe_drone',
+    nameKey: 'weapon.bagpipe_drone.name',
+    descriptionKey: 'weapon.bagpipe_drone.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 500,
+    damage: 2,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 80,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
     },
   },
 

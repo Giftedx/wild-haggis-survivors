@@ -107,7 +107,8 @@ describe('PASSIVE_KEYS', () => {
     // `stirling_medal` — pairings for Dirk Flurry, Banshee Wail,
     // Freedom Blade.
     // Whisky Lob (2026-05-24) added `peated_oak` — +10% damage.
-    expect(PASSIVE_KEYS).toHaveLength(17);
+    // Bagpipe Drone (2026-05-24) added `reeds` — +10% cooldown reduction.
+    expect(PASSIVE_KEYS).toHaveLength(18);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');

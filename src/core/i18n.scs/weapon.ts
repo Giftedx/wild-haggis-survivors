@@ -89,6 +89,11 @@ export const weapon = {
     description: 'Lob a hip flask. It shatters on landin an burns onythin standin in tha puddle.',
     flavour: "A guid dram is wasted on tha enemy — but tha moor hasnae ivver been precious aboot its whisky. Tha flask gangs in tha air, tha spirit gangs on tha grun, an tha grun hauds ontae it.",
   },
+  bagpipe_drone: {
+    name: 'Bagpipe Drone',
+    description: 'Tha laigh pipes sustain a slow-aura aboot ye. Enemies in range move at twa-thirds speed — they cannae ootpace tha drone.',
+    flavour: "Tha piob mòr has a melody pipe, but tha drones wir there first — three bass-an-baritone chanters that haud ane note fer tha haill tune. Tha haggis found a wey tae aim them. Naethin fast can bide fast in tha drone's ring.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, ane braith. Tha arc that wis three becomes a waw.',

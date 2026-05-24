@@ -30,6 +30,7 @@ import { drawBansheeWailIcon } from './bansheeWail';
 import { drawFreedomBladeIcon } from './freedomBlade';
 import { drawPracticeChanterIcon } from './practiceChanter';
 import { drawWhiskyLobIcon } from './whiskyLob';
+import { drawBagpipeDroneIcon } from './bagpipeDrone';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -51,6 +52,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawPracticeChanterIcon(scene);
   // Whisky Lob — zone-denial lob weapon.
   drawWhiskyLobIcon(scene);
+  // Bagpipe Drone — continuous slow-aura utility.
+  drawBagpipeDroneIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);

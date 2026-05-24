@@ -104,5 +104,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // No accessory equip — the oak cask is conceptual, not worn.
       player.addDamageMultiplier(0.10);
       break;
+    case 'reeds':
+      // +10% cooldown reduction — the reed settles faster, the drone
+      // cycle tightens. Pairs with Bagpipe Drone at lv5 for the future
+      // evolution. No accessory equip — the reed is inside the pipe.
+      player.addCooldownReduction(0.10);
+      break;
   }
 }

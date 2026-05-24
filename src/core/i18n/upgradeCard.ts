@@ -44,6 +44,10 @@ export const upgradeCard = {
     name: 'Waulking Mallet',
     description: 'A weighted oak beater. Hits on the beat land harder; off-beat hits still hit.',
   },
+  add_bagpipe_drone: {
+    name: 'Bagpipe Drone',
+    description: 'Slow-aura around you — enemies in range always move at two-thirds speed. Pair wi Reeds.',
+  },
   add_whisky_lob: {
     name: 'Whisky Lob',
     description: 'Lob a flask — it shatters and burns. Zone-denial on a slow cooldown. Pair wi Peated Oak.',
@@ -128,6 +132,10 @@ export const upgradeCard = {
   add_peated_oak: {
     name: 'Peated Oak',
     description: 'Aged spirit on charred oak. +10% damage to everything. Pairs wi the Whisky Lob.',
+  },
+  add_reeds: {
+    name: 'Reeds',
+    description: "The drone pipe's double-reed. +10% cooldown reduction — the hum tightens. Pairs wi the Bagpipe Drone.",
   },
   // Stat boost cards
   boost_hp: {
