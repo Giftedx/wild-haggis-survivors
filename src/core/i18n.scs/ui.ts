@@ -3969,12 +3969,16 @@ export const ui = {
       engineer: {
         death_baseline: '{name} fell. Tha turret kept firin. That\'s tha mechanism: it disnae care.',
         death_short: '{name}. Tha cairn staunds. Tha barrel cools.',
+        death_cailleach_boss: 'Tha weather model at {time} gave 73% storm probability. {name} had a cairn-turret. Tha Cailleach had winter. Tha model wis richt.',
+        death_nuckelavee: 'Tha turret logged 47 hits on tha Nuckelavee at {time}. {name} logged a death. Tha mechanism did no distinguish atween outcomes.',
         victory_baseline: '{name} built ance an won. Watt wid hae improved tha design for tha next run.',
         victory_taxman: 'Tha Taxman faced {name} an a cairn-turret. Twa shooters. Wan ledger. Settled.',
       },
       tufted: {
         death_baseline: '{name} fell. Tha pup waitit on tha muir — still circlin tha spot, in case.',
         death_short: '{name} an tha pup. Ane fell. Tha pup did no.',
+        death_each_uisge: 'Tha pup gaed toward tha watter at {time}. {name} follaed. Tha pup kent better than {name} aboot loch-horses.',
+        death_earl_beardie: 'Tha pup hid under tha table at {time}. {name} did no. Tha pup\'s instincts were richt aboot Earl Beardie.',
         victory_baseline: '{name} an tha pup made it through. Twa haggis by tha end o it — or near enough.',
         victory_taxman: 'Tha Taxman faced {name} an tha pup. Twa against ane. Tha ledger forgot tae coont tha pup.',
       },

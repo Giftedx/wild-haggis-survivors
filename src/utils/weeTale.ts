@@ -573,9 +573,17 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.engineer.death_short', requires: ['death', 'engineer', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.engineer.victory_baseline', requires: ['victory', 'engineer', 'has_name'] },
   { key: 'ui.weeTale.variant.engineer.victory_taxman', requires: ['victory', 'engineer', 'has_name', 'taxman'] },
+  // Tier-4 — The weather model was right. The engineer had a turret. The Cailleach had winter.
+  { key: 'ui.weeTale.variant.engineer.death_cailleach_boss', requires: ['death', 'engineer', 'has_name', 'cailleach_boss_death'] },
+  // Tier-4 — The turret logged every hit on the Nuckelavee. The haggis still lost.
+  { key: 'ui.weeTale.variant.engineer.death_nuckelavee', requires: ['death', 'engineer', 'has_name', 'nuckelavee_death'] },
   // The Tufted Haggis — the pup; two on the moor; companion familiar.
   { key: 'ui.weeTale.variant.tufted.death_baseline', requires: ['death', 'tufted', 'has_name'] },
   { key: 'ui.weeTale.variant.tufted.death_short', requires: ['death', 'tufted', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.tufted.victory_baseline', requires: ['victory', 'tufted', 'has_name'] },
   { key: 'ui.weeTale.variant.tufted.victory_taxman', requires: ['victory', 'tufted', 'has_name', 'taxman'] },
+  // Tier-4 — The pup knew better about loch-horses. {name} followed anyway.
+  { key: 'ui.weeTale.variant.tufted.death_each_uisge', requires: ['death', 'tufted', 'has_name', 'each_uisge_death'] },
+  // Tier-4 — The pup hid under the table. {name} did not.
+  { key: 'ui.weeTale.variant.tufted.death_earl_beardie', requires: ['death', 'tufted', 'has_name', 'earl_beardie_death'] },
 ] as const;

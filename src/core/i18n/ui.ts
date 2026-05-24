@@ -4810,12 +4810,16 @@ export const ui = {
       engineer: {
         death_baseline: '{name} fell. The turret kept firing. That\'s the mechanism: it doesn\'t care.',
         death_short: '{name}. The cairn stands. The barrel cools.',
+        death_cailleach_boss: 'The weather model at {time} gave 73% storm probability. {name} had a cairn-turret. The Cailleach had winter. The model was right.',
+        death_nuckelavee: 'The turret logged 47 hits on the Nuckelavee at {time}. {name} logged a death. The mechanism did not distinguish between outcomes.',
         victory_baseline: '{name} built once and won. Watt would have improved the design for the next run.',
         victory_taxman: 'The Taxman faced {name} and a cairn-turret. Two shooters. One ledger. Settled.',
       },
       tufted: {
         death_baseline: '{name} fell. The pup waited on the moor — still circling the spot, in case.',
         death_short: '{name} and the pup. One fell. The pup did not.',
+        death_each_uisge: 'The pup went toward the water at {time}. {name} followed. The pup knew better than {name} about loch-horses.',
+        death_earl_beardie: 'The pup hid under the table at {time}. {name} did not. The pup\'s instincts were correct about Earl Beardie.',
         victory_baseline: '{name} and the pup made it through. Two haggis by the end of it — or near enough.',
         victory_taxman: 'The Taxman faced {name} and the pup. Two against one. The ledger forgot to count the pup.',
       },
