@@ -625,3 +625,115 @@ export function bakeFxGrouseFeather(scene: Phaser.Scene): void {
   gs.generateTexture('fx_grouse_feather', w, h);
   gs.destroy();
 }
+
+/**
+ * `fx_tartan_thread` — Tartan Day (Apr 4–8) ambient particle.
+ *
+ * A single strand of woven cloth caught on the moor wind — saltire-navy
+ * base, white central stripe (the Declaration's thread), and a thin red
+ * accent that keys most Scottish tartans. 14×6 so the strand reads as a
+ * horizontal wisp, not a pebble; the AmbientWeatherSystem applies a
+ * random ±10° angle per particle so each thread tumbles independently.
+ *
+ * Tonal palette: Hearth (diaspora warmth — the moor reaches further).
+ * Low peak-alpha so the overlay reads as cloth-on-the-wind, not
+ * gameplay-relevant haze. Visually distinct from harvest-drift
+ * (amber-cream, fast horizontal) by the cooler navy + white palette
+ * and the thread-end dots at each terminus.
+ *
+ * Refs: SCOTTISH_RESEARCH_DEEP.md §12 (tartan history + diaspora);
+ * DESIGN_IDEAS.md §2 seasonal event catalogue.
+ */
+export function bakeFxTartanThread(scene: Phaser.Scene): void {
+  const w = 14;
+  const h = 6;
+  const cy = h / 2;
+  const gs = scene.add.graphics();
+
+  // Outer navy halo — binds the strand so it reads against any biome tint.
+  gs.fillStyle(0x4488cc, 0.08);
+  gs.fillRect(0, 0, w, h);
+
+  // Thread body — St Andrew's blue. The main ground-colour of most
+  // Blue Scots tartans; saltire reference.
+  gs.fillStyle(0x003380, 0.5);
+  gs.fillRect(1, cy - 1, w - 2, 2);
+  gs.fillStyle(0x1a4eaa, 0.7);
+  gs.fillRect(2, cy - 0.7, w - 4, 1.4);
+
+  // Red accent bands at the thread edges — the cross-key thread in
+  // most Scottish district tartans. Thin so the saltire-blue reads first.
+  gs.fillStyle(0xcc2222, 0.55);
+  gs.fillRect(1, cy - 1.1, w - 2, 0.35);
+  gs.fillStyle(0xdd3333, 0.45);
+  gs.fillRect(1, cy + 0.75, w - 2, 0.35);
+
+  // Central white stripe — the Declaration of Arbroath's pale thread.
+  // Independence woven in, not declared.
+  gs.fillStyle(0xe0ecff, 0.82);
+  gs.fillRect(3, cy - 0.35, w - 6, 0.7);
+  gs.fillStyle(0xffffff, 0.92);
+  gs.fillRect(4, cy - 0.25, w - 8, 0.5);
+
+  // Thread-end pips — small navy blobs at each terminus suggest a cut
+  // strand rather than a printed line; the thread reads as textile, not mark.
+  gs.fillStyle(0x0026aa, 0.75);
+  gs.fillCircle(1.4, cy, 1.1);
+  gs.fillCircle(w - 1.4, cy, 0.9);
+
+  gs.generateTexture('fx_tartan_thread', w, h);
+  gs.destroy();
+}
+
+/**
+ * `fx_simmer_dim_gloam` — Simmer Dim (Jun 18–21) ambient particle.
+ *
+ * The star the Shetland gloaming holds — pale lilac-gold mote that
+ * drifts barely upward and fades so slowly the player isn't sure if
+ * it was ever there. Simmer dim is the perpetual midsummer twilight
+ * that never darkens past blue-hour: neither full day nor full dark.
+ *
+ * 8×8 circular. Palette: lilac outer (#c8b8e8) → ivory mid (#f8f0e0)
+ * → bright-star core (#fffff8). Very low peak alpha (0.30–0.48) — the
+ * gloam is a quality of light, not a particle storm. Long-lived (6–9 s)
+ * so even the sparse 4000 ms spawn cadence reads as continuous shimmer.
+ *
+ * Tonal register: Hearth-edge (the gloaming is warm but edged with the
+ * uncanny — you could walk in this light forever). Visually distinct
+ * from lambing motes (spring gold, rising fast) by the lilac cast and
+ * the near-stillness of each mote's travel.
+ *
+ * Refs: SCOTTISH_RESEARCH_DEEP.md §14.6 (Shetland simmer dim);
+ * DESIGN_IDEAS.md §2 seasonal event catalogue.
+ */
+export function bakeFxSimmerDimGloam(scene: Phaser.Scene): void {
+  const size = 8;
+  const cx = size / 2;
+  const cy = size / 2;
+  const gs = scene.add.graphics();
+
+  // Outer gloaming halo — pale lilac. The twilight that Shetland keeps
+  // from June solstice to the last sliver of night; the colour between
+  // day-gold and true-dark.
+  gs.fillStyle(0xc8b8e8, 0.14);
+  gs.fillCircle(cx, cy, 3.8);
+
+  // Mid band — warm cream + lilac tinge. The sky where day and gloam
+  // overlap: neither gold nor purple, both at once.
+  gs.fillStyle(0xe8dff0, 0.25);
+  gs.fillCircle(cx, cy, 2.6);
+
+  // Inner warm-ivory body. Hearth warmth that endures in the long light.
+  gs.fillStyle(0xf8f0e0, 0.55);
+  gs.fillCircle(cx, cy, 1.6);
+
+  // Star-bright core — the gloam-star that the eye catches just before
+  // it decides the sky is still too light for stars.
+  gs.fillStyle(0xfffff8, 0.88);
+  gs.fillCircle(cx - 0.2, cy - 0.2, 0.7);
+  gs.fillStyle(0xffffff, 1);
+  gs.fillCircle(cx - 0.3, cy - 0.3, 0.3);
+
+  gs.generateTexture('fx_simmer_dim_gloam', size, size);
+  gs.destroy();
+}

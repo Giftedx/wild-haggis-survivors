@@ -43,6 +43,8 @@ export type AmbientWeatherMode =
   | 'up_helly_aa_embers'
   | 'bannockburn_dust'
   | 'grouse_feather_drift'
+  | 'tartan_thread_drift'
+  | 'simmer_dim_gloam'
   | null;
 
 /** Depth slot for ambient weather — behind every gameplay sprite. */
@@ -110,6 +112,20 @@ export function pickWeatherMode(eventKey: string | null): AmbientWeatherMode {
       // down with slow rotation — visually distinct from bracken-turn
       // (smaller, striped quill instead of solid copper leaf).
       return 'grouse_feather_drift';
+    case 'tartan_day':
+      // Tartan Day (Apr 4–8) — diaspora warmth. Saltire-navy + white
+      // + red tartan threads drift on the moor wind. Cultural anchor:
+      // the Declaration of Arbroath (1320) — independence woven in cloth.
+      // Visually distinct from harvest-drift (amber-cream, fast) by the
+      // cooler navy palette and thread-end pip detail.
+      return 'tartan_thread_drift';
+    case 'simmer_dim':
+      // Simmer Dim (Jun 18–21) — Shetland perpetual midsummer twilight.
+      // Very faint gloam-stars drift barely upward; long-lived + very
+      // low alpha so the overlay reads as a quality of light, not particles.
+      // Visually distinct from aurora (fast, saturated ribbon) by the
+      // near-stillness and warm-lilac palette.
+      return 'simmer_dim_gloam';
     default:
       return null;
   }
@@ -165,6 +181,15 @@ const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
   // medium-lived; the 30-particle cap keeps screen readable even
   // mid-feather-fall. Wild register — heather + feather, low-key.
   grouse_feather_drift: { spawnPeriodMs: 650, textureKey: 'fx_grouse_feather' },
+  // Tartan-thread drift. Mid-cadence (~1.1/sec → 900 ms period) — slower
+  // than harvest chaff (bright + fast) to keep the tone Hearth-warm
+  // rather than Wild-energetic. Each thread lives 3.5-5 s so even at
+  // 900 ms spawn the moor reads as thread-strewn without crowding.
+  tartan_thread_drift: { spawnPeriodMs: 900, textureKey: 'fx_tartan_thread' },
+  // Simmer-dim gloam-stars. Very sparse cadence (4000 ms) — the gloam
+  // is a quality of light, not a particle storm. Each mote lives 6-9 s
+  // so even at this cadence the overlay reads as continuous shimmer.
+  simmer_dim_gloam: { spawnPeriodMs: 4000, textureKey: 'fx_simmer_dim_gloam' },
 };
 
 export class AmbientWeatherSystem {
@@ -319,6 +344,12 @@ export class AmbientWeatherSystem {
         return;
       case 'grouse_feather_drift':
         this.spawnGrouseFeather();
+        return;
+      case 'tartan_thread_drift':
+        this.spawnTartanThread();
+        return;
+      case 'simmer_dim_gloam':
+        this.spawnSimmerDimGloam();
         return;
       default:
         return;
@@ -856,6 +887,118 @@ export class AmbientWeatherSystem {
         targets: img,
         alpha: 0,
         duration: lifetimeMs * 0.22,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Tartan-thread drift — Tartan Day (Apr 4–8).
+   *
+   * Saltire-navy + white + red thread strands drift on the moor wind
+   * — the Declaration of Arbroath (1320) thread: independence woven in
+   * cloth. Spawns off the left or right edge, crosses the screen
+   * horizontally with a small vertical settle and ±10° tumble.
+   *
+   * Tonal register: Hearth (diaspora warmth — the moor reaches further).
+   * Visually distinct from `harvest_drift` (amber-cream, fast) by the
+   * cooler navy palette; distinct from `bannockburn_dust` (muddy ochre,
+   * horizontal) by the bright navy + white signature.
+   */
+  private spawnTartanThread(): void {
+    const v = this.getViewport();
+    // 50/50 left-right so the threads don't all blow the same direction.
+    const goingRight = Math.random() < 0.5;
+    const startX = goingRight ? v.x - 16 : v.x + v.w + 16;
+    const endX = goingRight ? v.x + v.w + 16 : v.x - 16;
+    const y = v.y + Math.random() * v.h;
+    const img = this.addImage(startX, y, 'fx_tartan_thread');
+    if (!img) return;
+    img.setAlpha(0);
+    if (!goingRight) img.setFlipX(true);
+    // Each thread tumbles slightly — ±10° random angle so the overlay
+    // reads as textile in wind, not printed stripes.
+    img.setAngle((Math.random() - 0.5) * 20);
+    img.setScale(0.9 + Math.random() * 0.3); // 0.9..1.2
+    const peakAlpha = 0.40 + Math.random() * 0.2; // 0.40..0.60
+    const lifetimeMs = 3500 + Math.random() * 1500; // 3.5-5s
+    // Slight vertical settle — the moor wind isn't perfectly horizontal.
+    const settle = (Math.random() - 0.5) * 40;
+    this.scene.tweens.add({
+      targets: img,
+      x: endX,
+      y: img.y + settle,
+      duration: lifetimeMs,
+      ease: 'Sine.easeIn',
+    });
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.2,
+    });
+    this.scheduleFade(lifetimeMs * 0.75, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.25,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Simmer-dim gloam-stars — Simmer Dim (Jun 18–21).
+   *
+   * The star the Shetland gloaming holds — a pale lilac-gold mote
+   * that drifts barely upward and fades so slowly the player isn't
+   * sure if it was ever there. Simmer dim is the perpetual midsummer
+   * twilight that never darkens past blue-hour.
+   *
+   * Tonal register: Hearth-edge (warm but edged with uncanny — you
+   * could walk in this light forever). Very low peak alpha so the
+   * overlay reads as a quality of light, not a particle storm. Long
+   * lifetime (6-9 s) sustains the shimmer at the sparse 4 s cadence.
+   *
+   * Visually distinct from `lambing_motes` (spring gold, fast rise)
+   * by the lilac cast and near-stillness; distinct from `aurora`
+   * (fast, saturated ribbon) by the solitary soft mote format.
+   */
+  private spawnSimmerDimGloam(): void {
+    const v = this.getViewport();
+    // Appears anywhere on screen — the gloaming light isn't directional.
+    const x = v.x + Math.random() * v.w;
+    const y = v.y + Math.random() * v.h;
+    const img = this.addImage(x, y, 'fx_simmer_dim_gloam');
+    if (!img) return;
+    img.setAlpha(0);
+    img.setScale(0.8 + Math.random() * 0.5); // 0.8..1.3
+    // Very low peak alpha — the gloam is a quality of light, not a
+    // particle storm. The player should feel it rather than see it.
+    const peakAlpha = 0.30 + Math.random() * 0.18; // 0.30..0.48
+    const lifetimeMs = 6000 + Math.random() * 3000; // 6-9s
+    // Barely-there drift — upward with a tiny lateral sway.
+    const drift = (Math.random() - 0.5) * 20;
+    const rise = -(15 + Math.random() * 15); // 15-30px upward
+    this.scene.tweens.add({
+      targets: img,
+      x: img.x + drift,
+      y: img.y + rise,
+      duration: lifetimeMs,
+      ease: 'Linear',
+    });
+    // Slow fade-in, hold a long beat, slow fade-out. The gloam holds.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.25,
+    });
+    this.scheduleFade(lifetimeMs * 0.65, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.35,
         onComplete: () => img.destroy(),
       });
     });
