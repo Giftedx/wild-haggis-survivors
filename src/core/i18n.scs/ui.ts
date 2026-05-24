@@ -3843,6 +3843,7 @@ export const ui = {
       glen_forager: {
         death_baseline: 'Tha glen gies an tha glen taks. {name} had a guid haul afore tha end.',
         death_short: 'Wrang turn, wrang weather. {name} foraged their last.',
+        death_hunter_general: 'Tha hunting pairty found tha glen at {time}. {name} had tha larder. They had tha rifles.',
         victory_baseline: '{name} cam hame wi\' full pooches an a story worth tha tellin\'.',
         victory_epic: '{time} through tha glen. {name} knew ivery hollow, ivery bent branch, ivery wey hame.',
       },
@@ -3938,6 +3939,7 @@ export const ui = {
       the_pict: {
         death_baseline: '{name} fell on tha muir. Tha Pict cairries nae gowd — anely marks in stane.',
         death_short: '{name}. Tha knotwork still hauds.',
+        death_hunter_general: 'Tha woad-marked fell tae tha pith-helmeted at {time}. {name} outlasted ivery airmy sent tae thae hills — bar this ane.',
         victory_baseline: '{name} carvit it oot. Tha muir kens wha won, even wi nae gowd tae shaw.',
         victory_taxman: 'Tha Taxman had gowd. Tha Pict had stane. Tha stane lasts.',
       },

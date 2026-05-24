@@ -4684,6 +4684,7 @@ export const ui = {
       glen_forager: {
         death_baseline: 'The glen gives and the glen takes. {name} had a guid haul afore the end.',
         death_short: 'Wrang turn, wrang weather. {name} foraged their last.',
+        death_hunter_general: 'The hunting party found the glen at {time}. {name} had the larder. They had the rifles.',
         victory_baseline: '{name} came hame wi\' full pockets and a story worth the telling.',
         victory_epic: '{time} through the glen. {name} knew every hollow, every bent branch, every wey hame.',
       },
@@ -4779,6 +4780,7 @@ export const ui = {
       the_pict: {
         death_baseline: '{name} fell on the moor. The Pict carries nae gold — only marks in stone.',
         death_short: '{name}. The knotwork still hauds.',
+        death_hunter_general: 'The woad-marked fell tae the pith-helmeted at {time}. {name} outlasted every army sent tae these hills — bar this ane.',
         victory_baseline: '{name} carved it oot. The moor kens wha won, even wi nae gold tae show.',
         victory_taxman: 'The Taxman had gold. The Pict had stone. The stone lasts.',
       },

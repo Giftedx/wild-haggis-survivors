@@ -429,6 +429,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.glen_forager.death_short', requires: ['death', 'glen_forager', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.glen_forager.victory_baseline', requires: ['victory', 'glen_forager', 'has_name'] },
   { key: 'ui.weeTale.variant.glen_forager.victory_epic', requires: ['victory', 'glen_forager', 'has_name', 'epic'] },
+  // Tier-4 — The Glen Forager met the Hunter-General's party. The quarry had a larder; the general had rifles.
+  { key: 'ui.weeTale.variant.glen_forager.death_hunter_general', requires: ['death', 'glen_forager', 'has_name', 'hunter_general_death'] },
 
   // ── v3 — Surefoot (Hearth + balance/footing) ───────────────────
   // Hearth register; careful, confident. Ground/footing/stumble language.
@@ -532,6 +534,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.the_pict.death_short', requires: ['death', 'the_pict', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.the_pict.victory_baseline', requires: ['victory', 'the_pict', 'has_name'] },
   { key: 'ui.weeTale.variant.the_pict.victory_taxman', requires: ['victory', 'the_pict', 'has_name', 'taxman'] },
+  // Tier-4 — The Pict met the Hunter-General. Woad-marked versus pith-helmeted; oldest soldier, newest officer.
+  { key: 'ui.weeTale.variant.the_pict.death_hunter_general', requires: ['death', 'the_pict', 'has_name', 'hunter_general_death'] },
   // The Jacobite — Flora's Plaid; for the Cause; tragic-romantic.
   { key: 'ui.weeTale.variant.jacobite.death_baseline', requires: ['death', 'jacobite', 'has_name'] },
   { key: 'ui.weeTale.variant.jacobite.death_short', requires: ['death', 'jacobite', 'has_name', 'short'] },
