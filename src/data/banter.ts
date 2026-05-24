@@ -1454,6 +1454,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.glen_coe.c',
         'ui.banter.biome_change.glen_coe.d',
       ],
+      // Clyde Shipyard (2026-05-24) — postindustrial Clyde dockland.
+      // Hearth register: working-class pride, industrial nostalgia, practical
+      // footing warnings. Short, observational, no melodrama.
+      clyde_shipyard: [
+        'ui.banter.biome_change.clyde_shipyard.a',
+        'ui.banter.biome_change.clyde_shipyard.b',
+        'ui.banter.biome_change.clyde_shipyard.c',
+        'ui.banter.biome_change.clyde_shipyard.d',
+      ],
     },
   },
   {

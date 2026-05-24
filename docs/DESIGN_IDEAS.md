@@ -157,7 +157,7 @@ Candidates:
 - **Iona Peaceful Isle** — reverent palette (soft gold, sea-blue); *no combat biome* — puzzle/exploration only. A rare reward route. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §3.1.*)
 - **Callanish Standing Stones** — Neolithic site, twilight purple palette. Stones fire aligned beams (mechanical). The Pech (dwarves) emerge if circled. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 - **Orkney Neolithic** — Skara Brae / Maeshowe / Ring of Brodgar inspired. Wind-swept green, stone, ancient-cairn hazards. (*Ref: §2.7.*)
-- **Clyde Shipyard** — rust-red / steel-grey industrial biome. Crane-sweep hazards, sparks, riveter enemies. Scottish industrial-heritage reclamation. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §21.1 (Clyde heritage).*)
+- ~~**Clyde Shipyard**~~ — ✅ shipped 2026-05-24 (`clyde_shipyard`, tint 0x5a4a38, `clydeRivets`: +15% XP / -8% speed. Hazard: `molten_slag` (14 dmg, 13px, 5s, 10s interval). Wildlife: salmon 0.6, grey_seal 0.4, rook 0.5, pipistrelle_bat 0.4, otter 0.3. Story props: scaffold_post, close_door, newsprint, bus_stop, waymarker_post. Banter + weeTale wired. Thematically pairs with Steam Engine.)
 - **St Kilda (evacuated)** — lonely-green cliff biome, seabird-cliffs of staggering scale. Cultural-ghost village (1930 evacuation). (*Handle respectfully.*) (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §2.5.*)
 - **Fingal's Cave (Staffa)** — basalt hexagonal columns, sea-echo audio, acoustic-damage zones. (*Ref: §3.1.*)
 - **Corryvreckan Whirlpool Coast** — sea-green foam-white; whirlpool pull-tiles; Cailleach's washing-pot. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)

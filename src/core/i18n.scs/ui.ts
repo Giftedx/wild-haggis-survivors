@@ -2177,6 +2177,12 @@ export const ui = {
         c: 'Three mile o corrie. 1692 still in tha wind.',
         d: 'Reid deer in silence. Tha glen prefers tha quiet.',
       },
+      clyde_shipyard: {
+        a: 'Tha Clyde\'s quaet nou. Wisnae aye.',
+        b: 'Mind tha slag — tha grund\'s still warm here.',
+        c: 'Thay biggit tha QE2 here. Tha haggis keeps tha faith.',
+        d: 'Watch yer hooves on tha clinker.',
+      },
     },
     moor_moment: {
       a: 'Tha moor noticed ye. That\'s rare.',
@@ -3812,6 +3818,7 @@ export const ui = {
       biome_frost: 'Tha frost-muir at {time} — slowed, an tha muir didnae.',
       biome_cairngorm: 'Tha plateau wind taen tha haggis at {time}. Tha cairngorm keeps its ain cauld.',
       biome_glen_coe: 'Tha glen haulds its weather close. Oot o muir at {time}.',
+      biome_clyde_shipyard: 'Tha slag wis still warm at {time}. Tha Clyde minded.',
     },
     victory: {
       fallback_a: 'Walked hame at {time}. Tha kettle wis oan.',
@@ -3839,6 +3846,7 @@ export const ui = {
       biome_frost: 'Walked hame across tha frost. It cracked underfit tha haill wey. Hame onyway.',
       biome_cairngorm: 'Crossed tha cairngorm an cam doon tha ither side at {time}. Tha wind let it happen.',
       biome_glen_coe: 'Walked through tha glen at {time}. Tha reid hills watched wioot comment.',
+      biome_clyde_shipyard: 'Crossed tha dry-dock at {time}. Tha rivets held. Tha haggis held tae.',
     },
     variant: {
       cailleach: {

@@ -554,3 +554,58 @@ export function bakeHazardHighlandMist(scene: Phaser.Scene): void {
   g.generateTexture('hazard_highland_mist', w, h);
   g.destroy();
 }
+
+// Clyde Shipyard — molten slag pool from the dry-dock floor.
+// Glowing orange-red puddle of liquid metal runoff. Bright core (0xff6820),
+// darker rust-crust ring (0x8a2800), black slag collar, spark scatter.
+// Silhouette: unmistakably hot — the glow gradient reads at a glance.
+export function bakeHazardMoltenSlag(scene: Phaser.Scene): void {
+  const w = 30, h = 24;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Black slag crust — outermost ring, the cooling edge
+  g.fillStyle(0x1a0a02, 1);
+  g.fillEllipse(cx, cy + 1, 28, 18);
+
+  // Dark rust outer — first cooling layer
+  g.fillStyle(0x5a1800, 1);
+  g.fillEllipse(cx, cy, 24, 14);
+
+  // Mid rust ring — still cooling
+  g.fillStyle(0x8a2800, 1);
+  g.fillEllipse(cx - 0.5, cy - 0.5, 20, 11);
+
+  // Warm orange pool — the main liquid mass
+  g.fillStyle(0xc84000, 1);
+  g.fillEllipse(cx, cy - 1, 16, 8.5);
+
+  // Hot orange centre — peak temperature
+  g.fillStyle(0xff6820, 1);
+  g.fillEllipse(cx + 0.5, cy - 1.5, 11, 6);
+
+  // Bright core — near-white-orange at the hottest point
+  g.fillStyle(0xff9848, 0.90);
+  g.fillEllipse(cx - 0.5, cy - 2, 6, 3);
+  g.fillStyle(0xffe0a0, 0.70);
+  g.fillEllipse(cx, cy - 2.5, 3, 1.5);
+
+  // Spark scatter — 7 sparks at varying distances
+  g.fillStyle(0xffcc60, 1);
+  g.fillCircle(cx - 10, cy - 6, 0.9);
+  g.fillCircle(cx + 11, cy - 5, 0.8);
+  g.fillCircle(cx - 7, cy + 6, 0.7);
+  g.fillCircle(cx + 9, cy + 5, 0.9);
+  g.fillCircle(cx - 13, cy - 1, 0.6);
+  g.fillStyle(0xffeecc, 0.85);
+  g.fillCircle(cx + 13, cy + 1, 0.5);
+  g.fillCircle(cx + 3, cy - 8, 0.6);
+
+  // Tiny ember dots on the slag crust
+  g.fillStyle(0xcc4800, 0.70);
+  g.fillCircle(cx - 11, cy + 2, 0.5);
+  g.fillCircle(cx + 10, cy + 3, 0.5);
+
+  g.generateTexture('hazard_molten_slag', w, h);
+  g.destroy();
+}

@@ -214,6 +214,10 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'hazard_tidal_wrack',
     // B5 Phase 1 — Seawrack/Coastal flora authored sprites.
     'deco_kelp_strand',
+    // (backfill) B6 Highland Horrors hazards were shipped without validator
+    // entries — lock them now so a future bake removal is caught.
+    'hazard_wind_shear',
+    'hazard_highland_mist',
     'deco_barnacle_rock',
     'deco_whelk_shell',
     'deco_foam_line',
@@ -256,6 +260,8 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'deco_rowan_charm',
     'deco_crannog_stake',
     'deco_machair_shell',
+    // Clyde Shipyard hazard.
+    'hazard_molten_slag',
   ] as const) {
     pushKey(out, seen, 'decoration', k, k);
   }

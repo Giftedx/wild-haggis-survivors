@@ -1619,7 +1619,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'haarConcealment'
       | 'frostBite'
       | 'cairngormWind'
-      | 'glenCoeEcho',
+      | 'glenCoeEcho'
+      | 'clydeRivets',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1675,6 +1676,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // valley (+20%). A small violence in Glen Coe lands harder.
         // Speed is neutral: the glen doesn't slow you, it watches.
         this.biomeKnockbackBonus = 1.20;
+        break;
+      case 'clydeRivets':
+        // Industrial floor — heavy ironwork and slag underfoot, -8% speed.
+        // Craft-pride payout: +15% XP (the only biome that stacks both).
+        // Lighter speed tax than frostBite (-25%) or bogSlow (-15%) but
+        // meaningful; the XP bonus rewards fighting through the slowdown.
+        this.biomeSpeedMul = 0.92;
+        this.biomeXpMul = 1.15;
         break;
     }
   }

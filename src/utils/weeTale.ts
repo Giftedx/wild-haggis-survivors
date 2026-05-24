@@ -81,7 +81,7 @@ export type WeeTaleTag =
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
-  | 'biome_cairngorm' | 'biome_glen_coe'
+  | 'biome_cairngorm' | 'biome_glen_coe' | 'biome_clyde_shipyard'
   | 'has_name'
   | VariantKey;
 
@@ -392,6 +392,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.victory.biome_cairngorm', requires: ['victory', 'biome_cairngorm'] },
   { key: 'ui.weeTale.death.biome_glen_coe', requires: ['death', 'biome_glen_coe'] },
   { key: 'ui.weeTale.victory.biome_glen_coe', requires: ['victory', 'biome_glen_coe'] },
+  { key: 'ui.weeTale.death.biome_clyde_shipyard', requires: ['death', 'biome_clyde_shipyard'] },
+  { key: 'ui.weeTale.victory.biome_clyde_shipyard', requires: ['victory', 'biome_clyde_shipyard'] },
 
   // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
   // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".

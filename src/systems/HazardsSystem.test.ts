@@ -32,9 +32,9 @@ describe('pickHazardForBiome (biome → hazard mapping)', () => {
 });
 
 describe('HAZARDS catalog (config integrity)', () => {
-  it('exposes exactly nine hazards (Highland Horrors added wind_shear + highland_mist)', () => {
-    expect(HAZARD_KEYS).toHaveLength(9);
-    expect(Object.keys(HAZARDS)).toHaveLength(9);
+  it('exposes exactly ten hazards (Clyde Shipyard added molten_slag)', () => {
+    expect(HAZARD_KEYS).toHaveLength(10);
+    expect(Object.keys(HAZARDS)).toHaveLength(10);
   });
 
   it('each catalog entry self-references its own key', () => {
@@ -45,8 +45,8 @@ describe('HAZARDS catalog (config integrity)', () => {
 
   it('each hazard maps to a distinct biome (1:1 coverage)', () => {
     const biomes = HAZARD_KEYS.map((k) => HAZARDS[k].biome);
-    expect(new Set(biomes).size).toBe(9);
-    expect(biomes.sort()).toEqual(['bog', 'cairngorm', 'coastal', 'frost', 'glen_coe', 'haar', 'heather', 'loch', 'pine']);
+    expect(new Set(biomes).size).toBe(10);
+    expect(biomes.sort()).toEqual(['bog', 'cairngorm', 'clyde_shipyard', 'coastal', 'frost', 'glen_coe', 'haar', 'heather', 'loch', 'pine']);
   });
 
   it('texture keys follow the validator-locked hazard_* prefix', () => {
@@ -101,11 +101,11 @@ describe('HAZARDS catalog (config integrity)', () => {
     }
   });
 
-  it('falling_slate has the highest damage (deadly slab)', () => {
-    const slateDamage = HAZARDS.falling_slate.damage;
+  it('molten_slag has the highest damage (liquid metal runoff — no safe stepping)', () => {
+    const slagDamage = HAZARDS.molten_slag.damage;
     for (const key of HAZARD_KEYS) {
-      if (key === 'falling_slate') continue;
-      expect(slateDamage).toBeGreaterThanOrEqual(HAZARDS[key].damage);
+      if (key === 'molten_slag') continue;
+      expect(slagDamage).toBeGreaterThanOrEqual(HAZARDS[key].damage);
     }
   });
 
@@ -120,6 +120,7 @@ describe('HAZARDS catalog (config integrity)', () => {
       'frost',
       'cairngorm',
       'glen_coe',
+      'clyde_shipyard',
     ]);
     for (const key of HAZARD_KEYS) {
       expect(valid.has(HAZARDS[key].biome)).toBe(true);

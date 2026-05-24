@@ -53,4 +53,10 @@ export const biomes = {
     loreSnippet: 'A valley that hauds awthin. Reid-black rock, deep heather, tha wecht o 1692.',
     lore: 'Three mile o reid-black rock an steep corrie, tha River Coe rinnin fast ablow. Februar 1692: thirty-echt MacDonalds killed in their beds bi sodgers they had sheltered — tha Glencoe massacre. No a horror story; a fact, like tha rock. Tha glen cairries it wi\'oot complaint. Reid deer move tha upper corrie in silence. Tha signal fires war lit on these ridges in tha \'45; Ossian claimed these hills as his. Daunder saft here. Tha glen hauds awthin, an gies naethin back easy.',
   },
+  clyde_shipyard: {
+    name: 'Clyde Shipyard',
+    entry: 'Ower tha dry-dock nou — mind tha slag.',
+    loreSnippet: 'Iron, fire, an Clyde watter. Three million ton o ship launched here.',
+    lore: 'Three million ton o ship launched fae this stretch o tha Clyde — warships, liners, tha Lusitania, tha QE2. Tha din wis total: heater laddies tossed rivets, hauder-ons catched them bare-haundit in iron cups, riveters hammered them hame sixty times a meenit fer ten oors a day til thay gaed deaf bi forty. Tha river is quaet nou. Tha dry-docks haud still watter an rustin cranes. Tha haggis picks its wey across slag that still hauds tha heat o industry; tha keel is awa but tha warmth stays in tha grund.',
+  },
 } as const;

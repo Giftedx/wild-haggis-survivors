@@ -2751,6 +2751,12 @@ export const ui = {
         c: 'Three miles o\' corrie. 1692 still in the wind.',
         d: 'Red deer in silence. The glen prefers the quiet.',
       },
+      clyde_shipyard: {
+        a: 'The Clyde\'s quiet now. Wasn\'t always.',
+        b: 'Mind the slag — the ground\'s still warm here.',
+        c: 'They built the QE2 here. The haggis keeps the faith.',
+        d: 'Watch yir hooves on the clinker.',
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',
@@ -4662,6 +4668,7 @@ export const ui = {
       biome_frost: 'The frost-moor at {time} — slowed, and the moor did not.',
       biome_cairngorm: 'The plateau wind took the haggis at {time}. The cairngorm keeps its own cold.',
       biome_glen_coe: 'The glen holds its weather close. Out of moor at {time}.',
+      biome_clyde_shipyard: 'The slag was still warm at {time}. The Clyde remembered.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -4694,6 +4701,7 @@ export const ui = {
       biome_frost: 'Walked home across the frost. It cracked underfoot the whole way. Home anyway.',
       biome_cairngorm: 'Crossed the cairngorm and came down the other side at {time}. The wind let it happen.',
       biome_glen_coe: 'Walked through the glen at {time}. The red hills watched without comment.',
+      biome_clyde_shipyard: 'Crossed the dry-dock at {time}. The rivets held. The haggis held too.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".

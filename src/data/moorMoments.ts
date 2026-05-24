@@ -69,6 +69,8 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   // Highland Horrors — Glen Coe: deep red-ochre, the distinctive
   // Glencoe volcanic rock in afternoon light.
   glen_coe: 0x9a6048,
+  // Clyde Shipyard — copper-orange, the colour of a hot rivet just caught.
+  clyde_shipyard: 0xc87840,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

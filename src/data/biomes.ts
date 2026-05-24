@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -19,7 +19,8 @@ export type BiomeModifierKind =
   | 'haarConcealment'
   | 'frostBite'
   | 'cairngormWind'
-  | 'glenCoeEcho';
+  | 'glenCoeEcho'
+  | 'clydeRivets';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -245,10 +246,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     ambientHaarDensity: 0.1,
   },
   // Highland Horrors drop — Glen Coe.
-  // Three miles of red-black rock, the River Coe fast below. The
-  // Glencoe massacre (February 1692) is the weight this valley carries —
-  // treat with gravity, not horror-gamification. Enemies feel faster here;
-  // the glen remembers speed. (*Ref: SCOTTISH_RESEARCH_DEEP.md §6.9.*)
+  // Three miles of red-black rock, the River Coe fast below.
   glen_coe: {
     id: 'glen_coe',
     nameKey: 'biomes.glen_coe.name',
@@ -272,9 +270,41 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     moodTimbre: 0.2,
     ambientHaarDensity: 0.3,
   },
+  // Clyde Shipyard — postindustrial riverbank, rusted cranes, dry-docks,
+  // still holding the heat of iron. Urban working-class Scotland; the moor
+  // opens into broken concrete and slag. Urban hostiles weight up; wildlife
+  // down. The `clydeRivets` modifier: +15% XP (craft-pride, team effort),
+  // -8% speed (heavy ironwork underfoot). Unique: only biome that stacks
+  // both an XP buff and a speed penalty.
+  clyde_shipyard: {
+    id: 'clyde_shipyard',
+    nameKey: 'biomes.clyde_shipyard.name',
+    tint: 0x5a4a38,
+    entryToastKey: 'biomes.clyde_shipyard.entry',
+    loreSnippetKey: 'biomes.clyde_shipyard.loreSnippet',
+    loreKey: 'biomes.clyde_shipyard.lore',
+    toastColor: '#c87840',
+    spawnWeightMods: {
+      buckfast_ned: 1.4,
+      traffic_cone_totem: 1.3,
+      edinburgh_ghost_guide: 1.3,
+      berserker: 1.2,
+      ghost: 1.3,
+      tourist: 1.2,
+      sheep: 0.05,
+      highland_cow: 0.05,
+      eagle: 0.5,
+    },
+    modifier: 'clydeRivets',
+    // Industrial mid-low — the hiss of steam pressure, the rhythm of hammers.
+    // Higher than glen_coe (0.2) but heavier than coastal (0.65).
+    moodTimbre: 0.35,
+    // River Clyde carries light mist at dawn; heavy smoke has cleared.
+    ambientHaarDensity: 0.05,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

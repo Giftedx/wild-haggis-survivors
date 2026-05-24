@@ -253,6 +253,8 @@ export class AudioSystem {
       // Highland Horrors plateau/glen hazards.
       wind_shear: { f0: 900, f1: 240, type: 'sawtooth', dur: 0.18, vol: 0.09 },   // sharp gust descending
       highland_mist: { f0: 280, f1: 220, type: 'sine', dur: 0.32, vol: 0.06 },    // long, soft, low
+      // Clyde Shipyard — molten slag hiss-crack.
+      molten_slag: { f0: 800, f1: 400, type: 'sawtooth', dur: 0.14, vol: 0.10 },  // iron-heat shriek → runoff burble
     };
     const p = presets[hazardKey];
     osc.type = p.type;

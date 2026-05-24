@@ -130,6 +130,18 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_antler_shed',
     'deco_sheep_skull',
   ],
+  // Clyde Shipyard story props. Industrial archaeology: scaffold post
+  // (the dry-dock staging), close door (tenement entry off the yard),
+  // newsprint (shipyard workers' packed-lunch wrapper, Glesga Daily Record),
+  // bus stop (shift change transport), waymarker post (the yard's painted
+  // directional sign, repurposed). NO ruined-croft (wrong era/context).
+  clyde_shipyard: [
+    'deco_scaffold_post',
+    'deco_close_door',
+    'deco_newsprint',
+    'deco_bus_stop',
+    'deco_waymarker_post',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -236,6 +248,18 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_bog_cotton', 0.76],
     ['deco_rock_2', 0.88],
     ['deco_wind_grass', 1.0],
+  ],
+  // Clyde Shipyard flora. Industrial dockland: rock rubble (broken
+  // concrete and slag), traffic cone (ubiquitous urban clutter),
+  // wind grass (scrubland on the dock margins), thistle (still grows
+  // through concrete), rocks. No heather or bog cotton — no soil here.
+  clyde_shipyard: [
+    ['deco_rock', 0.22],
+    ['deco_rock_2', 0.40],
+    ['deco_traffic_cone', 0.56],
+    ['deco_wind_grass', 0.72],
+    ['deco_thistle', 0.88],
+    ['deco_rock_3', 1.0],
   ],
 };
 

@@ -53,4 +53,10 @@ export const biomes = {
     loreSnippet: 'A valley that holds everything. Red-black rock, deep heather, the weight of 1692.',
     lore: 'Three miles of red-black rock and steep corrie, the River Coe running fast below. February 1692: thirty-eight MacDonalls killed in their beds by soldiers they had sheltered — the Glencoe massacre. Not a horror story; a fact, like the rock. The glen carries it without complaint. Red deer move the upper corrie in silence. The signal fires were lit on these ridges in the \'45; Ossian claimed these hills as his. Walk soft here. The glen holds everything, and gives nothing back easy.',
   },
+  clyde_shipyard: {
+    name: 'Clyde Shipyard',
+    entry: 'Ower the dry-dock now — mind the slag.',
+    loreSnippet: 'Iron, fire, and Clyde water. Three million tons of ship launched here.',
+    lore: 'Three million tons of ship launched from this stretch of the Clyde — warships, liners, the Lusitania, the QE2. The noise was total: heater boys tossed rivets, holder-ons caught them bare-handed in iron cups, riveters hammered them home sixty times a minute for ten hours a day until they went deaf by forty. The river is quiet now. The dry-docks hold still water and rusting cranes. The haggis picks its way across slag that still holds the heat of industry; the keel is gone but the warmth stays in the ground.',
+  },
 } as const;

@@ -49,7 +49,9 @@ export type HazardKey =
   | 'rime_patch'
   // Highland Horrors drop — new plateau + glen hazards.
   | 'wind_shear'
-  | 'highland_mist';
+  | 'highland_mist'
+  // Clyde Shipyard — molten runoff from the dry-docks.
+  | 'molten_slag';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -159,6 +161,20 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 14000,
     spawnIntervalMs: 10500,
   },
+  // Clyde Shipyard — molten slag pool from the dry-dock floor.
+  // Highest damage in the catalog (14) — liquid metal runoff; no safe
+  // stepping. Tight hitbox (13 px) and shorter lifetime (5 s) so it's
+  // a quick punish, not a wallowing bog. Ten-second interval gives room
+  // to dodge between spawns. Pairs with Steam Engine's industrial theme.
+  molten_slag: {
+    key: 'molten_slag',
+    texture: 'hazard_molten_slag',
+    biome: 'clyde_shipyard',
+    damage: 14,
+    hitboxRadius: 13,
+    lifetimeMs: 5000,
+    spawnIntervalMs: 10000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -172,4 +188,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'rime_patch',
   'wind_shear',
   'highland_mist',
+  'molten_slag',
 ];
