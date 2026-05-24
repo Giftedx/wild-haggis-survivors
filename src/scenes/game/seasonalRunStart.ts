@@ -16,6 +16,7 @@ import { applyGloriousTwelfthBlessing } from '../../systems/gloriousTwelfthBless
 import { applyTartanDayBlessing } from '../../systems/tartanDayBlessing';
 import { applySimmerDimBlessing } from '../../systems/simmerDimBlessing';
 import { applyUpHellyAaBlessing } from '../../systems/upHellyAaBlessing';
+import { applyCullodenMemorial } from '../../systems/cullodenMemorial';
 import type { RNG } from '../../utils/rng';
 
 const SEASONAL_TOAST_DELAY_MS = 1500;
@@ -300,6 +301,23 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: upHellyAaResult.extraDamageMultiplier,
+    };
+  }
+
+  const cullodenResult = applyCullodenMemorial(seasonalEventKey, deps.runModifiers);
+  if (cullodenResult.applied) {
+    // Slate-grey toast — grave register, no buff, no fanfare.
+    return {
+      seasonalEventKey,
+      toast: toast('ui.culloden.memorial_toast', '#708090'),
+      extraStartingHpHeal: 0,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 

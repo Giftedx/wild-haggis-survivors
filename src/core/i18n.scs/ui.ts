@@ -3741,6 +3741,23 @@ export const ui = {
         k: 'Echteen-echty-yin they made it formal. Aulder nor that in tha bane.',
         l: 'Tha galley sinks burnin. Tha strike lands tha hairder fer it.',
       },
+      // SCS overlay of EN culloden leaves (2026-05-24). Grave register
+      // throughout. No hearth warmth, no comedic distance, no anti-
+      // English content. The haggis as moor-witness.
+      culloden: {
+        a: 'Sixtenth April. Three centuries or three meenits — tha muir disnae measure time tha wey a calandar daes.',
+        b: 'Drumrossie Muir held thaim forty meenits. A haggis can cross Drumrossie in five. Tha grund keeps tha difference.',
+        c: 'Three thousan Jacobites marched in tha cauld. No three thousan came hame. Tha count is in tha stanes.',
+        d: 'Tha pipes played until they couldnae. Tha music didnae dee that day — it gaed somewhere quieter.',
+        e: 'They buried thaim by clan. Somebody walked tha field an kent which face belanged tae which glen.',
+        f: 'Some o tha Jacobites hadnae slept. They\'d marched through tha nicht tae come at Cumberland by surprise. Tha mornin didnae gang their wey.',
+        g: 'Tha Clearances came efter. Culloden is wan date; tha emptyin o tha glens was decades mair.',
+        h: 'Tha bonnie prince niver came back. Tha glens that lit bonfires for him waited a lang time.',
+        i: 'A haggis disnae tak sides. Tha muir disnae tak sides. But they baith tak note.',
+        j: 'Tha boulders are still on Drumrossie. Tha clan graves are still there. Tha wind still crosses baith.',
+        k: 'Three hunner year an tha gress grew back. Tha cairns are still standin. Some things are hairer tae kill than an airmy.',
+        l: 'Whit changed at Culloden was mair than wha held tha field. Tha tongue, tha claith, tha name o tha glen — aw o it shifted efter.',
+      },
     },
   },
   toast: {

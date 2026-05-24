@@ -82,6 +82,13 @@ export function pickWeatherMode(eventKey: string | null): AmbientWeatherMode {
       // Copper-bronze leaves spinning slowly down across the moor —
       // the autumn-cusp colour signature in motion.
       return 'bracken_drift';
+    case 'culloden':
+      // Cold grey smirr on Drumrossie — historically accurate (the
+      // morning of 16 April 1746 was overcast and icy). Drizzle
+      // mode is already the samhain overlay but shares no calendar
+      // window with Culloden (samhain is Oct 28–Nov 3, Culloden
+      // Apr 13–18). The muted visual keeps the grave tone.
+      return 'drizzle';
     case 'up_helly_aa':
       // Wild Living World Initiative — Up Helly Aa embers. The Lerwick
       // fire festival's procession sends a slow rise of warm embers

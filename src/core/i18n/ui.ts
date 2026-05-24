@@ -994,6 +994,14 @@ export const ui = {
     blessing_toast: 'Up Helly Aa. Galley afire. +18 HP, the haggis swings harder.',
   },
   /**
+   * Culloden Memorial (Apr 13-18). No gameplay buff — a quiet slate-
+   * grey toast marking the day. Grave register; no healing bonus; no
+   * fanfare. The moor keeps its own count.
+   */
+  culloden: {
+    memorial_toast: 'Sixteenth April. The field keeps its own count. Walk well.',
+  },
+  /**
    * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
    * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
    * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -4539,6 +4547,26 @@ export const ui = {
         j: 'Tar-barrels and torchlight. The auld yule burning, formalised.',
         k: 'Eighteen-eighty-one they made it formal. Older than that in the bone.',
         l: 'The galley sinks burning. The strike lands the harder for it.',
+      },
+      // 2026-05-24 — Culloden anniversary (Apr 13-18) closes the
+      // seasonal calendar. Grave register throughout — no hearth
+      // warmth, no comedic distance, no anti-English content, no
+      // Jacobite romanticism. The haggis is a moor-witness: the
+      // moor sees; the moor remembers; the moor does not editoralise.
+      // SCOTTISH_RESEARCH_DEEP §6.9.
+      culloden: {
+        a: 'Sixteenth April. Three centuries or three minutes — the moor disnae measure time the way a calendar does.',
+        b: 'Drumrossie Moor held them forty minutes. A haggis can cross Drumrossie in five. The ground keeps the difference.',
+        c: 'Three thousand Jacobites marched in the cold. Not three thousand came home. The count is in the stones.',
+        d: 'The pipes played until they couldn\'t. The music didn\'t die that day — it went somewhere quieter.',
+        e: 'They buried them by clan. Somebody walked the field and kent which face belonged to which glen.',
+        f: 'Some of the Jacobites hadn\'t slept. They\'d marched through the night to come at Cumberland by surprise. The morning didn\'t go their way.',
+        g: 'The Clearances came after. Culloden is one date; the emptying of the glens was decades more.',
+        h: 'The bonnie prince never came back. The glens that lit bonfires for him waited a long time.',
+        i: 'A haggis disnae take sides. The moor disnae take sides. But they both take note.',
+        j: 'The boulders are still on Drumrossie. The clan graves are still there. The wind still crosses both.',
+        k: 'Three hundred years and the grass grew back. The cairns are still standing. Some things are harder tae kill than an army.',
+        l: 'What changed at Culloden was more than who held the field. The tongue, the cloth, the name of the glen — all of it shifted after.',
       },
     },
   },

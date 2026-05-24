@@ -192,6 +192,21 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.simmer_dim.description',
     dateWindow: { startMonth: 6, startDay: 18, endMonth: 6, endDay: 21 },
   },
+  // Culloden anniversary (Apr 16, 1746) — the last pitched battle on
+  // British soil; the Jacobite defeat that ended the Rising. Window
+  // Apr 13-18 (6 days, centred on the 16th). Tone: grave. NOT a
+  // celebration — a memorial. No run-start buff; a quiet toast only.
+  // Drizzle ambient (historically accurate — the day was cold and wet).
+  // The Clearances of the clan system followed over the next decades.
+  // Cultural framing: the haggis as moor-witness; no political stance;
+  // no anti-English content; no Jacobite romanticism. Ref:
+  // SCOTTISH_RESEARCH_DEEP.md §6.9 (Culloden / Jacobite Rising).
+  culloden: {
+    key: 'culloden',
+    nameKey: 'seasonalEvent.culloden.name',
+    descriptionKey: 'seasonalEvent.culloden.description',
+    dateWindow: { startMonth: 4, startDay: 13, endMonth: 4, endDay: 18 },
+  },
   // Tartan Day (Apr 6) — North-American diaspora's national-Scottish
   // holiday, the date of the Declaration of Arbroath signing in 1320.
   // Window Apr 4–8 (5 days) — wider than the single-anniversary

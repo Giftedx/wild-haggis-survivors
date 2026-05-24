@@ -60,6 +60,12 @@ export const seasonalEvent = {
     badge_suffix: 'The Twelfth',
     ceremony_banner: '🦆 The Glorious Twelfth is live — go to ground, walk wider.',
   },
+  culloden: {
+    name: 'Culloden',
+    description: 'Apr 13 – Apr 18 — sixteenth April, 1746. The moor keeps its own count.',
+    badge_suffix: 'Culloden',
+    ceremony_banner: '🕯 Culloden is live — the field keeps its own count.',
+  },
   tartan_day: {
     name: 'Tartan Day',
     description: 'Apr 4 – Apr 8 — diaspora warmth; the Declaration of Arbroath.',
