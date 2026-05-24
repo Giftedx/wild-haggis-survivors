@@ -3834,12 +3834,14 @@ export const ui = {
       moor_runner: {
         death_baseline: '{name} hit tha moor at speed an ran oot o\' it. That kind o\' momentum disnae stop clean.',
         death_short: 'Ower fast, wrang direction. {name} ran aw tha same.',
+        death_hunter_general: 'Tha Hunt-General closed tha chase at {time}. {name} had been leadin aw mornin — but speed haes a far end.',
         victory_baseline: '{name} cam hame under their ain steam. Tha moor logged tha pace.',
         victory_epic: '{time} at full stride. {name} ran tha moor like it asked tae be run.',
       },
       iron_belly: {
         death_baseline: 'Even iron bends at tha last. {name} held langer than tha moor expectit.',
         death_short: 'Tha belly took it. Tha rest o\' {name} couldnae follae.',
+        death_nuckelavee: 'Tha Nuckelavee took eleven hits at {time} tae find tha crease in {name}. Tha twelfth went through.',
         victory_baseline: '{name} absorbed aw o\' it an cam hame dentit. Tha dents are badges.',
         victory_taxman: 'Tha Taxman threw aw he had at {name}. {name} swallied it an walked aff.',
       },
@@ -3872,6 +3874,7 @@ export const ui = {
       anticlockwise: {
         death_baseline: 'Tha brae gaed clockwise; {name} gaed tha ither wey. Some hills dinnae compromise.',
         death_short: 'Wrang-leg, wrang hill, richt idea. {name} ran.',
+        death_each_uisge: 'Tha Each-Uisge spirals clockwise in tha loch. {name} runs anticlockwise on tha moor. At {time}, tha spirals met.',
         victory_baseline: '{name} circled it left-weys an cam hame onyway. Tha hill notes this.',
         victory_taxman: 'Tha Taxman expectit a clockwise rin. {name} took him frae ahint.',
       },

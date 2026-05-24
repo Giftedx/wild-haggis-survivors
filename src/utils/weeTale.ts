@@ -421,6 +421,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.moor_runner.death_short', requires: ['death', 'moor_runner', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.moor_runner.victory_baseline', requires: ['victory', 'moor_runner', 'has_name'] },
   { key: 'ui.weeTale.variant.moor_runner.victory_epic', requires: ['victory', 'moor_runner', 'has_name', 'epic'] },
+  // Tier-4 — The fastest haggis on the moor was still running when the Hunt-General closed the chase.
+  { key: 'ui.weeTale.variant.moor_runner.death_hunter_general', requires: ['death', 'moor_runner', 'has_name', 'hunter_general_death'] },
 
   // ── v3 — Iron Belly (Hearth + stoic toughness) ─────────────────
   // Hearth register; spare, mythic. Iron / dented / absorbed language.
@@ -428,6 +430,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.iron_belly.death_short', requires: ['death', 'iron_belly', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.iron_belly.victory_baseline', requires: ['victory', 'iron_belly', 'has_name'] },
   { key: 'ui.weeTale.variant.iron_belly.victory_taxman', requires: ['victory', 'iron_belly', 'has_name', 'taxman'] },
+  // Tier-4 — Iron bent at the last — but it took the Nuckelavee eleven hits to find the crease.
+  { key: 'ui.weeTale.variant.iron_belly.death_nuckelavee', requires: ['death', 'iron_belly', 'has_name', 'nuckelavee_death'] },
 
   // ── v3 — Glen Forager (Hearth + foraging/wilderness) ───────────
   // Hearth register; resourceful, observant. Pockets/haul/glen language.
@@ -469,6 +473,8 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.variant.anticlockwise.death_short', requires: ['death', 'anticlockwise', 'has_name', 'short'] },
   { key: 'ui.weeTale.variant.anticlockwise.victory_baseline', requires: ['victory', 'anticlockwise', 'has_name'] },
   { key: 'ui.weeTale.variant.anticlockwise.victory_taxman', requires: ['victory', 'anticlockwise', 'has_name', 'taxman'] },
+  // Tier-4 — The Each-Uisge spirals clockwise in the loch. The anticlockwise haggis and the loch-horse, opposed.
+  { key: 'ui.weeTale.variant.anticlockwise.death_each_uisge', requires: ['death', 'anticlockwise', 'has_name', 'each_uisge_death'] },
 
   // ── v3 — Wee Ghostie (spectral/gentle) ────────────────────────
   // Voice register per `docs/VOICE_CARD.md` §"Wee Ghostie (shipped)".

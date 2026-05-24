@@ -4675,12 +4675,14 @@ export const ui = {
       moor_runner: {
         death_baseline: '{name} hit the moor at speed and ran oot o\' it. That kind of momentum doesnae stop clean.',
         death_short: 'Too fast, wrong direction. {name} ran aw the same.',
+        death_hunter_general: 'The Hunt-General closed the chase at {time}. {name} had been leading aw morning — but speed has a far end.',
         victory_baseline: '{name} came hame under their ain steam. The moor logged the pace.',
         victory_epic: '{time} at full stride. {name} ran the moor like it asked to be run.',
       },
       iron_belly: {
         death_baseline: 'Even iron bends at the last. {name} held longer than the moor expected.',
         death_short: 'The belly took it. The rest o\' {name} couldnae follow.',
+        death_nuckelavee: 'The Nuckelavee took eleven hits at {time} tae find the crease in {name}. The twelfth went through.',
         victory_baseline: '{name} absorbed aw o\' it and came hame dented. The dents are badges.',
         victory_taxman: 'The Taxman threw aw he had at {name}. {name} swallied it and walked aff.',
       },
@@ -4713,6 +4715,7 @@ export const ui = {
       anticlockwise: {
         death_baseline: 'The brae went clockwise; {name} gaed the ither wey. Some hills dinnae compromise.',
         death_short: 'Wrang-leg, wrang hill, right idea. {name} ran.',
+        death_each_uisge: 'The Each-Uisge spirals clockwise in the loch. {name} runs anticlockwise on the moor. At {time}, the spirals met.',
         victory_baseline: '{name} circled it left-weys and came hame onyway. The hill notes this.',
         victory_taxman: 'The Taxman expected a clockwise run. {name} took him frae ahint.',
       },
