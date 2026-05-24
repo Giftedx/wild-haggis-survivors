@@ -52,7 +52,16 @@ export type EnemyBehavior =
    * applies a 1.5 s net-slow to the player. Post-bell exclusive.
    * Refs: `SCOTTISH_RESEARCH_DEEP.md` §6.3.
    */
-  | 'hush';
+  | 'hush'
+  /**
+   * Storm Phases — Cailleach of the Storm (post-bell Tier-3).
+   * Three escalating phases keyed to HP thresholds:
+   *  Phase 1: Haar Veil — slow chase + haar pulse every 8 s.
+   *  Phase 2: Ice Fury — speed ×1.4 + ice-lance fan ×3 every 5 s.
+   *  Phase 3: Hail Storm — speed ×1.7 + hail burst ×8 every 3.5 s.
+   * Post-bell exclusive. Refs: `SCOTTISH_RESEARCH.md` §1.1.
+   */
+  | 'storm_phases';
 
 export interface EnemyConfig {
   key: string;
@@ -927,6 +936,24 @@ export const BOSSES: BossConfig[] = [
     xpValue: 90,
     scale: 2.0,
     behaviorOverride: 'hush',
+  },
+  // Post-bell Tier-3 — Cailleach of the Storm. Three escalating phases:
+  // haar veil → ice fury → hail storm. Appears only after the Taxman
+  // (bell-toll), alternating with Black Douglas in the post-bell pool.
+  // Refs: SCOTTISH_RESEARCH.md §1.1 (Cailleach Bheur / Blue Hag).
+  {
+    key: 'storm_cailleach',
+    nameKey: 'boss.storm_cailleach.name',
+    warningKey: 'ui.bossWarning.storm_cailleach',
+    spawnTimeSec: 9999,
+    postBellOnly: true,
+    texture: 'boss_storm_cailleach',
+    speed: 55,
+    hp: 5800,
+    damage: 36,
+    xpValue: 140,
+    scale: 2.8,
+    behaviorOverride: 'storm_phases',
   },
   // V2 — Cailleach Gauntlet boss (Moor Remembers V2). Manual-spawn only;
   // wakes via `SpawnSystem.spawnBossManually` from CailleachGauntletScheduler

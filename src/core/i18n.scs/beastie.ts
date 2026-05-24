@@ -135,4 +135,7 @@ export const beastie = {
   cailleach_boss: {
     lore: 'Tha Cailleach Bheur — winter hersel, mountain-shaper, blue-faced crone. Walks in deer-form some seasons; in cailleach-shape whan tha year turns. Answers only whan seiven cairns hae been coontit — an whan she walks, she walks fer the coonter.',
   },
+  storm_cailleach: {
+    lore: 'Tha storm-aspect o tha Cailleach Bheur. No tha patient cauld o tha mountain but tha active gale: haar veil, ice lances, hail burst. Three phases, ilk ane waur nor tha last. She disnae explain tha progression — tha Auld Wife has been shappin Scottish wather sin afore there were Scots tae notice. Tha lore says she hammers tha hills intae shape in winter; this is tha hammerin. SCOTTISH_RESEARCH.md §1.1.',
+  },
 } as const;

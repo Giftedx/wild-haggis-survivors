@@ -135,4 +135,7 @@ export const beastie = {
   cailleach_boss: {
     lore: 'The Cailleach Bheur — winter herself, mountain-shaper, blue-faced crone. Walks in deer-form some seasons; in cailleach-shape when the year turns. Answers only when seven cairns have been counted — and when she walks, she walks for the counter.',
   },
+  storm_cailleach: {
+    lore: 'The storm-aspect of the Cailleach Bheur. Not the patient cold of the mountain but the active gale: haar veil, ice lances, hail burst. Three phases, each worse than the last. She does not explain the progression — the Blue Hag has been shaping Scottish weather since before there were Scots to notice. The lore says she hammers the hills into shape in winter; this is the hammering. SCOTTISH_RESEARCH.md §1.1.',
+  },
 } as const;

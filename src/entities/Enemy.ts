@@ -21,6 +21,14 @@ import { isDiveOffscreen } from './isDiveOffscreen';
 import { simulateWailBehaviour, WAIL_PULSE_RADIUS_PX, WAIL_PULSE_DAMAGE, type WailState } from './wailBehaviour';
 import { simulateCardDealBehaviour, CARD_DEAL_FAN_COUNT, CARD_DEAL_SPREAD_RAD, CARD_DEAL_SPEED, CARD_DEAL_DAMAGE, CARD_DEAL_RANGE_MS, type CardDealState } from './cardDealBehaviour';
 import { simulateHushBehaviour, HUSH_RADIUS_PX, HUSH_DAMAGE, HUSH_SLOW_MS, HUSH_TELEGRAPH_MS, type HushState } from './hushBehaviour';
+import {
+  simulateStormCailleachBehaviour,
+  initialStormCailleachState,
+  STORM_HAAR_RADIUS_PX, STORM_HAAR_DAMAGE, STORM_HAAR_SLOW_MS,
+  STORM_LANCE_COUNT, STORM_LANCE_SPREAD_RAD, STORM_LANCE_SPEED, STORM_LANCE_DAMAGE, STORM_LANCE_SLOW_MS,
+  STORM_HAIL_COUNT, STORM_HAIL_SPEED, STORM_HAIL_DAMAGE, STORM_HAIL_SPREAD_RAD,
+  type StormCailleachState,
+} from './stormCailleachBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -132,6 +140,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private cardDealState: CardDealState = { msSinceLastDeal: 0 };
   /** Black Douglas boss state (only used when behavior === 'hush'). */
   private hushState: HushState = { msSinceLastShout: 0, telegraphing: false, msTelegraphElapsed: 0, shouldDamage: false };
+  /** Storm Cailleach boss state (only used when behavior === 'storm_phases'). */
+  private stormCailleachState: StormCailleachState = initialStormCailleachState();
   /** Countdown ms within the current three-bay stage. */
   private threeBayTimerMs: number = 0;
   /** Charge target locked at start of stage 3. */
@@ -662,6 +672,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'hush':
         this.behaviorHush(targetX, targetY, delta);
         break;
+      case 'storm_phases':
+        this.behaviorStormCailleach(targetX, targetY, delta);
+        break;
     }
   }
 
@@ -1016,6 +1029,123 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (dx * dx + dy * dy <= HUSH_RADIUS_PX * HUSH_RADIUS_PX) {
       player.takeDamage(HUSH_DAMAGE);
       player.applyNetSlow(HUSH_SLOW_MS);
+    }
+  }
+
+  /**
+   * Storm Cailleach — three-phase escalating boss.
+   * Phase 1: haar veil — slow chase + smoky pulse.
+   * Phase 2: ice fury — faster chase + lance fan.
+   * Phase 3: hail storm — fastest chase + bolt burst.
+   * Post-bell exclusive. Refs: SCOTTISH_RESEARCH.md §1.1.
+   */
+  private behaviorStormCailleach(tx: number, ty: number, delta: number): void {
+    const hpPct = this.maxHp > 0 ? this.hp / this.maxHp : 1.0;
+    const next = simulateStormCailleachBehaviour(this.stormCailleachState, { deltaMs: delta, hpPct });
+    this.stormCailleachState = next;
+
+    this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+
+    if (next.shouldFireHaarPulse) {
+      this.fireStormHaarPulse();
+    }
+    if (next.shouldFireIceLances) {
+      this.fireStormIceLances(tx, ty);
+    }
+    if (next.shouldFireHailBurst) {
+      this.fireStormHailBurst(tx, ty);
+    }
+  }
+
+  /** Storm Cailleach Phase 1 — haar slow-pulse: expanding smoky grey ring. */
+  private fireStormHaarPulse(): void {
+    const player = this.ctx.getPlayer();
+    const dx = player.x - this.x;
+    const dy = player.y - this.y;
+    if (dx * dx + dy * dy <= STORM_HAAR_RADIUS_PX * STORM_HAAR_RADIUS_PX) {
+      player.takeDamage(STORM_HAAR_DAMAGE);
+      player.applyNetSlow(STORM_HAAR_SLOW_MS);
+    }
+    try {
+      const ring = this.scene.add.circle(this.x, this.y, 16, 0x7090b0, 0.0);
+      ring.setStrokeStyle(3, 0xa8b8cc, 0.75);
+      this.scene.tweens.add({
+        targets: ring,
+        radius: STORM_HAAR_RADIUS_PX,
+        alpha: { from: 0.75, to: 0 },
+        duration: 700,
+        onComplete: () => ring.destroy(),
+      });
+    } catch { /* test stubs without tweens */ }
+  }
+
+  /** Storm Cailleach Phase 2 — ice lances in a fan toward the player. */
+  private fireStormIceLances(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const step = STORM_LANCE_COUNT > 1 ? (STORM_LANCE_SPREAD_RAD * 2) / (STORM_LANCE_COUNT - 1) : 0;
+    const startAngle = baseAngle - STORM_LANCE_SPREAD_RAD;
+    const spawnedPlayer = this.ctx.getPlayer();
+
+    for (let i = 0; i < STORM_LANCE_COUNT; i++) {
+      const angle = startAngle + step * i;
+      const lance = this.scene.add.circle(this.x, this.y, 5, 0xb9d6f0, 0.90);
+      this.scene.physics.add.existing(lance);
+      const body = lance.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * STORM_LANCE_SPEED, Math.sin(angle) * STORM_LANCE_SPEED);
+
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try {
+          this.scene.physics.world.removeCollider(overlapRef);
+          if (lance.active) lance.destroy();
+        } catch { /* scene may have restarted */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(lance, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(STORM_LANCE_DAMAGE);
+        cur.applyNetSlow(STORM_LANCE_SLOW_MS);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 1800, cleanup);
+    }
+  }
+
+  /** Storm Cailleach Phase 3 — hail bolts scattered around the player direction. */
+  private fireStormHailBurst(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const halfSpread = STORM_HAIL_SPREAD_RAD / 2;
+    const spawnedPlayer = this.ctx.getPlayer();
+
+    for (let i = 0; i < STORM_HAIL_COUNT; i++) {
+      const angle = baseAngle - halfSpread + (STORM_HAIL_SPREAD_RAD * i) / (STORM_HAIL_COUNT - 1);
+      const bolt = this.scene.add.circle(this.x, this.y, 4, 0xe0f0ff, 0.85);
+      this.scene.physics.add.existing(bolt);
+      const body = bolt.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * STORM_HAIL_SPEED, Math.sin(angle) * STORM_HAIL_SPEED);
+
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return;
+        hit = true;
+        try {
+          this.scene.physics.world.removeCollider(overlapRef);
+          if (bolt.active) bolt.destroy();
+        } catch { /* scene may have restarted */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(bolt, spawnedPlayer, () => {
+        if (hit) return;
+        cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(STORM_HAIL_DAMAGE);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 1400, cleanup);
     }
   }
 

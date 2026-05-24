@@ -1213,6 +1213,8 @@ export const ui = {
     taxman: "The Taxman's here — and he's no' takin' a cheque.",
     /** V2 — Cailleach Gauntlet boss walks the moor. */
     cailleach_boss: 'THE CAILLEACH WALKS — winter answers what ye called.',
+    /** Post-bell Tier-3 — haar, ice, hail. The storm-form of the Blue Hag. */
+    storm_cailleach: "The Old Wife rides the gale — haar, ice, and hail. She's here.",
     /** Orcadian mythos boss — no skin, one eye, breath is plague. */
     nuckelavee: 'Something comin\' fae the sea — no\' right, no\' human, no\' stopped.',
   },
@@ -1256,6 +1258,7 @@ export const ui = {
     boss_killed_hunter_general: 'Hunter-General floored! Take yir medals and yir pith helmet!',
     boss_killed_taxman: 'THE TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'The Cailleach is doon! Stormcrown is yours.',
+    boss_killed_storm_cailleach: 'The Storm Cailleach is doon! The gale died wi\' her!',
     boss_killed_generic: 'Boss doon! Get it right round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it right round them!',
@@ -1601,6 +1604,13 @@ export const ui = {
         b: 'The auld wife is here. Mind yer manners.',
         c: 'Winter is a woman. She\'s come for the count.',
       },
+      // Post-bell Tier-3 — Storm Cailleach. The haar and hail incarnate.
+      // Edge register; she doesn\'t explain, she arrives.
+      storm_cailleach: {
+        a: 'The haar has eyes tonight. Auld eyes.',
+        b: 'Three phases. She gave ye the first one free.',
+        c: 'The gale is a her. She\'s clocked ye.',
+      },
     },
     low_hp: {
       a: 'Yer on the last shred, wee yin.',
@@ -1850,6 +1860,12 @@ export const ui = {
         a: 'The crown is mine. Winter blinked.',
         b: 'Seven stones gold. Seven names louder.',
         c: 'I\'ll carry her crown soft. She earned the cost.',
+      },
+      // Post-bell Tier-3 — Storm Cailleach doon. The gale unravelled.
+      storm_cailleach: {
+        a: 'Three phases and she still couldnae hold it.',
+        b: 'The haar cleared. That\'s on her.',
+        c: 'Post-bell, post-gale. The moor\'s got its weather back.',
       },
     },
     weapon_evolve: {
@@ -4682,6 +4698,8 @@ export const ui = {
       hunter_general: 'The Hunter-General closed the chase at {time}. The quarry ran oot of moor.',
       /** Cailleach Gauntlet — ritual failed; the winter returned. */
       cailleach_boss: 'Seven cairns lit — and then the storm. The moor went quiet at {time}.',
+      /** Post-bell Tier-3 — Storm Cailleach. The haar closed at {time}. */
+      storm_cailleach: 'The storm took it at {time}. Not weather — something older.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
       // v2 — biome-contextual death lines (tier-2, no {name}).
@@ -4717,6 +4735,8 @@ export const ui = {
       hunter_general_kill: 'The Hunter-General\'s medals are on the moor at {time}. The quarry went home.',
       /** Cailleach Gauntlet won — Stormcrown taken, winter answered. */
       cailleach_boss_kill: 'Stormcrown taken at {time}. The seven cairns hold the memory of it.',
+      /** Post-bell Tier-3 — Storm Cailleach defeated; the gale unravelled. */
+      storm_cailleach_kill: 'The Cailleach of the Storm unravelled at {time}. The gale remembered a different ending.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
       // v2 — biome-contextual victory lines (tier-2, no {name}).

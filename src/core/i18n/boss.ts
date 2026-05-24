@@ -10,4 +10,5 @@ export const boss = {
   black_douglas: { name: 'The Black Douglas' },
   taxman: { name: 'Death (The Taxman)' },
   cailleach_boss: { name: 'The Cailleach' },
+  storm_cailleach: { name: 'The Cailleach of the Storm' },
 } as const;

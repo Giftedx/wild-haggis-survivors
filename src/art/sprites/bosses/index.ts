@@ -20,6 +20,7 @@ import { bakeBossCailleach } from './cailleachBoss';
 import { bakeBossNuckelavee } from './nuckelavee';
 import { bakeBossEarlBeardie } from './earl_beardie';
 import { bakeBossBlackDouglas } from './black_douglas';
+import { bakeBossStormCailleach } from './stormCailleach';
 import { bakeBossArenaProps } from './arenaProps';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
@@ -41,5 +42,7 @@ export function bakeBosses(scene: Phaser.Scene): void {
   bakeBossCailleach(scene);
   // Post-bell only — Black Douglas appears in the endless tail, not the timed run.
   bakeBossBlackDouglas(scene);
+  // Post-bell only — Storm Cailleach (Tier-3 multi-phase: haar / ice / hail).
+  bakeBossStormCailleach(scene);
   bakeBossArenaProps(scene);
 }

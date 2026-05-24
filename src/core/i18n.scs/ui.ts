@@ -788,6 +788,7 @@ export const ui = {
     black_douglas: 'Wheesht. Tha Black Douglas is here — an he disnae keep tha same peace.',
     taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
     cailleach_boss: 'THA CAILLEACH WALKS — winter answers whit ye cried.',
+    storm_cailleach: 'Tha Auld Wife rides tha gale — haar, ice, an hail. She\'s here.',
     nuckelavee: 'Somethin comin fae tha sea — no richt, no human, no stoppit.',
   },
   game: {
@@ -823,6 +824,7 @@ export const ui = {
     boss_killed_hunter_general: 'Hunter-General floored! Tak yer medals an yer pith helmet!',
     boss_killed_taxman: 'THA TAXMAN IS DOON! Tax-free zone declared!',
     boss_killed_cailleach_boss: 'Tha Cailleach is doon! Stormcrown is yours.',
+    boss_killed_storm_cailleach: 'Tha Storm Cailleach is doon! Tha gale deed wi her!',
     boss_killed_generic: 'Boss doon! Get it richt round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it richt round them!',
@@ -1036,6 +1038,12 @@ export const ui = {
         a: 'She walks oot o tha haar. Staff first. Een last.',
         b: 'Tha auld wifie is here. Mind yer manners.',
         c: 'Winter is a wumman. She\'s come fer tha coont.',
+      },
+      // Post-bell Tier-3 — Storm Cailleach. Three phases, nae mercy.
+      storm_cailleach: {
+        a: 'Tha haar has een the nicht. Auld een.',
+        b: 'Three phases. She gied ye tha first yin free.',
+        c: 'Tha gale is a her. She\'s clocked ye.',
       },
     },
     low_hp: {
@@ -1277,6 +1285,12 @@ export const ui = {
         a: 'Tha croon is mine. Winter blinkit.',
         b: 'Seiven stanes gowd. Seiven names louder.',
         c: 'I\'ll cairry her croon saft. She earnt tha cost.',
+      },
+      // Post-bell Tier-3 — Storm Cailleach doon. Tha gale deed.
+      storm_cailleach: {
+        a: 'Three phases an she still couldnae haud it.',
+        b: 'Tha haar cleared. That\'s on her.',
+        c: 'Post-bell, post-gale. Tha moor\'s got its wather back.',
       },
     },
     weapon_evolve: {
@@ -3832,6 +3846,7 @@ export const ui = {
       the_laird: 'Tha Laird made his claim at {time}. Auld deeds, auld richts. Tha haggis had nae title.',
       hunter_general: 'Tha Hunter-General closed tha chase at {time}. Tha quarry ran oot o\' muir.',
       cailleach_boss: 'Seeven cairns lit — an than tha storm. Tha moor gaed quiet at {time}.',
+      storm_cailleach: 'Tha storm taen it at {time}. No wather — something aulder.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
       biome_bog: 'Tha bog at {time} — saft grund, an than safter.',
       biome_loch: 'Stood at tha loch-edge at {time}. Tha loch disnae gie back whit it taks.',
@@ -3862,6 +3877,7 @@ export const ui = {
       the_laird_kill: 'Tha Laird gaed doon at {time}. Tha haggis disputes tha deed — an won.',
       hunter_general_kill: 'Tha Hunter-General\'s medals are on tha muir at {time}. Tha quarry gaed hame.',
       cailleach_boss_kill: 'Stormcrown taen at {time}. Tha seeven cairns hauld tha memory o it.',
+      storm_cailleach_kill: 'Tha Cailleach o tha Storm unravelled at {time}. Tha gale mindit a different endin.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
       biome_bog: 'Walked tha bog an cam back kennin tha smell o peat.',
       biome_loch: 'Kept back fae tha edge an walked hame. Tha loch noted this.',

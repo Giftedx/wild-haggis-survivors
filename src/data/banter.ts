@@ -242,6 +242,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.cailleach_boss.b',
         'ui.banter.boss_warn.cailleach_boss.c',
       ],
+      // Post-bell Tier-3 — Storm Cailleach. Three phases, edge register.
+      storm_cailleach: [
+        'ui.banter.boss_warn.storm_cailleach.a',
+        'ui.banter.boss_warn.storm_cailleach.b',
+        'ui.banter.boss_warn.storm_cailleach.c',
+      ],
     },
   },
   {
@@ -495,6 +501,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.cailleach_boss.a',
         'ui.banter.boss_down.cailleach_boss.b',
         'ui.banter.boss_down.cailleach_boss.c',
+      ],
+      // Post-bell Tier-3 — Storm Cailleach, hearth warmth after the gale.
+      storm_cailleach: [
+        'ui.banter.boss_down.storm_cailleach.a',
+        'ui.banter.boss_down.storm_cailleach.b',
+        'ui.banter.boss_down.storm_cailleach.c',
       ],
     },
   },
