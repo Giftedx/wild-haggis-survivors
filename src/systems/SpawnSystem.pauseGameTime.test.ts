@@ -36,7 +36,7 @@ describe('SpawnSystem.pauseSpawnsFor uses game-time', () => {
     return { ss, burstSpy, SpawnSystem };
   }
 
-  it('starts unpaused — spawnBurst proceeds when no pause was requested', async () => {
+  it('starts unpaused — spawnBurst proceeds when no pause was requested', { timeout: 15_000 }, async () => {
     const { ss, burstSpy, SpawnSystem } = await buildTestableSpawnSystem();
     // Route through the real method (don't spy so the private gate runs).
     ss.spawnBurst = SpawnSystem.prototype['spawnBurst' as keyof typeof SpawnSystem.prototype] as never;
@@ -50,7 +50,7 @@ describe('SpawnSystem.pauseSpawnsFor uses game-time', () => {
     expect(burstSpy).not.toHaveBeenCalled();
   });
 
-  it('pause window holds when game-time has not advanced past the mark', async () => {
+  it('pause window holds when game-time has not advanced past the mark', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
 
     const ss: any = Object.create(SpawnSystem.prototype);
@@ -76,7 +76,7 @@ describe('SpawnSystem.pauseSpawnsFor uses game-time', () => {
     expect(hit).toBe(true);
   });
 
-  it('wall-clock drift cannot release the gate (seed-determinism invariant)', async () => {
+  it('wall-clock drift cannot release the gate (seed-determinism invariant)', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
 
     const ss: any = Object.create(SpawnSystem.prototype);
@@ -100,7 +100,7 @@ describe('SpawnSystem.pauseSpawnsFor uses game-time', () => {
     }
   });
 
-  it('resetRunState clears the pause', async () => {
+  it('resetRunState clears the pause', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
 
     const ss: any = Object.create(SpawnSystem.prototype);

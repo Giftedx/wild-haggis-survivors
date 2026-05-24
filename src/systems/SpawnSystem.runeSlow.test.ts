@@ -23,7 +23,7 @@ vi.mock('phaser', () => {
 });
 
 describe('SpawnSystem.setRuneEnemySlowMul', () => {
-  it('default is identity (1)', async () => {
+  it('default is identity (1)', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
     const ss: any = Object.create(SpawnSystem.prototype);
     ss.runeEnemySlowMul = 1;
@@ -31,7 +31,7 @@ describe('SpawnSystem.setRuneEnemySlowMul', () => {
     expect(ss.getRuneEnemySlowMul()).toBe(1);
   });
 
-  it('clamps NaN / negative input to 0.1 floor', async () => {
+  it('clamps NaN / negative input to 0.1 floor', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
     const ss: any = Object.create(SpawnSystem.prototype);
     ss.runeEnemySlowMul = 1;
@@ -42,7 +42,7 @@ describe('SpawnSystem.setRuneEnemySlowMul', () => {
     expect(ss.getRuneEnemySlowMul()).toBe(0.1);
   });
 
-  it('applies a freeze pulse to every active enemy when mul drops below 1', async () => {
+  it('applies a freeze pulse to every active enemy when mul drops below 1', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
     const freezeSpy1 = vi.fn();
     const freezeSpy2 = vi.fn();
@@ -62,7 +62,7 @@ describe('SpawnSystem.setRuneEnemySlowMul', () => {
     expect(inactiveFreezeSpy).not.toHaveBeenCalled();
   });
 
-  it('does NOT apply a pulse when mul resets to identity (avoids spam)', async () => {
+  it('does NOT apply a pulse when mul resets to identity (avoids spam)', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
     const freezeSpy = vi.fn();
     const ss: any = Object.create(SpawnSystem.prototype);
@@ -76,7 +76,7 @@ describe('SpawnSystem.setRuneEnemySlowMul', () => {
     expect(freezeSpy).not.toHaveBeenCalled();
   });
 
-  it('idempotent — same mul value does not re-pulse enemies', async () => {
+  it('idempotent — same mul value does not re-pulse enemies', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
     const freezeSpy = vi.fn();
     const ss: any = Object.create(SpawnSystem.prototype);

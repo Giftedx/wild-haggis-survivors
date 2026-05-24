@@ -13,7 +13,7 @@ vi.mock('phaser', () => {
 });
 
 describe('SpawnSystem boss deferral respects TimeManager pause', () => {
-  it('does not flush pending boss spawns while gameplay paused', async () => {
+  it('does not flush pending boss spawns while gameplay paused', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
 
     const calls: string[] = [];
@@ -38,7 +38,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     expect(ss.pendingBossSpawns).toHaveLength(1);
   });
 
-  it('flushes pending boss spawns once gameplay unpauses', async () => {
+  it('flushes pending boss spawns once gameplay unpauses', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
 
     let paused = true;
@@ -69,7 +69,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     expect(ss.pendingBossSpawns).toHaveLength(0);
   });
 
-  it('flushes multiple queued boss spawns in FIFO order on the same unpaused tick', async () => {
+  it('flushes multiple queued boss spawns in FIFO order on the same unpaused tick', { timeout: 15_000 }, async () => {
     const { SpawnSystem } = await import('./SpawnSystem');
 
     let paused = true;

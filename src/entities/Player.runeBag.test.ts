@@ -88,7 +88,7 @@ describe('Player getters fold rune bag (U1 M4)', () => {
       // initialized before those throw points or via field defaults.
     }
     if (player) player.setRuneBagAccessor(() => bag);
-  });
+  }, 30_000);
 
   // 30s under full vitest concurrency on each `it` — the beforeEach hook does
   // `await import('./Player')` which re-runs esbuild + the heavy Player.ts module
