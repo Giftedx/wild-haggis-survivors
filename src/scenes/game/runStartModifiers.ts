@@ -23,6 +23,29 @@ import { PASSIVE_KEYS } from '../../data/upgrades';
 import { applyPassiveEffect } from './passiveEffects';
 
 /**
+ * Apply the variant's signature starter weapon(s), replacing the default
+ * Thistle Shot. Variants without `startWithWeapons` get Thistle Shot;
+ * those with it get only the declared weapons (Thistle Shot is omitted).
+ *
+ * Called immediately after `installCoreCombatSystems` in GameScene —
+ * before `applyPermanentUpgrades` so `weapon_training` levels land on
+ * whatever weapon is actually in the run.
+ */
+export function applyVariantStartWeapons(
+  weaponSystem: WeaponSystem,
+  variant: VariantDef,
+): void {
+  const keys = variant.startWithWeapons;
+  if (!keys || keys.length === 0) {
+    weaponSystem.addWeapon('thistle_shot');
+    return;
+  }
+  for (const key of keys) {
+    weaponSystem.addWeapon(key);
+  }
+}
+
+/**
  * V2 followup — apply the variant's signature starter passive(s).
  *
  * Mirrors the `lucky_start` permanent-upgrade branch: each key is

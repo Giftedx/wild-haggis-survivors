@@ -3,6 +3,7 @@ import {
   applyVariantModifiers,
   applyPermanentUpgrades,
   applyVariantStartPassives,
+  applyVariantStartWeapons,
 } from './runStartModifiers';
 import type { VariantDef } from '../../data/variants';
 
@@ -39,7 +40,7 @@ function mockPlayer(overrides: Partial<Record<string, any>> = {}) {
 }
 
 function mockWeaponSystem() {
-  return { levelUpWeapon: vi.fn() } as any;
+  return { levelUpWeapon: vi.fn(), addWeapon: vi.fn() } as any;
 }
 
 function mockRng(val: number = 0) {
@@ -216,5 +217,36 @@ describe('applyVariantStartPassives', () => {
     // source of truth) but applyPassiveEffect itself handles unknowns.
     expect(owned).toEqual(['not_a_real_passive']);
     expect(applyPassiveEffect).toHaveBeenCalledOnce();
+  });
+});
+
+describe('applyVariantStartWeapons', () => {
+  it('adds thistle_shot when variant has no startWithWeapons', () => {
+    const ws = mockWeaponSystem();
+    applyVariantStartWeapons(ws, { modifiers: {} } as unknown as VariantDef);
+    expect(ws.addWeapon).toHaveBeenCalledWith('thistle_shot');
+    expect(ws.addWeapon).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds the variant weapons and skips thistle_shot when startWithWeapons declared', () => {
+    const ws = mockWeaponSystem();
+    applyVariantStartWeapons(ws, {
+      modifiers: {},
+      startWithWeapons: ['practice_chanter'],
+    } as unknown as VariantDef);
+    expect(ws.addWeapon).toHaveBeenCalledWith('practice_chanter');
+    expect(ws.addWeapon).not.toHaveBeenCalledWith('thistle_shot');
+    expect(ws.addWeapon).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds multiple weapons when startWithWeapons has more than one key', () => {
+    const ws = mockWeaponSystem();
+    applyVariantStartWeapons(ws, {
+      modifiers: {},
+      startWithWeapons: ['practice_chanter', 'bagpipes'],
+    } as unknown as VariantDef);
+    expect(ws.addWeapon).toHaveBeenCalledWith('practice_chanter');
+    expect(ws.addWeapon).toHaveBeenCalledWith('bagpipes');
+    expect(ws.addWeapon).toHaveBeenCalledTimes(2);
   });
 });

@@ -28,6 +28,7 @@ import { drawWallaceSwordIcon } from './wallaceSword';
 import { drawDirkFlurryIcon } from './dirkFlurry';
 import { drawBansheeWailIcon } from './bansheeWail';
 import { drawFreedomBladeIcon } from './freedomBlade';
+import { drawPracticeChanterIcon } from './practiceChanter';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -45,6 +46,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawSgianDubhIcon(scene);
   drawStagAntlerIcon(scene);
   drawWaulkingMalletIcon(scene);
+  // Practice Chanter — Pibroch variant starter weapon.
+  drawPracticeChanterIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);

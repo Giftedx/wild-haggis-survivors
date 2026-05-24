@@ -179,6 +179,7 @@ import {
   applyPermanentUpgrades,
   applyVariantModifiers,
   applyVariantStartPassives,
+  applyVariantStartWeapons,
 } from './game/runStartModifiers';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
@@ -1046,6 +1047,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Pre-allocate floating text pool for armor/gold feedback.
     this.floatTextPool.init(this);
+
+    // Variant starter weapon: variants with startWithWeapons get their
+    // thematic weapon; all others get the default Thistle Shot.
+    // Called before applyPermanentUpgrades so weapon_training levels the
+    // right weapon. WeaponSystem constructor is now starter-weapon-free.
+    applyVariantStartWeapons(this.weaponSystem, selectedVariant);
 
     // Variant modifiers establish the run archetype before permanent upgrades stack on top.
     applyVariantModifiers(this.player, selectedVariant);

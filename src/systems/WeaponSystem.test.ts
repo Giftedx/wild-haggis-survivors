@@ -88,18 +88,18 @@ describe('WeaponSystem', () => {
   });
 
   describe('addWeapon', () => {
-    it('starts with thistle_shot', () => {
-      expect(ws.hasWeapon('thistle_shot')).toBe(true);
-      expect(ws.getWeapons()).toHaveLength(1);
+    it('starts with no weapons (starter weapon added by GameScene)', () => {
+      expect(ws.getWeapons()).toHaveLength(0);
     });
 
     it('adds a new weapon', () => {
       expect(ws.addWeapon('bagpipe_blast')).toBe(true);
       expect(ws.hasWeapon('bagpipe_blast')).toBe(true);
-      expect(ws.getWeapons()).toHaveLength(2);
+      expect(ws.getWeapons()).toHaveLength(1);
     });
 
     it('rejects duplicate weapon', () => {
+      ws.addWeapon('thistle_shot');
       expect(ws.addWeapon('thistle_shot')).toBe(false);
       expect(ws.getWeapons()).toHaveLength(1);
     });
@@ -119,6 +119,8 @@ describe('WeaponSystem', () => {
   });
 
   describe('levelUpWeapon', () => {
+    beforeEach(() => { ws.addWeapon('thistle_shot'); });
+
     it('increases level and scales damage', () => {
       const def = WEAPON_DEFS.thistle_shot;
       expect(ws.levelUpWeapon('thistle_shot')).toBe(true);
@@ -160,6 +162,8 @@ describe('WeaponSystem', () => {
   });
 
   describe('evolveWeapon', () => {
+    beforeEach(() => { ws.addWeapon('thistle_shot'); });
+
     it('evolves a weapon with stat boosts', () => {
       for (let i = 0; i < 4; i++) ws.levelUpWeapon('thistle_shot');
       const before = { ...ws.getWeapons()[0] };

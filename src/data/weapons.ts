@@ -37,7 +37,8 @@ export type WeaponKey =
   | 'pibroch_hammer'
   | 'dirk_dance'
   | 'grannies_curse'
-  | 'wallace_sword';
+  | 'wallace_sword'
+  | 'practice_chanter';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -385,6 +386,40 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       radius: 1.10,
     },
   },
+  // DESIGN_IDEAS §5 — Practice Chanter. The starter weapon for the
+  // Pibroch Haggis variant. A chanter is the melody pipe of the
+  // bagpipe — novices practice on it alone before the bag is added.
+  // Mechanically: a fast, weak projectile weapon with short range
+  // (the chanter's breath doesn't carry far), but its tight cooldown
+  // fires reliably and it levels into a fuller tone at high level.
+  // The fantasy is "learning the scale before the lament" — weaker
+  // than Thistle Shot early but grows with the player, with count
+  // scaling at lv3/5 (the three chanter holes opening up).
+  // No evolution (the pibroch's upgrade path is the Waulking Mallet
+  // line, not the chanter); it's a thematic starter, not a build axis.
+  practice_chanter: {
+    key: 'practice_chanter',
+    nameKey: 'weapon.practice_chanter.name',
+    descriptionKey: 'weapon.practice_chanter.description',
+    behavior: 'projectile',
+    cooldownMs: 900,
+    damage: 4,
+    projectileSpeed: 280,
+    projectileCount: 1,
+    pierce: 0,
+    range: 320,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [3, 5],
+      pierce: 0,
+      radius: 1,
+    },
+  },
+
   // Highland Horrors — Dirk Dance. The Highland dirk: longer than
   // a sgian dubh, shorter than a claymore. A rapid three-beat combo
   // of slashes — center, left, right — fired at 130ms intervals to

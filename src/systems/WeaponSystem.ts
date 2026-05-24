@@ -187,8 +187,9 @@ export class WeaponSystem {
       this.vfxGfxPool.push(g);
     }
 
-    // Start with Thistle Shot
-    this.addWeapon('thistle_shot');
+    // Starter weapon is added by GameScene via applyVariantStartWeapons —
+    // variants with startWithWeapons get their themed weapon; others get
+    // thistle_shot. Constructor starts empty so the caller owns the choice.
 
     // Projectile ↔ enemy collision
     scene.physics.add.overlap(

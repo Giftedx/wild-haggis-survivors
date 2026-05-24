@@ -97,6 +97,8 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   dirk_dance:      '#9a2a2a', // tartan-blood red (dirk-hilt cloth wrap)
   grannies_curse:  '#5a3060', // hex-purple (widow's mourning dye)
   wallace_sword:   '#3a4a5a', // patriot steel (Stirling Bridge grey-blue)
+  // Practice Chanter — chanter-ivory (bone-pale pipe body)
+  practice_chanter: '#c8b878',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

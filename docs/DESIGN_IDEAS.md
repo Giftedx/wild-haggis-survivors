@@ -196,7 +196,7 @@ Candidate weapons (pick 4 for a content drop):
 - **Deep-Fried Mars Bar** — absurdist heavy projectile; comedy proc (rare but satisfying). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §12.1.*)
 - **Port-à-Beul (Mouth Music) Chant** — area-slow aura that follows player; synced to music system. Gaelic vocal-percussion tradition. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
 - **Bodhrán (Frame Drum)** — beat-based AoE pulse; syncs to combat tempo.
-- **Practice Chanter** — tiny ranged sting; starter weapon for the Pibroch haggis variant.
+- ~~**Practice Chanter**~~ — ✅ shipped (`practice_chanter`). Fast weak projectile (4 dmg, 900ms cooldown, 320px range, count +1 at lv3/5). Pibroch variant's starter weapon via `startWithWeapons: ['practice_chanter']` in `VariantDef`; all other variants keep Thistle Shot. No evolution (the pibroch's upgrade axis is the Waulking Mallet line).
 
 ### Synergy families (for balance sanity)
 

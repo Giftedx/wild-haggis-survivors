@@ -1,5 +1,6 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
+import type { WeaponKey } from './weapons';
 
 export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie' | 'morningside' | 'drouthy' | 'pibroch' | 'orcadian' | 'hebridean' | 'iron_brew' | 'grans_best' | 'the_pict' | 'jacobite' | 'tam_o_shanter' | 'engineer' | 'tufted';
 
@@ -199,6 +200,18 @@ export interface VariantDef {
    * half-drained, so the first burst is available from the opening bell.
    */
   startWhiskyStacks?: number;
+  /**
+   * Signature starter weapon(s) — replaces the default Thistle Shot for
+   * this variant. Applied via `applyVariantStartWeapons` in
+   * `runStartModifiers.ts` before permanent upgrades so the player's
+   * weapon set is correct by the time `weapon_training` runs.
+   *
+   * Omitting this field gives the classic Thistle Shot start. A variant
+   * that specifies this list gets only these weapons at run start; Thistle
+   * Shot is not added. The list is plural for future flexibility but all
+   * current usages are single-weapon.
+   */
+  startWithWeapons?: WeaponKey[];
 }
 
 export interface VariantProgressSnapshot {
@@ -731,6 +744,7 @@ export const VARIANTS: VariantDef[] = [
     flavorKey: 'variant.pibroch.flavor',
     textureKey: 'haggis_pibroch',
     modifiers: { pibrochWindowExtensionMs: 70 },
+    startWithWeapons: ['practice_chanter'],
     unlock: { type: 'victories', required: 3 },
     appearance: {
       accentStyle: 'pibroch',

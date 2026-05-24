@@ -79,6 +79,11 @@ export const weapon = {
     description: 'A great-sword swing wider than the claymore. Slow to lift, mountains in the cut.',
     flavour: "Five feet four inches of forged steel, kept at the Wallace Monument. No haggis could lift it; this haggis does. Stirling Bridge is older than Scotland; the blade knows the route home.",
   },
+  practice_chanter: {
+    name: 'Practice Chanter',
+    description: 'The melody pipe before the bag. Short breath, quick fingering — learns fast.',
+    flavour: "Every piper starts here — the chanter alone, no bag, no drones, just the scale up and down the moorland track. The Pibroch haggis never put it down. Why would it? The moor listens to the chanter first.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, one breath. The arc that was three becomes a wall.',

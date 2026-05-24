@@ -79,6 +79,11 @@ export const weapon = {
     description: 'A great-swurd swing wider than tha claymore. Slaw tae lift, mountains in tha cut.',
     flavour: "Five fit fower inches o forged steel, kept at tha Wallace Monument. Nae haggis could lift it; this haggis dis. Stirling Brig is aulder than Scotland; tha blade kens tha road hame.",
   },
+  practice_chanter: {
+    name: 'Practice Chanter',
+    description: 'Tha melody pipe afore tha bag. Short braith, quick fingerin — learns fest.',
+    flavour: "Ivvery piper starts here — tha chanter alane, nae bag, nae drones, jist tha scale up an doon tha moorlan track. Tha Piobaireachd haggis nivver pit it doon. Why wid it? Tha moor hears tha chanter first.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, ane braith. Tha arc that wis three becomes a waw.',
