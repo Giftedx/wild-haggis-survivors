@@ -74,11 +74,14 @@ export type WeeTaleTag =
   | 'no_boss' | 'any_boss'
   | 'gordon' | 'tour_bus' | 'taxman'
   | 'each_uisge' | 'nicnevin' | 'the_laird' | 'nuckelavee' | 'hunter_general' | 'earl_beardie' | 'black_douglas'
+  | 'cailleach_boss'
   | 'gordon_death' | 'tour_bus_death' | 'taxman_death'
   | 'each_uisge_death' | 'nicnevin_death' | 'the_laird_death' | 'nuckelavee_death' | 'hunter_general_death' | 'earl_beardie_death' | 'black_douglas_death'
+  | 'cailleach_boss_death'
   | 'cursed' | 'ironmoor' | 'post_bell'
   | 'biome_bog' | 'biome_loch' | 'biome_pine' | 'biome_heather'
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
+  | 'biome_cairngorm' | 'biome_glen_coe'
   | 'has_name'
   | VariantKey;
 
@@ -329,6 +332,12 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
 
   // Post-bell border raider — the lullaby proved a lie.
   { key: 'ui.weeTale.victory.black_douglas_kill', requires: ['victory', 'black_douglas'] },
+
+  // Cailleach Gauntlet — died in the ritual (the seven cairns went dark).
+  { key: 'ui.weeTale.death.cailleach_boss', requires: ['death', 'cailleach_boss_death'] },
+
+  // Cailleach Gauntlet won — the Stormcrown taken.
+  { key: 'ui.weeTale.victory.cailleach_boss_kill', requires: ['victory', 'cailleach_boss'] },
 
   // ── v2 — universal {name}-bearing lines (tier-2) ───────────────
   // Picks ahead of the no-name fallbacks for any run that has a

@@ -4607,6 +4607,8 @@ export const ui = {
       nuckelavee: 'No skin on the thing. It came off the sea at {time}. The burn on the far brae held the rest.',
       earl_beardie: 'Earl Beardie dealt his hand at {time}. The last card was yours.',
       black_douglas: 'The hush came at {time}. Good Sir James did not need to speak.',
+      /** Cailleach Gauntlet — ritual failed; the winter returned. */
+      cailleach_boss: 'Seven cairns lit — and then the storm. The moor went quiet at {time}.',
       // v2 — universal {name}-bearing death line (tier-2).
       with_name_a: '{name} laid doon by the heather. The moor remembers what it can.',
     },
@@ -4623,6 +4625,8 @@ export const ui = {
       nuckelavee_kill: 'The Nuckelavee went back to the sea. {time} on the moor, and the burns held.',
       earl_beardie_kill: 'Earl Beardie\'s cards scattered on the moor at {time}. The wager was yours.',
       black_douglas_kill: 'The lullaby was a lie — but the haggis was not. {time} on the moor, and silence kept.',
+      /** Cailleach Gauntlet won — Stormcrown taken, winter answered. */
+      cailleach_boss_kill: 'Stormcrown taken at {time}. The seven cairns hold the memory of it.',
       // v2 — universal {name}-bearing victory line (tier-2).
       with_name_a: '{name} walked back oot. The moor lets some go.',
     },

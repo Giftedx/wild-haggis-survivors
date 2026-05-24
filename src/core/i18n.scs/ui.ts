@@ -3776,6 +3776,7 @@ export const ui = {
       nuckelavee: 'Nae skin on tha thing. It cam aff tha sea at {time}. Tha burn on tha far brae held tha lave.',
       earl_beardie: 'Earl Beardie dealt his haund at {time}. Tha last caird wis yours.',
       black_douglas: 'Tha wheesht cam at {time}. Guid Sir James didnae need tae speak.',
+      cailleach_boss: 'Seeven cairns lit — an than tha storm. Tha moor gaed quiet at {time}.',
       with_name_a: '{name} laid doun by tha heather. Tha moor minds whit it can.',
     },
     victory: {
@@ -3789,6 +3790,7 @@ export const ui = {
       nuckelavee_kill: 'Tha Nuckelavee gaed back tae tha sea. {time} on tha moor, an tha burns held.',
       earl_beardie_kill: 'Earl Beardie\'s cairds scattered on tha moor at {time}. Tha wager wis yours.',
       black_douglas_kill: 'Tha lullaby wis a lee — but tha haggis wis no. {time} on tha moor, an silence kept.',
+      cailleach_boss_kill: 'Stormcrown taen at {time}. Tha seeven cairns hauld tha memory o it.',
       with_name_a: '{name} walked back oot. Tha moor lets some gang.',
     },
     variant: {
