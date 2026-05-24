@@ -67,6 +67,10 @@ export const upgradeCard = {
     name: 'Coastal Storm',
     description: 'A 680-pixel Atlantic tempest. Awthin in range gets flattened. Staundalone — nae evolution needed.',
   },
+  add_clootie_rag: {
+    name: 'Clootie Rag',
+    description: 'A woundin pulse aboot ye — braw fast ticks, nae slow. Pair wi Rowan Thread fer tha evolution.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
@@ -138,6 +142,10 @@ export const upgradeCard = {
   add_reeds: {
     name: 'Reeds',
     description: "Tha drone pipe's double-reed. +10% cooldown reduction — tha hum tichtens. Pairs wi tha Bagpipe Drone.",
+  },
+  add_rowan_thread: {
+    name: 'Rowan Thread',
+    description: 'Reid thread frae a rowan tied at tha wrist. +1.5 HP regen per second. Pairs wi tha Clootie Rag.',
   },
   boost_hp: {
     name: 'Thick Hide',

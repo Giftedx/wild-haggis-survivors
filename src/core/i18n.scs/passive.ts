@@ -50,4 +50,7 @@ export const passive = {
   reeds: {
     flavour: "Tha double-reed sits whaur naebody sees it — inside tha drone pipe's socket, twa blades o cane bund wi waxed threid. Tha piper blaws. Tha reeds vibrate. Naethin else has tae move fer tha drone tae soun. Tha haggis cairries a spare set in a wee tin.",
   },
+  rowan_thread: {
+    flavour: "Reid threid cut frae a rowan — tha tree that turns tha hex, that hingers abune tha door, that tha witch cannae pass. Tied at tha wrist afore gangin oot ontae tha moor. Gran ties ane fresh each run. Tha haggis stopped askin why.",
+  },
 } as const;

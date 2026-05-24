@@ -110,5 +110,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // evolution. No accessory equip — the reed is inside the pipe.
       player.addCooldownReduction(0.10);
       break;
+    case 'rowan_thread':
+      // +1.5 HP regen per second — the rowan's protection heals you back
+      // while the rag wounds them. Pairs with Clootie Rag at lv5 for the
+      // future evolution.
+      player.addHpRegen(1.5);
+      break;
   }
 }

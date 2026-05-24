@@ -99,6 +99,11 @@ export const weapon = {
     description: 'A muckle tempest erupts aboot ye — 680-pixel ring o fury. 22-second bawl, then wheesht.',
     flavour: "Tha Wast Coast gies nae warnin — ae moment haar, tha nixt a waw o Atlantic fury rowin in aff tha Minch. Tha haggis breathed it in aince an nivver forgot tha shape o it. This isnae a weapon; this is weather.",
   },
+  clootie_rag: {
+    name: 'Clootie Rag',
+    description: 'A bluid-soakit clout tied at tha wrist — woundin pulse aboot ye. Braw fast ticks, nae slow.',
+    flavour: "At tha clootie well ye tie tha clout an leave tha wound open — tha illness passes intae tha clout, intae tha watter, intae tha grun. Tha haggis nivver tuik tha rag aff. Tha grun got used tae tha bleedin.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, ane braith. Tha arc that wis three becomes a waw.',

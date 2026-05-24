@@ -1306,23 +1306,25 @@ export class WeaponSystem {
     }
   }
 
-  /** Ceòl Mòr bagpipes / Waulking Mallet / Bagpipe Drone — aura pulse. */
+  /** Ceòl Mòr bagpipes / Waulking Mallet / Bagpipe Drone / Clootie Rag — aura pulse. */
   private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
     const isDrone = w.config.key === 'bagpipe_drone';
+    const isClootieRag = w.config.key === 'clootie_rag';
 
-    // Drone ring is subtler — lower alpha, smaller flourish, to read as
-    // a persistent hum rather than an emphatic ceòl mòr pulse.
-    const ringAlpha = isDrone ? 0.22 : 0.38;
-    const ring = this.acquireVfxCircle(px, py, radius, resolveWeaponVfxColor(w.config.behavior), ringAlpha);
-    if (!isDrone) {
+    // Clootie Rag: wound-red pulse, no flourish, no freeze — pure wounding aura.
+    // Drone: subtle hum ring at low alpha. Ceòl Mòr: emphatic pulse with knot.
+    const ringColor = isClootieRag ? 0x8a2a2a : resolveWeaponVfxColor(w.config.behavior);
+    const ringAlpha = isDrone ? 0.22 : isClootieRag ? 0.30 : 0.38;
+    const ring = this.acquireVfxCircle(px, py, radius, ringColor, ringAlpha);
+    if (!isDrone && !isClootieRag) {
       this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipes_drone_knot', { scale: 0.95, endScale: 1.4, duration: 360, alpha: 0.72 });
     }
     this.scene.tweens.add({
       targets: ring,
-      alpha: isDrone ? 0.05 : 0.1,
-      duration: isDrone ? 180 : 280,
+      alpha: isDrone ? 0.05 : isClootieRag ? 0.06 : 0.1,
+      duration: isDrone ? 180 : isClootieRag ? 160 : 280,
       yoyo: true,
       onComplete: () => ring.setVisible(false),
     });
@@ -1337,8 +1339,9 @@ export class WeaponSystem {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
         // Drone: soft continuous slow (refreshes before it expires at 500ms tick).
         // Ceòl Mòr: hard freeze on a longer cooldown.
+        // Clootie Rag: no freeze — the rag bleeds, it does not slow.
         if (isDrone) enemy.applyFreeze(0.70, 700);
-        else enemy.applyFreeze(0.42, 1400);
+        else if (!isClootieRag) enemy.applyFreeze(0.42, 1400);
       }
     }
   }

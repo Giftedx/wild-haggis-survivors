@@ -68,6 +68,10 @@ export const upgradeCard = {
     name: 'Coastal Storm',
     description: 'A 680-pixel Atlantic tempest. Everything in range gets flattened. Standalone — no evolution required.',
   },
+  add_clootie_rag: {
+    name: 'Clootie Rag',
+    description: 'A wounding pulse around you — fast ticks, no slow. Pair wi Rowan Thread for the evolution.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',
@@ -140,6 +144,10 @@ export const upgradeCard = {
   add_reeds: {
     name: 'Reeds',
     description: "The drone pipe's double-reed. +10% cooldown reduction — the hum tightens. Pairs wi the Bagpipe Drone.",
+  },
+  add_rowan_thread: {
+    name: 'Rowan Thread',
+    description: 'Red thread from a rowan tied at the wrist. +1.5 HP regen per second. Pairs wi the Clootie Rag.',
   },
   // Stat boost cards
   boost_hp: {

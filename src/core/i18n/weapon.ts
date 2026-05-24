@@ -99,6 +99,11 @@ export const weapon = {
     description: 'A massive tempest erupts around you — 680-pixel ring of fury. 22-second roar, then silence.',
     flavour: "The West Coast gives no warning — one moment haar, the next a wall of Atlantic fury rolling in off the Minch. The haggis breathed it in once and never forgot the shape of it. This is not a weapon; this is weather.",
   },
+  clootie_rag: {
+    name: 'Clootie Rag',
+    description: 'A blood-soaked cloth tied at the wrist — wounding pulse around you. Fast ticks, no slow.',
+    flavour: "At the clootie well you tie the rag and leave the wound open — the illness passes into the cloth, into the water, into the land. The haggis never took the rag off. The land got used to the bleeding.",
+  },
   dirk_flurry: {
     name: 'Dirk Flurry',
     description: 'Three blades, one breath. The arc that was three becomes a wall.',

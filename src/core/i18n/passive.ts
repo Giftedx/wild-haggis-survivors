@@ -50,4 +50,7 @@ export const passive = {
   reeds: {
     flavour: "The double-reed sits where nobody sees it — inside the drone pipe's socket, two blades of cane bound with waxed thread. The piper blows. The reeds vibrate. Nothing else has to move for the drone to sound. The haggis carries a spare set in a wee tin.",
   },
+  rowan_thread: {
+    flavour: "Red thread cut from a rowan — the tree that turns the hex, that hangs above the door, that the witch cannot pass. Tied at the wrist before going out onto the moor. Gran ties one fresh each run. The haggis stopped asking why.",
+  },
 } as const;

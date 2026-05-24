@@ -42,7 +42,8 @@ export type WeaponKey =
   | 'practice_chanter'
   | 'whisky_lob'
   | 'bagpipe_drone'
-  | 'coastal_storm';
+  | 'coastal_storm'
+  | 'clootie_rag';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -325,6 +326,35 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.06,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Clootie Rag. The blood-stained cloth tied to a
+  // clootie well as a supplication — the wound stays open so the land
+  // can take the sickness. A wounding aura that pulses damage against
+  // every enemy in range on a short cooldown. No freeze — the rag
+  // doesn't slow, it bleeds. Completes the bleed synergy family
+  // alongside Dirk Dance and Sgian Dubh. Paired passive: Rowan Thread.
+  clootie_rag: {
+    key: 'clootie_rag',
+    nameKey: 'weapon.clootie_rag.name',
+    descriptionKey: 'weapon.clootie_rag.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 350,
+    damage: 2,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 72,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
     },
   },
 

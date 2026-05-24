@@ -18,6 +18,7 @@ import { drawWidowsShawl } from './widowsShawl';
 import { drawStirlingMedal } from './stirlingMedal';
 import { drawPeatedOak } from './peatedOak';
 import { drawReeds } from './reeds';
+import { drawRowanThread } from './rowanThread';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -59,6 +60,8 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawPeatedOak(scene);
   // Bagpipe Drone paired passive.
   drawReeds(scene);
+  // Clootie Rag paired passive.
+  drawRowanThread(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

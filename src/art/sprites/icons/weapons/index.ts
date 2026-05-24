@@ -32,6 +32,7 @@ import { drawPracticeChanterIcon } from './practiceChanter';
 import { drawWhiskyLobIcon } from './whiskyLob';
 import { drawBagpipeDroneIcon } from './bagpipeDrone';
 import { drawCoastalStormIcon } from './coastalStorm';
+import { drawClootieRagIcon } from './clootieRag';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -57,6 +58,8 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawBagpipeDroneIcon(scene);
   // Coastal Storm — standalone mega-AoE.
   drawCoastalStormIcon(scene);
+  // Clootie Rag — wounding bleed aura.
+  drawClootieRagIcon(scene);
   // Highland Horrors base weapons.
   drawDirkDanceIcon(scene);
   drawGranniesCurseIcon(scene);

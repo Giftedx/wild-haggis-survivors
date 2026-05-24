@@ -105,6 +105,8 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   bagpipe_drone: '#3a8844',
   // Coastal Storm — storm-sea slate-blue (North Sea squall)
   coastal_storm: '#4a7aaa',
+  // Clootie Rag — wound red (the blood-soaked rag tied to the well)
+  clootie_rag: '#8a2a2a',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

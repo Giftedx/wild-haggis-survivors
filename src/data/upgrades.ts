@@ -54,7 +54,12 @@ export type PassiveKey =
   // The drone pipe's double-reed, dipped and tuned. +10% cooldown reduction
   // — the reed settles faster, the drone cycle tightens. Pairs with a
   // level-5 Bagpipe Drone at chest for the future evolution.
-  | 'reeds';
+  | 'reeds'
+  // Clootie Rag paired passive — "Rowan Thread".
+  // Red thread from a rowan, tied at the wrist against harm. +1.5 HP regen
+  // per second — the tree that protects you while the rag wounds them.
+  // Pairs with a level-5 Clootie Rag at chest for the future evolution.
+  | 'rowan_thread';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -263,6 +268,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_coastal_storm',
     effect: { type: 'add_weapon', weaponKey: 'coastal_storm' },
   },
+  // Clootie Rag — wounding aura, bleed family. Paired passive: Rowan Thread.
+  {
+    id: 'add_clootie_rag',
+    name: 'upgradeCard.add_clootie_rag.name',
+    description: 'upgradeCard.add_clootie_rag.description',
+    rarity: 'uncommon',
+    icon: 'wicon_clootie_rag',
+    effect: { type: 'add_weapon', weaponKey: 'clootie_rag' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -418,6 +432,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_reeds',
     effect: { type: 'add_passive', passiveKey: 'reeds' },
+  },
+  // Clootie Rag paired passive — Rowan Thread.
+  {
+    id: 'add_rowan_thread',
+    name: 'upgradeCard.add_rowan_thread.name',
+    description: 'upgradeCard.add_rowan_thread.description',
+    rarity: 'uncommon',
+    icon: 'ucard_rowan_thread',
+    effect: { type: 'add_passive', passiveKey: 'rowan_thread' },
   },
 ];
 
