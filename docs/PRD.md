@@ -13,7 +13,7 @@
   - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 23` (see `src/utils/save/schema.ts`). Migration chain since 2026-05-10: v18→v19 `RunHistoryEntry.sporranPicks` (S1 Phase 2 chronicle persistence), v19→v20 `beithirCuresLifetime`, v20→v21 `clootieWagersLifetime`, v21→v22 `cairnBlessingsLifetime` (DESIGN_IDEAS §1 mechanic-counter trio gating `*_first` banter sub-pools), v22→v23 `livingWorldUnlocks` (WLW Phase 2 companions roster — defaults `['sheepdog']` for pre-v23 saves).
   - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
-- **Tests:** 511 vitest files; 5435 test cases (verified 2026-05-22 via `npm test`).
+- **Tests:** Vitest suite via `npm test` (exact file/case counts change as coverage grows).
 - **Weapons:** 15 base families (14 with paired-passive evolutions; `bagpipes` utility-only). `EVOLUTION_RECIPES.length = 14`. `BURNS_EVOLUTION_THRESHOLD = 10` (frozen — the Pibroch Hammer carve-out at WLW Phase 2 means the recipe count drifts above the achievement gate by design; see `src/core/BalanceConfig.ts` rationale block).
 - **Biomes:** 9 (`bog`, `loch`, `pine`, `heather`, `coastal`, `haar`, `frost`, `cairngorm`, `glen_coe`). **Hazards:** 9 (`peat_pit`, `falling_slate`, `burn_water`, `loose_scree`, `tidal_wrack`, `slick_cobble`, `rime_patch`, `wind_shear`, `highland_mist`). **Passives:** 16.
 - **TODO/FIXME markers in production:** zero.
@@ -69,7 +69,7 @@ A solo-dev sprint shipped 13 features in one day, twelve from `docs/DESIGN_IDEAS
 
 ### Active fronts
 
-- **Codebase restructure (2026-04-30)** — Phases 0–7 SHIPPED by 2026-05-09; T401 GameScene decomposition is the historical chain that fed it (3526 → 1819 LOC at the 2026-05-10 baseline). Current GameScene **2021 LOC** (hard-ceilinged at 2200; per-file ratchet retired 2026-05-10 — see [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) + [`docs/REVIEW.md` C2](REVIEW.md)). ≤1200 facade-rewrite target remains out of scope. Highland Horrors B6 + Croft mobile polish pushed it +180 LOC; ceiling has 179 LOC of headroom.
+- **Codebase restructure (2026-04-30)** — Phases 0–7 SHIPPED by 2026-05-09; T401 GameScene decomposition is the historical chain that fed it (3526 → 1819 LOC at the 2026-05-10 baseline). GameScene remains hard-ceilinged at 2200 LOC (per-file ratchet retired 2026-05-10 — see [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) + [`docs/REVIEW.md` C2](REVIEW.md)). ≤1200 facade-rewrite target remains out of scope.
 - **Croft mobile / interior polish (2026-05-14)** — `75f810d` mobile bottom-anchored action board + ledger panels + interior dressings.
 - **Cultural review gates** — Doric + Shetlandic native-speaker review (`docs/C2_DIALECT_REVIEW.md`), Burns Kinsley + Canongate audit (`docs/C2_BURNS_PROVENANCE.md`), 8 Gaelic banter leaves flagged.
 

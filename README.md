@@ -18,11 +18,11 @@ npm run dev          # Vite dev server on :3000, opens browser
 | Command | What |
 |---|---|
 | `npm run dev` | Vite dev server on :3000 (auto-opens browser) |
-| `npm test` | Vitest unit tests (488 spec files, 5194 cases as of 2026-05-11) |
+| `npm test` | Vitest unit tests |
 | `npm run lint` | ESLint flat config across `src/`, `e2e/`, configs |
 | `npm run build` | `tsc --noEmit` → Vite build → `dist/` |
 | `npm run preview` | Serves `dist/` locally; Playwright E2E uses this on :4180 |
-| `npm run test:e2e` | Playwright against the production build (~50 `e2e/*.spec.ts` files, ~218 enumerated cases across desktop + mobile projects — `npx playwright test --list`) |
+| `npm run test:e2e` | Playwright against the production build |
 | `npm run ci` | Lint + Vitest + build (no E2E) |
 | `npm run ci:all` | Full local gate matching CI: `ci` then E2E |
 
@@ -34,7 +34,7 @@ Before declaring anything fixed/done, run at least `npm test` and `npm run build
 
 ## Architecture in 30 seconds
 
-- **Scene flow:** `BootScene` → (first-launch splashes) → `MainMenuScene` → `MenuScene` (variant pick) → `GameScene` (run) → `GameOverScene` → `CroftScene` (persistent hub) ↔ `ShopScene` / `MetaShopScene`. The full graph and per-scene gotchas live in [`CLAUDE.md`](CLAUDE.md) "Architecture".
+- **Scene flow:** `BootScene` → (first-launch splashes) → `MainMenuScene`, then route-dependent branches through `MenuScene` (variant pick), `CroftScene` (persistent hub), `CurseScene`, `GameScene` (run), `GameOverScene`, `ShopScene`, and `MetaShopScene`. The full graph and per-scene gotchas live in [`CLAUDE.md`](CLAUDE.md) "Architecture".
 - **Systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`, `HazardsSystem`, `AmbientWeatherSystem`, `BiomeController`, `RuneConditionSystem`, `NodeMapSystem`, …
 - **Data-driven balance:** all weapons, enemies, upgrades, variants, routes, banter, curses, biomes, hazards, relics, runes, and node banks live under `src/data/`. Code consumes them; balance work is data-only.
 - **Persistence:** three independent `localStorage` keys, each owned by one module —

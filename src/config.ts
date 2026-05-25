@@ -17,8 +17,8 @@ export const PLAYER = {
   /** Base movement speed (pixels/sec) */
   SPEED: 200,
 
-  /** Clockwise drift applied to movement vector (degrees per frame).
-   *  5° is subtle but noticeable — you veer ~1 tile over a few seconds.
+  /** Clockwise drift applied to each movement vector.
+   *  5° is subtle but noticeable — input aims slightly off true.
    *  Enough to reward clockwise kiting without making basic movement frustrating. */
   DRIFT_DEGREES: 5,
 
