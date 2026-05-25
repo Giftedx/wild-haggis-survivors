@@ -186,6 +186,21 @@ describe('BANTER_POOLS structure', () => {
     }
   });
 
+  it('core shipped biomes have an expanded ambient biome_change line pack', () => {
+    const coreBiomeIds: readonly BiomeId[] = [
+      'bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost',
+    ];
+    const pool = getBanterPool('biome_change');
+    expect(pool, 'biome_change pool missing').toBeDefined();
+    for (const id of coreBiomeIds) {
+      const keys = pool!.keysByTag?.[id] ?? [];
+      expect(keys.length, `biome_change/${id} needs at least five ambient lines`).toBeGreaterThanOrEqual(5);
+      for (const key of keys) {
+        expect(t(key), `EN missing ${key}`).not.toBe(key);
+      }
+    }
+  });
+
   it('route_picked has keysByTag for every W2 route', () => {
     const routeKeys = ROUTES.map((r) => r.key);
     const pool = getBanterPool('route_picked');
