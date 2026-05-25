@@ -157,14 +157,12 @@ export interface ISettingsData {
    */
   disableHazards: boolean;
   /**
-   * P3 Cloud Saves — opt-in for cloud sync of the existing `whs_save`
-   * payload. Off by default; the game stays fully playable offline-
-   * first when this is false (charter §Anti-patterns "Don't gate
-   * single-player on cloud"). The Settings panel UI is gated behind
-   * the `?cloudSavePreview=1` URL flag until the live backend ships;
-   * see `docs/top-10-tasks/blocked/03-blocked-on-human.md`. The flag
-   * persists regardless of UI visibility so a player who has opted
-   * in keeps that preference across builds.
+   * P3 Cloud Saves — future opt-in for cloud sync of the existing
+   * `whs_save` payload. Off by default; the game stays fully playable
+   * offline-first when this is false (charter §Anti-patterns "Don't gate
+   * single-player on cloud"). Runtime sync, Settings UI, privacy copy,
+   * and conflict UX remain blocked on P3 product/legal work; the flag is
+   * retained so pre-release tester saves do not churn.
    */
   cloudSaveOptIn: boolean;
   /**
