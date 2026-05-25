@@ -88,6 +88,9 @@ Unit coverage:
   timeout and statically guards the `JuiceSystem` call site.
 - `src/systems/JuiceSystem.test.ts` exercises kill-combo timer resets for
   the default 1500ms window and Assist Mode's 3000ms extended window.
+- `e2e/assist-mode-invincibility.spec.ts` direct-edits the hidden setting in
+  localStorage, boots a production-preview GameScene, and proves enemy contact
+  damages with the master off but preserves HP with Assist invincibility on.
 
 Manual invincibility smoke:
 
