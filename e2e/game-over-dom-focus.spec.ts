@@ -123,4 +123,80 @@ test.describe('GameOverScene DOM focus mirror', () => {
 
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });
+
+  test('marks locked shop access disabled in the DOM mirror', async ({ page }) => {
+    await page.addInitScript(() => {
+      try {
+        const raw = localStorage.getItem('whs_meta_save');
+        const existing = raw && raw.length > 0
+          ? (JSON.parse(raw) as Record<string, unknown>)
+          : {};
+        localStorage.setItem('whs_meta_save', JSON.stringify({
+          ...existing,
+          hasCompletedTutorial: true,
+          hasSeenDriftTutorial: true,
+        }));
+      } catch {
+        /* ignore */
+      }
+    });
+
+    await page.goto('/');
+    const canvas = page.locator('canvas[role="application"]');
+    await expect(canvas).toBeVisible({ timeout: 60_000 });
+    await canvas.click({ position: { x: 8, y: 8 } });
+    await page.bringToFront();
+
+    const sceneStarted = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: {
+        scene: {
+          start(k: string, data?: unknown): void;
+          isActive(k: string): boolean;
+        };
+      } }).game;
+      if (!g) return false;
+      g.scene.start('GameOver', {
+        mode: 'death',
+        isVictory: false,
+        noShopAccess: true,
+        summary: {
+          timeSurvivedSec: 90,
+          enemiesKilled: 50,
+          bossGold: 0,
+          coinGold: 0,
+          bestCombo: 5,
+        },
+        runResult: {
+          save: {},
+          goldEarned: 36,
+          newlyUnlockedVariants: [],
+        },
+        xpLevel: 5,
+        bossKillCount: 0,
+        ownedPassiveCount: 0,
+        weaponCount: 1,
+        evolvedCount: 0,
+        buildSummary: '',
+        variantLabel: 'Classic',
+        variantKey: 'classic',
+        weaponDamage: {},
+      });
+      const deadline = Date.now() + 15_000;
+      while (Date.now() < deadline) {
+        if (g.scene.isActive('GameOver')) return true;
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      return false;
+    });
+    expect(sceneStarted, 'GameOver scene failed to activate').toBe(true);
+
+    const layer = page.locator('[data-whs-dom-focus-layer="whs-game-over-focus-layer"]');
+    await expect(layer).toBeAttached({ timeout: 5_000 });
+
+    const shop = layer.locator('button[data-focus-id="gameover-gold-shop"]');
+    await expect(shop).toBeAttached();
+    await expect(shop).toHaveAttribute('aria-label', 'NAE SHOP');
+    await expect(shop).toBeDisabled();
+    await expect(shop).toHaveAttribute('tabindex', '-1');
+  });
 });

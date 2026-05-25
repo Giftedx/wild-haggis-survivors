@@ -44,6 +44,21 @@ describe('buildGameOverDomFocusActions', () => {
     expect(onGoldShop).toHaveBeenCalledOnce();
   });
 
+  it('marks the gold-shop action disabled and mirrors the locked visible label when shop access is unavailable', () => {
+    const onGoldShop = vi.fn();
+    const actions = buildGameOverDomFocusActions({
+      onPlayAgain: () => undefined,
+      onGoldShop,
+      shopLocked: true,
+      onTaeGran: () => undefined,
+    });
+
+    expect(actions[1]?.id).toBe('gameover-gold-shop');
+    expect(actions[1]?.label).toBe('NAE SHOP');
+    expect(actions[1]?.disabled).toBe(true);
+    expect(actions[1]?.label.startsWith('ui.gameOver')).toBe(false);
+  });
+
   it('routes the tae-gran action to onTaeGran', () => {
     const onTaeGran = vi.fn();
     const actions = buildGameOverDomFocusActions({
@@ -80,5 +95,16 @@ describe('buildGameOverDomFocusActions', () => {
     expect(onPlayAgain).not.toHaveBeenCalled();
     expect(onGoldShop).toHaveBeenCalledOnce();
     expect(onTaeGran).not.toHaveBeenCalled();
+  });
+
+  it('keeps play-again and tae-gran enabled when the shop is locked', () => {
+    const actions = buildGameOverDomFocusActions({
+      onPlayAgain: () => undefined,
+      onGoldShop: () => undefined,
+      shopLocked: true,
+      onTaeGran: () => undefined,
+    });
+
+    expect(actions.map((action) => action.disabled === true)).toEqual([false, true, false]);
   });
 });

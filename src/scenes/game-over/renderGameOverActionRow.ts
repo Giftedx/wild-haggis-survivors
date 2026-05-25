@@ -105,7 +105,7 @@ export function renderGameOverActionRow(
     shopLocked ? t('ui.gameOver.upgrades_locked') : t('ui.gameOver.upgrades'),
     'secondary', 1300, actionButtonUiScale, onGoldShop,
     shopLocked
-      ? { fillOverride: 0x444444, hoverOverride: 0x444444, textColorOverride: '#888888' }
+      ? { fillOverride: 0x444444, hoverOverride: 0x444444, textColorOverride: '#888888', disabled: true }
       : { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK },
   );
   createResultActionButton(scene, focusController, panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, actionButtonUiScale, onTaeGran);
@@ -152,7 +152,10 @@ function installDomFocusLayer(
     gold: payload.runResult.goldEarned,
   })}`;
 
-  const actions = buildGameOverDomFocusActions(callbacks);
+  const actions = buildGameOverDomFocusActions({
+    ...callbacks,
+    shopLocked: payload.noShopAccess === true,
+  });
   return createDomFocusLayer({
     id: 'whs-game-over-focus-layer',
     label: t(titleKey),

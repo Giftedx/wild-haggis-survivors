@@ -83,7 +83,7 @@ export function createResultActionButton(
   delay: number,
   uiScale: number,
   onClick: () => void,
-  overrides?: { fillOverride?: number; hoverOverride?: number; textColorOverride?: string },
+  overrides?: { fillOverride?: number; hoverOverride?: number; textColorOverride?: string; disabled?: boolean },
 ): void {
   // setInteractive is called at construction by the factory — alpha-0
   // fade-in still provides the visual delay without softlocking the
@@ -108,6 +108,7 @@ export function createResultActionButton(
   button.on('pointerover', () => {
     const idx = focusController.getActions().findIndex((e) => e.rect === button);
     if (idx === -1) return;
+    if (focusController.getAction(idx)?.disabled === true) return;
     focusController.setFocusedIndex(idx);
   });
   // Snapshot the idle stroke (createGameButton may have set an HC tier
@@ -115,6 +116,7 @@ export function createResultActionButton(
   focusController.addAction({
     rect: button,
     onActivate: onClick,
+    disabled: overrides?.disabled === true,
     idleStroke: {
       width: button.lineWidth,
       color: button.strokeColor,

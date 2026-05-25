@@ -21,6 +21,8 @@ export interface GameOverDomActionInput {
   onPlayAgain(): void;
   /** Open the between-run upgrade shop. */
   onGoldShop(): void;
+  /** True when the visible Gold Shop button is locked/no-op for this run result. */
+  shopLocked?: boolean;
   /** Return to Gran's Croft hub. */
   onTaeGran(): void;
 }
@@ -36,7 +38,10 @@ export function buildGameOverDomFocusActions(
     },
     {
       id: 'gameover-gold-shop',
-      label: t('ui.gameOver.upgrades'),
+      label: input.shopLocked === true
+        ? t('ui.gameOver.upgrades_locked')
+        : t('ui.gameOver.upgrades'),
+      disabled: input.shopLocked === true,
       onActivate: () => input.onGoldShop(),
     },
     {
