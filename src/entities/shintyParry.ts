@@ -187,3 +187,98 @@ export function parryCooldownFraction(state: ShintyParryState): number {
   if (state.cooldownRemainingMs <= 0) return 1;
   return 1 - state.cooldownRemainingMs / PARRY_COOLDOWN_MS;
 }
+
+export type ShintyProjectileOwner = 'enemy' | 'player';
+export type ShintyReflectionRejectReason =
+  | 'inactive'
+  | 'cooldown'
+  | 'immune'
+  | 'not_enemy_projectile';
+
+export interface ShintyReflectableProjectile {
+  readonly owner: ShintyProjectileOwner;
+  readonly velocityX: number;
+  readonly velocityY: number;
+  readonly damage: number;
+  /** False for boss/special shots that should be negated by bespoke wiring later, not reflected. */
+  readonly reflectable: boolean;
+}
+
+export interface ShintyFacingVector {
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface ShintyReflectedProjectile {
+  readonly owner: 'player';
+  readonly velocityX: number;
+  readonly velocityY: number;
+  readonly damage: number;
+}
+
+export interface ShintyProjectileReflectionInput {
+  readonly projectile: ShintyReflectableProjectile;
+  readonly facing: ShintyFacingVector;
+}
+
+export interface ShintyProjectileReflectionResult {
+  readonly state: ShintyParryState;
+  readonly reflected: boolean;
+  readonly reason: ShintyReflectionRejectReason | null;
+  readonly projectile: ShintyReflectedProjectile | null;
+}
+
+/**
+ * Prototype-only reflection helper for Shinty Parry v2.
+ *
+ * This intentionally stops at pure projectile math + ownership transfer:
+ * no Phaser groups, no collision mutation, no scene wiring. A future
+ * enemy-projectile owner can call this after an overlap decides the parry
+ * window is active, then materialise the returned player-owned projectile.
+ * Same inputs produce same outputs; there is no RNG, wall-clock, or IO.
+ */
+export function reflectShintyProjectile(
+  state: ShintyParryState,
+  input: ShintyProjectileReflectionInput,
+): ShintyProjectileReflectionResult {
+  if (state.windowRemainingMs <= 0) {
+    return {
+      state,
+      reflected: false,
+      reason: state.cooldownRemainingMs > 0 ? 'cooldown' : 'inactive',
+      projectile: null,
+    };
+  }
+
+  if (input.projectile.owner !== 'enemy') {
+    return { state, reflected: false, reason: 'not_enemy_projectile', projectile: null };
+  }
+
+  if (!input.projectile.reflectable) {
+    return { state, reflected: false, reason: 'immune', projectile: null };
+  }
+
+  const speed = Math.hypot(input.projectile.velocityX, input.projectile.velocityY);
+  const facingLen = Math.hypot(input.facing.x, input.facing.y);
+  const velocityX = facingLen > 1e-6
+    ? (input.facing.x / facingLen) * speed
+    : -input.projectile.velocityX;
+  const velocityY = facingLen > 1e-6
+    ? (input.facing.y / facingLen) * speed
+    : -input.projectile.velocityY;
+
+  return {
+    state: {
+      windowRemainingMs: 0,
+      cooldownRemainingMs: PARRY_COOLDOWN_MS,
+    },
+    reflected: true,
+    reason: null,
+    projectile: {
+      owner: 'player',
+      velocityX,
+      velocityY,
+      damage: input.projectile.damage,
+    },
+  };
+}
