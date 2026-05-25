@@ -6,18 +6,21 @@ import {
   resetSettingsManagerSingletonForTests,
 } from '../core/SettingsManager';
 
+const phaserMathMock = vi.hoisted(() => ({
+  Between: (min: number, _max: number) => min,
+  FloatBetween: (min: number, _max: number) => min,
+}));
+
 vi.mock('phaser', () => ({
   default: {
-    Math: {
-      Between: (min: number, _max: number) => min,
-      FloatBetween: (min: number, _max: number) => min,
-    },
+    Math: phaserMathMock,
     Utils: {
       Array: {
         GetRandom: <T>(items: T[]) => items[0],
       },
     },
   },
+  Math: phaserMathMock,
 }));
 
 class MockDisplayObject {
@@ -95,23 +98,30 @@ function makeScene() {
         shake: vi.fn(),
       },
     },
+    textures: {
+      exists: vi.fn(() => false),
+    },
   };
 }
 
 describe('JuiceSystem combo timer', () => {
-  it('does not decay combo time while gameplay is paused', () => {
+  function makeJuice(settingsLoad?: () => Record<string, unknown>) {
     const { adapter } = makeAdapter();
     const time = new TimeManager(adapter);
     const scene = makeScene();
     const settings: any = {
-      load: () => ({
+      load: settingsLoad ?? (() => ({
         damageNumbers: true,
         reduceParticles: false,
         screenShake: true,
-      }),
+      })),
     };
 
-    const juice = new JuiceSystem(scene as any, time, {} as any, settings);
+    return { juice: new JuiceSystem(scene as any, time, {} as any, settings), time, scene };
+  }
+
+  it('does not decay combo time while gameplay is paused', () => {
+    const { juice, time } = makeJuice();
     juice.setResumeComboState(7, 1500);
 
     time.request('COUNTDOWN', { pausePhysics: true, timeScale: 0 });
@@ -125,6 +135,30 @@ describe('JuiceSystem combo timer', () => {
 
     expect(juice.getComboCount()).toBe(7);
     expect(juice.getComboTimerRemainingMs()).toBe(1300);
+  });
+
+  it('resets kill combo to the baseline 1500ms window by default', () => {
+    const { juice } = makeJuice();
+
+    juice.showKillBurst(100, 100);
+
+    expect(juice.getComboCount()).toBe(1);
+    expect(juice.getComboTimerRemainingMs()).toBe(1500);
+  });
+
+  it('resets kill combo to 3000ms when Assist Mode extended combo window is enabled', () => {
+    resetSettingsManagerSingletonForTests();
+    getSettingsManager().update((cur) => ({
+      ...cur,
+      assistMode: true,
+      assistModeExtendedComboWindow: true,
+    }));
+    const { juice } = makeJuice();
+
+    juice.showKillBurst(100, 100);
+
+    expect(juice.getComboCount()).toBe(1);
+    expect(juice.getComboTimerRemainingMs()).toBe(3000);
   });
 
   describe('reduceFlashing compliance', () => {

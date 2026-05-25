@@ -40,6 +40,8 @@ import type { BossSpectaclePools } from './juice/bossSpectacle';
 import { playBossDeathSpectacle, playMidRunBossDeathSpectacle } from './juice/bossSpectacle';
 import { playEvolutionSpectacle } from './juice/evolutionSpectacle';
 import { drawDangerVignette } from './juice/vignette';
+import { isExtendedComboWindowEnabled } from './accessibility/AssistMode';
+import { getComboTimeoutMs } from './comboAssist';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -393,7 +395,10 @@ export class JuiceSystem {
 
     // Track combo
     this.comboCount++;
-    this.comboTimer = this.COMBO_TIMEOUT_MS;
+    this.comboTimer = getComboTimeoutMs(
+      this.COMBO_TIMEOUT_MS,
+      isExtendedComboWindowEnabled(),
+    );
     if (this.comboCount > this.bestCombo) this.bestCombo = this.comboCount;
 
     // Storm Chaser milestone — emit exactly when the streak first reaches
