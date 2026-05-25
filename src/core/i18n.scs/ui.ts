@@ -38,7 +38,7 @@ export const ui = {
     daily_attempts: 'Tha day: {code}  ·  {attempts} go(s)',
     enter_seed: 'Pit in a custom seed...',
     rerun_last: '⟲ Run tha last yin again',
-    seed_prompt: 'Pit in a 7-character seed code (or a number):',
+    seed_prompt: 'Pit in an 8-character seed code (or a number):',
     seed_invalid: 'That seed didnae take — check it an gaun again.',
     chronicle: 'CHRONICLE',
     deeds: 'YER DEEDS',

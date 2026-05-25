@@ -127,27 +127,28 @@ describe('daily seed stability', () => {
 });
 
 describe('seed share codes', () => {
-  it('round-trip through encode/decode reproduces the effective seed', () => {
-    const original = 42;
+  it('round-trip through encode/decode reproduces the full effective seed', () => {
+    const original = 0xdeadbeef;
     const code = encodeSeed(original);
     const decoded = decodeSeed(code);
     expect(decoded).not.toBeNull();
-    // Then seed an RNG with both and confirm they produce the same stream
-    // (the codec masks to 26 bits, but for small inputs they match).
     const a = createRNG(original);
     const b = createRNG(decoded!);
     expect(a.next()).toBe(b.next());
   });
 
-  it('players pasting a shared code get the same card draws as the sender', () => {
-    const senderSeed = 123456;
-    const senderCode = encodeSeed(senderSeed);
-    const receiverSeed = decodeSeed(senderCode)!;
+  it('players pasting a shared code get the same card draws as the sender for full-range seeds', () => {
     const pool = buildCardPool([], [], {}, []);
-    const senderRng = createRNG(senderSeed);
-    const receiverRng = createRNG(receiverSeed);
-    const senderCards = drawCards(pool, 3, 0, () => senderRng.next()).map((c) => c.id);
-    const receiverCards = drawCards(pool, 3, 0, () => receiverRng.next()).map((c) => c.id);
-    expect(senderCards).toEqual(receiverCards);
+    for (const senderSeed of [123456, 0x80000000, 0xffffffff, 0xdeadbeef, 0xcafebabe]) {
+      const senderCode = encodeSeed(senderSeed);
+      const receiverSeed = decodeSeed(senderCode)!;
+      const senderRng = createRNG(senderSeed);
+      const receiverRng = createRNG(receiverSeed);
+      const senderCards = drawCards(pool, 3, 0, () => senderRng.next())
+        .map((c) => c.id);
+      const receiverCards = drawCards(pool, 3, 0, () => receiverRng.next())
+        .map((c) => c.id);
+      expect(receiverCards, `seed=${senderSeed} code=${senderCode}`).toEqual(senderCards);
+    }
   });
 });

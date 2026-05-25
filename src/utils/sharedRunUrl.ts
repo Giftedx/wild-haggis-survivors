@@ -4,7 +4,7 @@
  * side.
  *
  * Format (V2):
- *   `?run=<7-char seed code>&v=<variant key>[&c=<curse key>][&t=<sec>&o=<v|d>]`
+ *   `?run=<seed code>&v=<variant key>[&c=<curse key>][&t=<sec>&o=<v|d>]`
  *
  *   - `run` reuses the existing checksum-protected seed code from
  *     `src/utils/rng.ts` so the URL token is the same string a player
@@ -46,7 +46,7 @@ export interface SharedRunChallenge {
 
 /** Setup payload encoded into / decoded from a shared-run URL. */
 export interface SharedRunSetup {
-  /** Numeric seed, already masked to the 26-bit codec payload. */
+  /** Numeric seed decoded from the checksum-protected seed code. */
   seed: number;
   variantKey: VariantKey;
   curseKey: CurseKey | null;

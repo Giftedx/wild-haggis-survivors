@@ -455,7 +455,7 @@ export class MainMenuScene extends Phaser.Scene {
     });
 
     // === Custom seed link ===
-    // Secondary text-only affordance. Prompts the user for a 7-char share
+    // Secondary text-only affordance. Prompts the user for a checksummed share
     // code (or raw integer) and launches a seeded run. Uses window.prompt
     // for cross-platform simplicity — a full in-game keyboard overlay is
     // future work if mobile UX feedback demands it.

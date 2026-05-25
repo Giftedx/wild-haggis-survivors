@@ -177,11 +177,12 @@ describe('RNG.branch — independence', () => {
 });
 
 describe('encodeSeed / decodeSeed round-trip', () => {
-  it('seeds in the 26-bit payload range round-trip exactly', () => {
-    // Share codes only carry 26 bits of payload, so any seed within that
-    // range should survive an encode → decode cycle untouched.
-    const SAMPLE_26BIT = [0, 1, 42, 100, 9999, 2 ** 20, 2 ** 25, 2 ** 26 - 2];
-    for (const seed of SAMPLE_26BIT) {
+  it('seeds in the 32-bit range round-trip exactly', () => {
+    const samples = [
+      0, 1, 42, 100, 9999, 2 ** 20, 2 ** 25, 2 ** 26 - 2,
+      0x80000000, 0xffffffff, 0xdeadbeef, 0xcafebabe,
+    ];
+    for (const seed of samples) {
       const code = encodeSeed(seed);
       const decoded = decodeSeed(code);
       expect(decoded, `seed=${seed}`).not.toBeNull();
@@ -204,10 +205,17 @@ describe('encodeSeed / decodeSeed round-trip', () => {
     }
   });
 
+  it('rejects canonical-length payloads above the 32-bit seed range', () => {
+    // 0xffffffff is the largest emitted seed. 0x100000000 would otherwise
+    // wrap through unsigned normalization and alias to the zero-seed sentinel.
+    expect(decodeSeed('1Z141Z38')).toBe(0xffffffff);
+    expect(decodeSeed('1Z141Z49')).toBeNull();
+  });
+
   it('rejects every 1-character typo in the checksum slot', () => {
     const code = encodeSeed(12345);
     for (let i = 0; i < 36; i++) {
-      const typo = code.slice(0, 6) + i.toString(36).toUpperCase();
+      const typo = code.slice(0, -1) + i.toString(36).toUpperCase();
       if (typo === code) continue;
       expect(decodeSeed(typo), `typo=${typo}`).toBeNull();
     }

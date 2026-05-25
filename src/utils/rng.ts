@@ -142,40 +142,45 @@ export function randomSeed(): number {
 
 // ── Seed codec ────────────────────────────────────────────────────────
 //
-// Encoded form: 6-character base36 payload + 1-character checksum.
-// 32-bit seeds fit in 7 base36 chars (36^7 ≈ 78 billion > 2^32 ≈ 4.3 billion)
-// but we limit to 26 bits of payload for a compact 6-char code, which is
-// plenty of entropy for challenge-style sharing and keeps codes easy to say
-// over voice / copy-paste. The checksum catches 1-char typos.
+// Encoded form: 7-character base36 payload + 1-character checksum.
+// 32-bit seeds fit in 7 base36 chars (36^7 ≈ 78 billion > 2^32 ≈ 4.3 billion).
+// Older builds emitted a 6-character/26-bit payload plus checksum; decodeSeed
+// still accepts those legacy 7-character codes, but new codes preserve the full
+// normalized 32-bit seed so shared-run URLs reproduce the sender's RNG stream.
 
 const SEED_BASE = 36;
-const SEED_PAYLOAD_BITS = 26;
-const SEED_MASK = (1 << SEED_PAYLOAD_BITS) - 1;
+const SEED_LEGACY_BODY_LENGTH = 6;
+const SEED_BODY_LENGTH = 7;
+const MAX_32BIT_SEED = 0xffffffff;
 
 /**
- * Encode a seed to a 7-character case-insensitive share code.
+ * Encode a seed to an 8-character case-insensitive share code.
  * `decodeSeed()` on the result returns the same (normalized) numeric seed.
  */
 export function encodeSeed(seed: number): string {
-  const payload = normalizeSeed(seed) & SEED_MASK;
-  const body = payload.toString(SEED_BASE).padStart(6, '0').toUpperCase();
+  const payload = normalizeSeed(seed);
+  const body = payload.toString(SEED_BASE).padStart(SEED_BODY_LENGTH, '0').toUpperCase();
   return `${body}${checksumChar(body)}`;
 }
 
 /**
- * Parse a 7-character share code to a numeric seed, or return null if the
- * code is malformed or fails the checksum. Case-insensitive; strips spaces.
+ * Parse a share code to a numeric seed, or return null if the code is
+ * malformed or fails the checksum. Case-insensitive; strips spaces. Accepts
+ * both current 8-character full-seed codes and legacy 7-character 26-bit codes.
  */
 export function decodeSeed(code: string): number | null {
   if (typeof code !== 'string') return null;
   const cleaned = code.replace(/\s+/g, '').toUpperCase();
-  if (cleaned.length !== 7) return null;
-  const body = cleaned.slice(0, 6);
+  const supportedLength = cleaned.length === SEED_BODY_LENGTH + 1
+    || cleaned.length === SEED_LEGACY_BODY_LENGTH + 1;
+  if (!supportedLength) return null;
+  const body = cleaned.slice(0, -1);
   const expect = checksumChar(body);
-  if (cleaned[6] !== expect) return null;
-  if (!/^[0-9A-Z]{6}$/.test(body)) return null;
+  if (cleaned[cleaned.length - 1] !== expect) return null;
+  if (!/^[0-9A-Z]+$/.test(body)) return null;
   const numeric = parseInt(body, SEED_BASE);
   if (!Number.isFinite(numeric)) return null;
+  if (body.length === SEED_BODY_LENGTH && numeric > MAX_32BIT_SEED) return null;
   return normalizeSeed(numeric);
 }
 
@@ -200,7 +205,7 @@ export function parseSeedInput(input: string): number | null {
 }
 
 function checksumChar(body: string): string {
-  // Simple sum-of-digits % 36; catches single-character typos in the 6-char
+  // Simple sum-of-digits % 36; catches single-character typos in the base36
   // payload since any digit change shifts the sum by a nonzero amount mod 36.
   let sum = 0;
   for (let i = 0; i < body.length; i++) {

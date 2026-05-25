@@ -151,26 +151,35 @@ describe('randomSeed', () => {
 });
 
 describe('seed codec', () => {
-  it('encodes to 7-char base36 uppercase', () => {
+  it('encodes to 8-char base36 uppercase', () => {
     const code = encodeSeed(12345);
-    expect(code).toHaveLength(7);
-    expect(code).toMatch(/^[0-9A-Z]{7}$/);
+    expect(code).toHaveLength(8);
+    expect(code).toMatch(/^[0-9A-Z]{8}$/);
   });
 
   it('round-trips a seed through encode → decode', () => {
-    for (const seed of [1, 42, 12345, 9999999, 0x03FFFFFF]) {
+    for (const seed of [
+      1, 42, 12345, 9999999, 0x03FFFFFF, 0x80000000, 0xffffffff, 0xdeadbeef,
+    ]) {
       const code = encodeSeed(seed);
       const back = decodeSeed(code);
       expect(back).not.toBeNull();
-      // Because the codec truncates to 26 bits, values above that are masked.
-      // For seeds <= 0x03FFFFFF the round-trip must match exactly.
-      expect(back).toBe(seed & 0x03FFFFFF);
+      expect(back).toBe(seed >>> 0);
     }
+  });
+
+  it('accepts legacy 7-char seed codes emitted by 26-bit codec builds', () => {
+    expect(decodeSeed('0009IXO')).toBe(12345);
+  });
+
+  it('accepts the max 32-bit seed and rejects larger canonical-length aliases', () => {
+    expect(decodeSeed('1Z141Z38')).toBe(0xffffffff);
+    expect(decodeSeed('1Z141Z49')).toBeNull();
   });
 
   it('rejects bad codes (wrong length, bad checksum, non-alphanum)', () => {
     expect(decodeSeed('ABC')).toBeNull();
-    expect(decodeSeed('ABCDEFGH')).toBeNull(); // too long
+    expect(decodeSeed('ABCDEFGHI')).toBeNull(); // too long
     expect(decodeSeed('abcdefZ')).toBeNull();  // bad checksum for "ABCDEF"
     expect(decodeSeed('!!!!!!!')).toBeNull();
     expect(decodeSeed('')).toBeNull();
@@ -178,8 +187,8 @@ describe('seed codec', () => {
 
   it('is case-insensitive and ignores whitespace', () => {
     const code = encodeSeed(65432);
-    expect(decodeSeed(code.toLowerCase())).toBe(65432 & 0x03FFFFFF);
-    expect(decodeSeed(`  ${code}  `)).toBe(65432 & 0x03FFFFFF);
+    expect(decodeSeed(code.toLowerCase())).toBe(65432);
+    expect(decodeSeed(`  ${code}  `)).toBe(65432);
   });
 
   it('catches single-character typos via checksum', () => {
@@ -191,7 +200,7 @@ describe('seed codec', () => {
 
   it('parseSeedInput accepts share codes and raw integers', () => {
     const code = encodeSeed(111111);
-    expect(parseSeedInput(code)).toBe(111111 & 0x03FFFFFF);
+    expect(parseSeedInput(code)).toBe(111111);
     expect(parseSeedInput('  12345  ')).toBe(12345);
     expect(parseSeedInput('garbage$$')).toBeNull();
     expect(parseSeedInput('')).toBeNull();

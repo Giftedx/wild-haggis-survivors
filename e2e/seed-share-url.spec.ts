@@ -18,9 +18,8 @@ import { expect, test } from './fixtures';
  */
 
 const CURRENT_SAVE_VERSION = 9;
-// Same 26-bit seed mask the codec uses. Pin to a value that survives
-// round-trip exactly so the deep link is byte-identical across builds.
-const SEED_FOR_TEST = 12345 & 0x03ffffff;
+// Pin to a small stable seed so the deep link is byte-identical across builds.
+const SEED_FOR_TEST = 12345;
 
 test.describe('W82 shared-run URL', () => {
   test.setTimeout(60_000);
@@ -33,9 +32,11 @@ test.describe('W82 shared-run URL', () => {
    * `sharedRunUrl.test.ts`).
    */
   function encodeSeedCode(seed: number): string {
-    const SEED_PAYLOAD_BITS = 26;
-    const SEED_MASK = (1 << SEED_PAYLOAD_BITS) - 1;
-    const body = (seed & SEED_MASK).toString(36).padStart(6, '0').toUpperCase();
+    const normalizedSeed = Number.isFinite(seed)
+      ? Math.floor(Math.abs(seed)) >>> 0
+      : 0x9e3779b9;
+    const normalized = normalizedSeed === 0 ? 0x9e3779b9 : normalizedSeed;
+    const body = normalized.toString(36).padStart(7, '0').toUpperCase();
     let sum = 0;
     for (let i = 0; i < body.length; i++) sum += parseInt(body[i], 36);
     const checksum = (sum % 36).toString(36).toUpperCase();

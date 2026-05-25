@@ -47,7 +47,7 @@ export const ui = {
     daily_attempts: 'Today: {code}  ·  {attempts} attempt(s)',
     enter_seed: 'Enter custom seed...',
     rerun_last: '⟲ Rerun last run',
-    seed_prompt: 'Enter a 7-character seed code (or a number):',
+    seed_prompt: 'Enter an 8-character seed code (or a number):',
     seed_invalid: 'That seed didn\'t take — check it and try again.',
     chronicle: 'CHRONICLE',
     deeds: 'YIR DEEDS',

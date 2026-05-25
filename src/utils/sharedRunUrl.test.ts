@@ -14,9 +14,9 @@ describe('sharedRunUrl', () => {
         { seed: 12345, variantKey: 'classic', curseKey: 'heavy_legs' },
         'https://wildhaggis.example.com/',
       );
-      // The seed is encoded via the existing 7-char share codec so the
+      // The seed is encoded via the existing checksummed share codec so the
       // recipient doesn't need to know about the integer form.
-      expect(url).toMatch(/^https:\/\/wildhaggis\.example\.com\/\?run=[0-9A-Z]{7}&v=classic&c=heavy_legs$/);
+      expect(url).toMatch(/^https:\/\/wildhaggis\.example\.com\/\?run=[0-9A-Z]{8}&v=classic&c=heavy_legs$/);
     });
 
     it('omits the curse param entirely for a clean run', () => {
@@ -24,7 +24,7 @@ describe('sharedRunUrl', () => {
         { seed: 9000, variantKey: 'moor_runner', curseKey: null },
         'https://wildhaggis.example.com/',
       );
-      expect(url).toMatch(/^https:\/\/wildhaggis\.example\.com\/\?run=[0-9A-Z]{7}&v=moor_runner$/);
+      expect(url).toMatch(/^https:\/\/wildhaggis\.example\.com\/\?run=[0-9A-Z]{8}&v=moor_runner$/);
       expect(url).not.toContain('c=');
     });
 
@@ -54,7 +54,7 @@ describe('sharedRunUrl', () => {
   describe('parseSharedRunUrl', () => {
     it('round-trips a built URL through parse', () => {
       const setup: SharedRunSetup = {
-        seed: 12345 & 0x03ffffff,
+        seed: 12345,
         variantKey: 'classic',
         curseKey: 'heavy_legs',
         challenge: null,
@@ -66,7 +66,7 @@ describe('sharedRunUrl', () => {
 
     it('accepts a bare query string', () => {
       const setup: SharedRunSetup = {
-        seed: 7777 & 0x03ffffff,
+        seed: 7777,
         variantKey: 'moor_runner',
         curseKey: null,
         challenge: null,
@@ -78,7 +78,7 @@ describe('sharedRunUrl', () => {
 
     it('accepts a URLSearchParams directly', () => {
       const setup: SharedRunSetup = {
-        seed: 555 & 0x03ffffff,
+        seed: 555,
         variantKey: 'iron_belly',
         curseKey: null,
         challenge: null,
@@ -122,7 +122,7 @@ describe('sharedRunUrl', () => {
       // recipient's build no longer ships) — the shared run still loads
       // with that curse silently dropped to clean.
       expect(parsed).toEqual({
-        seed: 100 & 0x03ffffff,
+        seed: 100,
         variantKey: 'classic',
         curseKey: null,
         challenge: null,
@@ -137,7 +137,17 @@ describe('sharedRunUrl', () => {
       const runCode = new URLSearchParams(url.slice(url.indexOf('?'))).get('run')!;
       const lowered = runCode.toLowerCase();
       const parsed = parseSharedRunUrl(`?run=${lowered}&v=classic`);
-      expect(parsed?.seed).toBe(99999 & 0x03ffffff);
+      expect(parsed?.seed).toBe(99999);
+    });
+
+    it('preserves full-range seeds so shared runs keep sender/recipient RNG parity', () => {
+      for (const seed of [0x80000000, 0xffffffff, 0xdeadbeef, 0xcafebabe]) {
+        const url = buildSharedRunUrl(
+          { seed, variantKey: 'classic', curseKey: null, challenge: null },
+          'https://wildhaggis.example.com/',
+        );
+        expect(parseSharedRunUrl(url)?.seed, `seed=${seed}`).toBe(seed >>> 0);
+      }
     });
 
     it('refuses junk input gracefully', () => {
