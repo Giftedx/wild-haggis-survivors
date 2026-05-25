@@ -7,10 +7,11 @@ import { getSettingsManager } from '../../core/SettingsManager';
  * are *gated by the master toggle*: when `assistMode` is off, all sub-
  * readers return their neutral value (false / 1) regardless of whether
  * the individual flag persists true. This keeps the contract simple for
- * call sites in Phase 2 — one read per effect, no manual master-check.
+ * call sites — one read per effect, no manual master-check.
  *
- * Effects themselves are not wired yet. The Settings panel keeps these
- * controls hidden until runtime readers are threaded into gameplay.
+ * Runtime effects are wired in narrow, bounded call sites documented in
+ * docs/A1_ASSIST_MODE_CALLSITES.md. The Settings panel keeps Assist Mode
+ * rows hidden until the broader balance / replay-parity unhide pass.
  */
 
 export function isAssistModeEnabled(): boolean {

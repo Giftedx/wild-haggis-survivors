@@ -109,8 +109,9 @@ export interface ISettingsData {
    */
   culturalContentSplashSeen: boolean;
   /**
-   * A1 M6 — Assist Mode master toggle. Persisted for future builds, but
-   * hidden from the Settings panel until the runtime effects are wired.
+   * A1 M6 — Assist Mode master toggle. Persisted and runtime-wired, but
+   * hidden from the Settings panel until the balance / replay-parity
+   * unhide pass clears.
    */
   assistMode: boolean;
   /**
@@ -119,11 +120,11 @@ export interface ISettingsData {
    * playable without crossing into stall territory.
    */
   assistModeGameSpeed: number;
-  /** A1 M6 — extend post-hit iframe window (Phase 2 wires effect). */
+  /** A1 M6 — extend post-dash iframe grace when Assist Mode is on. */
   assistModeExtendedIFrames: boolean;
-  /** A1 M6 — extend combo-drop grace window (Phase 2 wires effect). */
+  /** A1 M6 — extend combo-drop grace window when Assist Mode is on. */
   assistModeExtendedComboWindow: boolean;
-  /** A1 M6 — full invincibility (Phase 2 wires effect). */
+  /** A1 M6 — full invincibility when Assist Mode is on. */
   assistModeInvincibility: boolean;
   /**
    * A1 M4 — caption text-size multiplier (0.8–1.4). Scales the

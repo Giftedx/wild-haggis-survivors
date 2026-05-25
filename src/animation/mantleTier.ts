@@ -1,9 +1,11 @@
 /**
  * Mantle tier ladder for the heather-mantle overlay (W71 Phase 2).
  *
- * Thresholds are placeholders pending first playtest (spec §3.5). The
- * two values below are the only tuning knob — adjust and the rest of
- * the pipeline rides the change.
+ * The two thresholds below are the tuning surface: tier 1 gives an
+ * early-run visible reward, while tier 2 waits for a sustained kill
+ * count so the full mantle still reads as earned in normal survivor
+ * pacing. Adjust these values here and the rest of the mantle pipeline
+ * rides the change.
  */
 
 export type MantleTier = 0 | 1 | 2;

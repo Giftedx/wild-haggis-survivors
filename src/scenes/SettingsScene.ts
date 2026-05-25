@@ -333,8 +333,8 @@ export class SettingsScene extends Phaser.Scene {
     this.addLocaleRow();
     this.addInputRebindRow();
 
-    // Assist Mode preferences remain persisted for future builds, but the
-    // visible controls stay hidden until their runtime effects are wired.
+    // Assist Mode preferences remain runtime-wired but hidden until the
+    // broader balance / replay-parity unhide pass clears.
 
     // --- BACK button (sticky bottom bar) -------------------------------
     // Pre-fix BACK + RESET sat at `Math.min(rowY+32, height-40)` with no
