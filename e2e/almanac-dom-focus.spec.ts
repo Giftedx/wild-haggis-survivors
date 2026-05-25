@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { expectNoRawI18nKeyLeaks } from './raw-i18n-key-sweep';
 
 /**
  * T407 parity — DOM-visible focus mirror for AlmanacScene (Highland Almanac).
@@ -103,6 +104,8 @@ test.describe('AlmanacScene DOM focus mirror', () => {
       expect(effective.startsWith('achievement.'), `button ${i} leaks i18n key`).toBe(false);
       expect(effective.startsWith('ui.'), `button ${i} leaks i18n key`).toBe(false);
     }
+
+    await expectNoRawI18nKeyLeaks(page, { sceneKeys: ['Almanac'] });
 
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });

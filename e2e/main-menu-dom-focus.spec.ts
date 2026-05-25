@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { expectNoRawI18nKeyLeaks } from './raw-i18n-key-sweep';
 
 /**
  * T407 — MainMenuScene hub mounts a visually-hidden DOM focus mirror aligned
@@ -36,6 +37,8 @@ test.describe('MainMenuScene DOM focus mirror', () => {
       expect(effective.length, 'accessible name must be non-empty').toBeGreaterThan(0);
       expect(effective.startsWith('ui.'), 'must not leak i18n key').toBe(false);
     }
+
+    await expectNoRawI18nKeyLeaks(page, { sceneKeys: ['MainMenu'] });
 
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });
