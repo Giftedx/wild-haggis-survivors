@@ -26,6 +26,7 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 
@@ -54,6 +55,7 @@ Thumbs.db
 !.ralph/docs/generated/.gitkeep
 .ralph_backup_*
 build-output.txt
+build_output.log
 
 # Brainstorming / visual companion session dirs
 .superpowers/
@@ -63,3 +65,8 @@ build-output.txt
 
 # task_08 cloud-save Worker (cloudflare/) — local wrangler state
 cloudflare/.wrangler/
+cloudflare/node_modules/
+
+# Local forensic-review scratchpad
+.review-notes.md
+.claude/review-notes.md
