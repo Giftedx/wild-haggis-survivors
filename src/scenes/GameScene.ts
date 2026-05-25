@@ -1550,6 +1550,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getActiveVariantKey: () => this.activeVariant.key,
       getCurrentBiomeId: () => this.getCurrentBiomeId(),
       requestBanter: () => this.requestBanter('lemmings_remember'),
+      caption: (id, message, tint) => this.caption(id, message, tint),
     });
 
     // Phase 5 Bucket 6 partial — LevelUpFlow + RunLifecycle ctors bundled.

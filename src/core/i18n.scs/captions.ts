@@ -10,4 +10,5 @@ export const captions = {
   cu_sith_bay_second: 'Cu Sith hools — second bay closer in.',
   cu_sith_bay_third: 'Cu Sith hools — third bay; tha chairge locks on.',
   nicnevin_wild_hunt: 'Wild Hunt rides — gems pulled tae tha queen.',
+  lemmings_parade: 'Tiny lemmings parade past — “Oh no” warble, then a saft fa\'.',
 } as const;

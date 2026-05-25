@@ -21,6 +21,7 @@ export interface InstallLemmingsEasterEggDeps {
   readonly getActiveVariantKey: () => string;
   readonly getCurrentBiomeId: () => string | null;
   readonly requestBanter: () => void;
+  readonly caption: (id: string, message: string, tint?: string) => void;
 }
 
 export function installLemmingsEasterEgg(
@@ -46,6 +47,7 @@ export function installLemmingsEasterEgg(
     },
     persistVariantSeen: (key) => bumpLemmingsSeenForVariant(key),
     requestBanter: () => deps.requestBanter(),
+    caption: (id, message, tint) => deps.caption(id, message, tint),
     playSfx: () => audio.playLemmingsOhNo(),
   });
 }

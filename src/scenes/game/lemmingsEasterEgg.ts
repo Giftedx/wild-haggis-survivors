@@ -28,6 +28,7 @@ import {
   type LemmingsTriggerState,
 } from '../../entities/lemmingsTrigger';
 import { LEMMING_TEXTURE_KEY } from '../../art/sprites/fx/lemming';
+import { buildLemmingsParadeCue } from '../../systems/lemmingsParadeCue';
 
 export const LEMMING_COUNT = 5;
 /** Px between adjacent lemmings on the marching line. */
@@ -82,6 +83,10 @@ export interface LemmingsEasterEggHooks {
    *  of BanterSystem-specific imports. Caller should map this to
    *  `banter.request('lemmings_remember')`. */
   requestBanter(): void;
+  /** Accessibility caption for the OH NO! SFX and falling-parade beat.
+   *  Caller maps to `GameScene.caption`; captions settings decide
+   *  whether it is visible. */
+  caption(id: string, message: string, tint?: string): void;
   /** SFX hook — the OH NO! warble. Caller maps to
    *  `audio.playLemmingsOhNo()`. */
   playSfx(): void;
@@ -130,6 +135,8 @@ export class LemmingsEasterEgg {
   private fireParade(variantKey: string): void {
     this.active = true;
     this.hooks.persistVariantSeen(variantKey);
+    const cue = buildLemmingsParadeCue();
+    this.hooks.caption(cue.captionId, cue.caption, cue.captionTint);
     this.hooks.requestBanter();
     this.hooks.playSfx();
     this.spawnAndAnimate();
