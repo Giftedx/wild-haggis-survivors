@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { t } from '../core/i18n';
+import { afterEach, describe, expect, it } from 'vitest';
+import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 import { ACTION_KEYS } from '../core/actions';
 
 /**
@@ -10,6 +10,7 @@ import { ACTION_KEYS } from '../core/actions';
 const INPUT_REBIND_KEYS = [
   'ui.inputRebind.title',
   'ui.inputRebind.subtitle',
+  'ui.inputRebind.skill_hint',
   'ui.inputRebind.unbound',
   'ui.inputRebind.gamepadPrefix',
   'ui.inputRebind.rebind_hint',
@@ -18,6 +19,8 @@ const INPUT_REBIND_KEYS = [
 ] as const;
 
 describe('Settings / Input Rebind scene smoke', () => {
+  afterEach(() => setLocale(DEFAULT_LOCALE));
+
   it('resolves every top-level inputRebind i18n key', () => {
     for (const key of INPUT_REBIND_KEYS) {
       const resolved = t(key);
@@ -32,6 +35,17 @@ describe('Settings / Input Rebind scene smoke', () => {
       const resolved = t(key);
       expect(resolved, key).not.toBe(key);
       expect(resolved.length, key).toBeGreaterThan(0);
+    }
+  });
+
+  it('lists the fixed active-skill keys in both shipped locales', () => {
+    for (const locale of ['en', 'scs'] as const) {
+      setLocale(locale);
+      const hint = t('ui.inputRebind.skill_hint');
+      for (const token of ['Q', 'E', 'F', 'G']) {
+        expect(hint, `${locale} missing ${token}`).toContain(token);
+      }
+      expect(hint.toLowerCase(), `${locale} missing dash-strike copy`).toContain('dash');
     }
   });
 });

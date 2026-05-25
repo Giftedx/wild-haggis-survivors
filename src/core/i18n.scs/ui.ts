@@ -367,6 +367,7 @@ export const ui = {
   inputRebind: {
     title: 'Controls',
     subtitle: 'Bind every action yer ain wey. Click a slot tae capture a new key.',
+    skill_hint: 'Active tricks: Q stance, E parry, F Whisky Breath, G Drift Mastery. Dash through beasties tae trigger dash-strikes.',
     unbound: '—',
     unbound_a11y: 'unbound',
     gamepadPrefix: 'Pad',

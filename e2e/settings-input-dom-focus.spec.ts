@@ -104,6 +104,21 @@ test.describe('SettingsInputScene DOM focus mirror', () => {
     const firstLabel = (await buttons.first().getAttribute('aria-label')) ?? '';
     expect(firstLabel).toBe('Move up — primary keyboard — Up');
 
+    const visibleHint = await page.evaluate(() => {
+      const scene = (window as unknown as {
+        game?: { scene: { getScene(k: string): unknown } };
+      }).game?.scene.getScene('SettingsInput') as {
+        children?: { list?: Array<{ text?: unknown }> };
+      } | undefined;
+      return scene?.children?.list
+        ?.map((child) => (typeof child.text === 'string' ? child.text : ''))
+        .find((text) => text.includes('Q stance')) ?? '';
+    });
+    expect(visibleHint).toContain('E parry');
+    expect(visibleHint).toContain('F Whisky Breath');
+    expect(visibleHint).toContain('G Drift Mastery');
+    expect(visibleHint).toContain('dash-strikes');
+
     // Activate the first slot via DOM click — this should enter capture
     // mode and rebuild the layer with a single capture-prompt action.
     // The layer is visually hidden (clip-path inset, fixed 1×1 px) so

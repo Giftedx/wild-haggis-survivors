@@ -111,9 +111,20 @@ export class SettingsInputScene extends Phaser.Scene {
       .setOrigin(0.5, 0)
       .setScale(uiScale);
 
+    this.add
+      .text(width / 2, 94, t('ui.inputRebind.skill_hint'), {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: palette.subtitleColor,
+        align: 'center',
+        wordWrap: { width: Math.max(320, width - 80) },
+      })
+      .setOrigin(0.5, 0)
+      .setScale(uiScale);
+
     // Status line — shows capture prompt / conflict warning. Starts empty.
     this.statusText = this.add
-      .text(width / 2, 100, '', {
+      .text(width / 2, 118, '', {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#ffd08a',
@@ -121,7 +132,7 @@ export class SettingsInputScene extends Phaser.Scene {
       .setOrigin(0.5, 0)
       .setScale(uiScale);
 
-    let y = 130;
+    let y = 148;
     for (const action of ACTION_KEYS) {
       this.renderActionRow(action, y, palette);
       y += 48;
