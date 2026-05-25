@@ -22,6 +22,8 @@ import { JuiceSystem } from '../systems/JuiceSystem';
 import type { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
 import type { HazardsSystem } from '../systems/HazardsSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
+import { getAssistModeGameSpeed } from '../systems/accessibility/AssistMode';
+import { applyAssistGameSpeedToken } from '../systems/accessibility/assistGameSpeed';
 import { disposeRecordingAudioStream } from '@/systems/audioContext';
 import type { ClipRecorder } from '@/utils/clipRecorder';
 import {
@@ -878,6 +880,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       });
     this.replayInput = replayInput;
     if (consumePending) this.pendingReplay = null;
+    applyAssistGameSpeedToken(this.timeManager, {
+      speed: getAssistModeGameSpeed(),
+      replayMode,
+    });
 
     const metaSave = this.metaSaveManager.load();
     const baseStats = StatComposer.getPlayerStats(metaSave);

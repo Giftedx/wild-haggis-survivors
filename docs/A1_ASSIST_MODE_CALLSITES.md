@@ -35,7 +35,7 @@ manual master-check.
 |--------|-----------|--------|-------------|
 | `isInvincibilityEnabled()` | `PlayerHitResolver.handle` (src/scenes/game/PlayerHitResolver.ts:88) | **WIRED** in this iteration | Early-return before damage applied, just below the existing iframe / dash gate. No iframes burned, no death-cause logged, no tint flashed. |
 | `isInvincibilityEnabled()` | `HazardZones.lava-tick` (src/scenes/game/HazardZones.ts:300) | **WIRED** in this iteration | Same as above — added to the existing invuln gate (`isIFrames || isDashInvincible || isHazardLeaping`). |
-| `getAssistModeGameSpeed()` | `TimeManager` global timeScale | **NOT WIRED** | Wiring this requires a permanent token in TimeManager's lowest-wins ladder. The T1 deterministic-replay path assumes `timeScale = 1` baseline; gating the slider behind a non-replay flag keeps determinism intact. Deferred — track as `TODO: A1-M4-assist-speed`. |
+| `getAssistModeGameSpeed()` | `TimeManager` global timeScale (src/systems/accessibility/assistGameSpeed.ts, src/scenes/GameScene.ts) | **WIRED** | Applies a permanent `ASSIST_GAME_SPEED` token in TimeManager's lowest-wins ladder for normal non-replay runs only. Direct-save values are clamped to 0.5–1.0. Replay record/playback force the token off so T1 fixed-step replay determinism keeps its `timeScale = 1` baseline. |
 | `isExtendedIFramesEnabled()` | Player post-dash grace expiry (src/entities/Player.ts) | **WIRED** | Doubles `BALANCE.player.postDashGraceMs` from 80ms to 160ms through `getPostDashGraceMs(...)` when the master Assist Mode toggle and sub-toggle are both on. Baseline remains unchanged for normal runs. |
 | `isExtendedComboWindowEnabled()` | `JuiceSystem` combo-timer reset (src/systems/JuiceSystem.ts) | **WIRED** | Doubles combo window from 1500ms to 3000ms through `getComboTimeoutMs(...)` when the master Assist Mode toggle and sub-toggle are both on. Baseline remains unchanged for normal runs. |
 | `isAssistModeEnabled()` (master, UI) | Settings → Accessibility tab | **HIDDEN** | All Assist Mode rows commented in `SettingsScene.create()` — controls remain hidden until balance + replay parity confirm full wiring. The persisted fields stay so existing player saves don't churn. |
@@ -56,9 +56,11 @@ currently shipped sub-toggle wiring is deliberately narrow:
   testers (or via a future Settings unhide), and the wiring is then
   immediately functional with no further code change.
 
-The remaining sub-toggle (`gameSpeed`) still needs a balance + replay pass
-to ensure it doesn't break T1 replay determinism (game-speed scales the
-physics integration).
+The game-speed sub-toggle is also wired, but intentionally only for normal
+non-replay runs. Replay record/playback release the `ASSIST_GAME_SPEED` token
+so the T1 fixed-step replay path keeps its `timeScale = 1` baseline; recorded
+Assist settings remain snapshotted for honesty/mismatch checks, but playback
+never depends on the live slider.
 
 `extendedIFrames` now has a single bounded call site: post-dash grace is
 doubled from the 80ms baseline to 160ms only when both Assist Mode and the
@@ -68,13 +70,16 @@ only when both Assist Mode and that sub-toggle are enabled. The normal-run
 baseline is unchanged, and the UI rows remain hidden with the rest of Assist
 Mode until the broader unhide pass lands.
 
-A future "A1 M4.5 — Assist Mode unhide" plan, gated on those balance
-analyses, ships the remaining wiring and unhides the UI.
+A future "A1 M4.5 — Assist Mode unhide" plan, gated on final balance
+analyses, unhides the UI.
 
 ## Verification — assist wiring
 
 Unit coverage:
 
+- `src/systems/accessibility/assistGameSpeed.test.ts` covers normal-run
+  token requests, replay record/playback token release, direct-save clamping,
+  and statically guards the `GameScene` call site ordering.
 - `src/scenes/game/PlayerHitResolver.test.ts` exercises the invincibility
   damage gate.
 - `src/entities/playerDashAssist.test.ts` covers baseline vs doubled
