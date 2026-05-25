@@ -298,6 +298,7 @@ export const ui = {
     save_clip: 'Keep the clip',
     copy_frame: 'Copy this frame',
     save_highlight: 'Keep the {boss} kill',
+    unknown_boss: 'boss',
     name_framing: {
       death: 'Here lies {name}.',
       victory: '{name} gaed hame.',

@@ -548,9 +548,12 @@ export const ui = {
     // W82 Phase 3 — save-highlight link. Appears below "Save clip"
     // when the player killed a boss this run. `{boss}` resolves to
     // the boss display name (e.g. "Gordon", "Tour Bus", "Death (The
-    // Taxman)"). The clip itself is the rolling buffer at the moment
-    // the boss died, not at click time.
+    // Taxman)"). Unknown future/internal keys degrade to `unknown_boss`
+    // so raw identifiers never leak into player-facing copy.
+    // The clip itself is the rolling buffer at the moment the boss died,
+    // not at click time.
     save_highlight: 'Save {boss} kill',
+    unknown_boss: 'boss',
     name_framing: {
       death: 'Here lies {name}.',
       victory: '{name} walked home.',

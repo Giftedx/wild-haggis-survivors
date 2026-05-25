@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildCaptureFilename } from './captureFilename';
+import { BOSSES } from '../data/enemies';
+import { buildBossHighlightSlug, buildCaptureFilename } from './captureFilename';
 
 describe('buildCaptureFilename', () => {
   it('builds a screenshot filename for a victory run', () => {
@@ -87,5 +88,25 @@ describe('buildCaptureFilename', () => {
       dateYmd: '2026-05-11',
     });
     expect(name).toBe('whs_highlight_classic-haggis_01m00s_2026-05-11.webm');
+  });
+
+  it('uses a stable non-generic slug for every shipped boss highlight', () => {
+    for (const boss of BOSSES) {
+      const slug = buildBossHighlightSlug(boss.key);
+      expect(slug, `slug for ${boss.key}`).toBeTruthy();
+      expect(slug, `slug for ${boss.key}`).not.toBe('boss');
+      expect(slug, `slug for ${boss.key}`).not.toContain('_');
+    }
+  });
+
+  it('uses a generic boss slug for unknown highlight boss keys', () => {
+    const name = buildCaptureFilename('highlight', {
+      mode: 'death',
+      variantLabel: 'Classic Haggis',
+      timeSurvivedSec: 60,
+      dateYmd: '2026-05-11',
+      bossKey: 'future_internal_boss',
+    });
+    expect(name).toBe('whs_highlight_classic-haggis_boss_01m00s_2026-05-11.webm');
   });
 });

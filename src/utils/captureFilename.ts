@@ -1,3 +1,5 @@
+import { BOSSES } from '../data/enemies';
+
 export type CaptureKind = 'screenshot' | 'clip' | 'highlight';
 
 export interface CaptureFilenamePayload {
@@ -14,6 +16,10 @@ export interface CaptureFilenamePayload {
    */
   bossKey?: string;
 }
+
+const KNOWN_BOSS_KEYS = new Set(BOSSES.map((boss) => boss.key));
+
+export const UNKNOWN_BOSS_HIGHLIGHT_SLUG = 'boss';
 
 const EXTENSIONS: Record<CaptureKind, string> = {
   screenshot: 'png',
@@ -35,6 +41,12 @@ function formatMmSs(totalSec: number): string {
   return `${mm.toString().padStart(2, '0')}m${ss.toString().padStart(2, '0')}s`;
 }
 
+export function buildBossHighlightSlug(bossKey: string): string {
+  if (!bossKey) return '';
+  if (!KNOWN_BOSS_KEYS.has(bossKey)) return UNKNOWN_BOSS_HIGHLIGHT_SLUG;
+  return slugify(bossKey);
+}
+
 export function buildCaptureFilename(
   kind: CaptureKind,
   p: CaptureFilenamePayload,
@@ -44,7 +56,7 @@ export function buildCaptureFilename(
   const slug = slugify(p.variantLabel);
   if (slug) parts.push(slug);
   if (kind === 'highlight' && p.bossKey) {
-    const bossSlug = slugify(p.bossKey);
+    const bossSlug = buildBossHighlightSlug(p.bossKey);
     if (bossSlug) parts.push(bossSlug);
   }
   parts.push(formatMmSs(p.timeSurvivedSec));

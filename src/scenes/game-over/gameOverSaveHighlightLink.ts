@@ -16,6 +16,7 @@
  */
 import * as Phaser from 'phaser';
 import { t } from '../../core/i18n';
+import { BOSSES } from '../../data/enemies';
 import { audio } from '../../systems/AudioSystem';
 import { buildCaptureFilename } from '../../utils/captureFilename';
 import { formatLocalYmd } from '../../utils/formatDate';
@@ -39,23 +40,18 @@ export interface RenderGameOverSaveHighlightLinkOpts {
 }
 
 /**
- * Resolves the i18n boss-name key for a given boss enemy key, falling
- * back to a humanised version of the key itself if the i18n leaf is
- * missing (defensive — unknown boss key from a future schema). Pure
- * helper so the test suite can verify the fallback without spinning
- * up Phaser.
+ * Resolves a warm player-facing boss name for the highlight save link.
+ * Unknown future/internal keys intentionally degrade to the generic i18n
+ * fallback so raw keys never leak into Game Over copy.
  */
 export function resolveBossDisplayName(bossKey: string): string {
-  const i18nKey = `boss.${bossKey}.name`;
-  const resolved = t(i18nKey);
-  if (resolved && resolved !== i18nKey) return resolved;
-  // Fallback: humanise the key (e.g. 'tour_bus' → 'Tour Bus'). Keeps
-  // the label readable when a brand-new boss ships without an i18n
-  // entry yet.
-  return bossKey
-    .split('_')
-    .map((part) => (part ? part[0]!.toUpperCase() + part.slice(1) : ''))
-    .join(' ');
+  const boss = BOSSES.find((entry) => entry.key === bossKey);
+  if (boss) {
+    const resolved = t(boss.nameKey);
+    if (resolved && resolved !== boss.nameKey) return resolved;
+  }
+  const fallback = t('ui.gameOver.unknown_boss');
+  return fallback && fallback !== 'ui.gameOver.unknown_boss' ? fallback : 'boss';
 }
 
 export function renderGameOverSaveHighlightLink(
