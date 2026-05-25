@@ -163,4 +163,72 @@ test.describe('W82 shared-run URL', () => {
     expect(applied.curseKey).toBe('heavy_legs');
     expect(applied.stripped).toBe('');
   });
+
+  test('malformed challenge params preserve the same deterministic starting payload', async ({ page }) => {
+    await page.addInitScript((ver) => {
+      try {
+        const raw = localStorage.getItem('whs_meta_save');
+        const existing = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
+        localStorage.setItem('whs_meta_save', JSON.stringify({
+          ...existing,
+          saveVersion: ver,
+          hasCompletedTutorial: true,
+        }));
+      } catch { /* ignore */ }
+    }, CURRENT_SAVE_VERSION);
+
+    const captureStartingPayload = async (url: string) => {
+      await page.goto(url);
+      const canvas = page.locator('canvas[role="application"]');
+      await expect(canvas).toBeVisible({ timeout: 60_000 });
+      return page.evaluate(async () => {
+        type GameHandle = {
+          scene: { getScene: (k: string) => unknown; isActive(k: string): boolean };
+        };
+        const deadline = Date.now() + 30_000;
+        let g: GameHandle | undefined;
+        while (Date.now() < deadline) {
+          g = (window as unknown as { game?: GameHandle }).game;
+          if (g?.scene.isActive('Game')) break;
+          await new Promise((r) => setTimeout(r, 100));
+        }
+        const scene = g?.scene.getScene('Game') as unknown as {
+          activeVariant?: { key?: string };
+          activeCurseKey?: string | null;
+          runRng?: { seed?: number };
+          reliquarySpawnSec?: number;
+          clootieSpawnSec?: number;
+          blackClootieSpawnSec?: number;
+          runModifiers?: {
+            enemySpeedMult?: number;
+            goldMult?: number;
+            damageTakenMult?: number;
+          };
+        };
+        return {
+          isActive: Boolean(g?.scene.isActive('Game')),
+          variantKey: scene?.activeVariant?.key ?? null,
+          curseKey: scene?.activeCurseKey ?? null,
+          rngSeed: scene?.runRng?.seed ?? null,
+          reliquarySpawnSec: scene?.reliquarySpawnSec ?? null,
+          clootieSpawnSec: scene?.clootieSpawnSec ?? null,
+          blackClootieSpawnSec: scene?.blackClootieSpawnSec ?? null,
+          runModifiers: scene?.runModifiers ?? null,
+          stripped: window.location.search,
+        };
+      });
+    };
+
+    const base = `/?run=${encodeSeedCode(SEED_FOR_TEST)}&v=classic&c=heavy_legs`;
+    const noChallenge = await captureStartingPayload(base);
+    const good = await captureStartingPayload(`${base}&t=754&o=v`);
+    const malformed = await captureStartingPayload(`${base}&t=not-a-time&o=x`);
+
+    expect(noChallenge.isActive).toBe(true);
+    expect(good.isActive).toBe(true);
+    expect(malformed.isActive).toBe(true);
+    expect(good).toEqual(noChallenge);
+    expect(malformed).toEqual(noChallenge);
+    expect(noChallenge.stripped).toBe('');
+  });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { createRNG } from './rng';
 import {
   buildSharedRunUrl,
   parseSharedRunUrl,
@@ -263,6 +264,44 @@ describe('sharedRunUrl', () => {
       expect(parsed).not.toBeNull();
       // Out of range → challenge dropped (defensive cap on URL tampering).
       expect(parsed!.challenge).toBeNull();
+    });
+
+    it('drops malformed challenge metadata while preserving the decoded setup seed stream', () => {
+      const bare = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/');
+      const good = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/', {
+        challenge: { outcome: 'victory', timeSurvivedSec: 754 },
+      });
+      const malformed = good.replace('&t=754&o=v', '&t=not-a-time&o=x');
+      const parsedBare = parseSharedRunUrl(bare);
+      const parsedGood = parseSharedRunUrl(good);
+      const parsedMalformed = parseSharedRunUrl(malformed);
+
+      expect(parsedBare).toEqual({
+        ...baseSetup,
+        challenge: null,
+      });
+      expect(parsedGood).toEqual({
+        ...baseSetup,
+        challenge: { outcome: 'victory', timeSurvivedSec: 754 },
+      });
+      expect(parsedMalformed).toEqual({
+        ...baseSetup,
+        challenge: null,
+      });
+
+      // The setup half of all three URLs decodes to the same seed. A
+      // recipient's gameplay RNG stream therefore starts from the same
+      // sequence whether challenge metadata is absent, valid, or malformed.
+      const control = createRNG(parsedBare!.seed);
+      const afterGoodParse = createRNG(parsedGood!.seed);
+      const afterMalformedParse = createRNG(parsedMalformed!.seed);
+      expect(Array.from({ length: 8 }, () => afterGoodParse.next())).toEqual(
+        Array.from({ length: 8 }, () => control.next()),
+      );
+      const secondControl = createRNG(parsedBare!.seed);
+      expect(Array.from({ length: 8 }, () => afterMalformedParse.next())).toEqual(
+        Array.from({ length: 8 }, () => secondControl.next()),
+      );
     });
   });
 });
