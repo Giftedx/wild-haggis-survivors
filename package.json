@@ -26,6 +26,7 @@
     "test:e2e:firefox": "playwright test --project=firefox-desktop",
     "test:e2e:webkit": "playwright test --project=webkit-desktop",
     "test:e2e:cross-browser": "playwright test --project=firefox-desktop --project=webkit-desktop",
+    "ci:ui": "npm run ci && playwright test --project=chromium-desktop e2e/smoke.spec.ts e2e/main-menu-dom-focus.spec.ts e2e/settings-dom-focus.spec.ts e2e/game-over-dom-focus.spec.ts",
     "ci:all": "npm run ci && npm run test:e2e",
     "npm:test:cloud": "cd cloudflare && npm test"
   },
