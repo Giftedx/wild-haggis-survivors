@@ -42,8 +42,8 @@ function toUpgradeCard(rune: RuneDef): UpgradeCard {
  * with no data churn.
  */
 const UNGROUNDED_CONDITION_KEYS: ReadonlySet<RuneConditionKey> = new Set([
-  // No live biome 'urban' — Edinburgh/Glasgow biomes future work.
-  'biome_urban',
+  // 'biome_urban' graduated 2026-05-25 — `glasgow_close` biome ships;
+  // evaluator maps biome_urban → glasgow_close (edinburgh_rune online).
   // 'biome_dusk' graduated 2026-04-28 (B5 Phase 0). GameScene now
   // populates timeOfDayKey via computeTimeOfDayKey, so gloaming_rune
   // fires in the 15-22min window of every run.

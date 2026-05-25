@@ -66,6 +66,8 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     getXPSystem: () => scene.xpSystem,
     getSpawnSystem: () => scene.spawnSystem,
     togglePause: () => scene.toggleUiPause(),
+    tryAcceptPostBellOffer: (pauseMenuEdge) =>
+      scene.runLifecycle?.tryAcceptPostBellOfferFromGamepad(pauseMenuEdge) ?? false,
     runStressTest: () => tickStressTest(scene),
   }, delta);
   if (headerResult.kind === 'replay-exhausted') {

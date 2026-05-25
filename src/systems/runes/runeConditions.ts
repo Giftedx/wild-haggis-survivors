@@ -120,7 +120,10 @@ export function evaluateRuneCondition(
       // to coastal-only, drop the `|| 'loch'` clause.
       return ctx.biomeKey === 'coastal' || ctx.biomeKey === 'loch';
     case 'post_bell': return ctx.postBell;
-    case 'biome_urban': return ctx.biomeKey === 'urban';
+    case 'biome_urban':
+      // B6 shipped `glasgow_close` as the live urban-flavour biome; the
+      // catalogue key stays `biome_urban` so edinburgh_rune needs no id churn.
+      return ctx.biomeKey === 'glasgow_close';
     // ── state ──
     case 'hp_low': return ctx.hpFrac < RUNE_THRESHOLDS.HP_LOW_FRAC;
     case 'hp_high': return ctx.hpFrac > RUNE_THRESHOLDS.HP_HIGH_FRAC;

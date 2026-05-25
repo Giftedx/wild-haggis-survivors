@@ -35,7 +35,7 @@ Before declaring anything fixed/done, run at least `npm test` and `npm run build
 ## Architecture in 30 seconds
 
 - **Scene flow:** `BootScene` → (first-launch splashes) → `MainMenuScene`, then route-dependent branches through `MenuScene` (variant pick), `CroftScene` (persistent hub), `CurseScene`, `GameScene` (run), `GameOverScene`, `ShopScene`, and `MetaShopScene`. The full graph and per-scene gotchas live in [`CLAUDE.md`](CLAUDE.md) "Architecture".
-- **Systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`, `HazardsSystem`, `AmbientWeatherSystem`, `BiomeController`, `RuneConditionSystem`, `NodeMapSystem`, …
+- **Systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`, `HazardsSystem`, `AmbientWeatherSystem`, `BiomeController`, `RuneConditionSystem`, `NodeMapSystem`, … Player level growth (scale + hitbox) lives in `Player.onLevelUp` / `playerGrowthScale`, not a separate system class.
 - **Data-driven balance:** all weapons, enemies, upgrades, variants, routes, banter, curses, biomes, hazards, relics, runes, and node banks live under `src/data/`. Code consumes them; balance work is data-only.
 - **Persistence:** three independent `localStorage` keys, each owned by one module —
   - `whs_save` (`src/utils/save/*`, schema v23 — combined save: meta + run history + replay blob)

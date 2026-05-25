@@ -81,6 +81,11 @@ export interface TickFrameHeaderDeps {
   getSpawnSystem: () => SpawnSystem;
   /** Pause toggle on gamepad-edge — caller's `toggleUiPause`. */
   togglePause: () => void;
+  /**
+   * Post-bell endless accept — consumes the gamepad Start/Options edge
+   * during the victory ceremony when RUN_END blocks the pause menu.
+   */
+  tryAcceptPostBellOffer?: (pauseMenuEdge: boolean) => boolean;
   /** Dev-only stress-test pulse. Caller wraps `tickStressTest(this)`
    *  so the helper avoids a `GameScene` import. No-op on prod paths. */
   runStressTest: () => void;
@@ -97,8 +102,12 @@ export function tickFrameHeader(deps: TickFrameHeaderDeps, delta: number): TickF
     return { kind: 'replay-exhausted' };
   }
 
-  // Gamepad Start / Options — same pause stack as ESC / P (see `toggleUiPause` guards).
-  if (deps.getPlayer().consumePauseMenuEdge()) {
+  const pauseMenuEdge = deps.getPlayer().consumePauseMenuEdge();
+  if (deps.tryAcceptPostBellOffer?.(pauseMenuEdge)) {
+    // Offer consumed — world tick stays paused under RUN_END until the
+    // victory ticker calls `finalizePostBellEntry`.
+  } else if (pauseMenuEdge) {
+    // Gamepad Start / Options — same pause stack as ESC / P (see `toggleUiPause` guards).
     deps.togglePause();
   }
 

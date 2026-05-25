@@ -51,19 +51,21 @@ If `git status` lists a huge set of files with **no line changes**—often `old 
 ## Architecture
 
 ### Scene Flow
-`BootScene` → `MenuScene` → `GameScene` → `ShopScene` (between runs)
+`BootScene` → (first-launch splashes) → `MainMenuScene` → `MenuScene` (variant loadout) → `CroftScene` (hub) → `CurseScene` / `SporranScene` → `GameScene` → `GameOverScene` → `ShopScene` / `MetaShopScene`
 
 - **BootScene** (`src/scenes/BootScene.ts`): Generates ALL sprite textures programmatically using Phaser Graphics — there are no external image assets. Every entity, projectile, and effect is drawn in code here.
-- **MenuScene**: Title screen and run start.
+- **MainMenuScene**: Post-boot hub — meta stats, daily/shared run, resume, routes to loadout and reflection screens.
+- **MenuScene**: Variant carousel / loadout selection; Play routes to Croft (not straight into a run).
+- **CroftScene**: Between-runs hub (Gran's Croft); first run can skip curse and start Game directly.
 - **GameScene**: Core gameplay loop — orchestrates all systems, handles collisions, level-ups, pause, and game-over.
 - **ActIntermissionScene** (`src/scenes/ActIntermissionScene.ts`): W2 Moor Road paired modal. `GameScene.launchActIntermission(actN)` fires on gordon/tour_bus kill — acquires a `TimeManager.ACT_INTERMISSION` token (pause + timeScale 0), renders 3 route cards from `ROUTES_BY_SLOT[slot]`, resolves via `onResolve(pick, route)` callback that advances `RunActState`, writes `RunModifiers.routePicks`, applies `modifierDeltas`, then runs `route.onResume(ctx)`. Skip Intermissions setting bypasses the scene and applies `DEFAULT_ROUTE_ON_SKIP` inline.
 - **ShopScene**: Between-run shop for spending Golden Haggis on permanent upgrades.
 
 ### System Architecture (all instantiated by GameScene)
 - **SpawnSystem**: Enemy wave spawning based on game time; manages enemy group and boss spawns.
-- **WeaponSystem**: Manages all 11 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 10 of the 11 weapons; bagpipes is utility-only with no evolution). `BURNS_EVOLUTION_THRESHOLD` is derived from `EVOLUTION_RECIPES.length` in `src/core/BalanceConfig.ts` and re-exported from `src/utils/save/schema.ts` for back-compat.
+- **WeaponSystem**: Manages all 15 weapon families with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 14 of the 15 weapons; bagpipes is utility-only with no evolution). `BURNS_EVOLUTION_THRESHOLD` is derived from `EVOLUTION_RECIPES.length` in `src/core/BalanceConfig.ts` and re-exported from `src/utils/save/schema.ts` for back-compat.
 - **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
-- **GrowthSystem**: Player visual/hitbox scaling as they level up.
+- **Player growth**: Visual/hitbox scaling on level-up via `Player.onLevelUp` and `playerGrowthScale` (no standalone GrowthSystem class).
 - **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails, hit freeze, boss death spectacle, combo counter, toast notifications.
 - **AudioSystem**: Global singleton (`audio`) for SFX. Uses shared `AudioContext` from `src/systems/audioContext.ts`.
 - **ProceduralMusicEngine** (`src/systems/music/`): Game-state-reactive procedural music. Singleton `musicEngine`. Layers: Highland pad drone, FM felt piano (4-voice polyphony), heartbeat pulse, Euclidean rhythm. A `Conductor` reads game state each frame and computes mood axes (intensity, danger, chaos, triumph) that drive all layers. Lookahead scheduler replaces setTimeout/setInterval.

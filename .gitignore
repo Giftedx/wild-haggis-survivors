@@ -70,3 +70,5 @@ cloudflare/node_modules/
 # Local forensic-review scratchpad
 .review-notes.md
 .claude/review-notes.md
+.purpose-audit.md
+.claude/purpose-audit.md

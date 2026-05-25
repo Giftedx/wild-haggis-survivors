@@ -45,7 +45,7 @@ export function playEvolutionSpectacle(
 
   // 4. Camera zoom punch — brief zoom in then settle.
   // Two sequential tweens (not yoyo) so the return target is re-read at the
-  // end of the punch. Without this, if GrowthSystem bumps zoom during the
+  // end of the punch. Without this, if a level-up zoom bump lands during the
   // 200ms punch (e.g. a second near-simultaneous level-up), the yoyo settles
   // on stale baseZoom and the camera is permanently wrong for the run.
   const cam = scene.cameras.main;

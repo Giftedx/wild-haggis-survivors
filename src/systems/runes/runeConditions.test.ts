@@ -41,7 +41,8 @@ describe('runeConditions — biome bucket (U1 Task 5)', () => {
   it('biome_cold / biome_coastal / biome_urban match their biomeKey', () => {
     expect(evaluateRuneCondition('biome_cold', ctx({ biomeKey: 'cold' }))).toBe(true);
     expect(evaluateRuneCondition('biome_coastal', ctx({ biomeKey: 'coastal' }))).toBe(true);
-    expect(evaluateRuneCondition('biome_urban', ctx({ biomeKey: 'urban' }))).toBe(true);
+    expect(evaluateRuneCondition('biome_urban', ctx({ biomeKey: 'glasgow_close' }))).toBe(true);
+    expect(evaluateRuneCondition('biome_urban', ctx({ biomeKey: 'urban' }))).toBe(false);
   });
 
   it('biome_coastal also accepts loch as the B5-Phase-1 foundation', () => {

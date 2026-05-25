@@ -2,6 +2,8 @@ import * as Phaser from 'phaser';
 import { COLORS, PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import type { IInput } from '../utils/iInput';
+import { getSettingsManager } from '../core/SettingsManager';
+import { keyCodeBoundToPause } from '../input/keyBoundToPause';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { evaluateBurnLeap } from './burnLeapInput';
 import { audio } from '../systems/AudioSystem';
@@ -1009,15 +1011,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const stancePressed = stanceDown && !this.stanceCycleKeyPrevDown;
     this.stanceCycleKeyPrevDown = stanceDown;
     if (stancePressed) {
-      const prev = this.stance;
-      this.stance = cycleStance(prev);
-      this.recalcStats();
-      audio.playGripBurst?.();
-      if (this.stanceFirstCyclePending) {
-        this.stanceFirstCyclePending = false;
-        sceneCtx.caption?.('stance_first_cycle', 'Stance shift. Q to cycle.', '#d4c8a8', 2400);
+      const pauseBindings = getSettingsManager().load().keyBindings.pause;
+      if (!keyCodeBoundToPause('KeyQ', pauseBindings)) {
+        const prev = this.stance;
+        this.stance = cycleStance(prev);
+        this.recalcStats();
+        audio.playGripBurst?.();
+        if (this.stanceFirstCyclePending) {
+          this.stanceFirstCyclePending = false;
+          sceneCtx.caption?.('stance_first_cycle', 'Stance shift. Q to cycle.', '#d4c8a8', 2400);
+        }
+        sceneCtx.requestBanter?.('stance_change', this.stance);
       }
-      sceneCtx.requestBanter?.('stance_change', this.stance);
     }
 
     // Shinty Parry (DESIGN_IDEAS §1) — E-edge opens the parry window.

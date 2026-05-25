@@ -325,16 +325,31 @@ export class RunLifecycle {
     });
   }
 
+  /**
+   * Post-bell endless offer — gamepad Start/Options uses the same
+   * edge as the pause menu. During RUN_END the pause menu is blocked,
+   * so this path is the controller-friendly accept affordance.
+   */
+  tryAcceptPostBellOfferFromGamepad(pauseMenuEdge: boolean): boolean {
+    if (!this.postBellOfferActive || !pauseMenuEdge) return false;
+    this.acceptPostBellOffer();
+    return true;
+  }
+
+  private acceptPostBellOffer(): void {
+    this.postBell = true;
+    this.bellTimeSec = this.hooks.getSpawnSystem().getGameTimeSec();
+    this.postBellOfferActive = false;
+    this.uninstallPostBellKeyHandler();
+  }
+
   private installPostBellKeyHandler(): void {
     if (this.postBellKeyHandler) return;
     this.postBellKeyHandler = (e: KeyboardEvent) => {
       if (!this.postBellOfferActive) return;
       if (e.key === 'Enter' || e.code === 'Enter') {
         e.preventDefault();
-        this.postBell = true;
-        this.bellTimeSec = this.hooks.getSpawnSystem().getGameTimeSec();
-        this.postBellOfferActive = false;
-        this.uninstallPostBellKeyHandler();
+        this.acceptPostBellOffer();
       }
     };
     window.addEventListener('keydown', this.postBellKeyHandler);

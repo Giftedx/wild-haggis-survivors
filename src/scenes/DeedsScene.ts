@@ -40,9 +40,8 @@ import { buildDeedsDomFocusActions } from './deedsDomFocusActions';
  * Binary deeds (taxman, first evolution, all-bosses) intentionally hide
  * progress to preserve first-unlock surprise; the scene labels them
  * "a rumour on the moor" instead of revealing triggers.
- */
-/**
- * Cards per page. 3 cols × 4 rows = 12 cards × ~125 px row height @ 720p,
+ *
+ * Cards per page: 3 cols × 4 rows = 12 cards × ~125 px row height @ 720p,
  * which fits the title + word-wrapped description + progress label without
  * the row-overlap collision the un-paginated 10-row layout produced.
  */

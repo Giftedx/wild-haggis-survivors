@@ -14,7 +14,7 @@ describe('rune rarity + buildRuneCards (U1 Task 11 + M4 alignment)', () => {
   it('buildRuneCards returns one UpgradeCard per *grounded* rune def, all tagged "rune" rarity', () => {
     const cards = buildRuneCards();
     expect(cards).toHaveLength(groundedCount);
-    expect(cards.length).toBeLessThan(Object.keys(RUNES).length);
+    expect(groundedCount).toBe(Object.keys(RUNES).length);
     for (const c of cards) {
       expect(c.rarity).toBe('rune');
       expect(c.effect.type).toBe('grant_rune');
@@ -31,11 +31,9 @@ describe('rune rarity + buildRuneCards (U1 Task 11 + M4 alignment)', () => {
   it('M4 T113 — ungrounded biome runes are filtered out', () => {
     const cards = buildRuneCards();
     const ids = cards.map((c) => (c.effect as { type: 'grant_rune'; runeId: string }).runeId);
-    // Only edinburgh_rune remains ungrounded (Phase 3 — Edinburgh
-    // biome blocked on cultural consultation). Graduated keys —
-    // biome_dusk (Phase 0), biome_coastal (Phase 1a), biome_fog
-    // (Phase 1b), biome_cold (Phase 2) — all fire in production now.
-    expect(ids).not.toContain('edinburgh_rune'); // biome_urban
+    // biome_urban grounded via glasgow_close (B6). No biome runes
+    // remain on UNGROUNDED_CONDITION_KEYS in this build.
+    expect(ids).toContain('edinburgh_rune');   // biome_urban → glasgow_close
     expect(ids).toContain('gloaming_rune');     // biome_dusk — grounded post B5 Phase 0
     expect(ids).toContain('seawrack_rune');     // biome_coastal — grounded post B5 Phase 1a
     expect(ids).toContain('haar_rune');         // biome_fog — grounded post B5 Phase 1b
