@@ -414,6 +414,7 @@ export class SporranScene extends Phaser.Scene {
         // a card tile — Confirm / Back live past the tile range.
         if (index >= 0 && index < this.tileEntries.length) {
           this.focusedTileIndex = index;
+          this.applyTileFocus();
         }
       },
     });

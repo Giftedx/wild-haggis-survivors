@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { buildSporranDomFocusActions } from './sporranDomFocusActions';
 import { ALL_SPORRAN_CARDS } from '../data/sporranCards';
 import { SPORRAN_PICK_COUNT } from '../systems/sporranDeck';
+import { ensureLocaleReady, setLocale } from '../core/i18n';
 
 const HAND = ALL_SPORRAN_CARDS.slice(0, 7);
 
@@ -158,6 +159,29 @@ describe('buildSporranDomFocusActions', () => {
       expect(action.label.length).toBeGreaterThan(0);
       expect(action.label.startsWith('sporran.')).toBe(false);
       expect(action.label.startsWith('curse.')).toBe(false);
+      expect(action.label.startsWith('ui.')).toBe(false);
+    }
+  });
+
+  it('emits resolved Scots labels when the locale overlay is active', async () => {
+    await ensureLocaleReady('scs');
+    setLocale('scs');
+    try {
+      const actions = buildSporranDomFocusActions({
+        drawnHand: HAND,
+        pickedIndices: new Set([0, 1, 2]),
+        onTogglePick: () => undefined,
+        onConfirm: () => undefined,
+        onBack: () => undefined,
+      });
+      for (const action of actions) {
+        expect(action.label.length).toBeGreaterThan(0);
+        expect(action.label.startsWith('sporran.')).toBe(false);
+        expect(action.label.startsWith('curse.')).toBe(false);
+        expect(action.label.startsWith('ui.')).toBe(false);
+      }
+    } finally {
+      setLocale('en');
     }
   });
 
