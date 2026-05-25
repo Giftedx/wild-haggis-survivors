@@ -82,8 +82,12 @@ import {
 } from './selkieForm';
 import type { Enemy } from './Enemy';
 import { bumpBeithirCured } from '../utils/save/bumpers';
-import { isInvincibilityEnabled } from '../systems/accessibility/AssistMode';
+import {
+  isExtendedIFramesEnabled,
+  isInvincibilityEnabled,
+} from '../systems/accessibility/AssistMode';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
+import { getPostDashGraceMs } from './playerDashAssist';
 import {
   composeDamageMul,
   composeMaxHpMul,
@@ -800,7 +804,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.dashRemainingMs <= 0) {
         this.isDashing = false;
         // Brief post-dash invincibility extra grace
-        this.postDashInvincibilityRemainingMs = BALANCE.player.postDashGraceMs;
+        this.postDashInvincibilityRemainingMs = getPostDashGraceMs(
+          BALANCE.player.postDashGraceMs,
+          isExtendedIFramesEnabled(),
+        );
         // Falls-If-Turning — queued stumble fires now that the dash is
         // done. Activates the speed-halve mul for STUMBLE_DURATION_MS.
         if (this.pendingStumbleAfterDash) {

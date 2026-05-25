@@ -36,7 +36,7 @@ manual master-check.
 | `isInvincibilityEnabled()` | `PlayerHitResolver.handle` (src/scenes/game/PlayerHitResolver.ts:88) | **WIRED** in this iteration | Early-return before damage applied, just below the existing iframe / dash gate. No iframes burned, no death-cause logged, no tint flashed. |
 | `isInvincibilityEnabled()` | `HazardZones.lava-tick` (src/scenes/game/HazardZones.ts:300) | **WIRED** in this iteration | Same as above — added to the existing invuln gate (`isIFrames || isDashInvincible || isHazardLeaping`). |
 | `getAssistModeGameSpeed()` | `TimeManager` global timeScale | **NOT WIRED** | Wiring this requires a permanent token in TimeManager's lowest-wins ladder. The T1 deterministic-replay path assumes `timeScale = 1` baseline; gating the slider behind a non-replay flag keeps determinism intact. Deferred — track as `TODO: A1-M4-assist-speed`. |
-| `isExtendedIFramesEnabled()` | `Player.startDash` post-dash grace (src/entities/Player.ts:419) | **NOT WIRED** | Doubles `BALANCE.player.postDashGraceMs` from 80ms to 160ms when on. Single multiply in the line that sets `postDashInvincibilityRemainingMs`. Deferred — needs balance pass to confirm 160ms doesn't break Ironmoor parity. |
+| `isExtendedIFramesEnabled()` | Player post-dash grace expiry (src/entities/Player.ts) | **WIRED** | Doubles `BALANCE.player.postDashGraceMs` from 80ms to 160ms through `getPostDashGraceMs(...)` when the master Assist Mode toggle and sub-toggle are both on. Baseline remains unchanged for normal runs. |
 | `isExtendedComboWindowEnabled()` | `JuiceSystem` combo-timer reset (src/systems/JuiceSystem.ts) | **NOT WIRED** | Doubles combo window from 1500ms to 3000ms. Deferred — combo balance interplay with combo-relics needs confirmation. |
 | `isAssistModeEnabled()` (master, UI) | Settings → Accessibility tab | **HIDDEN** | All Assist Mode rows commented in `SettingsScene.create()` — controls remain hidden until balance + replay parity confirm full wiring. The persisted fields stay so existing player saves don't churn. |
 
@@ -44,31 +44,43 @@ manual master-check.
 
 Per memory note (T122) and to avoid the trap of "settings exist but do
 nothing", the Assist Mode UI stays hidden in this iteration. The
-shipped wiring touches only the **invincibility** toggle, which is
-the one toggle that:
+currently shipped sub-toggle wiring is deliberately narrow:
 
-- Has a single deterministic call site (the damage gate).
-- Cannot break combat balance for non-Assist players (it's gated on
-  the master toggle, which is itself off by default and hidden).
-- Can be enabled via direct save-edit by sufficiently motivated
+- `invincibility` gates enemy/hazard damage at deterministic damage call
+  sites.
+- `extendedIFrames` only doubles the bounded post-dash grace window.
+- Neither wired sub-toggle changes default/non-Assist behavior because all
+  readers are master-gated and the master toggle is off by default.
+- Both can be enabled via direct save-edit by sufficiently motivated
   testers (or via a future Settings unhide), and the wiring is then
   immediately functional with no further code change.
 
-The other three sub-toggles (`gameSpeed`, `extendedIFrames`,
-`extendedComboWindow`) need balance + telemetry passes to ensure they
+The other two sub-toggles (`gameSpeed`, `extendedComboWindow`) still
+need balance + telemetry passes to ensure they
 don't break:
 - T1 replay determinism (game-speed scales the physics integration).
-- Ironmoor mode parity (extended iframes change kill-floor reachability).
 - Relic synergy economy (extended combo windows shift combo-relic
   effectiveness).
+
+`extendedIFrames` now has a single bounded call site: post-dash grace is
+doubled from the 80ms baseline to 160ms only when both Assist Mode and the
+sub-toggle are enabled. The normal-run baseline is unchanged, and the UI
+row remains hidden with the rest of Assist Mode until the broader unhide
+pass lands.
 
 A future "A1 M4.5 — Assist Mode unhide" plan, gated on those balance
 analyses, ships the remaining wiring and unhides the UI.
 
-## Verification — invincibility wiring
+## Verification — assist wiring
 
-A unit test in `src/scenes/game/PlayerHitResolver.test.ts` exercises
-the new gate. Manual smoke:
+Unit coverage:
+
+- `src/scenes/game/PlayerHitResolver.test.ts` exercises the invincibility
+  damage gate.
+- `src/entities/playerDashAssist.test.ts` covers baseline vs doubled
+  post-dash grace and statically guards the Player call site.
+
+Manual invincibility smoke:
 
 1. Open Settings → enable `assistMode + assistModeInvincibility` via
    localStorage edit:
