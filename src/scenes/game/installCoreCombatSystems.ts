@@ -87,8 +87,8 @@ export function installCoreCombatSystems(
     const driver = opts.getRelicEffectDriver()!;
     const rng = opts.scene.getRunRng();
     if (driver.tryStormcrownFreeze(rng, isCrit)) {
-      // Enemy.applyFreeze(durationSec, slowMul): 0 slow = full freeze
-      enemy.applyFreeze(driver.stormcrownFreezeDurationMs / 1000, 0);
+      // Enemy.applyFreeze(speedMul, durationMs): 0 speed = full freeze.
+      enemy.applyFreeze(0, driver.stormcrownFreezeDurationMs);
     }
   });
   const xpSystem = new XPSystem(opts.scene);

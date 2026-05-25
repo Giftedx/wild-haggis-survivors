@@ -274,7 +274,7 @@ export class SettingsInputScene extends Phaser.Scene {
       this.captureGamepadBaseline = pad?.buttons.map((b) => b.pressed) ?? [];
     }
     this.statusText?.setText(t('ui.inputRebind.rebind_hint'));
-    this.scene.restart(returnTargetData(this.returnTo));
+    this.mountT407FocusStack();
   }
 
   private renderResetChip(y: number, palette: ReturnType<typeof resolveSettingsPalette>): void {

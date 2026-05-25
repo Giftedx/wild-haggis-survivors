@@ -35,6 +35,7 @@ class MockDisplayObject {
   public texture = { key: 'mock' };
   public scaleX = 1;
   public scaleY = 1;
+  private handlers = new Map<string, () => void>();
 
   constructor(x: number, y: number, width = 0, height = 0) {
     this.x = x;
@@ -64,7 +65,13 @@ class MockDisplayObject {
     this.texture.key = key;
     return this;
   }
-  on() { return this; }
+  on(event: string, cb: () => void) {
+    this.handlers.set(event, cb);
+    return this;
+  }
+  emit(event: string) {
+    this.handlers.get(event)?.();
+  }
   destroy() {}
 }
 
@@ -128,6 +135,68 @@ describe('UpgradeCardsUI layout', () => {
     expect(texts[0]).toMatchObject({ x: 520, y: 145, text: 'Level 3 — pick yir poison' });
     expect(rectangles[1]).toMatchObject({ x: 520, y: 410 });
     expect(sprites[0]).toMatchObject({ x: 520, y: 338 });
+  });
+
+  it('restores the baked card frame scale after hover', () => {
+    const rectangles: MockDisplayObject[] = [];
+    const sprites: MockDisplayObject[] = [];
+    const scene: any = {
+      scale: { width: 1040, height: 780 },
+      cameras: { main: { zoom: 1 } },
+      textures: {
+        exists: (key: string) => key === 'wicon_thistle_shot' || key === 'ui_card_frame_rare',
+      },
+      events: { on: vi.fn(), off: vi.fn(), once: vi.fn() },
+      input: { keyboard: { on: vi.fn(), off: vi.fn() }, gamepad: {} },
+      add: {
+        rectangle: (x: number, y: number, width: number, height: number) => {
+          const rect = new MockDisplayObject(x, y, width, height);
+          rectangles.push(rect);
+          return rect;
+        },
+        text: (x: number, y: number, text: string) => {
+          const obj = new MockDisplayObject(x, y);
+          obj.text = text;
+          return obj;
+        },
+        sprite: (x: number, y: number, key: string) => {
+          const obj = new MockDisplayObject(x, y);
+          obj.texture.key = key;
+          sprites.push(obj);
+          return obj;
+        },
+        circle: (x: number, y: number, radius: number) => new MockDisplayObject(x, y, radius * 2, radius * 2),
+      },
+      tweens: { add: vi.fn(), killTweensOf: vi.fn() },
+    };
+    const tickers = {
+      addOnce: (_kind: string, _delay: number, cb: () => void) => {
+        cb();
+        return { cancel: vi.fn() };
+      },
+    };
+    const card: UpgradeCard = {
+      id: 'rare_damage_up',
+      name: 'upgradeCard.test_rare_damage_up.name',
+      description: 'upgradeCard.test_rare_damage_up.description',
+      rarity: 'rare',
+      icon: 'wicon_thistle_shot',
+      effect: { type: 'stat_boost', stat: 'damagePct', amount: 0.1 },
+    };
+
+    const ui = new UpgradeCardsUI(scene, vi.fn(), tickers as never);
+    ui.show([card], 3);
+
+    const cardBg = rectangles[1];
+    const frame = sprites.find((s) => s.texture.key === 'ui_card_frame_rare');
+    expect(frame?.scaleX).toBe(1.6);
+
+    cardBg.emit('pointerover');
+    expect(frame?.scaleX).toBeCloseTo(1.68);
+    cardBg.emit('pointerout');
+
+    expect(frame?.scaleX).toBe(1.6);
+    expect(frame?.scaleY).toBe(1.6);
   });
 
   it('falls back to scale viewport when display size is unavailable', () => {

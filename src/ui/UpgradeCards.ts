@@ -513,14 +513,14 @@ export class UpgradeCardsUI {
     bg.on('pointerout', () => {
       bg.setFillStyle(COLORS.BG_DARK);
       // Reset scales — must match the values set at creation (icon is 1.4,
-      // everything else is 1). Using 2 here permanently shrinks the icon
-      // every time the player hovers-then-unhovers a card.
+      // frame backing is 1.6, everything else is 1). Using the wrong baseline
+      // permanently shrinks/expands chrome after hover.
       icon.setScale(1.4);
       name.setScale(1);
       rarityLabel.setScale(1);
       rarityPillBg.setScale(1);
       bg.setScale(1);
-      if (frame) frame.setScale(1);
+      if (frame) frame.setScale(1.6);
     });
 
     // Click to select — legendary picks fire a quick spark trail toward
