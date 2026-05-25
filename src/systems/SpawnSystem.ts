@@ -9,8 +9,8 @@ import { BALANCE, getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 import { getCameraViewport } from '../ui/cameraViewport';
-import { t } from '../core/i18n';
 import { BIOMES } from '../data/biomes';
+import { buildBossWarningCue } from './bossWarningCue';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
 import { shouldMarkCursed } from './cursedSpawnRoll';
 import { evaluatePostBellBossTick } from './postBellBossCadence';
@@ -506,13 +506,13 @@ export class SpawnSystem {
 
   private spawnBoss(boss: BossConfig, _playerX: number, _playerY: number): void {
     // Show warning banner
-    const warning = t(boss.warningKey);
-    this.showBossWarning(warning, boss.key);
-    this.scene.caption(`boss_${boss.key}`, warning, '#ff6644');
+    const cue = buildBossWarningCue(boss);
+    this.showBossWarning(cue.warning, boss.key);
+    this.scene.caption(cue.captionId, cue.warning, cue.captionTint);
     // A beat of Glesga nerves right as the screen shakes. Pass the boss
     // key so the engine picks from the authored per-boss pool when one
     // exists — Gordon, Taxman etc. each get their own warning voice.
-    this.scene.requestBanter('boss_warn', boss.key);
+    this.scene.requestBanter(cue.banterContext, cue.banterTag);
 
     // Burns echo — final-boss approach overlay. "Now's the day, and now's
     // the hour" / "Kings may be blest, but Tam was glorious" couplets in
