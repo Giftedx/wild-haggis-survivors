@@ -202,6 +202,21 @@ describe('RunPersistenceBridge', () => {
       expect(snapshot.heldRelicKeys).toEqual(['sporran_of_holding', 'bronze_clasp']);
       expect(snapshot.heldRelicKeys).not.toBe(state.flags.relics);
     });
+
+    it('snapshots cairn stacking progress when the scheduler is wired', () => {
+      const { hooks } = buildHooks(buildState());
+      hooks.getCairnStacking = () => ({
+        getStoneCount: () => 2,
+        getSpawnedCount: () => 2,
+        getNextSpawnAtSec: () => 540,
+      }) as never;
+
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+
+      expect(snapshot.cairnStackCount).toBe(2);
+      expect(snapshot.cairnSpawnedCount).toBe(2);
+      expect(snapshot.cairnNextSpawnAtSec).toBe(540);
+    });
   });
 
   describe('persist', () => {
