@@ -367,7 +367,7 @@ export const ui = {
   inputRebind: {
     title: 'Controls',
     subtitle: 'Bind every action yer ain wey. Click a slot tae capture a new key.',
-    skill_hint: 'Active tricks: Q stance, E parry, F Whisky Breath, G Drift Mastery. Dash through beasties tae trigger dash-strikes.',
+    skill_hint: 'Stance, parry, Whisky Breath, an Drift Mastery are in the list below. Dash through beasties tae trigger dash-strikes.',
     unbound: '—',
     unbound_a11y: 'unbound',
     gamepadPrefix: 'Pad',
@@ -382,6 +382,10 @@ export const ui = {
       moveRight: 'Move right',
       dash: 'Dash',
       pause: 'Pause',
+      stanceToggle: 'Stance cycle',
+      shintyParry: 'Shinty parry',
+      whiskyBreath: 'Whisky Breath',
+      driftMastery: 'Drift Mastery',
     },
     a11y: {
       slot_primary: 'primary',

@@ -3,7 +3,10 @@ import { COLORS, PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import type { IInput } from '../utils/iInput';
 import { getSettingsManager } from '../core/SettingsManager';
-import { keyCodeBoundToPause } from '../input/keyBoundToPause';
+import {
+  loadSkillKeyHandles,
+  stanceBindingOverlapsPause,
+} from '../input/skillKeyBindings';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { evaluateBurnLeap } from './burnLeapInput';
 import { audio } from '../systems/AudioSystem';
@@ -481,39 +484,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    // Drift Mastery — G is currently a hardcoded edge-poll key so the
-    // mechanic ships without touching the InputMapper / SettingsManager
-    // ActionKey schema (which would force a save-version bump for the
-    // new keybinding slot). G picked because it sits free of every
-    // default ActionKey binding (WASD / arrows / Space / Esc / P);
-    // graduation to a remappable ActionKey is the proper future fix.
-    // Optional `?.` because vitest stubs that construct Player without
-    // a real Phaser scene won't have a keyboard plugin; the update
-    // tick falls back to "no consume edge" in that path.
-    this.gripBurstKey = scene.input?.keyboard?.addKey('G') ?? null;
-
-    // Whisky Breath — F key edge-poll, same hardcoded-key pattern as
-    // Drift Mastery's G. F picked because the original W choice
-    // collided with `moveUp.secondary = 'KeyW'` in the default WASD
-    // bindings — every up-press would have fired the breath, an
-    // unshippable bug. F is free of every default binding. Future
-    // graduation to a remappable ActionKey can pair both F and G in
-    // a single save-version bump rather than fragmented bumps.
-    this.whiskyBreathKey = scene.input?.keyboard?.addKey('F') ?? null;
-
-    // Stance Toggle — Q cycles loose → braced → reeling. Same hardcoded
-    // edge-poll pattern as F/G; Q sits free of every default ActionKey
-    // binding (WASD / arrows / Space / Esc / P / F / G). Future
-    // graduation to a remappable ActionKey can pair F + G + Q in a
-    // single save-version bump.
-    this.stanceCycleKey = scene.input?.keyboard?.addKey('Q') ?? null;
-
-    // Shinty Parry — E opens a 350 ms window vs enemy projectiles.
-    // Same hardcoded edge-poll pattern as F/G/Q; E sits free of every
-    // default ActionKey binding. Future graduation to a remappable
-    // ActionKey can fold E into the same save-version bump alongside
-    // the other skill-layer keys.
-    this.shintyParryKey = scene.input?.keyboard?.addKey('E') ?? null;
+    this.refreshSkillKeyBindings(scene);
     // Subscribe to the run's enemy-kill stream so the helper can bank
     // a stack per kill. Bosses excluded — Whisky Breath rewards the
     // sustained mob-clear rhythm, not boss damage. SubscriptionBag
@@ -1011,8 +982,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const stancePressed = stanceDown && !this.stanceCycleKeyPrevDown;
     this.stanceCycleKeyPrevDown = stanceDown;
     if (stancePressed) {
-      const pauseBindings = getSettingsManager().load().keyBindings.pause;
-      if (!keyCodeBoundToPause('KeyQ', pauseBindings)) {
+      const { keyBindings } = getSettingsManager().load();
+      if (!stanceBindingOverlapsPause(keyBindings.stanceToggle, keyBindings.pause)) {
         const prev = this.stance;
         this.stance = cycleStance(prev);
         this.recalcStats();
@@ -1509,6 +1480,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return Math.max(0, this.dashCooldown / this.DASH_COOLDOWN_MS);
   }
   getDashCharges(): number { return this.dashCharges; }
+
+  /**
+   * A1 M3 follow-up — rebuild skill-layer Phaser keys from Settings.
+   * Called from the constructor; safe to call again after a rebind
+   * when the scene is still active (next run's `create()` also seeds).
+   */
+  refreshSkillKeyBindings(scene: Phaser.Scene): void {
+    const handles = loadSkillKeyHandles(scene);
+    this.stanceCycleKey = handles.stanceToggle;
+    this.shintyParryKey = handles.shintyParry;
+    this.whiskyBreathKey = handles.whiskyBreath;
+    this.gripBurstKey = handles.driftMastery;
+  }
 
   /** Gamepad Start/Options (edge) — `GameScene` uses this for pause alongside ESC/P. */
   consumePauseMenuEdge(): boolean {

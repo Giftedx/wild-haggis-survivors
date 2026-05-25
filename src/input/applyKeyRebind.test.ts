@@ -45,13 +45,13 @@ describe('applyKeyRebind', () => {
   });
 
   it('preserves existing secondary when rebinding only primary', () => {
-    const result = applyKeyRebind(DEFAULT_KEYBINDINGS, 'pause', 'primary', 'KeyQ');
-    expect(result.bindings.pause).toEqual({ primary: 'KeyQ', secondary: 'KeyP' });
+    const result = applyKeyRebind(DEFAULT_KEYBINDINGS, 'pause', 'primary', 'BracketLeft');
+    expect(result.bindings.pause).toEqual({ primary: 'BracketLeft', secondary: 'KeyP' });
   });
 
   it('writes a secondary slot on an action that has none', () => {
-    const result = applyKeyRebind(DEFAULT_KEYBINDINGS, 'dash', 'secondary', 'KeyF');
-    expect(result.bindings.dash).toEqual({ primary: 'Space', secondary: 'KeyF' });
+    const result = applyKeyRebind(DEFAULT_KEYBINDINGS, 'dash', 'secondary', 'ControlLeft');
+    expect(result.bindings.dash).toEqual({ primary: 'Space', secondary: 'ControlLeft' });
   });
 
   it('ignores empty string captures (no change)', () => {

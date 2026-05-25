@@ -6,7 +6,8 @@
  * from `SettingsManager` and exposes semantic queries (`isActionDown`,
  * `isActionJustPressed`) — sites do not poke `KeyCodes` directly.
  *
- * Scope in M3: movement (4 cardinals) + dash + pause. Menu navigation
+ * Scope: movement (4 cardinals) + dash + pause + four active-skill keys.
+ * Menu navigation
  * inside settings / almanac / chronicle stays on hard-coded cursor keys
  * for the M3 slice; a follow-up can widen the enum if needed.
  *
@@ -22,7 +23,11 @@ export type ActionKey =
   | 'moveLeft'
   | 'moveRight'
   | 'dash'
-  | 'pause';
+  | 'pause'
+  | 'stanceToggle'
+  | 'shintyParry'
+  | 'whiskyBreath'
+  | 'driftMastery';
 
 export const ACTION_KEYS: readonly ActionKey[] = [
   'moveUp',
@@ -31,6 +36,10 @@ export const ACTION_KEYS: readonly ActionKey[] = [
   'moveRight',
   'dash',
   'pause',
+  'stanceToggle',
+  'shintyParry',
+  'whiskyBreath',
+  'driftMastery',
 ];
 
 /**
@@ -62,6 +71,10 @@ export const DEFAULT_KEYBINDINGS: Record<ActionKey, KeyBinding> = {
   moveRight: { primary: 'ArrowRight', secondary: 'KeyD' },
   dash: { primary: 'Space' },
   pause: { primary: 'Escape', secondary: 'KeyP' },
+  stanceToggle: { primary: 'KeyQ' },
+  shintyParry: { primary: 'KeyE' },
+  whiskyBreath: { primary: 'KeyF' },
+  driftMastery: { primary: 'KeyG' },
 };
 
 export const DEFAULT_GAMEPAD_BINDINGS: Partial<Record<ActionKey, GamepadBinding>> = {

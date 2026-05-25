@@ -33,7 +33,7 @@
 | **C1** Highland Almanac | ✅ Shipped 2026-04-24 (`9bd56cd`) |
 | **R1** Relics third tier | ✅ Shipped 2026-04-24 (`214e9ce`) — all 18 effects live |
 | **V2** Variants pack | ✅ Shipped 2026-04-24 (14-roster); 15th variant Witch's Hare added 2026-04-28 |
-| **U1** Runes | ✅ Shipped 2026-04-25 (30 runes); B5 Phases 0/1a/1b/2 grounded 31/31 except `edinburgh_rune` |
+| **U1** Runes | ✅ Shipped 2026-04-25 (30 runes); all conditions grounded in production (incl. `edinburgh_rune` via `glasgow_close`) |
 | **E1** Seasonal events + Burns Night | ✅ Shipped 2026-04-24 (4 milestones; cohort grew 5→8 events 2026-04-29) |
 | **C2** Weapon lore pass | ✅ Shipped (truth-up 2026-04-26 — actual lore footprint 103 EN leaves; 30 SCS rune overlays + flavour parity fence). Native + Burns review still open. |
 | **A1** Accessibility foundation | 🟡 M2–M6 shipped 2026-04-24; **M1 PEAT audit human-gated** (see `docs/A1_PEAT_AUDIT.md`). 2026-05-10 mitigations: `reduceFlashing` defaulted **ON**, first-launch photosensitivity splash, README disclosure of unaudited status (`docs/REVIEW.md` C5 closure). |

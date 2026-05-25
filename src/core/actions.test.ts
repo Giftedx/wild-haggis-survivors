@@ -9,7 +9,7 @@ import {
 } from './actions';
 
 describe('ActionKey catalog', () => {
-  it('covers the six remappable actions', () => {
+  it('covers movement, pause, dash, and active-skill actions', () => {
     expect(ACTION_KEYS).toEqual([
       'moveUp',
       'moveDown',
@@ -17,6 +17,10 @@ describe('ActionKey catalog', () => {
       'moveRight',
       'dash',
       'pause',
+      'stanceToggle',
+      'shintyParry',
+      'whiskyBreath',
+      'driftMastery',
     ] satisfies ActionKey[]);
   });
 
@@ -36,6 +40,10 @@ describe('ActionKey catalog', () => {
       moveRight: { primary: 'ArrowRight', secondary: 'KeyD' },
       dash: { primary: 'Space' },
       pause: { primary: 'Escape', secondary: 'KeyP' },
+      stanceToggle: { primary: 'KeyQ' },
+      shintyParry: { primary: 'KeyE' },
+      whiskyBreath: { primary: 'KeyF' },
+      driftMastery: { primary: 'KeyG' },
     };
     expect(DEFAULT_KEYBINDINGS).toEqual(expected);
   });

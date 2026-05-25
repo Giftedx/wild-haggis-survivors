@@ -38,6 +38,10 @@ const LABELS: Record<ActionKey, string> = {
   moveRight: 'Move right',
   dash: 'Dash',
   pause: 'Pause',
+  stanceToggle: 'Stance cycle',
+  shintyParry: 'Shinty parry',
+  whiskyBreath: 'Whisky Breath',
+  driftMastery: 'Drift Mastery',
 };
 
 const FORMAT_KEY_CODE = (code: string): string => {
@@ -157,9 +161,9 @@ describe('buildSettingsInputDomFocusActions', () => {
   it('emits two keyboard slots per action plus terminal Reset + Back', () => {
     const input = buildBaseInput();
     const actions = buildSettingsInputDomFocusActions(input);
-    // 6 actions × 2 keyboard slots = 12; dash + pause add 2 gamepad slots
-    // each = 4; plus reset + back = 18 total.
-    expect(actions).toHaveLength(12 + 4 + 2);
+    // 10 actions × 2 keyboard slots = 20; dash + pause add 2 gamepad slots
+    // each = 4; plus reset + back = 26 total.
+    expect(actions).toHaveLength(20 + 4 + 2);
   });
 
   it('orders rows as ACTION_KEYS × {primary, secondary} × {keyboard, gamepad}', () => {
@@ -183,6 +187,14 @@ describe('buildSettingsInputDomFocusActions', () => {
       'settings-input-pause-secondary-keyboard',
       'settings-input-pause-primary-gamepad',
       'settings-input-pause-secondary-gamepad',
+      'settings-input-stanceToggle-primary-keyboard',
+      'settings-input-stanceToggle-secondary-keyboard',
+      'settings-input-shintyParry-primary-keyboard',
+      'settings-input-shintyParry-secondary-keyboard',
+      'settings-input-whiskyBreath-primary-keyboard',
+      'settings-input-whiskyBreath-secondary-keyboard',
+      'settings-input-driftMastery-primary-keyboard',
+      'settings-input-driftMastery-secondary-keyboard',
       'settings-input-reset',
       'settings-input-back',
     ]);
@@ -245,7 +257,7 @@ describe('buildSettingsInputDomFocusActions', () => {
     );
     expect(moveUpPrimary?.label).toBe('Move up — primary keyboard — unbound');
     // Row count unchanged regardless of binding emptiness.
-    expect(actions).toHaveLength(12 + 4 + 2);
+    expect(actions).toHaveLength(20 + 4 + 2);
   });
 });
 

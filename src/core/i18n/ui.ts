@@ -671,7 +671,7 @@ export const ui = {
   inputRebind: {
     title: 'Controls',
     subtitle: 'Bind every action yer own way. Click a slot to capture a new key.',
-    skill_hint: 'Active tricks: Q stance, E parry, F Whisky Breath, G Drift Mastery. Dash through beasties to trigger dash-strikes.',
+    skill_hint: 'Stance, parry, Whisky Breath, and Drift Mastery are in the list below. Dash through beasties to trigger dash-strikes.',
     unbound: '—',
     unbound_a11y: 'unbound',
     gamepadPrefix: 'Pad',
@@ -686,6 +686,10 @@ export const ui = {
       moveRight: 'Move right',
       dash: 'Dash',
       pause: 'Pause',
+      stanceToggle: 'Stance cycle',
+      shintyParry: 'Shinty parry',
+      whiskyBreath: 'Whisky Breath',
+      driftMastery: 'Drift Mastery',
     },
     /**
      * T407 adoption #5 — screen-reader-only strings for the DOM focus

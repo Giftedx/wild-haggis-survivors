@@ -38,13 +38,15 @@ describe('Settings / Input Rebind scene smoke', () => {
     }
   });
 
-  it('lists the fixed active-skill keys in both shipped locales', () => {
+  it('resolves active-skill action labels in both shipped locales', () => {
     for (const locale of ['en', 'scs'] as const) {
       setLocale(locale);
-      const hint = t('ui.inputRebind.skill_hint');
-      for (const token of ['Q', 'E', 'F', 'G']) {
-        expect(hint, `${locale} missing ${token}`).toContain(token);
+      for (const action of ['stanceToggle', 'shintyParry', 'whiskyBreath', 'driftMastery'] as const) {
+        const key = `ui.inputRebind.action.${action}`;
+        const resolved = t(key);
+        expect(resolved, `${locale} ${key}`).not.toBe(key);
       }
+      const hint = t('ui.inputRebind.skill_hint');
       expect(hint.toLowerCase(), `${locale} missing dash-strike copy`).toContain('dash');
     }
   });
