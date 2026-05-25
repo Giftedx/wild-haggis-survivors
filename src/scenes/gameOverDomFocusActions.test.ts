@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { buildGameOverDomFocusActions } from './gameOverDomFocusActions';
 
 describe('buildGameOverDomFocusActions', () => {
-  it('emits exactly three actions — play again, gold shop, tae gran', () => {
+  it('emits exactly three actions — next run, gold shop, tae gran', () => {
     const actions = buildGameOverDomFocusActions({
       onPlayAgain: () => undefined,
       onGoldShop: () => undefined,
@@ -22,7 +22,7 @@ describe('buildGameOverDomFocusActions', () => {
     expect(actions[2]?.id).toBe('gameover-tae-gran');
   });
 
-  it('routes the play-again action to onPlayAgain', () => {
+  it('routes the next-run action to onPlayAgain', () => {
     const onPlayAgain = vi.fn();
     const actions = buildGameOverDomFocusActions({
       onPlayAgain,
@@ -82,6 +82,15 @@ describe('buildGameOverDomFocusActions', () => {
     }
   });
 
+  it('labels the primary action as a next-run picker, not an instant restart', () => {
+    const actions = buildGameOverDomFocusActions({
+      onPlayAgain: () => undefined,
+      onGoldShop: () => undefined,
+      onTaeGran: () => undefined,
+    });
+    expect(actions[0]?.label).toBe('NEXT RUN');
+  });
+
   it('actions are independent — activating one does not invoke the others', () => {
     const onPlayAgain = vi.fn();
     const onGoldShop = vi.fn();
@@ -97,7 +106,7 @@ describe('buildGameOverDomFocusActions', () => {
     expect(onTaeGran).not.toHaveBeenCalled();
   });
 
-  it('keeps play-again and tae-gran enabled when the shop is locked', () => {
+  it('keeps next-run and tae-gran enabled when the shop is locked', () => {
     const actions = buildGameOverDomFocusActions({
       onPlayAgain: () => undefined,
       onGoldShop: () => undefined,

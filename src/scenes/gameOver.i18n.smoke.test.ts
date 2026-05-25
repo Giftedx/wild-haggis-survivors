@@ -79,7 +79,7 @@ describe('game over / run result i18n smoke', () => {
       bossGold: 3,
       coinGold: 4,
     });
-    assertResolves('ui.gameOver.play_again');
+    expect(t('ui.gameOver.play_again')).toBe('NEXT RUN');
     assertResolves('ui.gameOver.upgrades');
     assertResolves('ui.gameOver.menu');
     assertResolves('ui.gameOver.run_variant', { label: 'Test' });

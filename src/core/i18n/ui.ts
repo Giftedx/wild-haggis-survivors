@@ -461,7 +461,7 @@ export const ui = {
     damage_by_weapon: 'Who put the boot in',
     gold_title: '{amount} golden haggis earned',
     gold_breakdown: 'Time {timeGold}  |  Kills {killGold}  |  Boss {bossGold}  |  Coins {coinGold}',
-    play_again: 'PLAY AGAIN',
+    play_again: 'NEXT RUN',
     upgrades: 'GOLD SHOP',
     /** Locked variant of the Gold Shop button — shown when the active variant blocks shop access. */
     upgrades_locked: 'NAE SHOP',

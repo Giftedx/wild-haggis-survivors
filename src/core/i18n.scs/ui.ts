@@ -275,7 +275,7 @@ export const ui = {
     whit_tip_low_hp_neglect: 'Find a quiet corner whan yer low. A healin chest can turn a run.',
     whit_tip_unlucky: 'Shak it aff. Tha next run\'s already waitin.',
     curse_chip: 'Bore tha {curse} — +{pct}% gold',
-    play_again: 'AT IT AGAIN',
+    play_again: 'NEXT RUN',
     upgrades: 'GOLD SHOP',
     upgrades_locked: 'NAE SHOP',
     menu: 'TAE GRAN\'S',

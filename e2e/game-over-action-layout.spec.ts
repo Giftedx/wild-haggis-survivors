@@ -122,7 +122,7 @@ test.describe('GameOver action/link layout', () => {
       const buttonRects = items
         .filter((item) => item.type === 'Rectangle' && item.depth === 203 && item.y > 520)
         .sort((a, b) => a.x - b.x);
-      const labels = ['PLAY AGAIN', 'GOLD SHOP', "TAE GRAN'S"].map((text) => items.find((item) => item.text === text));
+      const labels = ['NEXT RUN', 'GOLD SHOP', "TAE GRAN'S"].map((text) => items.find((item) => item.text === text));
       const seed = items.find((item) => item.text.startsWith('Seed: TEST-1234-MIST'));
       const postcard = items.find((item) => item.text.includes('save postcard'));
       const share = items.find((item) => item.text.includes('share this run'));
