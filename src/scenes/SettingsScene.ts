@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
+import { globalEventBus } from '../core/GlobalEventBus';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 import {
@@ -123,6 +124,8 @@ export class SettingsScene extends Phaser.Scene {
    *  this array stay in lockstep. */
   private domRowSyncs: Array<() => SettingsDomActionInput> = [];
   private domFocusLayer: DomFocusLayer | null = null;
+  private saveFailureBanner?: Phaser.GameObjects.Text;
+  private saveFailureUnsub?: () => void;
   private gamepadState: SettingsGamepadState = createSettingsGamepadState();
   private gpUpdate?: (time: number, delta: number) => void;
   private glowTweens: Phaser.Tweens.Tween[] = [];
@@ -149,6 +152,7 @@ export class SettingsScene extends Phaser.Scene {
     // The shutdown handler also disposes; this guard covers the case
     // where create() runs before shutdown fires (Phaser scene reuse).
     this.uninstallDomFocusLayer();
+    this.uninstallSaveFailureListener();
     this.gpRows = [];
     this.domRowSyncs = [];
     this.glowTweens = [];
@@ -271,6 +275,25 @@ export class SettingsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
+
+    this.saveFailureBanner = this.add
+      .text(width / 2, 116, '', {
+        fontFamily: 'monospace',
+        fontSize: width < 600 ? '10px' : '12px',
+        color: '#ffb070',
+        align: 'center',
+        wordWrap: { width: (width - 64) / Math.max(1, uiScale) },
+      })
+      .setOrigin(0.5)
+      .setScale(uiScale)
+      .setDepth(30)
+      .setVisible(false);
+    this.saveFailureUnsub = globalEventBus.on('GLOBAL_SAVE_FAILED', (payload) => {
+      if (payload.path !== 'settings') return;
+      this.saveFailureBanner
+        ?.setText(t('ui.game.save_failed', { path: payload.path }))
+        .setVisible(true);
+    });
 
     // --- Live preview card ---------------------------------------------
     // Small chip in the top-right corner that shows a sample HUD label and
@@ -404,6 +427,8 @@ export class SettingsScene extends Phaser.Scene {
       this.previewHandle?.destroy();
       this.previewHandle = undefined;
       this.uninstallDomFocusLayer();
+      this.uninstallSaveFailureListener();
+      this.saveFailureBanner = undefined;
     });
   }
 
@@ -515,6 +540,11 @@ export class SettingsScene extends Phaser.Scene {
   private uninstallDomFocusLayer(): void {
     this.domFocusLayer?.destroy();
     this.domFocusLayer = null;
+  }
+
+  private uninstallSaveFailureListener(): void {
+    this.saveFailureUnsub?.();
+    this.saveFailureUnsub = undefined;
   }
 
   /**

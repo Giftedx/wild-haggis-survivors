@@ -96,4 +96,78 @@ test.describe('SettingsScene DOM focus mirror', () => {
 
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });
+
+  test('surfaces settings persistence failures while staying on the settings screen', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => { pageErrors.push(err.message); });
+
+    await page.addInitScript(() => {
+      try {
+        const raw = localStorage.getItem('whs_meta_save');
+        const existing = raw && raw.length > 0
+          ? (JSON.parse(raw) as Record<string, unknown>)
+          : {};
+        localStorage.setItem('whs_meta_save', JSON.stringify({
+          ...existing,
+          hasCompletedTutorial: true,
+          hasSeenDriftTutorial: true,
+        }));
+      } catch {
+        /* ignore */
+      }
+    });
+
+    await page.goto('/');
+    const canvas = page.locator('canvas[role="application"]');
+    await expect(canvas).toBeVisible({ timeout: 60_000 });
+    await canvas.click({ position: { x: 8, y: 8 } });
+    await page.bringToFront();
+
+    const sceneStarted = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: {
+        scene: {
+          start(k: string, data?: unknown): void;
+          isActive(k: string): boolean;
+        };
+      } }).game;
+      if (!g) return false;
+      g.scene.start('Settings');
+      const deadline = Date.now() + 15_000;
+      while (Date.now() < deadline) {
+        if (g.scene.isActive('Settings')) return true;
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      return false;
+    });
+    expect(sceneStarted, 'Settings scene failed to activate').toBe(true);
+
+    const layer = page.locator('[data-whs-dom-focus-layer="whs-settings-focus-layer"]');
+    await expect(layer).toBeAttached({ timeout: 5_000 });
+
+    await page.evaluate(() => {
+      const original = Storage.prototype.setItem;
+      Storage.prototype.setItem = function patchedSetItem(key: string, value: string) {
+        if (key === 'whs_game_settings') throw new Error('quota full');
+        return original.call(this, key, value);
+      };
+    });
+
+    await layer.locator('button[type="button"]').filter({ hasText: /^Screen shake/ }).dispatchEvent('click');
+
+    const bannerText = await page.waitForFunction(() => {
+      const g = (window as unknown as { game?: { scene: { getScene(k: string): unknown } } }).game;
+      const scene = g?.scene.getScene('Settings') as { children?: { list?: unknown[] } } | undefined;
+      const texts = scene?.children?.list ?? [];
+      for (const obj of texts) {
+        const candidate = obj as { text?: unknown; visible?: boolean };
+        if (candidate.visible === true && typeof candidate.text === 'string' && candidate.text.includes('saving failed')) {
+          return candidate.text;
+        }
+      }
+      return '';
+    }, null, { timeout: 5_000 });
+
+    expect(await bannerText.jsonValue()).toContain('settings');
+    expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
+  });
 });
