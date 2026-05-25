@@ -23,17 +23,13 @@
 import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../../config';
 import { textStyle } from '../../ui/typography';
-import { t } from '../../core/i18n';
-import { createRNG } from '../../utils/rng';
-import {
-  type WeeTaleContext,
-  pickWeeTale,
-} from '../../utils/weeTale';
 import type { GameOverPayload } from '../gameOverPayload';
-import type { VariantKey } from '../../data/variants';
-import type { BiomeId } from '../../data/biomes';
-import { getEnemyDisplayName } from '../../data/enemies';
-import { formatRunVariantLabel, getVariantByKey } from '../../data/variants';
+import { buildGameOverWeeTaleLine } from './gameOverWeeTaleLine';
+
+export {
+  buildWeeTaleContextFromPayload,
+  resolveWeeTaleDisplayNames,
+} from './gameOverWeeTaleLine';
 
 export interface RenderGameOverWeeTaleOpts {
   scene: Phaser.Scene;
@@ -60,27 +56,13 @@ export function renderGameOverWeeTale(
 ): Phaser.GameObjects.Text | null {
   const { scene, payload, panelCenterX, centerY, maxWidth, uiScale, depth } = opts;
 
-  const ctx = buildWeeTaleContextFromPayload(payload);
-  // Seed-deterministic sample: branch a sub-RNG from the run seed
-  // so the same run always renders the same line, even across
-  // page reloads (the seed is recoverable from the URL share
-  // codec) and replay playback. The XOR magic isolates this
-  // stream from gameplay RNG so adding / removing a wee-tale
-  // template doesn't perturb fight outcomes.
-  const seedBase = typeof payload.runSeed === 'number' && Number.isFinite(payload.runSeed)
-    ? payload.runSeed
-    : 0;
-  const rng = createRNG((seedBase ^ 0x57E74A1E) >>> 0);
-  const pick = pickWeeTale(ctx, rng.next());
-  if (pick === null) return null;
-
-  const params = resolveDisplayNames(pick.params, payload);
-  const line = t(pick.i18nKey, params);
+  const tale = buildGameOverWeeTaleLine(payload);
+  if (tale === null) return null;
 
   const text = scene.add
     // `subtitle` role is italic by design (FONT_SCALE in
     // `ui/typography.ts`) — no need to override fontStyle.
-    .text(panelCenterX, centerY, line, textStyle('subtitle', {
+    .text(panelCenterX, centerY, tale.line, textStyle('subtitle', {
       fontSize: '15px',
       color: COLORS_CSS.DUSTY_TAN,
       align: 'center',
@@ -91,70 +73,9 @@ export function renderGameOverWeeTale(
     .setDepth(depth)
     .setAlpha(0)
     .setScale(uiScale)
-    .setData('weeTaleKey', pick.i18nKey);
+    .setData('weeTaleKey', tale.i18nKey);
 
   scene.tweens.add({ targets: text, alpha: 1, duration: 360, delay: 520 });
 
   return text;
-}
-
-/**
- * Build the `WeeTaleContext` from a `GameOverPayload`. Defensive:
- * any field the payload omits (legacy save, mid-run crash before
- * the composer wrote it) collapses to the safe default that the
- * picker handles gracefully. Test mocks can pass a stripped payload
- * and still get a valid context.
- */
-export function buildWeeTaleContextFromPayload(payload: GameOverPayload): WeeTaleContext {
-  return {
-    mode: payload.mode,
-    variantKey: (payload.variantKey ?? 'classic') as VariantKey,
-    timeSurvivedSec: payload.summary?.timeSurvivedSec ?? 0,
-    bossesKilled: payload.bossKilledKeys ?? [],
-    deathSourceKey: payload.deathCause?.sourceKey ?? undefined,
-    routes: [], // Route LABELS are on the payload (already i18n-resolved); the
-                // picker only needs route presence at the umbrella level,
-                // not key strings. Pass empty for now — extend if route-tag
-                // templates ever land.
-    relics: [],
-    biomes: (payload.biomesVisited ?? []) as readonly BiomeId[],
-    ironmoor: payload.ironmoor === true,
-    curseKey: payload.curseKey,
-    postBellSec: payload.postBellSec,
-    // v2 — thread the run name through so the picker can route to
-    // variant-voiced `{name}`-bearing templates. Empty / missing on
-    // legacy saves; the picker's `has_name` tag gate handles that.
-    runName: payload.name ?? undefined,
-  };
-}
-
-/**
- * Translate the raw enemy / variant *keys* in the picker's params
- * to human display names so the rendered template reads "Gordon"
- * not "gordon". The picker stays key-only (i18n-agnostic); display
- * name resolution belongs here at the scene layer.
- *
- * Variant key resolves via `formatRunVariantLabel(VariantDef)` so
- * the rendered name matches the variant chip's label exactly.
- */
-function resolveDisplayNames(
-  params: Readonly<Record<string, string | number>>,
-  payload: GameOverPayload,
-): Record<string, string | number> {
-  const out: Record<string, string | number> = { ...params };
-  if (typeof params.boss === 'string') {
-    out.boss = getEnemyDisplayName(params.boss);
-  }
-  if (typeof params.source === 'string') {
-    out.source = getEnemyDisplayName(params.source);
-  }
-  if (typeof params.variant === 'string') {
-    // Prefer the already-rendered variantLabel from the payload (matches
-    // the chip exactly); fall back to a fresh resolution if the
-    // payload lost the label.
-    out.variant = payload.variantLabel.length > 0
-      ? payload.variantLabel
-      : formatRunVariantLabel(getVariantByKey(params.variant as VariantKey));
-  }
-  return out;
 }

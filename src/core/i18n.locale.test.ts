@@ -13,6 +13,7 @@ import {
 // that need the full tree (parity walks, non-empty assertion). Production
 // fetches this chunk dynamically via `ensureLocaleReady('scs')`.
 import { SCS_STRINGS } from './i18n.scs';
+import { WEE_TALE_TEMPLATES } from '../utils/weeTale';
 
 /**
  * Walk `source` and collect dot-path addresses whose leaves don't appear
@@ -182,5 +183,15 @@ describe('W18 locale scaffolding', () => {
     const enWeeTale = (EN_STRINGS.ui as LocaleTree).weeTale as LocaleTree;
     const scsWeeTale = (SCS_STRINGS.ui as LocaleTree).weeTale as LocaleTree;
     expect(collectMissingLeaves(enWeeTale, scsWeeTale, 'ui.weeTale')).toEqual([]);
+  });
+
+  it('every authored Wee Tale template key resolves in both EN and SCS', () => {
+    for (const { key } of WEE_TALE_TEMPLATES) {
+      setLocale('en');
+      expect(t(key, { time: '12:34', boss: 'Gordon', source: 'Gordon', variant: 'Classic', name: 'Wee Test' })).not.toBe(key);
+
+      setLocale('scs');
+      expect(t(key, { time: '12:34', boss: 'Gordon', source: 'Gordon', variant: 'Classic', name: 'Wee Test' })).not.toBe(key);
+    }
   });
 });
