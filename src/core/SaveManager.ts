@@ -534,6 +534,9 @@ function coerceIRunState(raw: unknown): IRunState | null {
     heldRelicKeys: toOptionalStringArray(o.heldRelicKeys),
     actState: coerceRunActStateSnapshot(o.actState),
     ironmoor: toOptionalBool(o.ironmoor),
+    cairnStackCount: toOptionalNonNegativeInt(o.cairnStackCount),
+    cairnSpawnedCount: toOptionalNonNegativeInt(o.cairnSpawnedCount),
+    cairnNextSpawnAtSec: toOptionalNonNegativeInt(o.cairnNextSpawnAtSec),
     tempBuffs: coerceTempBuffSnapshot(o.tempBuffs),
   };
 }

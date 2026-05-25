@@ -65,6 +65,9 @@ const sampleRun = (): IRunState => ({
   spawnedBossKeys: ['tour_bus', 'taxman'],
   shieldCooldownMs: 1800,
   heldRelicKeys: ['sporran_of_holding', 'bronze_clasp'],
+  cairnStackCount: 2,
+  cairnSpawnedCount: 2,
+  cairnNextSpawnAtSec: 540,
 });
 
 describe('SaveManager', () => {
@@ -233,6 +236,9 @@ describe('SaveManager', () => {
     expect(loaded.activeRun!.spawnedBossKeys).toEqual(['tour_bus', 'taxman']);
     expect(loaded.activeRun!.shieldCooldownMs).toBe(1800);
     expect(loaded.activeRun!.heldRelicKeys).toEqual(['sporran_of_holding', 'bronze_clasp']);
+    expect(loaded.activeRun!.cairnStackCount).toBe(2);
+    expect(loaded.activeRun!.cairnSpawnedCount).toBe(2);
+    expect(loaded.activeRun!.cairnNextSpawnAtSec).toBe(540);
   });
 
   it('treats malformed spawnedBossKeys as undefined instead of empty list', () => {
@@ -270,9 +276,13 @@ describe('SaveManager', () => {
           weaponDamage: { thistle_shot: 1200, bad: -5, nope: 'x' },
           shieldCooldownMs: null,
           heldRelicKeys: [42, 'bronze_clasp', null],
+          cairnStackCount: -1,
+          cairnSpawnedCount: 'two',
+          cairnNextSpawnAtSec: Number.NaN,
         },
       })
     );
+
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
     expect(loaded.activeRun).not.toBeNull();
@@ -285,6 +295,9 @@ describe('SaveManager', () => {
     expect(loaded.activeRun!.weaponDamage).toEqual({ thistle_shot: 1200 });
     expect(loaded.activeRun!.shieldCooldownMs).toBeUndefined();
     expect(loaded.activeRun!.heldRelicKeys).toEqual(['bronze_clasp']);
+    expect(loaded.activeRun!.cairnStackCount).toBeUndefined();
+    expect(loaded.activeRun!.cairnSpawnedCount).toBeUndefined();
+    expect(loaded.activeRun!.cairnNextSpawnAtSec).toBeUndefined();
   });
 
   it('clearActiveRun removes suspended run', () => {
