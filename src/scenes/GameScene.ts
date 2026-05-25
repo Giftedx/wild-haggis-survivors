@@ -2162,12 +2162,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.juice;
   }
 
-  /** Display name generated for this run — stable for its lifetime, cosmetic only. */
   public getRunName(): string {
     return this.runName;
   }
 
-  /** Update the cosmetic run name (e.g. player rename via pause menu). */
   public setRunName(name: string): void {
     this.runName = name;
   }
@@ -2180,11 +2178,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.bossKillHighlight;
   }
 
-  /**
-   * Run context snapshot for the capture pipeline (Pause / F10 screenshot).
-   * At pause time the player is alive; GameOverScene supplies its own payload
-   * with the final mode for the death/victory capture path.
-   */
   getRunContextForCapture(): {
     mode: 'victory' | 'death';
     variantLabel: string;
@@ -2198,6 +2191,4 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       seedCode: this.getRunSeedCode(),
     };
   }
-
-  // Chest sprite track/untrack/markers extracted to ChestSpriteRegistry.
 }
