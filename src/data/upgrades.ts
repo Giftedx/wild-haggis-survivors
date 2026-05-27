@@ -87,7 +87,11 @@ export type PassiveKey =
   // Rowan Amulet — holed rowan-berry sprig, the protective Highland
   // charm. +15% projectile speed — the charm guides the stone truer.
   // Pairs with a level-5 Hagstone Sling at chest for the Rowan Hail.
-  | 'rowan_amulet';
+  | 'rowan_amulet'
+  // Highland Trump — a Jew's harp, the small frame-drone of the mouth.
+  // +10% global cooldown reduction — the resonance tightens the cycle.
+  // Pairs with a level-5 Port-à-Beul at chest for Canntaireachd.
+  | 'highland_trump';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -359,6 +363,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_hagstone_sling',
     effect: { type: 'add_weapon', weaponKey: 'hagstone_sling' },
   },
+  // DESIGN_IDEAS §5 — Port-à-Beul (Mouth Music Chant).
+  {
+    id: 'add_port_a_beul',
+    name: 'upgradeCard.add_port_a_beul.name',
+    description: 'upgradeCard.add_port_a_beul.description',
+    rarity: 'uncommon',
+    icon: 'wicon_port_a_beul',
+    effect: { type: 'add_weapon', weaponKey: 'port_a_beul' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -575,6 +588,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_rowan_amulet',
     effect: { type: 'add_passive', passiveKey: 'rowan_amulet' },
+  },
+  // Highland Trump — Port-à-Beul evolution passive.
+  {
+    id: 'add_highland_trump',
+    name: 'upgradeCard.add_highland_trump.name',
+    description: 'upgradeCard.add_highland_trump.description',
+    rarity: 'uncommon',
+    icon: 'ucard_highland_trump',
+    effect: { type: 'add_passive', passiveKey: 'highland_trump' },
   },
 ];
 

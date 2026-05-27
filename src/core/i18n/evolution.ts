@@ -89,4 +89,9 @@ export const evolution = {
     description: 'The wire strings tightened past tuning. Three chord arcs loose at once; each hit briefly stills what it strikes.',
     flavour: "The ancient harp at full resonance: centuries of Gaelic music compressed into three simultaneous chords. The wire strings hold longer than gut ever could. The enemies do not.",
   },
+  canntaireachd: {
+    name: 'Canntaireachd',
+    description: 'The aura doubles. On the beat the chant halts what it holds — the old vocal instruction, weaponised at last.',
+    flavour: "Da-hé hi-é ho-hó. Every syllable a fingering the piper first learned by ear, moor-side, before notation existed. The haggis held the trump to its lips and the voice found the old frequency. The moor already knew the tune.",
+  },
 } as const;

@@ -169,4 +169,14 @@ export const weapon = {
     description: 'Three chord arcs at yince. Ilka hit briefly stills whit it strikes.',
     flavour: "Tha wire strings pu'd ticht past tunin, past breakin, past tha register tha haw wis biggit fer. Three chords loosed at yince: tha first silences, tha seicond hauds, tha third decides. Tha moor gaes quate fer exactly lang enough.",
   },
+  port_a_beul: {
+    name: 'Port-à-Beul',
+    description: 'Vocal-percussion aura — slaws enemies near ye. On a pibroch-aligned beat, tha slaw bites muckle harder.',
+    flavour: "Mooth music: tha Gaelic airt o vyce as instrument. Nae pipes, nae strings — jist tha thrapple, tha rhythm, an tha muir listenin. Tha haggis wis taucht this muir-side, syllable bi syllable, afore it kent whit tha syllables meant.",
+  },
+  canntaireachd: {
+    name: 'Canntaireachd',
+    description: "Tha vyce fou embodied — dooble tha reach, an on tha beat tha chant staps enemies cauld.",
+    flavour: "Tha Gaelic system o teachin pibroch bi vyce: da-hé hi-é ho-hó. Ilka syllable a fingerin; ilka fingerin a note tha pipes first learned this wey. Tha haggis isnae recitin. It is instructin.",
+  },
 } as const;

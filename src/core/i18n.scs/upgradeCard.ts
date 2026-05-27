@@ -195,6 +195,14 @@ export const upgradeCard = {
     name: 'Seal Pelt',
     description: "Tha selkie's shed skin, still warm. +2 HP regen per second. Pairs wi tha Selkie Song.",
   },
+  add_port_a_beul: {
+    name: 'Port-à-Beul',
+    description: 'Vocal-percussion aura — slaws enemies near ye. On tha beat, tha slaw bites herder.',
+  },
+  add_highland_trump: {
+    name: 'Heiland Trump',
+    description: "A wee frame-drone o tha mooth — tha resonance tichtens awthin (-10% cooldoons). Pairs wi Port-à-Beul.",
+  },
   boost_hp: {
     name: 'Thick Hide',
     description: 'Room fer a wee bit mair punishment (+10 max HP). Stack as mony as ye like.',

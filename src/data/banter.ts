@@ -697,6 +697,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.rowan_hail.c',
         'ui.banter.weapon_evolve.rowan_hail.d',
       ],
+      // Port-à-Beul + Highland Trump → Canntaireachd (2026-05-27).
+      // Hearth register — the voice deepens into the full tradition.
+      port_a_beul: [
+        'ui.banter.weapon_evolve.port_a_beul.a',
+        'ui.banter.weapon_evolve.port_a_beul.b',
+        'ui.banter.weapon_evolve.port_a_beul.c',
+        'ui.banter.weapon_evolve.port_a_beul.d',
+      ],
       // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
       // CLAUDE.md "9 of the 10 weapons have a paired passive". Banter pool
       // intentionally omits a `bagpipes` tag so the system can never queue

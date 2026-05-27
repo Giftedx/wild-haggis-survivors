@@ -1478,6 +1478,12 @@ export const ui = {
         c: 'Tha Eternal Chord: three voices, ane note, enemies still in it.',
         d: 'Da Clàrsach Eternal — auld music, awfy sudden consequences.',
       },
+      port_a_beul: {
+        a: 'Canntaireachd. Tha vyce is tha pipes noo. Tha moor learned first.',
+        b: 'Da-hé hi-é ho — ilka syllable a fingerin. Tha haggis haes tha score.',
+        c: 'Nae instrument but tha thrapple. Tha enemies needna understaund it tae feel it.',
+        d: 'Tha auld instruction. Tha chant is in tha legs noo.',
+      },
     },
     curse_start: {
       generic: {

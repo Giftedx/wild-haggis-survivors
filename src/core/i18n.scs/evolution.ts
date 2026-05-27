@@ -89,4 +89,9 @@ export const evolution = {
     description: 'Tha wire strings tichtened past tunin. Three chord arcs loose at yince; ilka hit briefly stills whit it strikes.',
     flavour: "Tha auld hairp at fou resonance: centuries o Gaelic music compressit intae three simultaneous chords. Tha wire strings haud langer nor gut ever could. Tha enemies dinnae.",
   },
+  canntaireachd: {
+    name: 'Canntaireachd',
+    description: "Tha aura dooblit. On tha beat tha chant hauds whit it hauds — tha auld vocal instruction, weaponised at last.",
+    flavour: "Da-hé hi-é ho-hó. Ilka syllable a fingerin tha piper first learned bi lug, muir-side, afore notation existit. Tha haggis held tha trump tae its lips an tha vyce fund tha auld frequency. Tha moor awready kent tha tune.",
+  },
 } as const;

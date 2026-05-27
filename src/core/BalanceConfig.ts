@@ -391,6 +391,16 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.rowan_hail.name',
     descriptionKey: 'evolution.rowan_hail.description',
   },
+  {
+    // Port-à-Beul + Highland Trump → Canntaireachd. The vocal-
+    // percussion tradition deepens into the full Gaelic pibroch
+    // instruction system — voice becomes weapon, weapon becomes song.
+    baseWeapon: 'port_a_beul',
+    requiredPassive: 'highland_trump',
+    evolvedWeapon: 'canntaireachd',
+    nameKey: 'evolution.canntaireachd.name',
+    descriptionKey: 'evolution.canntaireachd.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */

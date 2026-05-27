@@ -43,6 +43,8 @@ import { drawClarsachIcon } from './clarsach';
 import { drawClarsachEternalIcon } from './clarsachEternal';
 import { drawHagstoneSlingIcon } from './hagstone_sling';
 import { drawRowanHailIcon } from './rowanHail';
+import { drawPortABeulIcon } from './portABeul';
+import { drawCanntaireachdIcon } from './canntaireachd';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -106,6 +108,9 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   // Hagstone Sling + Rowan Hail evolution.
   drawHagstoneSlingIcon(scene);
   drawRowanHailIcon(scene);
+  // Port-à-Beul + Canntaireachd evolution.
+  drawPortABeulIcon(scene);
+  drawCanntaireachdIcon(scene);
   // Standalone + utility
   drawClaymoreIcon(scene);
   drawBagpipesUtilityIcon(scene);

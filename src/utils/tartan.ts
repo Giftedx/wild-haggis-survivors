@@ -127,6 +127,10 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   hagstone_sling: '#8a5a4a',
   // Rowan Hail (evolution) — rowan berry red: three stones, one blessing
   rowan_hail: '#9a2a1a',
+  // Port-à-Beul — warm amber-cream of vocal breath
+  port_a_beul: '#d4b040',
+  // Canntaireachd (evolution) — deeper ceremonial gold
+  canntaireachd: '#b88820',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

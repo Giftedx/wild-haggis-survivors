@@ -2067,6 +2067,12 @@ export const ui = {
         c: 'The Eternal Chord: three voices, one note, enemies still in it.',
         d: 'Da Clàrsach Eternal — ancient music, very sudden consequences.',
       },
+      port_a_beul: {
+        a: 'Canntaireachd. The voice is the pipes now. The moor learned first.',
+        b: 'Da-hé hi-é ho — every syllable a fingering. The haggis has the score.',
+        c: 'No instrument but the throat. The enemies need not understand it to feel it.',
+        d: 'The old instruction. The chant is in the legs now.',
+      },
     },
     curse_start: {
       generic: {

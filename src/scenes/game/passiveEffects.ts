@@ -151,5 +151,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // Hagstone Sling at lv5 for the Rowan Hail evolution.
       player.addProjectileSpeedMul(0.15);
       break;
+    case 'highland_trump':
+      // +10% cooldown reduction — the trump's resonance tightens the
+      // pulse cycle; the voice sustains longer. Pairs with Port-à-Beul
+      // at lv5 for the Canntaireachd evolution.
+      player.addCooldownReduction(0.10);
+      break;
   }
 }

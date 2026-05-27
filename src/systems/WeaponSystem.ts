@@ -1425,29 +1425,36 @@ export class WeaponSystem {
     }
   }
 
-  /** Ceòl Mòr bagpipes / Waulking Mallet / Bagpipe Drone / Clootie Rag / Selkie Song — aura pulse. */
+  /** Ceòl Mòr / Bagpipe Drone / Clootie Rag / Selkie Song / Port-à-Beul — aura pulse. */
   private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
     const isDrone = w.config.key === 'bagpipe_drone';
     const isClootieRag = w.config.key === 'clootie_rag';
     const isSelkieSong = w.config.key === 'selkie_song' || w.config.key === 'selkie_chorus';
+    const isPortABeul = w.config.key === 'port_a_beul' || w.config.key === 'canntaireachd';
 
-    // Selkie Song: sea-blue pulse, no freeze, no knot. Charms after damage loop.
-    // Clootie Rag: wound-red pulse, no flourish, no freeze — pure wounding aura.
-    // Drone: subtle hum ring at low alpha. Ceòl Mòr: emphatic pulse with knot.
-    const ringColor = isSelkieSong ? 0x4488cc
+    // Port-à-Beul: warm amber breath pulse. On pibroch-aligned beat the
+    // slow bites much harder — the voice peaks with the music.
+    const isPortAligned = isPortABeul && this.currentPibrochAligned();
+
+    const ringColor = isPortABeul ? 0xf0d060
+      : isSelkieSong ? 0x4488cc
       : isClootieRag ? 0x8a2a2a
       : resolveWeaponVfxColor(w.config.behavior);
-    const ringAlpha = isDrone ? 0.22 : isClootieRag ? 0.30 : isSelkieSong ? 0.32 : 0.38;
+    const ringAlpha = isDrone ? 0.22 : isClootieRag ? 0.30 : isSelkieSong ? 0.32 : isPortABeul ? 0.36 : 0.38;
     const ring = this.acquireVfxCircle(px, py, radius, ringColor, ringAlpha);
-    if (!isDrone && !isClootieRag && !isSelkieSong) {
+    // Ceòl Mòr: emphatic knot flourish. Port-à-Beul: breath-peak only on aligned beat.
+    if (!isDrone && !isClootieRag && !isSelkieSong && !isPortABeul) {
       this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipes_drone_knot', { scale: 0.95, endScale: 1.4, duration: 360, alpha: 0.72 });
+    }
+    if (isPortAligned) {
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipes_drone_knot', { scale: 0.70, endScale: 1.55, duration: 290, alpha: 0.58 });
     }
     this.scene.tweens.add({
       targets: ring,
-      alpha: isDrone ? 0.05 : isClootieRag ? 0.06 : isSelkieSong ? 0.08 : 0.1,
-      duration: isDrone ? 180 : isClootieRag ? 160 : isSelkieSong ? 420 : 280,
+      alpha: isDrone ? 0.05 : isClootieRag ? 0.06 : isSelkieSong ? 0.08 : isPortABeul ? 0.07 : 0.1,
+      duration: isDrone ? 180 : isClootieRag ? 160 : isSelkieSong ? 420 : isPortABeul ? 240 : 280,
       yoyo: true,
       onComplete: () => ring.setVisible(false),
     });
@@ -1466,8 +1473,18 @@ export class WeaponSystem {
         // Ceòl Mòr: hard freeze on a longer cooldown.
         // Clootie Rag: no freeze — the rag bleeds, it does not slow.
         // Selkie Song: collect charm candidates (applied after loop, nearest-first).
+        // Port-à-Beul: rhythm-dependent slow — normal 35%, aligned beat 60-78%.
         if (isDrone) enemy.applyFreeze(0.70, 700);
-        else if (!isClootieRag && !isSelkieSong) enemy.applyFreeze(0.42, 1400);
+        else if (isPortABeul) {
+          const isCanntaireachd = w.config.key === 'canntaireachd';
+          const freezeStr = isPortAligned
+            ? (isCanntaireachd ? 0.22 : 0.38)
+            : (isCanntaireachd ? 0.55 : 0.65);
+          const freezeDur = isPortAligned
+            ? (isCanntaireachd ? 1200 : 900)
+            : (isCanntaireachd ? 700 : 600);
+          enemy.applyFreeze(freezeStr, freezeDur);
+        } else if (!isClootieRag && !isSelkieSong) enemy.applyFreeze(0.42, 1400);
         else if (isSelkieSong && !enemy.isBoss()) charmCandidates.push({ enemy, d2 });
       }
     }

@@ -63,7 +63,14 @@ export type WeaponKey =
   // hit (through the hole) takes +40% bonus damage. Pairs with Rowan
   // Amulet passive at lv5 → Rowan Hail (triple-spread hagstones).
   | 'hagstone_sling'
-  | 'rowan_hail';
+  | 'rowan_hail'
+  // DESIGN_IDEAS §5 — Port-à-Beul (Mouth Music Chant). Gaelic vocal-
+  // percussion tradition weaponised — aura_pulse that slows enemies;
+  // on pibroch-aligned beats the slow bites much harder. Pairs with
+  // Highland Trump passive at lv5 → Canntaireachd (doubled radius,
+  // aligned beat halts enemies cold).
+  | 'port_a_beul'
+  | 'canntaireachd';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -946,6 +953,54 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.0,
+    },
+  },
+  // Port-à-Beul — Gaelic mouth-music aura. Slows enemies; on a
+  // pibroch-aligned beat the slow bites ~60% instead of 35%.
+  port_a_beul: {
+    key: 'port_a_beul',
+    nameKey: 'weapon.port_a_beul.name',
+    descriptionKey: 'weapon.port_a_beul.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 900,
+    damage: 5,
+    projectileSpeed: 0,
+    projectileCount: 1,
+    pierce: 0,
+    range: 95,
+    aoeRadius: 95,
+    arcDegrees: 0,
+    knockback: 8,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.05,
+    },
+  },
+  // Canntaireachd — evolved mouth music; doubled radius, and on the
+  // aligned beat the chant halts enemies to near-standstill.
+  canntaireachd: {
+    key: 'canntaireachd',
+    nameKey: 'weapon.canntaireachd.name',
+    descriptionKey: 'weapon.canntaireachd.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 750,
+    damage: 9,
+    projectileSpeed: 0,
+    projectileCount: 1,
+    pierce: 0,
+    range: 185,
+    aoeRadius: 185,
+    arcDegrees: 0,
+    knockback: 12,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.06,
     },
   },
 };

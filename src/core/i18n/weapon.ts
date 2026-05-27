@@ -169,4 +169,14 @@ export const weapon = {
     description: 'Three simultaneous chord arcs at once. Each hit briefly stills what it strikes.',
     flavour: "The wire strings pulled taut past tuning, past breaking, past the register the hall was built for. Three chords loosed at once: the first silences, the second holds, the third decides. The moor goes quiet for exactly long enough.",
   },
+  port_a_beul: {
+    name: 'Port-à-Beul',
+    description: 'Vocal-percussion aura — slows enemies near you. On a pibroch-aligned beat, the slow bites much harder.',
+    flavour: "Mouth music: the Gaelic art of voice as instrument. No pipes, no strings — just the throat, the rhythm, and the moor listening. The haggis was taught this moor-side, syllable by syllable, before it knew what the syllables meant.",
+  },
+  canntaireachd: {
+    name: 'Canntaireachd',
+    description: 'The voice fully embodied — double the reach, and on the beat the chant stops enemies cold.',
+    flavour: "The Gaelic system of teaching pibroch by voice: da-hé hi-é ho-hó. Every syllable a fingering; every fingering a note the pipes first learned this way. The haggis is not reciting. It is instructing.",
+  },
 } as const;
