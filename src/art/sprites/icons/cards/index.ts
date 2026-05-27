@@ -24,6 +24,7 @@ import { drawCopperRivet } from './copperRivet';
 import { drawDrumHoop } from './drumHoop';
 import { drawSealPelt } from './sealPelt';
 import { drawWireStrings } from './wireStrings';
+import { drawRowanAmulet } from './rowanAmulet';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -77,6 +78,8 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawSealPelt(scene);
   // Clàrsach paired passive.
   drawWireStrings(scene);
+  // Hagstone Sling paired passive.
+  drawRowanAmulet(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

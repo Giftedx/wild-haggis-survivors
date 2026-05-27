@@ -79,6 +79,11 @@ export const evolution = {
     description: "The pelt held the song in. Shed, it carries three times as far. Up to three enemies charmed at once; the moor rearranges itself.",
     flavour: "Sandwood Bay, February. The pelt on the rock, the song in the air, three more voices answering from the skerries. The haggis held the pelt carefully. The sea held its breath.",
   },
+  rowan_hail: {
+    name: 'Rowan Hail',
+    description: 'Three hagstones fan across the moor. Each stone still finds what lies behind the first enemy — the charm always reaches the second mark.',
+    flavour: "A rowan charm doesn't grant protection once. The haggis held the amulet over the sling-cup and the stone multiplied into three. The moor hasn't recovered.",
+  },
   clarsach_eternal: {
     name: 'Clàrsach Eternal',
     description: 'The wire strings tightened past tuning. Three chord arcs loose at once; each hit briefly stills what it strikes.',

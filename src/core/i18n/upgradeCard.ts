@@ -177,6 +177,14 @@ export const upgradeCard = {
     name: 'Selkie Song',
     description: 'Charm aura — chip damage and the nearest enemy turns on its ain kind. Selkie magic.',
   },
+  add_hagstone_sling: {
+    name: 'Hagstone Sling',
+    description: 'Holed river stone — pierces through one enemy; the second gets +40% bonus. Geometry matters.',
+  },
+  add_rowan_amulet: {
+    name: 'Rowan Amulet',
+    description: "The protective Highland charm: +15% projectile speed. Pairs wi the Hagstone Sling.",
+  },
   add_clarsach: {
     name: 'Clàrsach',
     description: 'Ancient Gaelic harp — amber-gold arc sweeps, wide arc, satisfying crunch through a crowd.',

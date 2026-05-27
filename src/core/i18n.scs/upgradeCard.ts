@@ -179,6 +179,14 @@ export const upgradeCard = {
     name: 'Clàrsach',
     description: 'Auld Gaelic hairp — amber-gowd arc sweeps, braid arc, satisfyin crunch through a crood.',
   },
+  add_hagstone_sling: {
+    name: 'Hagstone Sling',
+    description: 'Holed river stane — pierces through ane enemy; tha second gets +40% bonus. Geometry matters.',
+  },
+  add_rowan_amulet: {
+    name: 'Rowan Amulet',
+    description: "Tha protective Highland charm: +15% projectile speed. Pairs wi tha Hagstone Sling.",
+  },
   add_wire_strings: {
     name: 'Wire Strings',
     description: 'Ticht bronze wire strings tuned tae tha open moor (+12% cooldown reduction). Pairs wi tha Clàrsach.',

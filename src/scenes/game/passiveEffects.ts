@@ -145,5 +145,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // with Clàrsach at lv5 for the Clàrsach Eternal evolution.
       player.addCooldownReduction(0.12);
       break;
+    case 'rowan_amulet':
+      // +15% projectile speed — the protective charm guides the stone
+      // truer; speed reads as precision, not brute force. Pairs with
+      // Hagstone Sling at lv5 for the Rowan Hail evolution.
+      player.addProjectileSpeedMul(0.15);
+      break;
   }
 }

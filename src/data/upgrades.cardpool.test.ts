@@ -114,7 +114,8 @@ describe('PASSIVE_KEYS', () => {
     // Bodhrán (2026-05-24) added `drum_hoop` — +10% AoE radius.
     // Selkie Song (2026-05-24) added `seal_pelt` — +2 HP regen/sec.
     // Clàrsach (2026-05-27) added `wire_strings` — +12% cooldown reduction.
-    expect(PASSIVE_KEYS).toHaveLength(24);
+    // Hagstone Sling (2026-05-27) added `rowan_amulet` — +15% projectile speed.
+    expect(PASSIVE_KEYS).toHaveLength(25);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');

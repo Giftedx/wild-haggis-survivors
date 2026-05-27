@@ -112,6 +112,8 @@ export class WeaponSystem {
   private curseCooldownMul: number = 1;
   /** Pibroch variant — extra ms added to the base ±80 ms beat window. */
   private pibrochWindowExtensionMs: number = 0;
+  /** Projectile speed multiplier from player passives (shinty_ball, rowan_amulet). */
+  private projectileSpeedMul: number = 1.0;
 
   /** Emits:
    *  - 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite, eliteAffixId?)
@@ -331,13 +333,14 @@ export class WeaponSystem {
   }
 
   /** Update multipliers from player stats (called by GameScene each frame) */
-  setMultipliers(damage: number, aoe: number, attackSpeed: number, critChance: number = 0.10, cooldownReduction: number = 0, critDmgMul: number = 2.0): void {
+  setMultipliers(damage: number, aoe: number, attackSpeed: number, critChance: number = 0.10, cooldownReduction: number = 0, critDmgMul: number = 2.0, projectileSpeedMul: number = 1.0): void {
     this.damageMultiplier = damage;
     this.aoeMultiplier = aoe;
     this.attackSpeedMultiplier = attackSpeed;
     this.critChance = critChance;
     this.cooldownReduction = cooldownReduction;
     this.critDamageMultiplier = critDmgMul;
+    this.projectileSpeedMul = projectileSpeedMul;
   }
 
   /** Run-scoped curse modifier — clamps >=0.05 so a bug can't freeze fire. */
@@ -537,7 +540,7 @@ export class WeaponSystem {
         this.fireProjectile(w, px, py, 'thistle');
         break;
       case 'piercing':
-        this.fireProjectile(w, px, py, 'caber');
+        this.fireProjectile(w, px, py, w.config.key === 'hagstone_sling' ? 'hagstone' : 'caber');
         break;
       case 'bouncing':
         this.fireBouncing(w, px, py);
@@ -660,7 +663,7 @@ export class WeaponSystem {
       }
 
       const { damage, isCrit } = this.effectiveDamage(w);
-      proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, w.pierce, w.config.range, isCrit);
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed * this.projectileSpeedMul, damage, w.pierce, w.config.range, isCrit);
       proj.setWeaponKey(w.config.key);
       proj.setPibrochAligned(this.currentPibrochAligned());
       this.applyProjectileVisual(proj, texture);
@@ -1377,6 +1380,12 @@ export class WeaponSystem {
         // amber-gold arcs at −18° / 0° / +18°, each freezing on hit.
         this.fireClarsachEternal(w, px, py);
         break;
+      case 'rowan_hail':
+        // Rowan Hail — three hagstones spread at −15° / 0° / +15°.
+        // Each stone still deals +40% bonus damage to the second enemy
+        // it passes through (same "through the hole" rule as the base).
+        this.fireRowanHail(w, px, py);
+        break;
       default:
         this.fireProjectile(w, px, py, 'thistle');
         break;
@@ -1678,6 +1687,34 @@ export class WeaponSystem {
       this.dealDamageToEnemy(enemy, roll.damage, roll.isCrit, weaponKey);
       // Harp resonance freeze — brief stun on each chord hit.
       enemy.applyFreeze(0.60, 150);
+    }
+  }
+
+  /** Rowan Hail — three hagstones spread at −15° / 0° / +15°. Each stone
+   *  uses pierce 1 so the "through the hole" +40% bonus fires on the second
+   *  enemy hit per stone (same flag-check in onProjectileHitEnemy). */
+  private fireRowanHail(w: ActiveWeapon, px: number, py: number): void {
+    const target = this.findClosestEnemy(px, py, w.config.range);
+    if (!target) return;
+
+    const base = Phaser.Math.Angle.Between(px, py, target.x, target.y);
+    const spreadRad = Phaser.Math.DegToRad(15);
+    const offsets = [-spreadRad, 0, spreadRad];
+
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_claymore_spark',
+      { scale: 0.50, endScale: 0.90, duration: 220, rotation: base });
+
+    for (const offset of offsets) {
+      const proj = this.getProjectile('hagstone');
+      if (!proj) continue;
+      const angle = base + offset;
+      const tx = px + Math.cos(angle) * 600;
+      const ty = py + Math.sin(angle) * 600;
+      const { damage, isCrit } = this.effectiveDamage(w);
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed * this.projectileSpeedMul, damage, 1, w.config.range, isCrit);
+      proj.setWeaponKey(w.config.key);
+      proj.setPibrochAligned(this.currentPibrochAligned());
+      this.applyProjectileVisual(proj, 'hagstone');
     }
   }
 
@@ -2108,6 +2145,11 @@ export class WeaponSystem {
       // sphere flying truer through the air.
       body.setAllowRotation(true);
       body.setAngularVelocity(900);
+    } else if (texture === 'hagstone') {
+      // Hagstone tumbles as it flies — a holed river stone, not a
+      // precision projectile. Slow roll sells the weight.
+      body.setAllowRotation(true);
+      body.setAngularVelocity(360);
     }
   }
 
@@ -2210,16 +2252,22 @@ export class WeaponSystem {
     // Check if this hit should be processed (bouncing projectiles track per-enemy hits)
     if (proj.shouldSkipHit(enemy)) return;
 
+    const wKey = proj.getWeaponKey() || 'unknown';
+    // Hagstone Sling / Rowan Hail: second+ enemy hit gets +40% bonus
+    // ("through the hole" — the stone's aperture trains on its quarry).
+    const isHagstoneFamily = wKey === 'hagstone_sling' || wKey === 'rowan_hail';
+    const dmgMul = isHagstoneFamily && proj.getHitCount() > 1 ? 1.40 : 1.0;
+
     this.dealDamageToEnemy(
       enemy,
-      proj.getDamage(),
+      Math.ceil(proj.getDamage() * dmgMul),
       proj.isCrit(),
-      proj.getWeaponKey() || 'unknown',
+      wKey,
       proj.isPibrochAlignedAtFire(),
     );
 
     // Caber Toss applies burn (3 dps for 3s)
-    if (proj.getWeaponKey() === 'caber_toss') {
+    if (wKey === 'caber_toss') {
       enemy.applyBurn(3, 3000);
     }
 

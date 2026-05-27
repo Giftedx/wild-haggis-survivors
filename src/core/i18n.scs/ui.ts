@@ -1466,6 +1466,12 @@ export const ui = {
         c: 'Sandwood Bay, February. Three mair voices answered fae tha skerries.',
         d: 'Tha sea held its braith. Tha Selkie Chorus rose.',
       },
+      rowan_hail: {
+        a: 'Three stanes, ane charm. Tha rowan wis aye generous wi enemies.',
+        b: 'Tha hole multipliit. Noo tha moor haes three questions at yince.',
+        c: 'Rowan Hail — tha amulet held ower tha cup an tha stane answert in triplicate.',
+        d: 'Three berries, three stanes. Whit tha charm protects, it first instructs.',
+      },
       clarsach: {
         a: 'Three strings at yince. Tha hairp minds tha auld chord.',
         b: 'Wire strings strung ticht — tha haill moor rings when they soond.',

@@ -9,6 +9,7 @@ import { bakeCaber } from './caber';
 import { bakeHaggisBall } from './haggisBall';
 import { bakeShintyBall } from './shintyBall';
 import { bakeBeithirFang } from './beithirFang';
+import { bakeHagstone } from './hagstone';
 
 export function bakeProjectiles(scene: Phaser.Scene): void {
   bakeThistleProjectile(scene);
@@ -16,4 +17,5 @@ export function bakeProjectiles(scene: Phaser.Scene): void {
   bakeHaggisBall(scene);
   bakeShintyBall(scene);
   bakeBeithirFang(scene);
+  bakeHagstone(scene);
 }

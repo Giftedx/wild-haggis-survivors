@@ -79,6 +79,11 @@ export const evolution = {
     description: "Tha pelt held tha sang in. Shed, it cairries three times as faur. Up tae three enemies chairmed at yince; tha moor rearranges itsel.",
     flavour: "Sandwood Bay, February. Tha pelt on tha rock, tha sang in tha air, three mair voices answerin fae tha skerries. Tha haggis held tha pelt canny. Tha sea held its braith.",
   },
+  rowan_hail: {
+    name: 'Rowan Hail',
+    description: 'Three hagstanes fan across tha moor. Each stane still finds whit lies ahint tha first enemy — tha charm aye reaches tha second mark.',
+    flavour: "A rowan charm disnae grant protection yince. Tha haggis held tha amulet ower tha sling-cup an tha stane multipliit intae three. Tha moor hasnae recovered.",
+  },
   clarsach_eternal: {
     name: 'Clàrsach Eternal',
     description: 'Tha wire strings tichtened past tunin. Three chord arcs loose at yince; ilka hit briefly stills whit it strikes.',

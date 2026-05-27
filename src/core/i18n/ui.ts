@@ -2055,6 +2055,12 @@ export const ui = {
         c: 'Sandwood Bay, February. Three more voices answered from the skerries.',
         d: 'The sea held its breath. The Selkie Chorus rose.',
       },
+      rowan_hail: {
+        a: 'Three stones, one charm. The rowan was always generous with enemies.',
+        b: 'The hole multiplied. Now the moor has three questions at once.',
+        c: 'Rowan Hail — the amulet held over the cup and the stone answered in triplicate.',
+        d: 'Three berries, three stones. What the charm protects, it first instructs.',
+      },
       clarsach: {
         a: 'Three strings at once. The harp remembers the old chord.',
         b: 'Wire strings strung tight — the whole moor rings when they sound.',

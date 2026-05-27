@@ -149,6 +149,16 @@ export const weapon = {
     description: "Three selkies rise. Chip skaith tae aw enemies in range; up tae three are chairmed at yince. Tha moor gaes quate when tha chorus rises.",
     flavour: "Ane voice cairries across tha watter. Three voices cairry across tha warld. Tha haggis didnae choose this — tha pelt anely asks tae be held.",
   },
+  hagstone_sling: {
+    name: 'Hagstone Sling',
+    description: 'A holed river stane on a cord. Pierces through tha first enemy; tha second — caught through tha hole — taks +40% bonus skaith.',
+    flavour: "River-smoother granite wi a hole worn through by watter an time. Tha auld weemin knotted cord through tha hole fer protection. Tha haggis repurposit it fer something mair direct.",
+  },
+  rowan_hail: {
+    name: 'Rowan Hail',
+    description: 'Tha charm multipliit intae three: a fan o hagstanes, each still passin through tha first enemy fer +40% on tha second.',
+    flavour: "Three berries, three stanes, ane blessing shared across a spread. Tha rowan tree disnae give yince. Tha auld charm wis aye generous wi enemies.",
+  },
   clarsach: {
     name: 'Clàrsach',
     description: 'Auld Gaelic hairp — amber-gowd arc sweeps that cairve a braid chord through tha crood. Tha wire strings cairry faurer nor ye expect.',

@@ -41,6 +41,8 @@ import { drawSelkieSongIcon } from './selkieSong';
 import { drawSelkieChorusIcon } from './selkieChorus';
 import { drawClarsachIcon } from './clarsach';
 import { drawClarsachEternalIcon } from './clarsachEternal';
+import { drawHagstoneSlingIcon } from './hagstone_sling';
+import { drawRowanHailIcon } from './rowanHail';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -101,6 +103,9 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   // Clàrsach (Celtic Harp) + Clàrsach Eternal evolution.
   drawClarsachIcon(scene);
   drawClarsachEternalIcon(scene);
+  // Hagstone Sling + Rowan Hail evolution.
+  drawHagstoneSlingIcon(scene);
+  drawRowanHailIcon(scene);
   // Standalone + utility
   drawClaymoreIcon(scene);
   drawBagpipesUtilityIcon(scene);

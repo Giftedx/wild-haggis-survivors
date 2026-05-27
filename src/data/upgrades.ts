@@ -83,7 +83,11 @@ export type PassiveKey =
   // Taut bronze wire strings tuned to the open moor. +12% cooldown
   // reduction — the tighter the string, the faster the strum. Pairs
   // with a level-5 Clàrsach at chest for the Clàrsach Eternal.
-  | 'wire_strings';
+  | 'wire_strings'
+  // Rowan Amulet — holed rowan-berry sprig, the protective Highland
+  // charm. +15% projectile speed — the charm guides the stone truer.
+  // Pairs with a level-5 Hagstone Sling at chest for the Rowan Hail.
+  | 'rowan_amulet';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -347,6 +351,14 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_clarsach',
     effect: { type: 'add_weapon', weaponKey: 'clarsach' },
   },
+  {
+    id: 'add_hagstone_sling',
+    name: 'upgradeCard.add_hagstone_sling.name',
+    description: 'upgradeCard.add_hagstone_sling.description',
+    rarity: 'uncommon',
+    icon: 'wicon_hagstone_sling',
+    effect: { type: 'add_weapon', weaponKey: 'hagstone_sling' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -555,6 +567,14 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_wire_strings',
     effect: { type: 'add_passive', passiveKey: 'wire_strings' },
+  },
+  {
+    id: 'add_rowan_amulet',
+    name: 'upgradeCard.add_rowan_amulet.name',
+    description: 'upgradeCard.add_rowan_amulet.description',
+    rarity: 'uncommon',
+    icon: 'ucard_rowan_amulet',
+    effect: { type: 'add_passive', passiveKey: 'rowan_amulet' },
   },
 ];
 

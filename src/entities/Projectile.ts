@@ -27,6 +27,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private pibrochAlignedAtFire: boolean = false;
   /** Tracks enemies already hit by this projectile (prevents per-frame multi-hits on one enemy for both piercing and bouncing projectiles). */
   private hitTargets = new WeakSet<Phaser.GameObjects.GameObject>();
+  /** How many distinct enemies this projectile has hit so far (reset on fire). Used by hagstone second-hit bonus. */
+  private hitCount: number = 0;
   /** Optional callback fired when this projectile deactivates (used by Highland Games explosion) */
   onDeactivateCallback: (() => void) | null = null;
 
@@ -63,6 +65,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.isBouncing = false;
     this.pibrochAlignedAtFire = false;
     this.hitTargets = new WeakSet();
+    this.hitCount = 0;
     this.onDeactivateCallback = null; // Clear any prior override
     // Clear weapon key — non-projectile fire paths (bouncing, homing,
     // exploding, rapid bounce) don't set it, so a stale 'caber_toss' key
@@ -118,8 +121,12 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   shouldSkipHit(enemy: Phaser.GameObjects.GameObject): boolean {
     if (this.hitTargets.has(enemy)) return true;
     this.hitTargets.add(enemy);
+    this.hitCount++;
     return false;
   }
+
+  /** How many distinct enemies this projectile has hit so far (includes the current hit). */
+  getHitCount(): number { return this.hitCount; }
 
   /** Called when this projectile hits an enemy. Returns true if projectile should die. */
   onHitEnemy(): boolean {

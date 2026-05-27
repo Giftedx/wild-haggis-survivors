@@ -75,6 +75,7 @@ export function applyWeaponMultiplierFold(inputs: WeaponMultiplierFoldInputs): v
     // of existing stacks so it scales with other crit bonuses rather
     // than replacing them.
     relicEffectDriver.modifyCritMultiplier(player.getCritDamageMultiplier()),
+    player.getProjectileSpeedMul(),
   );
 
   // U1 M4 — Piper Rune folds bagpipes radius once per frame.

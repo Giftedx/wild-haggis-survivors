@@ -149,6 +149,16 @@ export const weapon = {
     description: "Three selkies rise. Chip damage to all enemies in range; up to three are charmed at once. The moor goes quiet when the chorus rises.",
     flavour: "One voice carries across the water. Three voices carry across the world. The haggis did not choose this — the pelt only asks to be held.",
   },
+  hagstone_sling: {
+    name: 'Hagstone Sling',
+    description: 'A holed river stone on a cord. Pierces through the first enemy; the second — caught through the hole — takes +40% bonus damage.',
+    flavour: "River-smoothed granite with a hole worn through by water and time. The old women knotted cord through the hole for protection. The haggis repurposed it for something more direct.",
+  },
+  rowan_hail: {
+    name: 'Rowan Hail',
+    description: 'The charm multiplied into three: a fan of hagstones, each still passing through the first enemy for +40% on the second.',
+    flavour: "Three berries, three stones, one blessing shared across a spread. The rowan tree doesn't give once. The old charm was always generous with enemies.",
+  },
   clarsach: {
     name: 'Clàrsach',
     description: 'Ancient Gaelic harp — amber-gold arc sweeps that carve a wide chord through the crowd. The wire strings carry further than you expect.',

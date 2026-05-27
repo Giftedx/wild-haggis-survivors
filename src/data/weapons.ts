@@ -58,7 +58,12 @@ export type WeaponKey =
   // alignment already applies via dealDamageToEnemy. Pairs with Wire
   // Strings passive at lv5 → Clàrsach Eternal (triple chord + freeze).
   | 'clarsach'
-  | 'clarsach_eternal';
+  | 'clarsach_eternal'
+  // DESIGN_IDEAS §5 — Hagstone Sling. Holed river stone; second enemy
+  // hit (through the hole) takes +40% bonus damage. Pairs with Rowan
+  // Amulet passive at lv5 → Rowan Hail (triple-spread hagstones).
+  | 'hagstone_sling'
+  | 'rowan_hail';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -894,6 +899,53 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.08,
+    },
+  },
+  // Hagstone Sling — holed river stone, piercing. Second enemy hit through
+  // the hole takes +40% bonus damage (see WeaponSystem.onProjectileHitEnemy).
+  hagstone_sling: {
+    key: 'hagstone_sling',
+    nameKey: 'weapon.hagstone_sling.name',
+    descriptionKey: 'weapon.hagstone_sling.description',
+    behavior: 'piercing',
+    cooldownMs: 1900,
+    damage: 13,
+    projectileSpeed: 230,
+    projectileCount: 1,
+    pierce: 1,
+    range: 620,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 25,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.90,
+      countAt: [3],
+      pierce: 0,
+      radius: 1.0,
+    },
+  },
+  // Rowan Hail — evolved hagstone; three stones fan at −15°/0°/+15°.
+  rowan_hail: {
+    key: 'rowan_hail',
+    nameKey: 'weapon.rowan_hail.name',
+    descriptionKey: 'weapon.rowan_hail.description',
+    behavior: 'piercing',
+    cooldownMs: 1700,
+    damage: 20,
+    projectileSpeed: 270,
+    projectileCount: 3,
+    pierce: 1,
+    range: 680,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.0,
     },
   },
 };

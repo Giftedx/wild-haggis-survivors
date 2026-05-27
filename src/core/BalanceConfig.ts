@@ -380,6 +380,17 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.clarsach_eternal.name',
     descriptionKey: 'evolution.clarsach_eternal.description',
   },
+  {
+    // Hagstone Sling + Rowan Amulet → Rowan Hail. The protective rowan
+    // charm multiplies the stone into a hail of three; each still finds
+    // the gap and punishes what lies behind. The old women of the glens
+    // knew — rowan never misses what it means to hit.
+    baseWeapon: 'hagstone_sling',
+    requiredPassive: 'rowan_amulet',
+    evolvedWeapon: 'rowan_hail',
+    nameKey: 'evolution.rowan_hail.name',
+    descriptionKey: 'evolution.rowan_hail.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */
