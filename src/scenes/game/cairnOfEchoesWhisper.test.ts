@@ -21,8 +21,30 @@ describe('pickWhisper — past-self routing', () => {
     expect(result.i18nKey).toBe('ui.cairn.whisper.past_self.cailleach');
   });
 
-  it('routes unsupported variant to classic line', () => {
+  it('routes iron_belly to its own whisper line', () => {
     const result = pickWhisper(ctx({ variantKey: 'iron_belly', rngSample: 0.5 }));
+    expect(result.kind).toBe('past_self');
+    expect(result.i18nKey).toBe('ui.cairn.whisper.past_self.iron_belly');
+  });
+
+  it('routes all non-classic variants to their own whisper line', () => {
+    const nonClassic = [
+      'cailleach', 'glaswegian', 'doric_quinie', 'burns_wee_beastie',
+      'morningside', 'drouthy', 'pibroch', 'orcadian', 'hebridean',
+      'iron_brew', 'grans_best', 'the_pict', 'jacobite', 'tam_o_shanter',
+      'engineer', 'tufted', 'moor_runner', 'iron_belly', 'glen_forager',
+      'surefoot', 'pipe_breath', 'wee_ghostie', 'laird', 'anticlockwise',
+      'peerie_shetlander', 'witch_hare', 'selkie',
+    ];
+    for (const v of nonClassic) {
+      const result = pickWhisper(ctx({ variantKey: v, rngSample: 0.5 }));
+      expect(result.kind).toBe('past_self');
+      expect(result.i18nKey).toBe(`ui.cairn.whisper.past_self.${v}`);
+    }
+  });
+
+  it('falls back to classic for unknown future variant keys', () => {
+    const result = pickWhisper(ctx({ variantKey: 'not_a_variant', rngSample: 0.5 }));
     expect(result.kind).toBe('past_self');
     expect(result.i18nKey).toBe('ui.cairn.whisper.past_self.classic');
   });
