@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-22
 **Initiative:** Open candidate from `HUGE_INITIATIVES_MASTER_PLAN.md` "Wee Tales" follow-up — variant-voiced lines (Cailleach / Glaswegian / Doric / Burns) and `{name}` slot substitution against the existing run-name epigraph.
-**Status:** Draft — implementation immediately after.
+**Status:** Shipped — fully implemented in multiple commits through 2026-05-27.
 **Word count:** ~2,100
 **Prerequisite:** Wee Tales v1 shipped 2026-05-11 in master (catalogue + seed-deterministic picker + EN+SCS parity fence + e2e in `e2e/wee-tale.spec.ts`).
 

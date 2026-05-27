@@ -21,6 +21,17 @@ export interface PostBellMultipliers {
   readonly bossCadenceSec: number;
   /** Chance 0..1 that a spawned enemy becomes "Cursed" (aura + damage bonus). */
   readonly cursedChance: number;
+  /**
+   * Taxman's Retinue wave cadence in seconds. 0 = inactive (pre-bell).
+   * Falls from 90 → 75 → 60 → 45 → 30 across five post-bell steps.
+   * Evaluated by `evaluatePostBellRetinueTick` in SpawnSystem.
+   */
+  readonly retinueCadenceSec: number;
+  /**
+   * Total enemies in each retinue wave (split ledger_wraith + auditor_priest).
+   * 0 = inactive. Grows from 2 → 4 across post-bell steps.
+   */
+  readonly retinueWaveSize: number;
 }
 
 /** Neutral state — what the game uses while still in the normal 20-minute run. */
@@ -30,6 +41,8 @@ export const NEUTRAL_POST_BELL: PostBellMultipliers = {
   bonusEliteSlots: 0,
   bossCadenceSec: 300,
   cursedChance: 0,
+  retinueCadenceSec: 0,
+  retinueWaveSize: 0,
 };
 
 /** Hard caps so late-endless doesn't become one-shot-everything-impossible. */
@@ -59,11 +72,20 @@ export function computePostBellMultipliers(secondsPastBell: number): PostBellMul
   if (steps >= 2) bossCadenceSec = 180;
   if (steps >= 4) bossCadenceSec = 120;
 
+  // Retinue cadence: 90 → 75 → 60 → 45 → 30 seconds per wave.
+  const RETINUE_CADENCES = [90, 75, 60, 45, 30] as const;
+  const retinueCadenceSec = RETINUE_CADENCES[Math.min(steps, RETINUE_CADENCES.length - 1)];
+  // Retinue wave size: 2 → 2 → 3 → 3 → 4 enemies per wave.
+  const RETINUE_WAVE_SIZES = [2, 2, 3, 3, 4] as const;
+  const retinueWaveSize = RETINUE_WAVE_SIZES[Math.min(steps, RETINUE_WAVE_SIZES.length - 1)];
+
   return {
     enemyHpMul,
     enemySpeedMul,
     bonusEliteSlots,
     bossCadenceSec,
     cursedChance,
+    retinueCadenceSec,
+    retinueWaveSize,
   };
 }

@@ -3538,6 +3538,16 @@ export const ui = {
         b: 'Forgettable column. I\'ll balance it by force.',
       },
     },
+    /** Taxman's Retinue (post-bell) — DESIGN_IDEAS §3. Fires each time
+     *  a retinue wave (ledger_wraith + auditor_priest) arrives after
+     *  the bell. Hearth-edge register — bureaucratic persistence from
+     *  beyond the Taxman's death. Four leaves on the no-repeat ring. */
+    taxman_retinue_wave: {
+      a: "Deid Taxman, but his demons keep their schedule.",
+      b: "Ledger-wraiths dinnae need a maister. They just clock in.",
+      c: "Auditors dispatched. He'd filed the forms ahead o' dyin'.",
+      d: "Even deid, the Taxman's filing by proxy.",
+    },
     /** Race the Beithir (DESIGN_IDEAS §1). The Beithir's venom-fang
      *  opens an 8 s race window — reach a heal patch (folkloric
      *  "running water under a bridge") OR kill the beast before the

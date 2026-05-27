@@ -59,6 +59,8 @@ describe('BANTER_POOLS structure', () => {
     'taxman_grudge',
     // Father Taxman Phase 2 — mid-fight verdict-adapt at 50% HP threshold
     'taxman_grudge_phase2',
+    // DESIGN_IDEAS §3 — Taxman's Retinue post-bell wave arrival
+    'taxman_retinue_wave',
     // DESIGN_IDEAS §13 — Lemmings Easter Egg cliff-edge parade trigger
     'lemmings_remember',
     // DESIGN_IDEAS §1 — Race the Beithir venom-sting race window

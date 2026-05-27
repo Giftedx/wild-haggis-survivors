@@ -2886,6 +2886,15 @@ export const ui = {
         b: 'Forgettable column. I\'ll balance it bi force.',
       },
     },
+    //    taxman_retinue_wave (DESIGN_IDEAS §3). Hearth-edge register;
+    //    the haggis observes the retinue clocking in. Tighten contractions
+    //    vs EN: "afore he deid", "filin'". Four leaves match the EN pool.
+    taxman_retinue_wave: {
+      a: "Deid Taxman, but his demons keep their schedule.",
+      b: "Ledger-wraiths dinnae need a maister. They just clock in.",
+      c: "Auditors dispatched. He'd filed the forms afore he deid.",
+      d: "Even deid, the Taxman's filin' by proxy.",
+    },
     //    beithir_sting (DESIGN_IDEAS §1). Scots overlay for the venom
     //    race. The beithir is named verbatim (Scots/Gaelic loanword
     //    holds same in either tongue — Argyll viper-folklore is one of

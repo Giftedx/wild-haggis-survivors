@@ -53,4 +53,29 @@ describe('computePostBellMultipliers', () => {
   it('elite slots cap at 4', () => {
     expect(computePostBellMultipliers(999999).bonusEliteSlots).toBe(4);
   });
+
+  it('neutral state has retinue inactive (cadence 0, size 0)', () => {
+    expect(NEUTRAL_POST_BELL.retinueCadenceSec).toBe(0);
+    expect(NEUTRAL_POST_BELL.retinueWaveSize).toBe(0);
+  });
+
+  it('retinue cadence starts at 90s on step 0 (0-119s past bell)', () => {
+    expect(computePostBellMultipliers(60).retinueCadenceSec).toBe(90);
+    expect(computePostBellMultipliers(60).retinueWaveSize).toBe(2);
+  });
+
+  it('retinue cadence shrinks and wave size grows across steps', () => {
+    expect(computePostBellMultipliers(120).retinueCadenceSec).toBe(75); // step 1
+    expect(computePostBellMultipliers(240).retinueCadenceSec).toBe(60); // step 2
+    expect(computePostBellMultipliers(240).retinueWaveSize).toBe(3);
+    expect(computePostBellMultipliers(360).retinueCadenceSec).toBe(45); // step 3
+    expect(computePostBellMultipliers(480).retinueCadenceSec).toBe(30); // step 4
+    expect(computePostBellMultipliers(480).retinueWaveSize).toBe(4);
+  });
+
+  it('retinue cadence caps at 30s and wave size caps at 4', () => {
+    const m = computePostBellMultipliers(999999);
+    expect(m.retinueCadenceSec).toBe(30);
+    expect(m.retinueWaveSize).toBe(4);
+  });
 });

@@ -14,6 +14,7 @@ import { buildBossWarningCue } from './bossWarningCue';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
 import { shouldMarkCursed } from './cursedSpawnRoll';
 import { evaluatePostBellBossTick } from './postBellBossCadence';
+import { evaluatePostBellRetinueTick } from './postBellRetinueCadence';
 import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
 import { resolveEliteChance } from './eliteChance';
 import { bossHpTimeScale } from './bossHpTimeScale';
@@ -96,6 +97,12 @@ export class SpawnSystem {
    * positive"). Reset on resetRunState.
    */
   private postBellBossLastSpawnSec: number = -1;
+  /**
+   * Taxman's Retinue — game-time of the most recent retinue wave spawn.
+   * Initialised to -1 (anchored at bell time on first cadence tick).
+   * Reset on resetRunState.
+   */
+  private postBellRetinueLastSpawnSec: number = -1;
   /** One-shot: run reached `RUN_WIN_TIME_SEC` — timeline bursts off, finale boss queued. */
   private runWinFinaleStarted: boolean = false;
   /** 0–1 — rises on kills, decays over time; nudges elite spawn chance. */
@@ -367,6 +374,7 @@ export class SpawnSystem {
     this.enemyHpMultiplier = 1.0;
     this.spawnsPausedUntilGameSec = 0;
     this.postBellBossLastSpawnSec = -1;
+    this.postBellRetinueLastSpawnSec = -1;
     this.events.removeAllListeners();
 
     if (this.activeBossVfx) {
@@ -420,6 +428,7 @@ export class SpawnSystem {
     this.syncWaveDirectorFromTimeline();
     this.checkBossSpawns(playerX, playerY);
     this.tickPostBellBoss(playerX, playerY);
+    this.tickPostBellRetinue(playerX, playerY);
 
     if (this.spawnTimer >= this.spawnInterval) {
       // Carry over small overshoots for accurate rate, but cap to prevent
@@ -502,6 +511,53 @@ export class SpawnSystem {
     this.bossSpawnScheduled.add(boss.key);
     this.postBellBossLastSpawnSec = this.gameTimeSec;
     this.spawnBoss(boss, playerX, playerY);
+  }
+
+  /**
+   * Taxman's Retinue (post-bell) — DESIGN_IDEAS §3.
+   *
+   * After the Taxman falls, his accounting team continues to clock in on
+   * schedule. Each wave spawns a mix of ledger_wraith (chase threat) and
+   * auditor_priest (ranged threat), scaled by post-bell multipliers.
+   *
+   * Wave cadence and size come from `PostBellEscalation.retinueCadenceSec`
+   * and `retinueWaveSize`. The retinue fires regardless of whether a
+   * post-bell boss respawn is active — bureaucracy never yields.
+   *
+   * Replay-deterministic: `forceSpawn` uses `getSpawnPosition` which is
+   * seeded via `runRng`. Positions are scene-spatial but spawn position
+   * has no downstream state branch — same contract as pack scatter.
+   */
+  private tickPostBellRetinue(_playerX: number, _playerY: number): void {
+    const sec = this.scene.getSecondsPastBell();
+    if (!sec || sec <= 0) return;
+    const pb = this.getPostBellMultipliers();
+    if (pb.retinueCadenceSec <= 0) return;
+    if (this.postBellRetinueLastSpawnSec < 0) {
+      this.postBellRetinueLastSpawnSec = this.gameTimeSec - sec;
+    }
+    const sched = evaluatePostBellRetinueTick(
+      this.gameTimeSec,
+      this.postBellRetinueLastSpawnSec,
+      pb.retinueCadenceSec,
+    );
+    if (!sched.due) return;
+    this.postBellRetinueLastSpawnSec = this.gameTimeSec;
+
+    const waveSize = pb.retinueWaveSize;
+    const wraithCount = Math.ceil(waveSize / 2);
+    const auditorCount = Math.floor(waveSize / 2);
+
+    for (let i = 0; i < wraithCount; i++) {
+      const e = this.forceSpawn('ledger_wraith');
+      if (e) e.applyPostBellScaling(pb.enemyHpMul, pb.enemySpeedMul);
+    }
+    for (let i = 0; i < auditorCount; i++) {
+      const e = this.forceSpawn('auditor_priest');
+      if (e) e.applyPostBellScaling(pb.enemyHpMul, pb.enemySpeedMul);
+    }
+
+    this.scene.requestBanter('taxman_retinue_wave', '');
   }
 
   private spawnBoss(boss: BossConfig, _playerX: number, _playerY: number): void {

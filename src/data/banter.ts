@@ -103,6 +103,14 @@ export type BanterContext =
   // Edge tone — bureaucrat-menace, not the closing-curtain sneer of
   // taxman_grudge. He's mid-fight, adapting. Same five verdict sub-pools.
   | 'taxman_grudge_phase2'
+  // DESIGN_IDEAS §3 Taxman's Retinue (post-bell) — fires each time a
+  // retinue wave (ledger_wraith + auditor_priest mix) spawns after the
+  // bell. Hearth-edge register — the haggis observing bureaucratic
+  // persistence; the Taxman is gone but his forms live on. Priority 72
+  // sits between boss_down (70) and low_hp (80): a wave arrival is
+  // mid-urgency, interrupting ambient lines but yielding to HP crisis.
+  // No sub-pool tags — flat pool, four authored leaves on the ring.
+  | 'taxman_retinue_wave'
   // DESIGN_IDEAS §13 Lemmings Easter Egg — fires once when the cliff-edge
   // parade triggers (90 s idle in coastal biome, once per variant
   // lifetime). Hearth tone; the toast that follows the OH NO! parade.
@@ -3671,6 +3679,24 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.taxman_grudge_phase2.reckless.b',
       ],
     },
+  },
+  // Taxman's Retinue (post-bell) — DESIGN_IDEAS §3. Fires each time a
+  // retinue wave arrives after the bell. Four leaves on the no-repeat
+  // ring; flat pool (no sub-pools needed — single trigger point, no
+  // context-variant splits). Edge-Hearth register: the Taxman is dead
+  // but the bureaucracy keeps its schedule. Priority 72 sits between
+  // boss_down (70) and low_hp (80) — mid-urgency, interrupts ambient
+  // banter but yields to HP crisis and anything above.
+  {
+    context: 'taxman_retinue_wave',
+    tone: 'edge',
+    priority: 72,
+    keys: [
+      'ui.banter.taxman_retinue_wave.a',
+      'ui.banter.taxman_retinue_wave.b',
+      'ui.banter.taxman_retinue_wave.c',
+      'ui.banter.taxman_retinue_wave.d',
+    ],
   },
   // DESIGN_IDEAS §1 Race the Beithir. Venom-fang sting opens the 8 s
   // race window. Top-level `keys` are the `stung` onset lines, also
