@@ -94,7 +94,17 @@ export type EnemyBehavior =
    * Phase 3 (HP < 35 %): speed ×1.4 + triple lantern fan + faster blink/gas.
    * Slots at 18:30 between Nuckelavee (17:00) and Hunter General (20:00).
    */
-  | 'auld_reekie';
+  | 'auld_reekie'
+  /**
+   * Taxman Grudge — the Taxman's Phase 2 at 50% HP.
+   * Reads the current GrudgeVerdict from the run ledger and switches to a
+   * verdict-specific attack pattern that counters the player's run-wide
+   * fighting style: Tax Demands (coward) / Penalty Burst (bruiser) /
+   * Wealth Assessment (precise) / Interest Charges (reckless) /
+   * Standard Fan (even). 1.5 s dramatic pause at the phase transition.
+   * Refs: DESIGN_IDEAS.md §1 + §3 (Father Taxman / Grudge-Ledger phase).
+   */
+  | 'taxman_grudge';
 
 export interface EnemyConfig {
   key: string;
@@ -988,6 +998,7 @@ export const BOSSES: BossConfig[] = [
     damage: 50,
     xpValue: 200,
     scale: 3.0,
+    behaviorOverride: 'taxman_grudge',
   },
   // Post-bell exclusive — Black Douglas (Borders terror). Appears only after
   // the player has defeated the Taxman and accepted the keep-going offer.

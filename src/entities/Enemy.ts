@@ -62,6 +62,12 @@ import {
   LAMP_ANCHOR_RADIUS_PX, LAMP_ANCHOR_RNG_JITTER,
   type AuldReekieState,
 } from './auldReekieBehaviour';
+import {
+  simulateTaxmanGrudgeBehaviour,
+  initialTaxmanGrudgeState,
+  type TaxmanGrudgeState,
+} from './taxmanGrudgeBehaviour';
+import { judgeGrudge } from './grudgeLedger';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -191,6 +197,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private nessieState: NessieState = initialNessieState();
   /** Auld Reekie Ghaist boss state (only used when behavior === 'auld_reekie'). */
   private auldReekieState: AuldReekieState = initialAuldReekieState();
+  /** Taxman Phase 2 state (only used when behavior === 'taxman_grudge'). */
+  private taxmanGrudgeState: TaxmanGrudgeState = initialTaxmanGrudgeState();
   /** Gas-lamp post sprites anchored near the Auld Reekie arena. Destroyed in die(). */
   private lampPostSprites: Phaser.GameObjects.Image[] = [];
   /** Seeded anchor positions for lamp posts — set once on first tick. */
@@ -741,6 +749,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         break;
       case 'auld_reekie':
         this.behaviorAuldReekie(targetX, targetY, delta);
+        break;
+      case 'taxman_grudge':
+        this.behaviorTaxmanGrudge(targetX, targetY, delta);
         break;
     }
   }
@@ -1684,6 +1695,203 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  /**
+   * Father Taxman — grudge-reactive phase boss (DESIGN_IDEAS §1 + §3).
+   * Phase 1: standard chase. At 50% HP: 1.5 s dramatic pause, reads the
+   * current GrudgeVerdict, declares via banter, then enters a Phase 2
+   * attack pattern that counters the player's run-wide fighting style.
+   */
+  private behaviorTaxmanGrudge(tx: number, ty: number, delta: number): void {
+    const verdict = judgeGrudge(this.ctx.getGrudgeLedger());
+    const next = simulateTaxmanGrudgeBehaviour(this.taxmanGrudgeState, {
+      deltaMs: delta,
+      hpPct: this.maxHp > 0 ? this.hp / this.maxHp : 1.0,
+      resolvedVerdict: verdict,
+    });
+    this.taxmanGrudgeState = next;
+
+    if (next.isPaused) {
+      this.setVelocity(0, 0);
+    } else {
+      this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+    }
+
+    if (next.shouldFireTransition) {
+      this.ctx.requestBanter('taxman_grudge_phase2', verdict);
+      // White flash → settle to a dark grey-green (ledger-ink menace).
+      this.setTint(0xffffff);
+      this.ctx.getUpdateTickers().addOnce('raw', 250, () => {
+        if (this.active) {
+          this.baseTint = 0x445533;
+          this.setTint(0x445533);
+        }
+      });
+      // Expanding ledger-slam ring VFX.
+      try {
+        const ring = this.scene.add.circle(this.x, this.y, 18, 0xcccc88, 0.0);
+        ring.setStrokeStyle(3, 0x99aa66, 0.8);
+        this.scene.tweens.add({
+          targets: ring,
+          radius: 260,
+          alpha: { from: 0.8, to: 0 },
+          duration: 900,
+          ease: 'Cubic.easeOut',
+          onComplete: () => ring.destroy(),
+        });
+      } catch { /* test stubs without tweens */ }
+    }
+
+    if (next.shouldFireAttack) {
+      switch (next.verdict) {
+        case 'coward':   this.fireTaxmanDemands(tx, ty); break;
+        case 'bruiser':  this.fireTaxmanPenalty(); break;
+        case 'precise':  this.fireTaxmanAssessment(tx, ty); break;
+        case 'reckless': this.fireTaxmanInterest(tx, ty); break;
+        case 'even':     this.fireTaxmanStandardFan(tx, ty); break;
+      }
+    }
+  }
+
+  /** coward verdict — Tax Demands: 3 dark-blue projectiles in a spread.
+   *  Slower than standard attacks but persistent — tax demands follow ye. */
+  private fireTaxmanDemands(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const offsets = [-0.35, 0, 0.35];
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (const off of offsets) {
+      const angle = baseAngle + off;
+      const proj = this.scene.add.circle(this.x, this.y, 7, 0x334488, 0.9);
+      this.scene.physics.add.existing(proj);
+      const body = proj.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * 90, Math.sin(angle) * 90);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return; hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+        if (hit) return; cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(22);
+        cur.applyNetSlow(900);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 3800, cleanup);
+    }
+  }
+
+  /** bruiser verdict — Penalty Notice: 6-shard radial burst.
+   *  Pushes the brawler back — Revenue Scotland keeps its distance. */
+  private fireTaxmanPenalty(): void {
+    const step = (Math.PI * 2) / 6;
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < 6; i++) {
+      const angle = step * i;
+      const proj = this.scene.add.circle(this.x, this.y, 8, 0xcc2222, 0.9);
+      this.scene.physics.add.existing(proj);
+      const body = proj.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * 200, Math.sin(angle) * 200);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return; hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+        if (hit) return; cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(20);
+        cur.applyNetSlow(700);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
+    }
+  }
+
+  /** precise verdict — Wealth Assessment: 1 large slow blob that deals
+   *  12% of the player's current HP on contact — auditing the surplus. */
+  private fireTaxmanAssessment(tx: number, ty: number): void {
+    const spawnedPlayer = this.ctx.getPlayer();
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const proj = this.scene.add.circle(this.x, this.y, 18, 0xfffacc, 0.85);
+    this.scene.physics.add.existing(proj);
+    const body = proj.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(Math.cos(angle) * 70, Math.sin(angle) * 70);
+    let hit = false;
+    const cleanup = () => {
+      if (hit) return; hit = true;
+      try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+    };
+    const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+      if (hit) return; cleanup();
+      const cur = this.ctx.getPlayer();
+      if (cur !== spawnedPlayer) return;
+      if (cur.tryParryProjectile()) return;
+      cur.takeDamage(Math.max(8, Math.floor(cur.getHp() * 0.12)));
+    });
+    this.ctx.getUpdateTickers().addOnce('raw', 5500, cleanup);
+  }
+
+  /** reckless verdict — Interest Charges: 7-shard fan matching the
+   *  player's chaotic energy. Fixed ±45° spread (deterministic, no RNG). */
+  private fireTaxmanInterest(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const spawnedPlayer = this.ctx.getPlayer();
+    const count = 7;
+    const spread = Math.PI * 0.5; // 90° total
+    const step = count > 1 ? spread / (count - 1) : 0;
+    for (let i = 0; i < count; i++) {
+      const angle = baseAngle - spread / 2 + step * i;
+      const proj = this.scene.add.circle(this.x, this.y, 5, 0xff4422, 0.9);
+      this.scene.physics.add.existing(proj);
+      const body = proj.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * 230, Math.sin(angle) * 230);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return; hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+        if (hit) return; cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(14);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2200, cleanup);
+    }
+  }
+
+  /** even verdict — Standard Assessment: 4-shard gold fan + speed bump. */
+  private fireTaxmanStandardFan(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const spawnedPlayer = this.ctx.getPlayer();
+    const count = 4;
+    const spread = Math.PI * 0.45;
+    const step = count > 1 ? spread / (count - 1) : 0;
+    for (let i = 0; i < count; i++) {
+      const angle = baseAngle - spread / 2 + step * i;
+      const proj = this.scene.add.circle(this.x, this.y, 6, 0xffd700, 0.9);
+      this.scene.physics.add.existing(proj);
+      const body = proj.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * 155, Math.sin(angle) * 155);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return; hit = true;
+        try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+      };
+      const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+        if (hit) return; cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(18);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2600, cleanup);
+    }
+  }
+
   private behaviorRanged(tx: number, ty: number, delta: number): void {
     // Single sqrt feeds three decisions: standoff bands + cooldown gate.
     // The unit components `(dx/dist, dy/dist)` are exactly `cos(angle), sin(angle)`
@@ -2485,6 +2693,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.lampAnchorPositions = [];
     this.auldReekieInitialized = false;
     this.auldReekieState = initialAuldReekieState();
+    // Taxman — reset phase state so pool re-use starts in Phase 1.
+    this.taxmanGrudgeState = initialTaxmanGrudgeState();
   }
 
   destroy(fromScene?: boolean): void {
@@ -2512,6 +2722,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.lampAnchorPositions = [];
     this.auldReekieInitialized = false;
     this.auldReekieState = initialAuldReekieState();
+    this.taxmanGrudgeState = initialTaxmanGrudgeState();
     super.destroy(fromScene);
   }
 

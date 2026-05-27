@@ -96,6 +96,13 @@ export type BanterContext =
   // precise | reckless | even. Edge register — auditor's sneer; this
   // is the antagonist getting the curtain line on the run he just lost.
   | 'taxman_grudge'
+  // Father Taxman Phase 2 — fires once at the 50% HP threshold during the
+  // Taxman fight. The Taxman speaks: he's been watching the whole run and
+  // adapts to the player's verdict. Priority 96 — fires over ambient banter
+  // (Cailleach Gauntlet 95 and below) but yields to boss_warn (100).
+  // Edge tone — bureaucrat-menace, not the closing-curtain sneer of
+  // taxman_grudge. He's mid-fight, adapting. Same five verdict sub-pools.
+  | 'taxman_grudge_phase2'
   // DESIGN_IDEAS §13 Lemmings Easter Egg — fires once when the cliff-edge
   // parade triggers (90 s idle in coastal biome, once per variant
   // lifetime). Hearth tone; the toast that follows the OH NO! parade.
@@ -3508,6 +3515,40 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       reckless: [
         'ui.banter.taxman_grudge.reckless.a',
         'ui.banter.taxman_grudge.reckless.b',
+      ],
+    },
+  },
+  // Father Taxman Phase 2 — fires once at 50% HP during the Taxman fight.
+  // Edge tone — mid-fight bureaucrat-menace; the Taxman adapts to the
+  // player's verdict. Priority 96 sits above cailleach_gauntlet (95) so
+  // the ledger declaration wins any same-tick ambient overlap; below
+  // boss_warn (100) so a simultaneous boss-warn (rare but possible
+  // in post-bell) still takes the channel. Same five verdict sub-pools
+  // as taxman_grudge; `even` leaves double as the unknown-tag fallback.
+  {
+    context: 'taxman_grudge_phase2',
+    tone: 'edge',
+    priority: 96,
+    keys: [
+      'ui.banter.taxman_grudge_phase2.even.a',
+      'ui.banter.taxman_grudge_phase2.even.b',
+    ],
+    keysByTag: {
+      coward: [
+        'ui.banter.taxman_grudge_phase2.coward.a',
+        'ui.banter.taxman_grudge_phase2.coward.b',
+      ],
+      bruiser: [
+        'ui.banter.taxman_grudge_phase2.bruiser.a',
+        'ui.banter.taxman_grudge_phase2.bruiser.b',
+      ],
+      precise: [
+        'ui.banter.taxman_grudge_phase2.precise.a',
+        'ui.banter.taxman_grudge_phase2.precise.b',
+      ],
+      reckless: [
+        'ui.banter.taxman_grudge_phase2.reckless.a',
+        'ui.banter.taxman_grudge_phase2.reckless.b',
       ],
     },
   },

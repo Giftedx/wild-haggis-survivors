@@ -11,6 +11,7 @@ import { UpdateTickers } from '../utils/UpdateTickers';
 import type { RNG } from '../utils/rng';
 import type { BanterContext } from '../data/banter';
 import type { BiomeId } from '../data/biomes';
+import type { GrudgeLedgerState } from '../entities/grudgeLedger';
 
 /**
  * ISceneContext — typed service locator owned by the composing Scene.
@@ -57,6 +58,12 @@ export interface ISceneContext {
    * lookup so JuiceSystem doesn't import RelicSystem directly.
    */
   getCeilidhChainPeriod(): number;
+
+  /**
+   * Per-run Taxman Grudge Ledger — read by Enemy.behaviorTaxmanGrudge at
+   * the 50% HP threshold to resolve the GrudgeVerdict for Phase 2.
+   */
+  getGrudgeLedger(): GrudgeLedgerState;
 
   /**
    * R1 M4 — boss HP multiplier. Default 1; stone_of_destiny_shard

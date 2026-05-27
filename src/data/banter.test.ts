@@ -57,6 +57,8 @@ describe('BANTER_POOLS structure', () => {
     'cailleach_gauntlet',
     // DESIGN_IDEAS §1 — Taxman Grudge Ledger run-end verdict line
     'taxman_grudge',
+    // Father Taxman Phase 2 — mid-fight verdict-adapt at 50% HP threshold
+    'taxman_grudge_phase2',
     // DESIGN_IDEAS §13 — Lemmings Easter Egg cliff-edge parade trigger
     'lemmings_remember',
     // DESIGN_IDEAS §1 — Race the Beithir venom-sting race window

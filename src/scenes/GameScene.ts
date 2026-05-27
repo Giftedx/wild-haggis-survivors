@@ -2141,6 +2141,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   getRunRng(): RNG {
     return this.runRng;
   }
+  getGrudgeLedger(): GrudgeLedgerState {
+    return this.grudgeLedger;
+  }
 
   /** The numeric seed for this run. Consumed by run-summary + game-over UI. */
   getRunSeed(): number {

@@ -3232,6 +3232,35 @@ export const ui = {
         b: 'Nothin\' worth notin\' in the margin. Book\'s closed.',
       },
     },
+    /** Father Taxman Phase 2 (DESIGN_IDEAS §1 + §3). Fires once at 50%
+     *  HP during the Taxman fight. Edge tone — mid-fight bureaucrat-menace.
+     *  He speaks first-person, mid-confrontation, about YOUR ledger.
+     *  Five verdict sub-pools mirror taxman_grudge; `even` doubles as
+     *  the unknown-tag fallback per pool contract. Voice register: the
+     *  Taxman speaks — not the haggis. Darker than the victory-sneer of
+     *  taxman_grudge; he's still fighting, still dangerous. */
+    taxman_grudge_phase2: {
+      coward: {
+        a: 'Kept yer distance all run. I\'ll close it now.',
+        b: 'Tax demands follow ye wherever ye run.',
+      },
+      bruiser: {
+        a: 'Aye, ye like the close work. Stand back — penalty applies.',
+        b: 'Every brawler meets a wall. Revenue Scotland IS the wall.',
+      },
+      precise: {
+        a: 'No a scratch. Suspicious clean books — I\'ll audit that.',
+        b: 'Perfect column. Let\'s see how ye handle an assessment.',
+      },
+      reckless: {
+        a: 'On the brink every time. Interest compounds, pal.',
+        b: 'Reckless wi\' yer ain skin — the accounts are callin\' ye in.',
+      },
+      even: {
+        a: 'Unremarkable ledger. Standard assessment applies.',
+        b: 'Forgettable column. I\'ll balance it by force.',
+      },
+    },
     /** Race the Beithir (DESIGN_IDEAS §1). The Beithir's venom-fang
      *  opens an 8 s race window — reach a heal patch (folkloric
      *  "running water under a bridge") OR kill the beast before the

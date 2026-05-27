@@ -2598,6 +2598,31 @@ export const ui = {
         b: 'Naethin worth merkin in tha mairgin. Buik\'s steekit.',
       },
     },
+    //    taxman_grudge_phase2. Edge tone — bureaucrat-menace mid-fight.
+    //    Same voice register as taxman_grudge SCS: consonants bite,
+    //    Scots ledger-vocabulary lands verbatim. Five verdict sub-pools.
+    taxman_grudge_phase2: {
+      coward: {
+        a: 'Kept yer distance aw run. I\'ll close it nou.',
+        b: 'Tax demands follae ye whaur ye rin.',
+      },
+      bruiser: {
+        a: 'Aye, ye like tha close wark. Staun back — penalty applies.',
+        b: 'Ivery brawler meets a waw. Revenue Scotland IS tha waw.',
+      },
+      precise: {
+        a: 'No a scart. Suspicious tidy buiks — I\'ll audit that.',
+        b: 'Perfec column. Let\'s see how ye haundle an assessment.',
+      },
+      reckless: {
+        a: 'On tha brink ilka time. Interest compounds, pal.',
+        b: 'Reckless wi yer ain skin — tha buiks are cawin ye in.',
+      },
+      even: {
+        a: 'Unremarkable ledger. Standard assessment applies.',
+        b: 'Forgettable column. I\'ll balance it bi force.',
+      },
+    },
     //    beithir_sting (DESIGN_IDEAS §1). Scots overlay for the venom
     //    race. The beithir is named verbatim (Scots/Gaelic loanword
     //    holds same in either tongue — Argyll viper-folklore is one of
