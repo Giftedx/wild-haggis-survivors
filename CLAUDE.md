@@ -152,7 +152,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 - **Sister-system patterns.** Reliquary ↔ Clootie ↔ Cairn share spawn/tick/commit/destroy/getMinimapMarker shape; Drift ↔ Whisky ↔ Stance ↔ Parry share pure-helper + scene-orchestrator + Player wire shape. New mechanics match the sister.
 - **RNG-stream order in `resetTransientRunState`:** reliquary → clootie → ... — append-only contract.
 - **Bag-vs-cached-field divergence:** systems caching `RunModifiers` multipliers at run-start need explicit setter resync when W2 routes mutate the bag mid-run (see `SpawnSystem.spawnIntervalMult`, `WeaponSystem.curseCooldownMul`).
-- **Banter pool priorities** (live arbitration): see `reference_banter_arbitration` memory + `data/banter.ts`. Critical wins: `boss_warn` 100 > `beithir_sting` 90 > `taxman_grudge` 85 > `low_hp` 80 > `death_reflection` 75 > `boss_down` 70.
+- **Banter pool priorities** (live arbitration): see `reference_banter_arbitration` memory + `data/banter.ts`. Critical wins: `first_time` 110 > `boss_warn` 100 > `taxman_grudge_phase2` 96 > `cailleach_gauntlet` 95 > `beithir_sting` 90 > `taxman_grudge` 85 > `low_hp` 80 > `death_reflection` 75 > `taxman_retinue_wave` 72 > `boss_down` 70.
 
 ### Path Alias
 `@/*` maps to `./src/*` (configured in both `tsconfig.json` and `vite.config.ts`).
