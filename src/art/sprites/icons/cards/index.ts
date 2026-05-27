@@ -23,6 +23,7 @@ import { drawSmokedHaddock } from './smokedHaddock';
 import { drawCopperRivet } from './copperRivet';
 import { drawDrumHoop } from './drumHoop';
 import { drawSealPelt } from './sealPelt';
+import { drawWireStrings } from './wireStrings';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -74,6 +75,8 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawDrumHoop(scene);
   // Selkie Song paired passive.
   drawSealPelt(scene);
+  // Clàrsach paired passive.
+  drawWireStrings(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

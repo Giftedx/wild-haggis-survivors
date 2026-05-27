@@ -78,7 +78,12 @@ export type PassiveKey =
   // The selkie's shed skin, smooth and salt-cold. +2 HP regen per second
   // — the warmth of the pelt keeps you alive while the song holds them.
   // Pairs with a level-5 Selkie Song at chest for the Selkie Chorus.
-  | 'seal_pelt';
+  | 'seal_pelt'
+  // Clàrsach paired passive — "Wire Strings".
+  // Taut bronze wire strings tuned to the open moor. +12% cooldown
+  // reduction — the tighter the string, the faster the strum. Pairs
+  // with a level-5 Clàrsach at chest for the Clàrsach Eternal.
+  | 'wire_strings';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -333,6 +338,15 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_selkie_song',
     effect: { type: 'add_weapon', weaponKey: 'selkie_song' },
   },
+  // DESIGN_IDEAS §5 — Clàrsach (Celtic Harp).
+  {
+    id: 'add_clarsach',
+    name: 'upgradeCard.add_clarsach.name',
+    description: 'upgradeCard.add_clarsach.description',
+    rarity: 'uncommon',
+    icon: 'wicon_clarsach',
+    effect: { type: 'add_weapon', weaponKey: 'clarsach' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -532,6 +546,15 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_seal_pelt',
     effect: { type: 'add_passive', passiveKey: 'seal_pelt' },
+  },
+  // Clàrsach paired passive — Wire Strings.
+  {
+    id: 'add_wire_strings',
+    name: 'upgradeCard.add_wire_strings.name',
+    description: 'upgradeCard.add_wire_strings.description',
+    rarity: 'uncommon',
+    icon: 'ucard_wire_strings',
+    effect: { type: 'add_passive', passiveKey: 'wire_strings' },
   },
 ];
 

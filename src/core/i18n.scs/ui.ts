@@ -1466,6 +1466,12 @@ export const ui = {
         c: 'Sandwood Bay, February. Three mair voices answered fae tha skerries.',
         d: 'Tha sea held its braith. Tha Selkie Chorus rose.',
       },
+      clarsach: {
+        a: 'Three strings at yince. Tha hairp minds tha auld chord.',
+        b: 'Wire strings strung ticht — tha haill moor rings when they soond.',
+        c: 'Tha Eternal Chord: three voices, ane note, enemies still in it.',
+        d: 'Da Clàrsach Eternal — auld music, awfy sudden consequences.',
+      },
     },
     curse_start: {
       generic: {

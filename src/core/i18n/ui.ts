@@ -2055,6 +2055,12 @@ export const ui = {
         c: 'Sandwood Bay, February. Three more voices answered from the skerries.',
         d: 'The sea held its breath. The Selkie Chorus rose.',
       },
+      clarsach: {
+        a: 'Three strings at once. The harp remembers the old chord.',
+        b: 'Wire strings strung tight — the whole moor rings when they sound.',
+        c: 'The Eternal Chord: three voices, one note, enemies still in it.',
+        d: 'Da Clàrsach Eternal — ancient music, very sudden consequences.',
+      },
     },
     curse_start: {
       generic: {

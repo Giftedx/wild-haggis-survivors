@@ -149,4 +149,14 @@ export const weapon = {
     description: "Three selkies rise. Chip damage to all enemies in range; up to three are charmed at once. The moor goes quiet when the chorus rises.",
     flavour: "One voice carries across the water. Three voices carry across the world. The haggis did not choose this — the pelt only asks to be held.",
   },
+  clarsach: {
+    name: 'Clàrsach',
+    description: 'Ancient Gaelic harp — amber-gold arc sweeps that carve a wide chord through the crowd. The wire strings carry further than you expect.',
+    flavour: "Older than the pipes, older than the kingdom. The clàrsach sat at the chief's right hand before blades were fashionable. The haggis does not pluck — it strikes full-palmed, and the sound is enormous.",
+  },
+  clarsach_eternal: {
+    name: 'Clàrsach Eternal',
+    description: 'Three simultaneous chord arcs at once. Each hit briefly stills what it strikes.',
+    flavour: "The wire strings pulled taut past tuning, past breaking, past the register the hall was built for. Three chords loosed at once: the first silences, the second holds, the third decides. The moor goes quiet for exactly long enough.",
+  },
 } as const;

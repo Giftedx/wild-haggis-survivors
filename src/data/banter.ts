@@ -685,6 +685,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.selkie_song.c',
         'ui.banter.weapon_evolve.selkie_song.d',
       ],
+      clarsach: [
+        'ui.banter.weapon_evolve.clarsach.a',
+        'ui.banter.weapon_evolve.clarsach.b',
+        'ui.banter.weapon_evolve.clarsach.c',
+        'ui.banter.weapon_evolve.clarsach.d',
+      ],
       // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
       // CLAUDE.md "9 of the 10 weapons have a paired passive". Banter pool
       // intentionally omits a `bagpipes` tag so the system can never queue

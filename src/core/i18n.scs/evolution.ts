@@ -79,4 +79,9 @@ export const evolution = {
     description: "Tha pelt held tha sang in. Shed, it cairries three times as faur. Up tae three enemies chairmed at yince; tha moor rearranges itsel.",
     flavour: "Sandwood Bay, February. Tha pelt on tha rock, tha sang in tha air, three mair voices answerin fae tha skerries. Tha haggis held tha pelt canny. Tha sea held its braith.",
   },
+  clarsach_eternal: {
+    name: 'Clàrsach Eternal',
+    description: 'Tha wire strings tichtened past tunin. Three chord arcs loose at yince; ilka hit briefly stills whit it strikes.',
+    flavour: "Tha auld hairp at fou resonance: centuries o Gaelic music compressit intae three simultaneous chords. Tha wire strings haud langer nor gut ever could. Tha enemies dinnae.",
+  },
 } as const;

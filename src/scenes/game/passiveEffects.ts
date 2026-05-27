@@ -139,5 +139,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // Pairs with Selkie Song at lv5 for the Selkie Chorus evolution.
       player.addHpRegen(2.0);
       break;
+    case 'wire_strings':
+      // +12% cooldown reduction — taut bronze wire strings tuned to
+      // the open moor; tighter string = faster strum cadence. Pairs
+      // with Clàrsach at lv5 for the Clàrsach Eternal evolution.
+      player.addCooldownReduction(0.12);
+      break;
   }
 }

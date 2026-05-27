@@ -177,6 +177,14 @@ export const upgradeCard = {
     name: 'Selkie Song',
     description: 'Charm aura — chip damage and the nearest enemy turns on its ain kind. Selkie magic.',
   },
+  add_clarsach: {
+    name: 'Clàrsach',
+    description: 'Ancient Gaelic harp — amber-gold arc sweeps, wide arc, satisfying crunch through a crowd.',
+  },
+  add_wire_strings: {
+    name: 'Wire Strings',
+    description: 'Taut bronze wire strings tuned to the open moor (+12% cooldown reduction). Pairs wi the Clàrsach.',
+  },
   add_seal_pelt: {
     name: 'Seal Pelt',
     description: "The selkie's shed skin, still warm. +2 HP regen per second. Pairs wi the Selkie Song.",

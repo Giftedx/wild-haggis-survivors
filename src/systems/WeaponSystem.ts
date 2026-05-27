@@ -1084,12 +1084,13 @@ export class WeaponSystem {
     const isSgian = w.config.key === 'sgian_dubh';
     const isClaymore = w.config.key === 'claymore';
     const isStag = w.config.key === 'stag_antler';
-    const flashKey = isClaymore || isSgian || isStag
+    const isClarsach = w.config.key === 'clarsach';
+    const flashKey = isClaymore || isSgian || isStag || isClarsach
       ? 'fx_weapon_claymore_spark'
       : 'fx_weapon_nessie_splash';
-    const flashScale = isSgian ? (forceCrit ? 0.65 : 0.5) : isStag ? 0.7 : 0.85;
-    const flashEndScale = isSgian ? (forceCrit ? 1.05 : 0.85) : isStag ? 1.15 : 1.35;
-    const flashDuration = isSgian ? 200 : isStag ? 240 : 280;
+    const flashScale = isSgian ? (forceCrit ? 0.65 : 0.5) : isStag ? 0.7 : isClarsach ? 0.6 : 0.85;
+    const flashEndScale = isSgian ? (forceCrit ? 1.05 : 0.85) : isStag ? 1.15 : isClarsach ? 1.1 : 1.35;
+    const flashDuration = isSgian ? 200 : isStag ? 240 : isClarsach ? 220 : 280;
     this.spawnWeaponFlourish(
       px + Math.cos(facing) * 28,
       py + Math.sin(facing) * 28,
@@ -1107,8 +1108,10 @@ export class WeaponSystem {
         ? (forceCrit ? 0xf6f8fa : 0xd8dde4)
         : isStag
           ? 0xd8c8a0
-          : 0x226644;
-    const wedgeAlpha = isClaymore ? 0.35 : isSgian ? 0.42 : isStag ? 0.4 : 0.4;
+          : isClarsach
+            ? 0xf5c842  // amber-gold harp strings
+            : 0x226644;
+    const wedgeAlpha = isClaymore ? 0.35 : isSgian ? 0.42 : isStag ? 0.4 : isClarsach ? 0.38 : 0.4;
     gfx.fillStyle(wedgeColor, wedgeAlpha);
     gfx.slice(
       px, py, radius,
@@ -1369,6 +1372,11 @@ export class WeaponSystem {
         // the moor (Stirling Bridge in two heartbeats).
         this.fireFreedomBlade(w, px, py, dmg, radius, isCrit);
         break;
+      case 'clarsach_eternal':
+        // Clàrsach Eternal — triple chord sweep: three simultaneous
+        // amber-gold arcs at −18° / 0° / +18°, each freezing on hit.
+        this.fireClarsachEternal(w, px, py);
+        break;
       default:
         this.fireProjectile(w, px, py, 'thistle');
         break;
@@ -1588,6 +1596,88 @@ export class WeaponSystem {
         const kb = w.config.knockback / mass;
         enemy.applyKnockback(nx * kb, ny * kb, 150);
       }
+    }
+  }
+
+  /**
+   * Clàrsach Eternal — three simultaneous amber-gold chord arcs at
+   * −18° / 0° / +18° centred on the aim direction. Each arc applies
+   * a 150 ms freeze-slow (0.6×) on hit — the harp's resonance stills
+   * the enemy for a heartbeat. First-hit-wins per enemy (same guard
+   * as Dirk Flurry). Replay-deterministic: no RNG consumed here.
+   */
+  private fireClarsachEternal(w: ActiveWeapon, px: number, py: number): void {
+    const radius = this.effectiveAoe(w);
+    let centerFacing = this.playerFacing;
+    const nearest = this.findClosestEnemy(px, py, radius * 1.5);
+    if (nearest) {
+      centerFacing = Phaser.Math.Angle.Between(px, py, nearest.x, nearest.y);
+    }
+    const halfArc = Phaser.Math.DegToRad(55 / 2);  // 55° per chord string
+    const spreadRad = Phaser.Math.DegToRad(18);      // ±18°
+    const weaponKey = w.config.key;
+
+    this.spawnWeaponFlourish(
+      px + Math.cos(centerFacing) * 28,
+      py + Math.sin(centerFacing) * 28,
+      'fx_weapon_claymore_spark',
+      { scale: 0.55, endScale: 1.05, duration: 260, rotation: centerFacing },
+    );
+
+    const armRolls: ReadonlyArray<{ damage: number; isCrit: boolean }> = [
+      this.effectiveDamage(w),
+      this.effectiveDamage(w),
+      this.effectiveDamage(w),
+    ];
+    const facings: ReadonlyArray<number> = [
+      centerFacing - spreadRad,
+      centerFacing,
+      centerFacing + spreadRad,
+    ];
+
+    for (let i = 0; i < 3; i++) {
+      const facing = facings[i];
+      const gfx = this.acquireVfxGraphics();
+      gfx.fillStyle(0xf5c842, 0.32);
+      gfx.slice(px, py, radius, facing - halfArc, facing + halfArc, false);
+      gfx.fillPath();
+      this.scene.tweens.add({
+        targets: gfx, alpha: 0, duration: 260,
+        onComplete: () => { gfx.setVisible(false); gfx.clear(); },
+      });
+    }
+
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const radiusSq = radius * radius;
+    const arcThresh = Math.cos(halfArc);
+    const fcos0 = Math.cos(facings[0]);
+    const fsin0 = Math.sin(facings[0]);
+    const fcos1 = Math.cos(facings[1]);
+    const fsin1 = Math.sin(facings[1]);
+    const fcos2 = Math.cos(facings[2]);
+    const fsin2 = Math.sin(facings[2]);
+
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq > radiusSq) continue;
+      const dist = Math.sqrt(distSq);
+      if (dist < 1e-6) continue;
+      const nx = dx / dist;
+      const ny = dy / dist;
+
+      let armIdx = -1;
+      if (nx * fcos0 + ny * fsin0 >= arcThresh) armIdx = 0;
+      else if (nx * fcos1 + ny * fsin1 >= arcThresh) armIdx = 1;
+      else if (nx * fcos2 + ny * fsin2 >= arcThresh) armIdx = 2;
+      if (armIdx < 0) continue;
+
+      const roll = armRolls[armIdx];
+      this.dealDamageToEnemy(enemy, roll.damage, roll.isCrit, weaponKey);
+      // Harp resonance freeze — brief stun on each chord hit.
+      enemy.applyFreeze(0.60, 150);
     }
   }
 

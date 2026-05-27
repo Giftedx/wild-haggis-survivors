@@ -119,6 +119,10 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   selkie_song: '#4488cc',
   // Selkie Chorus (evolution) — deeper Atlantic blue
   selkie_chorus: '#224488',
+  // Clàrsach — amber-gold harp strings
+  clarsach: '#c8920a',
+  // Clàrsach Eternal (evolution) — deep resonant gold
+  clarsach_eternal: '#a06600',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

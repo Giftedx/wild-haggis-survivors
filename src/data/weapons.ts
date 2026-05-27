@@ -52,7 +52,13 @@ export type WeaponKey =
   // Aura-pulse that charms the nearest enemy in range — charmed enemies
   // walk toward other enemies instead of the player for 3 s. Summon family.
   | 'selkie_song'
-  | 'selkie_chorus';
+  | 'selkie_chorus'
+  // DESIGN_IDEAS §5 — Clàrsach (Celtic Harp). Scotland's pre-bagpipe
+  // national instrument. Fires melodic arc sweeps; Pibroch Crescendo
+  // alignment already applies via dealDamageToEnemy. Pairs with Wire
+  // Strings passive at lv5 → Clàrsach Eternal (triple chord + freeze).
+  | 'clarsach'
+  | 'clarsach_eternal';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -837,6 +843,54 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     levelScaling: {
       damage: 1.22,
       cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+  // DESIGN_IDEAS §5 — Clàrsach (Celtic Harp). Arc sweep in amber-gold.
+  // Pibroch Crescendo bonus applies automatically via dealDamageToEnemy.
+  // Pairs with Wire Strings passive → Clàrsach Eternal (triple chord).
+  clarsach: {
+    key: 'clarsach',
+    nameKey: 'weapon.clarsach.name',
+    descriptionKey: 'weapon.clarsach.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 1700,
+    damage: 11,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 175,
+    arcDegrees: 65,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+  // Clàrsach Eternal — triple chord arc, each hit applies a 150 ms freeze-slow.
+  clarsach_eternal: {
+    key: 'clarsach_eternal',
+    nameKey: 'weapon.clarsach_eternal.name',
+    descriptionKey: 'weapon.clarsach_eternal.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 1500,
+    damage: 18,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 195,
+    arcDegrees: 55,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.25,
+      cooldown: 0.88,
       countAt: [],
       pierce: 0,
       radius: 1.08,

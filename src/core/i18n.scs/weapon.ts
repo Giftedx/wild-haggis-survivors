@@ -149,4 +149,14 @@ export const weapon = {
     description: "Three selkies rise. Chip skaith tae aw enemies in range; up tae three are chairmed at yince. Tha moor gaes quate when tha chorus rises.",
     flavour: "Ane voice cairries across tha watter. Three voices cairry across tha warld. Tha haggis didnae choose this — tha pelt anely asks tae be held.",
   },
+  clarsach: {
+    name: 'Clàrsach',
+    description: 'Auld Gaelic hairp — amber-gowd arc sweeps that cairve a braid chord through tha crood. Tha wire strings cairry faurer nor ye expect.',
+    flavour: "Aulder nor tha pipes, aulder nor tha kingdom. Tha clàrsach sat at tha chief's richt haund afore blades were fashionable. Tha haggis disnae pluck — it strikes fou-palmit, an tha soond is enormous.",
+  },
+  clarsach_eternal: {
+    name: 'Clàrsach Eternal',
+    description: 'Three chord arcs at yince. Ilka hit briefly stills whit it strikes.',
+    flavour: "Tha wire strings pu'd ticht past tunin, past breakin, past tha register tha haw wis biggit fer. Three chords loosed at yince: tha first silences, tha seicond hauds, tha third decides. Tha moor gaes quate fer exactly lang enough.",
+  },
 } as const;

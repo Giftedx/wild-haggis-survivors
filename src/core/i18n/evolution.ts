@@ -79,4 +79,9 @@ export const evolution = {
     description: "The pelt held the song in. Shed, it carries three times as far. Up to three enemies charmed at once; the moor rearranges itself.",
     flavour: "Sandwood Bay, February. The pelt on the rock, the song in the air, three more voices answering from the skerries. The haggis held the pelt carefully. The sea held its breath.",
   },
+  clarsach_eternal: {
+    name: 'Clàrsach Eternal',
+    description: 'The wire strings tightened past tuning. Three chord arcs loose at once; each hit briefly stills what it strikes.',
+    flavour: "The ancient harp at full resonance: centuries of Gaelic music compressed into three simultaneous chords. The wire strings hold longer than gut ever could. The enemies do not.",
+  },
 } as const;

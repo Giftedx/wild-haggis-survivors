@@ -369,6 +369,17 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.freedom_blade.name',
     descriptionKey: 'evolution.freedom_blade.description',
   },
+  {
+    // Clàrsach + Wire Strings → Clàrsach Eternal. The ancient harp
+    // at full resonance: three simultaneous chord arcs (−18° / 0° /
+    // +18°) each applying a 150 ms freeze-slow. The wire strings
+    // taut with centuries of Gaelic music, finally loosened.
+    baseWeapon: 'clarsach',
+    requiredPassive: 'wire_strings',
+    evolvedWeapon: 'clarsach_eternal',
+    nameKey: 'evolution.clarsach_eternal.name',
+    descriptionKey: 'evolution.clarsach_eternal.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */

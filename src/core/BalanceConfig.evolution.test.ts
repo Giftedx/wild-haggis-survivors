@@ -6,18 +6,19 @@ import { EN_STRINGS, t, type LocaleTree } from './i18n';
 import { SCS_STRINGS } from './i18n.scs';
 
 describe('EVOLUTION_RECIPES', () => {
-  it('has 16 evolution recipes (Selkie Song + Seal Pelt → Selkie Chorus added)', () => {
+  it('has 17 evolution recipes (Clàrsach + Wire Strings → Clàrsach Eternal added 2026-05-27)', () => {
     // Wild Living World Phase 2 (2026-05-11) added Pibroch Hammer
     // (`waulking_mallet` + `tuning_fork`). Highland Horrors (2026-05-12)
     // added dirk_dance + gillies_edge → dirk_flurry, grannies_curse +
     // widows_shawl → banshee_wail, wallace_sword + stirling_medal →
     // freedom_blade. 2026-05-24 added bodhran + drum_hoop → beltane_drum.
     // 2026-05-24 added selkie_song + seal_pelt → selkie_chorus.
+    // 2026-05-27 added clarsach + wire_strings → clarsach_eternal.
     // The Burns Wee Beastie unlock threshold remains hand-pinned at 10 in
     // `BalanceConfig.ts` (not derived from this length) so adding a new
     // evolution doesn't silently raise the achievement bar — see
     // `BURNS_EVOLUTION_THRESHOLD === 10` below.
-    expect(EVOLUTION_RECIPES).toHaveLength(16);
+    expect(EVOLUTION_RECIPES).toHaveLength(17);
   });
 
   it('every recipe references a valid base weapon', () => {

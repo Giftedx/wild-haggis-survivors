@@ -92,14 +92,15 @@ describe('weapon evolution (chest-gated)', () => {
     }
   );
 
-  it('covers all 16 evolution recipes (not accidentally truncated)', () => {
+  it('covers all 17 evolution recipes (not accidentally truncated)', () => {
     // Phase 2 (2026-05-11) added Pibroch Hammer (waulking_mallet +
     // tuning_fork). Highland Horrors (2026-05-12) added Dirk Flurry,
     // Banshee Wail, Freedom Blade. 2026-05-24 added Beltane Drum
     // (bodhran + drum_hoop). Selkie Song (2026-05-24) added Selkie Chorus
-    // (selkie_song + seal_pelt). If this count changes, double-check the
+    // (selkie_song + seal_pelt). 2026-05-27 added Clàrsach Eternal
+    // (clarsach + wire_strings). If this count changes, double-check the
     // BURNS threshold sibling test in `BalanceConfig.evolution.test.ts`.
-    expect(EVOLUTION_RECIPES.length).toBe(16);
+    expect(EVOLUTION_RECIPES.length).toBe(17);
   });
 });
 
