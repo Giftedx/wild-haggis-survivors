@@ -81,7 +81,7 @@ Game balance is defined in data files, not scattered through logic:
 - `src/data/permanentUpgrades.ts` — Between-run upgrades bought with Golden Haggis currency
 - `src/data/variants.ts` — 28-strong haggis roster (classic + 27 variants); each declares stat profile, palette, voice register, unlock condition. Lives behind `selectedVariant` save key. Full roster: classic, moor_runner, iron_belly, glen_forager, surefoot, pipe_breath, wee_ghostie, laird, glaswegian, anticlockwise, cailleach, doric_quinie, peerie_shetlander, burns_wee_beastie, witch_hare, selkie, morningside, drouthy, pibroch, orcadian, hebridean, iron_brew, grans_best, the_pict, jacobite, tam_o_shanter, engineer, tufted.
 - `src/data/curses.ts` — opt-in run modifiers + bonus gold. `CurseDef` exported.
-- `src/data/biomes.ts` — `BiomeId` union (bog/loch/pine/heather/coastal/haar/frost) + per-biome `BIOMES` defs (tint, weights, modifier, mood, ambientHaarDensity).
+- `src/data/biomes.ts` — `BiomeId` union (24 biomes total: bog/loch/pine/heather/coastal/haar/frost + 17 named biomes through B11) + per-biome `BIOMES` defs (tint, weights, modifier, mood, ambientHaarDensity).
 - `src/data/eliteAffixes.ts` — elite enemy modifier roster.
 - `src/data/hazards.ts` — environmental footing hazards (7 keys, biome-routed). See HazardsSystem entry above for runtime.
 - `src/data/relics.ts` — R1 third-tier item bag (18 handcrafted relics, 3-slot cap). Drops from elites/bosses/legendary chests.
