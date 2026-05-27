@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 33 weapons (Port-à-Beul + Canntaireachd added 2026-05-27)', () => {
-    expect(keys).toHaveLength(33);
+  it('has exactly 36 weapons (Porridge Pot + Brose Cannon + Deep-Fried Mars Bar added 2026-05-27)', () => {
+    expect(keys).toHaveLength(36);
   });
 
   it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {

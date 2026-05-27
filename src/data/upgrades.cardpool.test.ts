@@ -118,7 +118,9 @@ describe('PASSIVE_KEYS', () => {
     // Clàrsach (2026-05-27) added `wire_strings` — +12% cooldown reduction.
     // Hagstone Sling (2026-05-27) added `rowan_amulet` — +15% projectile speed.
     // Port-à-Beul (2026-05-27) added `highland_trump` — -10% cooldowns.
-    expect(PASSIVE_KEYS).toHaveLength(26);
+    // Porridge Pot (2026-05-27) added `pinhead_oats` — +12 max HP.
+    // Deep-Fried Mars Bar (2026-05-27) added `batter_mix` — +10% damage.
+    expect(PASSIVE_KEYS).toHaveLength(28);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');

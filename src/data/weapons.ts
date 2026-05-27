@@ -70,7 +70,12 @@ export type WeaponKey =
   // Highland Trump passive at lv5 → Canntaireachd (doubled radius,
   // aligned beat halts enemies cold).
   | 'port_a_beul'
-  | 'canntaireachd';
+  | 'canntaireachd'
+  // Flying Porridge Pot (lob_puddle slow+damage zone; Brose Cannon evolution).
+  | 'porridge_pot'
+  | 'brose_cannon'
+  // Deep-Fried Mars Bar (slow heavy piercing projectile; grease-splat on kill).
+  | 'deep_fried_mars_bar';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -1001,6 +1006,72 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.06,
+    },
+  },
+  porridge_pot: {
+    key: 'porridge_pot',
+    nameKey: 'weapon.porridge_pot.name',
+    descriptionKey: 'weapon.porridge_pot.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 3200,
+    damage: 2,
+    projectileSpeed: 0,
+    projectileCount: 1,
+    pierce: 0,
+    range: 145,
+    aoeRadius: 52,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.06,
+    },
+  },
+  brose_cannon: {
+    key: 'brose_cannon',
+    nameKey: 'weapon.brose_cannon.name',
+    descriptionKey: 'weapon.brose_cannon.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 2000,
+    damage: 3,
+    projectileSpeed: 0,
+    projectileCount: 3,
+    pierce: 0,
+    range: 160,
+    aoeRadius: 42,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.05,
+    },
+  },
+  deep_fried_mars_bar: {
+    key: 'deep_fried_mars_bar',
+    nameKey: 'weapon.deep_fried_mars_bar.name',
+    descriptionKey: 'weapon.deep_fried_mars_bar.description',
+    behavior: 'piercing',
+    cooldownMs: 3800,
+    damage: 26,
+    projectileSpeed: 130,
+    projectileCount: 1,
+    pierce: 2,
+    range: 260,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 0,
     },
   },
 };

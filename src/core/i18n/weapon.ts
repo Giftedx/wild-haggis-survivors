@@ -179,4 +179,19 @@ export const weapon = {
     description: 'The voice fully embodied — double the reach, and on the beat the chant stops enemies cold.',
     flavour: "The Gaelic system of teaching pibroch by voice: da-hé hi-é ho-hó. Every syllable a fingering; every fingering a note the pipes first learned this way. The haggis is not reciting. It is instructing.",
   },
+  porridge_pot: {
+    name: 'Porridge Pot',
+    description: 'Lob a pot of porridge. Slow, warm, and awfy sticky — anything that stands in it moves at half speed and takes a wee bit of damage.',
+    flavour: "Every Scots bairn knows the pot on the hob at six in the morning. Heavy. Stodgy. Doesn't shift easy. Neither does what it lands on.",
+  },
+  brose_cannon: {
+    name: 'Brose Cannon',
+    description: 'Three pots in a spread. Three sticky zones across the moor. No room left to run.',
+    flavour: "Brose: raw oatmeal met with cold water or milk, no cooking required. The recipe is older than the pot. The haggis has simply found a more direct application.",
+  },
+  deep_fried_mars_bar: {
+    name: 'Deep-Fried Mars Bar',
+    description: 'A chocolate bar, battered and fried. Flies slow, hits like a brick. Pierces two. Kills leave a grease splat.',
+    flavour: "Invented in Stonehaven, 1992. The historian Ewan MacPherson once called it Scotland's contribution to the culinary dark arts. The haggis notes it also contributes to the kinetic arts.",
+  },
 } as const;

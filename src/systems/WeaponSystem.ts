@@ -540,7 +540,10 @@ export class WeaponSystem {
         this.fireProjectile(w, px, py, 'thistle');
         break;
       case 'piercing':
-        this.fireProjectile(w, px, py, w.config.key === 'hagstone_sling' ? 'hagstone' : 'caber');
+        this.fireProjectile(w, px, py,
+          w.config.key === 'hagstone_sling' ? 'hagstone'
+          : w.config.key === 'deep_fried_mars_bar' ? 'mars_bar'
+          : 'caber');
         break;
       case 'bouncing':
         this.fireBouncing(w, px, py);
@@ -915,46 +918,52 @@ export class WeaponSystem {
   private fireLobPuddle(w: ActiveWeapon, px: number, py: number): void {
     const FLASK_FLIGHT_MS = 650;
     const ARC_HEIGHT = 40;
-
-    // Resolve landing position — toward closest enemy within range,
-    // or player-facing direction at 65% of range when no enemy found.
-    const target = this.findClosestEnemy(px, py, w.config.range);
-    let lx: number, ly: number;
-    if (target) {
-      const dist = Phaser.Math.Distance.Between(px, py, target.x, target.y);
-      const clamped = Math.min(dist, w.config.range);
-      const angle = Phaser.Math.Angle.Between(px, py, target.x, target.y);
-      lx = px + Math.cos(angle) * clamped;
-      ly = py + Math.sin(angle) * clamped;
-    } else {
-      lx = px + Math.cos(this.playerFacing) * w.config.range * 0.65;
-      ly = py + Math.sin(this.playerFacing) * w.config.range * 0.65;
-    }
-
     const isSkink = w.config.key === 'cullen_skink_ladle';
-    // Visual arc — amber for whisky lob, cream-yellow for skink ladle.
-    const flaskVfx = this.acquireVfxCircle(px, py, 4, isSkink ? 0xd4c080 : 0xe07010, 0.9);
-    flaskVfx.setDepth(4);
+    const isPorridge = w.config.key === 'porridge_pot' || w.config.key === 'brose_cannon';
+    const lobCount = isPorridge ? w.projectileCount : 1;
 
-    const startX = px, startY = py;
-    const dx = lx - startX, dy = ly - startY;
-    const arcProxy = { t: 0 };
-    this.scene.tweens.add({
-      targets: arcProxy,
-      t: 1,
-      duration: FLASK_FLIGHT_MS,
-      ease: 'Linear',
-      onUpdate: (tween: Phaser.Tweens.Tween) => {
-        const t = (tween.targets[0] as { t: number }).t;
-        flaskVfx.x = startX + dx * t;
-        flaskVfx.y = startY + dy * t - Math.sin(t * Math.PI) * ARC_HEIGHT;
-      },
-      onComplete: () => {
-        flaskVfx.setVisible(false);
-        if (isSkink) this.spawnSkinkPuddle(w, lx, ly);
-        else this.spawnBurnPuddle(w, lx, ly);
-      },
-    });
+    // Resolve base landing angle and distance.
+    const target = this.findClosestEnemy(px, py, w.config.range);
+    const baseAngle = target
+      ? Phaser.Math.Angle.Between(px, py, target.x, target.y)
+      : this.playerFacing;
+    const baseDist = target
+      ? Math.min(Phaser.Math.Distance.Between(px, py, target.x, target.y), w.config.range)
+      : w.config.range * 0.65;
+
+    // VFX color: oatmeal beige for porridge, cream-yellow for skink, amber for whisky.
+    const flaskColor = isPorridge ? 0xc4b090 : isSkink ? 0xd4c080 : 0xe07010;
+    const flaskRadius = isPorridge ? 5 : 4;
+
+    for (let i = 0; i < lobCount; i++) {
+      const spreadRad = lobCount > 1 ? Phaser.Math.DegToRad((i - (lobCount - 1) / 2) * 22) : 0;
+      const angle = baseAngle + spreadRad;
+      const lx = px + Math.cos(angle) * baseDist;
+      const ly = py + Math.sin(angle) * baseDist;
+
+      const flaskVfx = this.acquireVfxCircle(px, py, flaskRadius, flaskColor, 0.9);
+      flaskVfx.setDepth(4);
+      const dx = lx - px, dy = ly - py;
+      const arcProxy = { t: 0 };
+      const capLx = lx, capLy = ly;
+      this.scene.tweens.add({
+        targets: arcProxy,
+        t: 1,
+        duration: FLASK_FLIGHT_MS + i * 60,
+        ease: 'Linear',
+        onUpdate: (tween: Phaser.Tweens.Tween) => {
+          const t = (tween.targets[0] as { t: number }).t;
+          flaskVfx.x = px + dx * t;
+          flaskVfx.y = py + dy * t - Math.sin(t * Math.PI) * ARC_HEIGHT;
+        },
+        onComplete: () => {
+          flaskVfx.setVisible(false);
+          if (isSkink) this.spawnSkinkPuddle(w, capLx, capLy);
+          else if (isPorridge) this.spawnPorridgePuddle(w, capLx, capLy);
+          else this.spawnBurnPuddle(w, capLx, capLy);
+        },
+      });
+    }
   }
 
   /** Spawn a skink-broth puddle at (lx, ly) that slows enemies who stand in it. */
@@ -1058,6 +1067,107 @@ export class WeaponSystem {
       duration: PUDDLE_DURATION_MS,
       onComplete: () => {
         damageHandle.cancel();
+        puddle.setVisible(false);
+      },
+    });
+  }
+
+  /** Spawn a porridge puddle at (lx, ly) that slows AND ticks damage. */
+  private spawnPorridgePuddle(w: ActiveWeapon, lx: number, ly: number): void {
+    if (this.scene.getTimeManager().isGameplayPaused()) return;
+    const radius = this.effectiveAoe(w);
+    const weaponKey = w.config.key;
+    const PUDDLE_DURATION_MS = 5000;
+    const TICK_INTERVAL_MS = 500;
+
+    // Thick oatmeal pool — warm grey-beige, slower fade (stodgy).
+    const puddle = this.acquireVfxCircle(lx, ly, radius, 0xd4c090, 0.48);
+    puddle.setDepth(1);
+
+    this.spawnWeaponFlourish(
+      lx, ly,
+      'fx_weapon_caber_burst',
+      { scale: 0.50, endScale: 1.05, duration: 340, alpha: 0.62, depth: 4 },
+    );
+
+    const repeats = Math.max(1, Math.floor(PUDDLE_DURATION_MS / TICK_INTERVAL_MS) - 1);
+    const tickHandle = this.scene.getUpdateTickers().addInterval(
+      'scaled',
+      TICK_INTERVAL_MS,
+      () => {
+        if (this.scene.getTimeManager().isGameplayPaused()) return;
+        const { damage: dmg, isCrit } = this.effectiveDamage(w);
+        const enemies = this.enemyGroup.getChildren() as Enemy[];
+        const rSq = radius * radius;
+        for (const enemy of enemies) {
+          if (!enemy.active) continue;
+          const edx = enemy.x - lx;
+          const edy = enemy.y - ly;
+          if (edx * edx + edy * edy <= rSq) {
+            this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+            // Porridge: thick 50% slow + small damage each tick. Stickier
+            // than skink (55%), lasts the full tick gap.
+            if (enemy.active) enemy.applyFreeze(0.50, TICK_INTERVAL_MS + 100);
+          }
+        }
+      },
+      { repeats },
+    );
+
+    this.scene.tweens.add({
+      targets: puddle,
+      alpha: 0,
+      duration: PUDDLE_DURATION_MS,
+      ease: 'Sine.easeIn',
+      onComplete: () => {
+        tickHandle.cancel();
+        puddle.setVisible(false);
+      },
+    });
+  }
+
+  /** Deep-Fried Mars Bar on-kill proc — small grease splat that slows. */
+  private spawnGreasePuddle(lx: number, ly: number): void {
+    if (this.scene.getTimeManager().isGameplayPaused()) return;
+    const RADIUS = 28;
+    const PUDDLE_DURATION_MS = 2200;
+    const TICK_INTERVAL_MS = 450;
+
+    const puddle = this.acquireVfxCircle(lx, ly, RADIUS, 0x6b4820, 0.42);
+    puddle.setDepth(1);
+
+    this.spawnWeaponFlourish(
+      lx, ly,
+      'fx_weapon_caber_burst',
+      { scale: 0.30, endScale: 0.65, duration: 220, alpha: 0.55, depth: 4 },
+    );
+
+    const repeats = Math.max(1, Math.floor(PUDDLE_DURATION_MS / TICK_INTERVAL_MS) - 1);
+    const slowHandle = this.scene.getUpdateTickers().addInterval(
+      'scaled',
+      TICK_INTERVAL_MS,
+      () => {
+        if (this.scene.getTimeManager().isGameplayPaused()) return;
+        const enemies = this.enemyGroup.getChildren() as Enemy[];
+        const rSq = RADIUS * RADIUS;
+        for (const enemy of enemies) {
+          if (!enemy.active) continue;
+          const edx = enemy.x - lx;
+          const edy = enemy.y - ly;
+          if (edx * edx + edy * edy <= rSq) {
+            if (enemy.active) enemy.applyFreeze(0.60, TICK_INTERVAL_MS + 80);
+          }
+        }
+      },
+      { repeats },
+    );
+
+    this.scene.tweens.add({
+      targets: puddle,
+      alpha: 0,
+      duration: PUDDLE_DURATION_MS,
+      onComplete: () => {
+        slowHandle.cancel();
         puddle.setVisible(false);
       },
     });
@@ -2167,6 +2277,11 @@ export class WeaponSystem {
       // precision projectile. Slow roll sells the weight.
       body.setAllowRotation(true);
       body.setAngularVelocity(360);
+    } else if (texture === 'mars_bar') {
+      // Mars Bar lumbers through the air with a heavy, slow tumble — a
+      // rectangular brick of chocolate, not a precision weapon.
+      body.setAllowRotation(true);
+      body.setAngularVelocity(200);
     }
   }
 
@@ -2275,6 +2390,10 @@ export class WeaponSystem {
     const isHagstoneFamily = wKey === 'hagstone_sling' || wKey === 'rowan_hail';
     const dmgMul = isHagstoneFamily && proj.getHitCount() > 1 ? 1.40 : 1.0;
 
+    // Deep-Fried Mars Bar: capture position before damage in case enemy is killed.
+    const preHitX = enemy.x, preHitY = enemy.y;
+    const wasActive = enemy.active;
+
     this.dealDamageToEnemy(
       enemy,
       Math.ceil(proj.getDamage() * dmgMul),
@@ -2286,6 +2405,11 @@ export class WeaponSystem {
     // Caber Toss applies burn (3 dps for 3s)
     if (wKey === 'caber_toss') {
       enemy.applyBurn(3, 3000);
+    }
+
+    // Deep-Fried Mars Bar: on kill, leave a grease splat at the kill site.
+    if (wKey === 'deep_fried_mars_bar' && wasActive && !enemy.active) {
+      this.spawnGreasePuddle(preHitX, preHitY);
     }
 
     proj.onHitEnemy();

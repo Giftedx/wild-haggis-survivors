@@ -26,6 +26,8 @@ import { drawSealPelt } from './sealPelt';
 import { drawWireStrings } from './wireStrings';
 import { drawRowanAmulet } from './rowanAmulet';
 import { drawHighlandTrump } from './highlandTrump';
+import { drawPinheadOats } from './pinheadOats';
+import { drawBatterMix } from './batterMix';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -83,6 +85,9 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawRowanAmulet(scene);
   // Port-à-Beul paired passive.
   drawHighlandTrump(scene);
+  // Porridge Pot + Deep-Fried Mars Bar passives.
+  drawPinheadOats(scene);
+  drawBatterMix(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

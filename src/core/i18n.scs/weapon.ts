@@ -179,4 +179,19 @@ export const weapon = {
     description: "Tha vyce fou embodied — dooble tha reach, an on tha beat tha chant staps enemies cauld.",
     flavour: "Tha Gaelic system o teachin pibroch bi vyce: da-hé hi-é ho-hó. Ilka syllable a fingerin; ilka fingerin a note tha pipes first learned this wey. Tha haggis isnae recitin. It is instructin.",
   },
+  porridge_pot: {
+    name: 'Parritch Pot',
+    description: 'Lob a pot o parritch. Slow, warm, an awfy stoogy — ocht that staunds in it moves at hauf speed an taks a wee bit o skaith.',
+    flavour: "Ivvery Scots bairn kens tha pot on tha hob at sax in tha morn. Heavy. Stoogy. Disnae shift easy. Neither does whit it lands on.",
+  },
+  brose_cannon: {
+    name: 'Brose Cannon',
+    description: 'Three pots in a spread. Three sticky zones across tha moor. Nae room left tae rin.',
+    flavour: "Brose: raw aitmeal met wi cauld watter or milk, nae cookin requirit. Tha recipe is aulder nor tha pot. Tha haggis haes jist fund a mair direct application.",
+  },
+  deep_fried_mars_bar: {
+    name: 'Deep-Fried Mars Bar',
+    description: 'A chocolate bar, battered an fried. Flies slaw, hits like a brick. Pierces twa. Kills leave a grease splat.',
+    flavour: "Inventit in Stanehaen, 1992. Tha historian Ewan MacPherson yince cawed it Scotland's contribution tae tha culinary dark airts. Tha haggis notes it awso contributes tae tha kinetic airts.",
+  },
 } as const;

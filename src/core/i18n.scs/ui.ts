@@ -1484,6 +1484,12 @@ export const ui = {
         c: 'Nae instrument but tha thrapple. Tha enemies needna understaund it tae feel it.',
         d: 'Tha auld instruction. Tha chant is in tha legs noo.',
       },
+      porridge_pot: {
+        a: 'Brose Cannon. Three pots, ane haggis, zero apologies.',
+        b: 'Slaw-cook this. Tha moor is tha hob. Tha enemies are tha aits.',
+        c: 'Tha Warld Parritch Championship nivver askit fer this. Tha moor haes.',
+        d: "It's brose noo. Nae fire needed. Nae mercy gien.",
+      },
     },
     curse_start: {
       generic: {

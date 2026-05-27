@@ -205,6 +205,22 @@ export const upgradeCard = {
     name: 'Highland Trump',
     description: "A wee frame-drone of the mouth — the resonance tightens everything (-10% cooldowns). Pairs wi Port-à-Beul.",
   },
+  add_porridge_pot: {
+    name: 'Porridge Pot',
+    description: 'Lob a pot of oatmeal — sticky slow zone that ticks damage. Pair wi Pinhead Oats for the Brose Cannon.',
+  },
+  add_deep_fried_mars_bar: {
+    name: 'Deep-Fried Mars Bar',
+    description: 'Slow heavy piercing bar — lumbers through two enemies. Kills leave a wee grease splat. Pair wi Batter Mix.',
+  },
+  add_pinhead_oats: {
+    name: 'Pinhead Oats',
+    description: 'Slow-cook oats for the pot — porridge fills ye up (+12 max HP). Evolves Porridge Pot.',
+  },
+  add_batter_mix: {
+    name: 'Batter Mix',
+    description: 'Plain flour, seasoned. Every weapon hits a wee bit harder (+10% damage). Pairs wi the Deep-Fried Mars Bar.',
+  },
   // Stat boost cards
   boost_hp: {
     name: 'Thick Hide',

@@ -94,4 +94,9 @@ export const evolution = {
     description: 'The aura doubles. On the beat the chant halts what it holds — the old vocal instruction, weaponised at last.',
     flavour: "Da-hé hi-é ho-hó. Every syllable a fingering the piper first learned by ear, moor-side, before notation existed. The haggis held the trump to its lips and the voice found the old frequency. The moor already knew the tune.",
   },
+  brose_cannon: {
+    name: 'Brose Cannon',
+    description: 'One pot becomes three. A fan of porridge across the moor — faster cooldown, wider coverage, no room left to move.',
+    flavour: "The pinhead oats found the pot faster than cooking allows. Brose needs no fire; the moor needs no mercy. Three throws, three zones, one very confused enemy — they were warned about the haggis.",
+  },
 } as const;

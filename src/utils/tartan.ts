@@ -131,6 +131,12 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   port_a_beul: '#d4b040',
   // Canntaireachd (evolution) — deeper ceremonial gold
   canntaireachd: '#b88820',
+  // Porridge Pot — oatmeal beige / tan
+  porridge_pot: '#c4b090',
+  // Brose Cannon (evolution) — deeper brose brown
+  brose_cannon: '#a89070',
+  // Deep-Fried Mars Bar — dark chocolate / caramel
+  deep_fried_mars_bar: '#8b4020',
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

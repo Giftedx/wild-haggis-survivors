@@ -45,6 +45,9 @@ import { drawHagstoneSlingIcon } from './hagstone_sling';
 import { drawRowanHailIcon } from './rowanHail';
 import { drawPortABeulIcon } from './portABeul';
 import { drawCanntaireachdIcon } from './canntaireachd';
+import { drawPorridgePotIcon } from './porridgePot';
+import { drawBroseCannonIcon } from './broseCannon';
+import { drawDeepFriedMarsBarIcon } from './deepFriedMarsBar';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -111,6 +114,11 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   // Port-à-Beul + Canntaireachd evolution.
   drawPortABeulIcon(scene);
   drawCanntaireachdIcon(scene);
+  // Porridge Pot + Brose Cannon evolution.
+  drawPorridgePotIcon(scene);
+  drawBroseCannonIcon(scene);
+  // Deep-Fried Mars Bar (standalone piercing).
+  drawDeepFriedMarsBarIcon(scene);
   // Standalone + utility
   drawClaymoreIcon(scene);
   drawBagpipesUtilityIcon(scene);

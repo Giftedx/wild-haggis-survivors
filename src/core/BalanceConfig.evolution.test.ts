@@ -6,7 +6,7 @@ import { EN_STRINGS, t, type LocaleTree } from './i18n';
 import { SCS_STRINGS } from './i18n.scs';
 
 describe('EVOLUTION_RECIPES', () => {
-  it('has 19 evolution recipes (Port-à-Beul + Highland Trump → Canntaireachd added 2026-05-27)', () => {
+  it('has 20 evolution recipes (Porridge Pot + Pinhead Oats → Brose Cannon added 2026-05-27)', () => {
     // Wild Living World Phase 2 (2026-05-11) added Pibroch Hammer
     // (`waulking_mallet` + `tuning_fork`). Highland Horrors (2026-05-12)
     // added dirk_dance + gillies_edge → dirk_flurry, grannies_curse +
@@ -19,7 +19,7 @@ describe('EVOLUTION_RECIPES', () => {
     // `BalanceConfig.ts` (not derived from this length) so adding a new
     // evolution doesn't silently raise the achievement bar — see
     // `BURNS_EVOLUTION_THRESHOLD === 10` below.
-    expect(EVOLUTION_RECIPES).toHaveLength(19);
+    expect(EVOLUTION_RECIPES).toHaveLength(20);
   });
 
   it('every recipe references a valid base weapon', () => {

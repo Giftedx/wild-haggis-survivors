@@ -91,7 +91,13 @@ export type PassiveKey =
   // Highland Trump — a Jew's harp, the small frame-drone of the mouth.
   // +10% global cooldown reduction — the resonance tightens the cycle.
   // Pairs with a level-5 Port-à-Beul at chest for Canntaireachd.
-  | 'highland_trump';
+  | 'highland_trump'
+  // Pinhead Oats — the slow-cook rolled oats for the pot.
+  // +12 max HP (porridge fills ye up). Pairs with Porridge Pot for Brose Cannon.
+  | 'pinhead_oats'
+  // Batter Mix — seasoned plain flour for deep-frying.
+  // +10% damage to everything. Pairs with Deep-Fried Mars Bar.
+  | 'batter_mix';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -372,6 +378,24 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_port_a_beul',
     effect: { type: 'add_weapon', weaponKey: 'port_a_beul' },
   },
+  // DESIGN_IDEAS §5 — Flying Porridge Pot (lob_puddle slow+damage zone).
+  {
+    id: 'add_porridge_pot',
+    name: 'upgradeCard.add_porridge_pot.name',
+    description: 'upgradeCard.add_porridge_pot.description',
+    rarity: 'uncommon',
+    icon: 'wicon_porridge_pot',
+    effect: { type: 'add_weapon', weaponKey: 'porridge_pot' },
+  },
+  // DESIGN_IDEAS §5 — Deep-Fried Mars Bar (slow heavy piercing projectile).
+  {
+    id: 'add_deep_fried_mars_bar',
+    name: 'upgradeCard.add_deep_fried_mars_bar.name',
+    description: 'upgradeCard.add_deep_fried_mars_bar.description',
+    rarity: 'uncommon',
+    icon: 'wicon_deep_fried_mars_bar',
+    effect: { type: 'add_weapon', weaponKey: 'deep_fried_mars_bar' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -597,6 +621,24 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_highland_trump',
     effect: { type: 'add_passive', passiveKey: 'highland_trump' },
+  },
+  // Pinhead Oats — Porridge Pot evolution passive.
+  {
+    id: 'add_pinhead_oats',
+    name: 'upgradeCard.add_pinhead_oats.name',
+    description: 'upgradeCard.add_pinhead_oats.description',
+    rarity: 'common',
+    icon: 'ucard_pinhead_oats',
+    effect: { type: 'add_passive', passiveKey: 'pinhead_oats' },
+  },
+  // Batter Mix — Deep-Fried Mars Bar paired passive.
+  {
+    id: 'add_batter_mix',
+    name: 'upgradeCard.add_batter_mix.name',
+    description: 'upgradeCard.add_batter_mix.description',
+    rarity: 'common',
+    icon: 'ucard_batter_mix',
+    effect: { type: 'add_passive', passiveKey: 'batter_mix' },
   },
 ];
 

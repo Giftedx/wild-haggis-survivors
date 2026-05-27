@@ -401,6 +401,15 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.canntaireachd.name',
     descriptionKey: 'evolution.canntaireachd.description',
   },
+  {
+    // Flying Porridge Pot + Pinhead Oats → Brose Cannon (three-spread lob,
+    // faster cooldown — the pot becomes a scatter battery).
+    baseWeapon: 'porridge_pot',
+    requiredPassive: 'pinhead_oats',
+    evolvedWeapon: 'brose_cannon',
+    nameKey: 'evolution.brose_cannon.name',
+    descriptionKey: 'evolution.brose_cannon.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */

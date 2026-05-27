@@ -92,7 +92,7 @@ describe('weapon evolution (chest-gated)', () => {
     }
   );
 
-  it('covers all 19 evolution recipes (not accidentally truncated)', () => {
+  it('covers all 20 evolution recipes (not accidentally truncated)', () => {
     // Phase 2 (2026-05-11) added Pibroch Hammer (waulking_mallet +
     // tuning_fork). Highland Horrors (2026-05-12) added Dirk Flurry,
     // Banshee Wail, Freedom Blade. 2026-05-24 added Beltane Drum
@@ -102,7 +102,7 @@ describe('weapon evolution (chest-gated)', () => {
     // (hagstone_sling + rowan_amulet). 2026-05-27 added Canntaireachd
     // (port_a_beul + highland_trump). If this count changes, double-check
     // the BURNS threshold sibling test in `BalanceConfig.evolution.test.ts`.
-    expect(EVOLUTION_RECIPES.length).toBe(19);
+    expect(EVOLUTION_RECIPES.length).toBe(20);
   });
 });
 

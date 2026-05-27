@@ -157,5 +157,15 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // at lv5 for the Canntaireachd evolution.
       player.addCooldownReduction(0.10);
       break;
+    case 'pinhead_oats':
+      // +12 max HP — slow-cook rolled oats fill ye up. Pairs with Porridge
+      // Pot at lv5 for the Brose Cannon evolution.
+      player.addMaxHp(12);
+      break;
+    case 'batter_mix':
+      // +10% damage to everything — seasoned batter makes every weapon
+      // hit a wee bit harder. Pairs with the Deep-Fried Mars Bar.
+      player.addDamageMultiplier(0.10);
+      break;
   }
 }

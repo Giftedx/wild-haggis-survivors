@@ -94,4 +94,9 @@ export const evolution = {
     description: "Tha aura dooblit. On tha beat tha chant hauds whit it hauds — tha auld vocal instruction, weaponised at last.",
     flavour: "Da-hé hi-é ho-hó. Ilka syllable a fingerin tha piper first learned bi lug, muir-side, afore notation existit. Tha haggis held tha trump tae its lips an tha vyce fund tha auld frequency. Tha moor awready kent tha tune.",
   },
+  brose_cannon: {
+    name: 'Brose Cannon',
+    description: 'Ane pot becomes three. A fan o parritch across tha moor — faster cooldoon, wider coverage, nae room left tae move.',
+    flavour: "Tha pinhead aits fund tha pot faster nor cookin alloued. Brose needs nae fire; tha moor needs nae mercy. Three throws, three zones, ane awfy confused enemy — they wir wairned aboot tha haggis.",
+  },
 } as const;

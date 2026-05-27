@@ -203,6 +203,22 @@ export const upgradeCard = {
     name: 'Heiland Trump',
     description: "A wee frame-drone o tha mooth — tha resonance tichtens awthin (-10% cooldoons). Pairs wi Port-à-Beul.",
   },
+  add_porridge_pot: {
+    name: 'Parritch Pot',
+    description: 'Lob a pot o parritch — stoogy slow zone that ticks skaith. Pair wi Pinheid Aits fer tha Brose Cannon.',
+  },
+  add_deep_fried_mars_bar: {
+    name: 'Deep-Fried Mars Bar',
+    description: 'Slaw heavy piercin bar — lumbers through twa enemies. Kills leave a wee grease splat. Pair wi Batter Mix.',
+  },
+  add_pinhead_oats: {
+    name: 'Pinheid Aits',
+    description: 'Slaw-cook aits fer tha pot — parritch fills ye up (+12 max HP). Evolves Parritch Pot.',
+  },
+  add_batter_mix: {
+    name: 'Batter Mix',
+    description: 'Plain floour, seasoned. Ivvery wapen hits a wee bit herder (+10% skaith). Pairs wi tha Deep-Fried Mars Bar.',
+  },
   boost_hp: {
     name: 'Thick Hide',
     description: 'Room fer a wee bit mair punishment (+10 max HP). Stack as mony as ye like.',

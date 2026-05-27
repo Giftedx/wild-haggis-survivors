@@ -2073,6 +2073,12 @@ export const ui = {
         c: 'No instrument but the throat. The enemies need not understand it to feel it.',
         d: 'The old instruction. The chant is in the legs now.',
       },
+      porridge_pot: {
+        a: 'Brose Cannon. Three pots, one haggis, zero apologies.',
+        b: 'Slow-cook this. The moor is the hob. The enemies are the oats.',
+        c: 'The World Porridge Championship never asked for this. The moor has.',
+        d: 'It\' brose now. No fire needed. No mercy given.',
+      },
     },
     curse_start: {
       generic: {
