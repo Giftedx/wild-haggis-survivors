@@ -83,6 +83,9 @@ export type WeeTaleTag =
   | 'biome_coastal' | 'biome_haar' | 'biome_frost'
   | 'biome_cairngorm' | 'biome_glen_coe' | 'biome_clyde_shipyard'
   | 'biome_black_bog' | 'biome_ben_nevis' | 'biome_glasgow_close'
+  | 'biome_fingals_cave' | 'biome_callanish' | 'biome_trossachs'
+  | 'biome_edinburgh_old_town' | 'biome_cairngorm_woods' | 'biome_orkney'
+  | 'biome_corryvreckan' | 'biome_shetland_voe' | 'biome_skye_fairy_pool'
   | 'has_name'
   | VariantKey;
 
@@ -433,6 +436,27 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Glasgow Close — added 2026-05-24.
   { key: 'ui.weeTale.death.biome_glasgow_close', requires: ['death', 'biome_glasgow_close'] },
   { key: 'ui.weeTale.victory.biome_glasgow_close', requires: ['victory', 'biome_glasgow_close'] },
+  // B7 biomes — Fingal's Cave, Callanish, Trossachs.
+  { key: 'ui.weeTale.death.biome_fingals_cave', requires: ['death', 'biome_fingals_cave'] },
+  { key: 'ui.weeTale.victory.biome_fingals_cave', requires: ['victory', 'biome_fingals_cave'] },
+  { key: 'ui.weeTale.death.biome_callanish', requires: ['death', 'biome_callanish'] },
+  { key: 'ui.weeTale.victory.biome_callanish', requires: ['victory', 'biome_callanish'] },
+  { key: 'ui.weeTale.death.biome_trossachs', requires: ['death', 'biome_trossachs'] },
+  { key: 'ui.weeTale.victory.biome_trossachs', requires: ['victory', 'biome_trossachs'] },
+  // B8 biomes — Edinburgh Old Town, Cairngorm Woods, Orkney.
+  { key: 'ui.weeTale.death.biome_edinburgh_old_town', requires: ['death', 'biome_edinburgh_old_town'] },
+  { key: 'ui.weeTale.victory.biome_edinburgh_old_town', requires: ['victory', 'biome_edinburgh_old_town'] },
+  { key: 'ui.weeTale.death.biome_cairngorm_woods', requires: ['death', 'biome_cairngorm_woods'] },
+  { key: 'ui.weeTale.victory.biome_cairngorm_woods', requires: ['victory', 'biome_cairngorm_woods'] },
+  { key: 'ui.weeTale.death.biome_orkney', requires: ['death', 'biome_orkney'] },
+  { key: 'ui.weeTale.victory.biome_orkney', requires: ['victory', 'biome_orkney'] },
+  // B9 biomes — Corryvreckan, Shetland Voe, Skye Fairy Pool.
+  { key: 'ui.weeTale.death.biome_corryvreckan', requires: ['death', 'biome_corryvreckan'] },
+  { key: 'ui.weeTale.victory.biome_corryvreckan', requires: ['victory', 'biome_corryvreckan'] },
+  { key: 'ui.weeTale.death.biome_shetland_voe', requires: ['death', 'biome_shetland_voe'] },
+  { key: 'ui.weeTale.victory.biome_shetland_voe', requires: ['victory', 'biome_shetland_voe'] },
+  { key: 'ui.weeTale.death.biome_skye_fairy_pool', requires: ['death', 'biome_skye_fairy_pool'] },
+  { key: 'ui.weeTale.victory.biome_skye_fairy_pool', requires: ['victory', 'biome_skye_fairy_pool'] },
 
   // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
   // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".

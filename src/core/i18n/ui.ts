@@ -4953,6 +4953,18 @@ export const ui = {
       biome_black_bog: 'The ink held the shape a moment at {time}. Then it closed over.',
       biome_ben_nevis: 'The wind took it at {time}. The Ben didn\'t notice.',
       biome_glasgow_close: 'The close took it at {time}. The flagstanes were still wet.',
+      // B7 biomes.
+      biome_fingals_cave: 'The basalt closed in at {time}. The cave is older than the name; it was here before the music.',
+      biome_callanish: 'The stones at {time}. They were here before the first winter and will be here after the last.',
+      biome_trossachs: 'The deep forest closed at {time}. Rob Roy\'s country does not give receipts.',
+      // B8 biomes.
+      biome_edinburgh_old_town: 'The cobbles at {time}. The Old Town has kept harder things than the haggis — and is not done keeping.',
+      biome_cairngorm_woods: 'The ancient wood closed at {time}. The Caledonian pines have no sympathy for the short-lived.',
+      biome_orkney: 'The grey stones at {time}. Orkney has outlasted every name carved into it.',
+      // B9 biomes.
+      biome_corryvreckan: 'The whirlpool had it at {time}. The Cailleach does not pause her laundry.',
+      biome_shetland_voe: 'The voe wind took it at {time}. The simmer dim still rose. The voe kept what it had.',
+      biome_skye_fairy_pool: 'The pool held the shape at {time}. Then the fey had it, and the fey give nothing back.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -4999,6 +5011,18 @@ export const ui = {
       biome_black_bog: 'Walked out of the black bog at {time}. The ink stayed on the boots but the haggis stayed on the moor.',
       biome_ben_nevis: 'Came down from the Ben at {time}. The cloud stayed up. The haggis came down.',
       biome_glasgow_close: 'Walked out the close at {time}. The midden was still there. So was the haggis.',
+      // B7 biomes.
+      biome_fingals_cave: 'Walked out of the cave at {time}. The basalt columns watched without sound.',
+      biome_callanish: 'Stood among the stones at {time} and walked on. They noted the passing.',
+      biome_trossachs: 'Found the way through the Trossachs at {time}. The loch reflected nothing — and the haggis came home.',
+      // B8 biomes.
+      biome_edinburgh_old_town: 'Walked the Mile at {time} and came out the other end. The Old Town let it happen once.',
+      biome_cairngorm_woods: 'Crossed the Caledonian wood at {time}. The pines are still there. So is the haggis.',
+      biome_orkney: 'Crossed the Neolithic grey at {time}. The stones stood. The haggis stood too.',
+      // B9 biomes.
+      biome_corryvreckan: 'Past the whirlpool and home at {time}. The Cailleach noticed. Did not stop her.',
+      biome_shetland_voe: 'Walked the voe at {time}. The simmer dim held the light. The haggis held the road.',
+      biome_skye_fairy_pool: 'Left the pools at {time}. The water was clear. The fey waved nothing off — but they did not follow.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".
