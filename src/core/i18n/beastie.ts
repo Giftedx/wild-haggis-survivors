@@ -153,4 +153,13 @@ export const beastie = {
   tourist_ghost: {
     lore: 'Visitors to Edinburgh\'s ghost tours who did not leave when the tour ended. Pale blue and translucent; still carrying the camera. They orbit the Auld Reekie Ghaist in the first phase of the fight — damage shield through sheer tourist density. Low HP; easy to pop, if you can reach them.',
   },
+  spectre_legionary: {
+    lore: 'The rank-and-file of the Lost Ninth. Pale lorica segmentata, scutum half-eaten by centuries, gladius still raised. They march in formation because formation is the only thing left. Spawned in three timed waves by the Ninth Legion boss — 0s, 10s, 20s into the encounter. Ranged attack: a thrown pilum that flies straight and true across four hundred years of practice. Low individual HP; dangerous in formation.',
+  },
+  stoor_worm: {
+    lore: 'In Orcadian myth, the Stoor Worm is the greatest of all sea serpents — its body would encircle the earth, its breath poisoned the air, its yawn could swallow ships. A hero lured it to swallow a rag soaked in burning oil; its writhing death-throes threw its teeth into the sea (the Orkney islands), its liver into the deep (the Caspian Sea), and its coiled body became Iceland. This one is smaller. Not much smaller. Three-phase assault: sealed-scale DR in phase one, gaping-maw acid spray in phase two, thrashing fury in phase three. Manual-spawn only. SCOTTISH_RESEARCH.md §1.2.',
+  },
+  ninth_legion: {
+    lore: 'Legio IX Hispana marched north of Hadrian\'s Wall around 117 AD and was never recorded again. The most romantic explanation — adopted by every novelist since Rosemary Sutcliff — is that it simply vanished into Caledonia. Archaeologists dispute this. The haggis does not care about the archaeology. What arrives at the bell-toll is spectral: lorica segmentata and missing-eye expression, three waves of Spectre Legionaries at its flanks, a shroud of campaign-fog that halves incoming damage until the third phase breaks it. Post-bell exclusive. SCOTTISH_RESEARCH_DEEP.md §17.',
+  },
 } as const;

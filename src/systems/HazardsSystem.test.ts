@@ -20,6 +20,18 @@ describe('pickHazardForBiome (biome → hazard mapping)', () => {
     expect(pickHazardForBiome('heather')).toBe('loose_scree');
   });
 
+  it('maps edinburgh_old_town → cobble_gap (B8)', () => {
+    expect(pickHazardForBiome('edinburgh_old_town')).toBe('cobble_gap');
+  });
+
+  it('maps cairngorm_woods → fallen_pine (B8)', () => {
+    expect(pickHazardForBiome('cairngorm_woods')).toBe('fallen_pine');
+  });
+
+  it('maps orkney → standing_slab (B8)', () => {
+    expect(pickHazardForBiome('orkney')).toBe('standing_slab');
+  });
+
   it('returns null when no biome is active', () => {
     expect(pickHazardForBiome(null)).toBe(null);
   });
@@ -32,9 +44,9 @@ describe('pickHazardForBiome (biome → hazard mapping)', () => {
 });
 
 describe('HAZARDS catalog (config integrity)', () => {
-  it('exposes exactly sixteen hazards (B7 drop added basalt_crack, stone_ring, root_trip)', () => {
-    expect(HAZARD_KEYS).toHaveLength(16);
-    expect(Object.keys(HAZARDS)).toHaveLength(16);
+  it('exposes exactly nineteen hazards (B8 drop added cobble_gap, fallen_pine, standing_slab)', () => {
+    expect(HAZARD_KEYS).toHaveLength(19);
+    expect(Object.keys(HAZARDS)).toHaveLength(19);
   });
 
   it('each catalog entry self-references its own key', () => {
@@ -45,8 +57,8 @@ describe('HAZARDS catalog (config integrity)', () => {
 
   it('each hazard maps to a distinct biome (1:1 coverage)', () => {
     const biomes = HAZARD_KEYS.map((k) => HAZARDS[k].biome);
-    expect(new Set(biomes).size).toBe(16);
-    expect(biomes.sort()).toEqual(['ben_nevis', 'black_bog', 'bog', 'cairngorm', 'callanish', 'clyde_shipyard', 'coastal', 'fingals_cave', 'frost', 'glasgow_close', 'glen_coe', 'haar', 'heather', 'loch', 'pine', 'trossachs']);
+    expect(new Set(biomes).size).toBe(19);
+    expect(biomes.sort()).toEqual(['ben_nevis', 'black_bog', 'bog', 'cairngorm', 'cairngorm_woods', 'callanish', 'clyde_shipyard', 'coastal', 'edinburgh_old_town', 'fingals_cave', 'frost', 'glasgow_close', 'glen_coe', 'haar', 'heather', 'loch', 'orkney', 'pine', 'trossachs']);
   });
 
   it('texture keys follow the validator-locked hazard_* prefix', () => {
@@ -127,6 +139,9 @@ describe('HAZARDS catalog (config integrity)', () => {
       'fingals_cave',
       'callanish',
       'trossachs',
+      'edinburgh_old_town',
+      'cairngorm_woods',
+      'orkney',
     ]);
     for (const key of HAZARD_KEYS) {
       expect(valid.has(HAZARDS[key].biome)).toBe(true);
@@ -134,7 +149,7 @@ describe('HAZARDS catalog (config integrity)', () => {
   });
 
   it('round-trips: every biome resolves to a hazard whose biome matches', () => {
-    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs'];
+    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney'];
     for (const b of biomes) {
       const k = pickHazardForBiome(b) as HazardKey;
       expect(k).not.toBeNull();

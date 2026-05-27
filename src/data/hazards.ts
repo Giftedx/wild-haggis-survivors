@@ -63,7 +63,13 @@ export type HazardKey =
   // Callanish Standing Stones — alignment energy ring, brief and sharp.
   | 'stone_ring'
   // Trossachs Forest — exposed root trip across the deer trail.
-  | 'root_trip';
+  | 'root_trip'
+  // Edinburgh Old Town — loose cobblestone gap on the Royal Mile.
+  | 'cobble_gap'
+  // Cairngorm Woods — fallen Caledonian pine trunk across the trail.
+  | 'fallen_pine'
+  // Orkney Neolithic — toppled standing slab on the windswept machair.
+  | 'standing_slab';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -268,6 +274,42 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 6000,
     spawnIntervalMs: 9000,
   },
+  // Edinburgh Old Town — loose cobblestone gap on the Royal Mile.
+  // Mid damage (8), tight hitbox (9 px — a single missing stone).
+  // The close floor is ancient; some stones are missing. Urban chip hazard.
+  cobble_gap: {
+    key: 'cobble_gap',
+    texture: 'hazard_cobble_gap',
+    biome: 'edinburgh_old_town',
+    damage: 8,
+    hitboxRadius: 9,
+    lifetimeMs: 5500,
+    spawnIntervalMs: 9500,
+  },
+  // Cairngorm Woods — fallen Caledonian pine trunk blocking the trail.
+  // Mid damage (7), wide hitbox (14 px — the trunk is thick).
+  // The old pines fall without warning; the forest floor is littered.
+  fallen_pine: {
+    key: 'fallen_pine',
+    texture: 'hazard_fallen_pine',
+    biome: 'cairngorm_woods',
+    damage: 7,
+    hitboxRadius: 14,
+    lifetimeMs: 6500,
+    spawnIntervalMs: 9500,
+  },
+  // Orkney — toppled Neolithic standing slab.
+  // High damage (10), mid hitbox (12 px), long lifetime (7s).
+  // The slabs have been falling for 5000 years. This one just chose now.
+  standing_slab: {
+    key: 'standing_slab',
+    texture: 'hazard_standing_slab',
+    biome: 'orkney',
+    damage: 10,
+    hitboxRadius: 12,
+    lifetimeMs: 7000,
+    spawnIntervalMs: 10000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -288,4 +330,7 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'basalt_crack',
   'stone_ring',
   'root_trip',
+  'cobble_gap',
+  'fallen_pine',
+  'standing_slab',
 ];

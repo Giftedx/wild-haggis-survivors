@@ -276,6 +276,16 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.auld_reekie.b',
         'ui.banter.boss_warn.auld_reekie.c',
       ],
+      stoor_worm: [
+        'ui.banter.boss_warn.stoor_worm.a',
+        'ui.banter.boss_warn.stoor_worm.b',
+        'ui.banter.boss_warn.stoor_worm.c',
+      ],
+      ninth_legion: [
+        'ui.banter.boss_warn.ninth_legion.a',
+        'ui.banter.boss_warn.ninth_legion.b',
+        'ui.banter.boss_warn.ninth_legion.c',
+      ],
     },
   },
   {
@@ -558,6 +568,18 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.auld_reekie.a',
         'ui.banter.boss_down.auld_reekie.b',
         'ui.banter.boss_down.auld_reekie.c',
+      ],
+      // B8 — Stoor Worm doon. The sea returns to silence.
+      stoor_worm: [
+        'ui.banter.boss_down.stoor_worm.a',
+        'ui.banter.boss_down.stoor_worm.b',
+        'ui.banter.boss_down.stoor_worm.c',
+      ],
+      // B8 — Lost Ninth Legion doon. The march ends.
+      ninth_legion: [
+        'ui.banter.boss_down.ninth_legion.a',
+        'ui.banter.boss_down.ninth_legion.b',
+        'ui.banter.boss_down.ninth_legion.c',
       ],
     },
   },
@@ -1622,6 +1644,30 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.trossachs.b',
         'ui.banter.biome_change.trossachs.c',
         'ui.banter.biome_change.trossachs.d',
+      ],
+      // B8 — Edinburgh Old Town: gaslit closes, tenements, ghosts.
+      // Hearth register: alert, wry, aware of history underfoot.
+      edinburgh_old_town: [
+        'ui.banter.biome_change.edinburgh_old_town.a',
+        'ui.banter.biome_change.edinburgh_old_town.b',
+        'ui.banter.biome_change.edinburgh_old_town.c',
+        'ui.banter.biome_change.edinburgh_old_town.d',
+      ],
+      // B8 — Cairngorm Woods: ancient Caledonian pine, deep forest floor.
+      // Hearth register: quiet, reverent, watchful.
+      cairngorm_woods: [
+        'ui.banter.biome_change.cairngorm_woods.a',
+        'ui.banter.biome_change.cairngorm_woods.b',
+        'ui.banter.biome_change.cairngorm_woods.c',
+        'ui.banter.biome_change.cairngorm_woods.d',
+      ],
+      // B8 — Orkney: Atlantic wind, standing stones, oldest landscape.
+      // Hearth register: awed, windswept, small-against-deep-time.
+      orkney: [
+        'ui.banter.biome_change.orkney.a',
+        'ui.banter.biome_change.orkney.b',
+        'ui.banter.biome_change.orkney.c',
+        'ui.banter.biome_change.orkney.d',
       ],
     },
   },

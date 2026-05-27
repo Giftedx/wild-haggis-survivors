@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -26,7 +26,10 @@ export type BiomeModifierKind =
   | 'glasgowClose'
   | 'fingalEcho'
   | 'callanishAlignment'
-  | 'trossachsCanopy';
+  | 'trossachsCanopy'
+  | 'edinburghSmoke'
+  | 'cairngormWood'
+  | 'orkneyWind';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -492,9 +495,72 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // Morning mist among the trees — light, not oppressive. Lower than haar.
     ambientHaarDensity: 0.10,
   },
+  // B8 — Edinburgh Old Town. Smoke-grey closes and wynds; gaslit Royal Mile.
+  // -10% speed (you cannae sprint doon a shared stair or through a close);
+  // +12% XP (urban kill density and Edinburgh's scholar-energy pays out).
+  // Haar density 0.15 — the Forth haar drifts up the Canongate on cold evenings.
+  edinburgh_old_town: {
+    id: 'edinburgh_old_town',
+    nameKey: 'biomes.edinburgh_old_town.name',
+    tint: 0x5a5060,
+    entryToastKey: 'biomes.edinburgh_old_town.entry',
+    loreSnippetKey: 'biomes.edinburgh_old_town.loreSnippet',
+    loreKey: 'biomes.edinburgh_old_town.lore',
+    toastColor: '#9a88a8',
+    spawnWeightMods: {
+      ghost: 1.8, edinburgh_ghost_guide: 1.5, buckfast_ned: 0.2, traffic_cone_totem: 0.3,
+      tome_wraith: 1.3, dean_apparition: 1.2, rook: 1.3, tourist: 0.8, chef: 0.5,
+      sheep: 0.05, highland_cow: 0.05, blue_man_of_minch: 0.05,
+    },
+    modifier: 'edinburghSmoke',
+    moodTimbre: 0.55,
+    ambientHaarDensity: 0.15,
+  },
+  // B8 — Cairngorm Woods. Ancient Caledonian pine forest below the plateau;
+  // distinct from cairngorm (the exposed summit). Dense canopy, root-threaded
+  // floor. +6% speed (you know the deer trails); -10% drift (the trees
+  // straighten your path — you navigate by trunk-gaps not by feel).
+  cairngorm_woods: {
+    id: 'cairngorm_woods',
+    nameKey: 'biomes.cairngorm_woods.name',
+    tint: 0x1a3318,
+    entryToastKey: 'biomes.cairngorm_woods.entry',
+    loreSnippetKey: 'biomes.cairngorm_woods.loreSnippet',
+    loreKey: 'biomes.cairngorm_woods.lore',
+    toastColor: '#5a8858',
+    spawnWeightMods: {
+      ghost: 1.2, eagle: 1.4, golden_eagle: 1.0, berserker: 1.2,
+      haggis_hunter: 1.3, sheep: 0.4, highland_cow: 0.3, tourist: 0.3,
+      buckfast_ned: 0.05, traffic_cone_totem: 0.05,
+    },
+    modifier: 'cairngormWood',
+    moodTimbre: 0.40,
+    ambientHaarDensity: 0.15,
+  },
+  // B8 — Orkney Neolithic. Windswept grey-green Orcadian pasture; Ring of
+  // Brodgar and Maeshowe on the horizon. Constant Atlantic westerly (biomeWindX)
+  // mimics the relentless Orkney wind — moving with it is free, fighting it
+  // costs stamina. +12% XP (ancient standing power flows through the stones).
+  orkney: {
+    id: 'orkney',
+    nameKey: 'biomes.orkney.name',
+    tint: 0x5a7860,
+    entryToastKey: 'biomes.orkney.entry',
+    loreSnippetKey: 'biomes.orkney.loreSnippet',
+    loreKey: 'biomes.orkney.lore',
+    toastColor: '#78aa88',
+    spawnWeightMods: {
+      ghost: 1.3, haar_wraith: 1.2, gale_wraith: 1.5, seelie_piper: 1.0,
+      puffin: 0.05, sheep: 0.8, highland_cow: 0.5, tourist: 0.6,
+      buckfast_ned: 0.05, traffic_cone_totem: 0.05,
+    },
+    modifier: 'orkneyWind',
+    moodTimbre: 0.50,
+    ambientHaarDensity: 0.25,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

@@ -15,4 +15,6 @@ export const boss = {
   wicker_haggis: { name: 'The Wicker Haggis — Bealltainn\'s Tribute' },
   nessie: { name: 'Nessie, Reconsidered' },
   auld_reekie: { name: 'The Auld Reekie Ghaist' },
+  stoor_worm: { name: 'The Stoor Worm' },
+  ninth_legion: { name: 'The Lost Ninth Legion' },
 } as const;

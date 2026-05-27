@@ -153,4 +153,13 @@ export const beastie = {
   tourist_ghost: {
     lore: 'Visitors tae Edinburgh\'s ghaist tours wha didnae leave whan tha tour endit. Pale blue an translucent; still cairryin tha camera. They orbit tha Auld Reekie Ghaist in tha first phase o tha fecht — damage shield through sheer tourist density. Low HP; easy tae pop, gin ye can reach them.',
   },
+  spectre_legionary: {
+    lore: 'Tha rank-an-file o tha Lost Ninth. Pale lorica segmentata, scutum hauf-eatit by centuries, gladius still raised. They march in formation because formation is tha only thing left. Spawned in three timed waves by tha Ninth Legion boss — 0s, 10s, 20s intae tha encounter. Ranged attack: a thrown pilum that flies straucht an true across fower hunner year o practice. Low individual HP; dangerous in formation.',
+  },
+  stoor_worm: {
+    lore: 'In Orcadian myth, tha Stoor Worm is tha greatest o aw sea serpents — its body wad encircle tha earth, its breath poisoned tha air, its yawn coud swalla ships. A hero lured it tae swalla a rag soakit in burnin ile; its writhin daith-throes threw its teeth intae tha sea (tha Orkney islands), its liver intae tha deep (tha Caspian Sea), an its coiled body became Iceland. This ane is smaller. No much smaller. Three-phase assault: sealed-scale DR in phase ane, gapin-maw acid spray in phase twa, thrashin fury in phase three. Manual-spawn only. SCOTTISH_RESEARCH.md §1.2.',
+  },
+  ninth_legion: {
+    lore: 'Legio IX Hispana marchit north o Hadrian\'s Wa\' aroond 117 AD an wis never recordit again. Tha maist romantic explanation — adoptit by ilka novelle-writer since Rosemary Sutcliff — is that it simply vanishit intae Caledonia. Archaeologists dispute this. Tha haggis disnae care aboot tha archaeology. Whit arrives at tha bell-toll is spectral: lorica segmentata an missin-ee expression, three waves o Spectre Legionaries at its flanks, a shroud o campaign-fog that halves incomin damage until tha third phase breaks it. Post-bell exclusive. SCOTTISH_RESEARCH_DEEP.md §17.',
+  },
 } as const;

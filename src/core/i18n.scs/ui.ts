@@ -800,6 +800,8 @@ export const ui = {
     wicker_haggis: 'Tha Wicker Haggis rises on tha brae — Bealltainn\'s tribute is awake, an it is no happy aboot it.',
     nessie: 'Somethin lang jist brak tha surface. That is no a log.',
     auld_reekie: "Tha Auld Toun's ghaist is oot — an tha lamps are on.",
+    stoor_worm: 'Tha Stoor Worm surfaces — auldest o aw things that feed. Rin.',
+    ninth_legion: 'Tha Ninth Legion emerges — fower centuries late an still marchin.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
@@ -839,6 +841,8 @@ export const ui = {
     boss_killed_wicker_haggis: 'Tha Wicker Haggis is doon! Tha moor smells o woodsmoke — an somethin worth celebratin.',
     boss_killed_nessie: 'Nessie is doon! Tha loch haes it back. Tha postcairds were wrang tha hale time.',
     boss_killed_auld_reekie: 'Tha Auld Reekie Ghaist is doon! Tha lamps gang cauld. Tha close breathes again.',
+    boss_killed_stoor_worm: 'Tha Stoor Worm is doon! Tha sea is quaiter. Ilka tuith is a muntan noo.',
+    boss_killed_ninth_legion: 'Tha Ninth is doon! Fower centuries o marchin — an a haggis ends it.',
     boss_killed_generic: 'Boss doon! Get it richt round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it richt round them!',
@@ -1081,6 +1085,16 @@ export const ui = {
         a: 'Victorian ghaist wi a lantern. Tha lamp\'s lit. That\'s bad.',
         b: 'Ghaist frae tha Auld Toun closes. Amber een, nae face, definitely hauntin me.',
         c: 'Yer tourists are orbitin it. That happens noo.',
+      },
+      stoor_worm: {
+        a: "That's tha Stoor Worm. Tha hale sea is it. Move.",
+        b: 'Auldest o aw tha serpents — an it kens whaur I am.',
+        c: "Three phases. Scale-locked, then gapin, then FURIOUS. It'll get worse.",
+      },
+      ninth_legion: {
+        a: 'Roman ghaists. Fower hunner year late. Still in formation.',
+        b: "Tha Ninth emerges — an they've brought tha hale bloody legion.",
+        c: 'Spectral pilums incomin. Tha past is still tryin tae conquer somethin.',
       },
     },
     low_hp: {
@@ -1352,6 +1366,16 @@ export const ui = {
         a: 'Lamps oot. Close is jist a close again.',
         b: 'Victorian ghaist telt tae muive oan. Tha amber licht gaed wi it.',
         c: 'Tha tourists dispersed. Tha ghaist dispersed. Tha moor smells o naethin.',
+      },
+      stoor_worm: {
+        a: 'Auldest o tha serpents — doon. Tha sea is quaiter fer it.',
+        b: "Tha Stoor Worm is oot. Its teeth are islands noo. Tha haggis earned that.",
+        c: 'Three phases, ane haggis. Tha Orcadian myth haes a new endin.',
+      },
+      ninth_legion: {
+        a: 'Tha Ninth is doon. Fower centuries o marchin, stopped by somethin wee an determined.',
+        b: 'Legio IX Hispana — finally accounted fer. By a haggis. Tha historians will hate this.',
+        c: 'Tha fog cleared. Tha legion dispersed. Tha haggis is still staundin in it.',
       },
     },
     weapon_evolve: {
@@ -2336,6 +2360,24 @@ export const ui = {
         b: 'Deer trails. Tha forest made them; tha haggis is borrowin them.',
         c: 'Aik an birch, bluebells underfit in Aprile. Rich kintra.',
         d: 'Tha forest taks yer side here. No sure why, but gratefu.',
+      },
+      edinburgh_old_town: {
+        a: 'These closes war built fer hidin in. Tha haggis approves.',
+        b: 'Somethin in tha gaslight maks tha drift worse. Or mibbe it\'s tha history.',
+        c: 'Tha Canongate kens ilka secret. Sae dis tha haggis, noo.',
+        d: 'Ghaists in ilka wynd. Tha haggis haes met worse on tha muir.',
+      },
+      cairngorm_woods: {
+        a: 'Fower hunner year, this pine. Tha haggis is a tourist.',
+        b: 'Resin an deep time. Tha forest flure disnae hurry.',
+        c: 'A pine marten is watchin. Tha haggis pretends no tae notice.',
+        d: 'Caledonian pine — no plantit, no managed. Jist auld an unconcerned.',
+      },
+      orkney: {
+        a: 'Tha wind here haes been blawin since afore onythin had a name.',
+        b: 'Skara Brae unner tha sand. Tha haggis is rinnin ower fower thoosand year.',
+        c: 'Sixty stanes in a perfect circle. Somebody cared a great deal aboot circles.',
+        d: 'Atlantic grey an staunin stanes. Tha auldest feelin on tha island.',
       },
     },
     moor_moment: {

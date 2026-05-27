@@ -26,6 +26,8 @@ import { bakeBossWickerHaggis } from './wickerHaggis';
 import { bakeBossNessie } from './nessie';
 import { bakeBossArenaProps } from './arenaProps';
 import { bakeAuldReekie, bakeGasLamp, bakeLanternOrb } from './auldReekie';
+import { bakeBossStoorWorm } from './stoorWorm';
+import { bakeBossNinthLegion, bakeSpectreLegionry } from './ninthLegion';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
 export function bakeBosses(scene: Phaser.Scene): void {
@@ -60,4 +62,9 @@ export function bakeBosses(scene: Phaser.Scene): void {
   // Post-bell only — Nessie, Reconsidered (loch-emergence, sweep + plunge).
   bakeBossNessie(scene);
   bakeBossArenaProps(scene);
+  // Secret — Stoor Worm (Orcadian sea-serpent, manual-spawn hidden route).
+  bakeBossStoorWorm(scene);
+  // Post-bell — Ninth Legion Centurion (wave-boss, spectral Roman).
+  bakeBossNinthLegion(scene);
+  bakeSpectreLegionry(scene);
 }

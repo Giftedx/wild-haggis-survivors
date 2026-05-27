@@ -95,4 +95,22 @@ export const biomes = {
     loreSnippet: "Auld aik an birch, bluebells in Aprile. Ootlaw kintra.",
     lore: "Tha Trossachs — tha bristly kintra, frae tha Gaelic — is auld aik an birch wuidland atween Loch Katrine an Loch Achray. Rob Roy MacGregor bided an focht these hills; Walter Scott set a poem an a novelle here an invented tha Scottish tourist industry in tha same stroke. Bluebells carpet tha flure in Aprile, osprey fish tha loch, reid squirrels rin tha canopy. Tha deer trails are aulder than ony map o them. Tha forest keeps its ain time, an it taks tha haggis's side.",
   },
+  edinburgh_old_town: {
+    name: 'Edinburgh Auld Toun',
+    entry: "Tha closes are watchin. Ilka wynd has a ghaist that kens yer name.",
+    loreSnippet: "Tenement history an gaslit closes. Tha Canongate minds awthin.",
+    lore: "Tha Auld Toun grew upwart, no ootward — tha medieval street plan forced ten-storey tenements ontae a spine o volcanic rock. Tha Royal Mile rins frae tha castle tae tha palace; tha closes an wynds slant aff it lik ribs, daurk even at noon. Mary, Queen o Scots slept here. Burke an Hare worked tha Grassmercat. Tha toun wis built on plague pits an compromise. Tha gaslight cam an made awthin amber-braw an tuberculosis-thick in tha same decade. Tha haggis moves fast through tha closes. It haes practice.",
+  },
+  cairngorm_woods: {
+    name: 'Cairngorm Wuids',
+    entry: "Auld pines. Tha forest flure smells o resin an deep time.",
+    loreSnippet: "Caledonian pine remnants. Tha auldest livin trees in Britain.",
+    lore: "Tha Caledonian pinewuids are remnants o a forest that yince covered maist o tha Scottish Hielands efter tha last ice age. Tha trees in places lik Rothiemurchus an Glen Affric are descendants o tha post-glacial pioneer stock — no plantit, no managed intae raws, but sel-seedit across ten thoosand year. A granny pine micht be fower hunner year auld an nae taller than a man is braid. Reid squirrels rin tha canopy; pine martens patrol tha flure; capercaillie boom in tha pre-dawn. Tha forest smells o resin an somethin aulder nor resin. Tha haggis fits here tha wey a rune fits a stane.",
+  },
+  orkney: {
+    name: 'Orkney',
+    entry: "Wind an stane an tha Atlantic. Tha auldest stories are carved in tha rock.",
+    loreSnippet: "Neolithic landscape aulder nor tha pyramids. Skara Brae, Maeshowe, Brodgar.",
+    lore: "Orkney wis settled five thoosand year syne by fermers wha built in stane because there war nae trees. Skara Brae is a Neolithic clachan preserved unner sand for fower millennia — stane beds, stane dressers, stane hearths, a plumbing system. Maeshowe is a chambered cairn aligned sae tha winter solstice sun illuminates tha back wall for seventeen meenits. Tha Ring o Brodgar is sixty standin stanes in a perfect circle on an isthmus atween twa lochs. Vikings carved runes in Maeshowe eight hunner year syne bragging aboot treisure an weemin. Tha landscape is wide an Atlantic-grey an tha wind never staps. Tha haggis leans intae it.",
+  },
 } as const;

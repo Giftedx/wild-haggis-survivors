@@ -104,7 +104,31 @@ export type EnemyBehavior =
    * Standard Fan (even). 1.5 s dramatic pause at the phase transition.
    * Refs: DESIGN_IDEAS.md §1 + §3 (Father Taxman / Grudge-Ledger phase).
    */
-  | 'taxman_grudge';
+  | 'taxman_grudge'
+  /**
+   * Stoor Worm — Orcadian giant sea-serpent (secret final boss).
+   * Phase 1 (HP > 60 %): serpentine chase + acid-spray (3-fan) every 5 s.
+   *   Scale lock: 80 % damage reduction for 3 s every 12 s → gape: full
+   *   vulnerability for 3 s. Rewards close-range burst timing.
+   * Phase 2 (HP 60–25 %): speed × 1.3 + bile burst (5-fan) every 3.5 s.
+   *   Scale lock persists.
+   * Phase 3 (HP < 25 %): Death Thrash — 360° 8-shard burst every 3 s,
+   *   speed × 1.6, scale lock drops (scales shattered — always vulnerable).
+   * Triggered via `SpawnSystem.spawnBossManually` from a hidden route.
+   * Ref: SCOTTISH_RESEARCH.md §1.1 (Stoor Worm / Assipattle legend).
+   */
+  | 'stoor_worm'
+  /**
+   * Ninth Legion — wave-boss encounter (Lost Ninth Legion of Rome).
+   * Phase 1 (first 30 s): Centurion drifts under a mist shroud (90 % DR).
+   *   Spawns spectre_legionary in 3 timed waves of 4 (at 0 s, 10 s, 20 s).
+   * Phase 2 (30 s +): Shroud lifts — full damage. Formation pilum attack
+   *   (3 simultaneous throws in a spread) every 4 s. Speed × 1.4.
+   * Phase 3 (HP ≤ 35 %): Faster attacks (3 s cadence) + rear-guard summon
+   *   (4 legionaries every 20 s). Speed × 1.8.
+   * Ref: SCOTTISH_RESEARCH_DEEP.md §6.1 (Ninth Legion mystery / Caledonia).
+   */
+  | 'ninth_legion';
 
 export interface EnemyConfig {
   key: string;
@@ -702,6 +726,21 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Lost Ninth Legion minion — silver Roman ghost-soldier (spectre legionary).
+  // `appearsAt: 9999` keeps it out of the general spawn pool; spawned exclusively
+  // by the ninth_legion boss via its wave-spawner phase. Ranged behavior fires a
+  // spectral pilum (javelin throw) at mid distance.
+  spectre_legionary: {
+    key: 'spectre_legionary',
+    texture: 'spectre_legionary',
+    speed: 60,
+    hp: 60,
+    damage: 14,
+    xpValue: 6,
+    appearsAt: 9999,
+    behavior: 'ranged',
+    packSize: 1,
+  },
 };
 
 /**
@@ -763,6 +802,9 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   auld_reekie: 'The Auld Reekie Ghaist',
   tourist_ghost: 'Tourist Ghost',
   cailleach_boss: 'The Cailleach',
+  spectre_legionary: 'Spectre Legionary',
+  stoor_worm: 'The Stoor Worm',
+  ninth_legion: 'The Lost Ninth Legion',
 };
 
 export function getEnemyDisplayName(key: string): string {
@@ -1112,5 +1154,44 @@ export const BOSSES: BossConfig[] = [
     xpValue: 80,
     scale: 2.6,
     behaviorOverride: 'wail',
+  },
+  // Stoor Worm — Orcadian giant sea-serpent (secret final-final boss).
+  // Triggered via a hidden route (manual spawn only). Highest HP in the game.
+  // Three phases: acid-spray (phase 1) → bile-burst (phase 2) → death thrash.
+  // Scale lock mechanic: 80% DR during sealed-scale windows; full vulnerability
+  // during gape windows — rewards burst timing at close range.
+  // Ref: SCOTTISH_RESEARCH.md §1.1 (Assipattle and the Stoor Worm).
+  {
+    key: 'stoor_worm',
+    nameKey: 'boss.stoor_worm.name',
+    warningKey: 'ui.bossWarning.stoor_worm',
+    spawnTimeSec: -1,
+    manualSpawn: true,
+    texture: 'boss_stoor_worm',
+    speed: 40,
+    hp: 8000,
+    damage: 40,
+    xpValue: 250,
+    scale: 3.5,
+    behaviorOverride: 'stoor_worm',
+  },
+  // Lost Ninth Legion — wave-boss encounter (Roman spectres of Caledonia).
+  // Phase 1 (first 30 s): Centurion shrouded in mist (90 % DR); spawns three
+  // waves of 4 spectre_legionaries at 0/10/20 s. Phase 2: full damage, formation
+  // pilum attacks. Phase 3 (HP ≤ 35 %): faster attacks + rear-guard summon.
+  // Post-bell exclusive. Ref: SCOTTISH_RESEARCH_DEEP.md §6.1 (Ninth Legion).
+  {
+    key: 'ninth_legion',
+    nameKey: 'boss.ninth_legion.name',
+    warningKey: 'ui.bossWarning.ninth_legion',
+    spawnTimeSec: 9999,
+    postBellOnly: true,
+    texture: 'boss_ninth_legion',
+    speed: 35,
+    hp: 5000,
+    damage: 30,
+    xpValue: 160,
+    scale: 2.8,
+    behaviorOverride: 'ninth_legion',
   },
 ];

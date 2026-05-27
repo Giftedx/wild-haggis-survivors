@@ -68,6 +68,20 @@ import {
   type TaxmanGrudgeState,
 } from './taxmanGrudgeBehaviour';
 import { judgeGrudge } from './grudgeLedger';
+import {
+  simulateStoorWormBehaviour,
+  initialStoorWormState,
+  STOOR_WORM_SCALE_LOCK_DR,
+  type StoorWormState,
+} from './stoorWormBehaviour';
+import {
+  simulateNinthLegionBehaviour,
+  initialNinthLegionState,
+  NINTH_LEGION_SHROUD_DR,
+  NINTH_LEGION_WAVE_SIZE,
+  NINTH_LEGION_REARGUARD_SIZE,
+  type NinthLegionState,
+} from './ninthLegionBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -199,6 +213,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private auldReekieState: AuldReekieState = initialAuldReekieState();
   /** Taxman Phase 2 state (only used when behavior === 'taxman_grudge'). */
   private taxmanGrudgeState: TaxmanGrudgeState = initialTaxmanGrudgeState();
+  /** Stoor Worm boss state (only used when behavior === 'stoor_worm'). */
+  private stoorWormState: StoorWormState = initialStoorWormState();
+  /** Ninth Legion boss state (only used when behavior === 'ninth_legion'). */
+  private ninthLegionState: NinthLegionState = initialNinthLegionState();
   /** Gas-lamp post sprites anchored near the Auld Reekie arena. Destroyed in die(). */
   private lampPostSprites: Phaser.GameObjects.Image[] = [];
   /** Seeded anchor positions for lamp posts — set once on first tick. */
@@ -752,6 +770,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         break;
       case 'taxman_grudge':
         this.behaviorTaxmanGrudge(targetX, targetY, delta);
+        break;
+      case 'stoor_worm':
+        this.behaviorStoorWorm(targetX, targetY, delta);
+        break;
+      case 'ninth_legion':
+        this.behaviorNinthLegion(targetX, targetY, delta);
         break;
     }
   }
@@ -1892,6 +1916,179 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  // ── Stoor Worm ────────────────────────────────────────────────────────────
+
+  private behaviorStoorWorm(tx: number, ty: number, delta: number): void {
+    const next = simulateStoorWormBehaviour(this.stoorWormState, {
+      deltaMs: delta,
+      hpPct: this.maxHp > 0 ? this.hp / this.maxHp : 1.0,
+    });
+    this.stoorWormState = next;
+
+    // Scale lock: tint sealed/gaping — green sealed, yellow gaping.
+    if (next.isScaleLocked) {
+      this.baseTint = 0x446622;
+      this.setTint(0x446622);
+    } else if (next.scaleLockState === 'gaping') {
+      this.baseTint = 0xcc8800;
+      this.setTint(0xcc8800);
+    }
+    if (next.didPhaseChange && next.phase === 3) {
+      // Death thrash — turn a sickly pale.
+      this.baseTint = 0xaaccaa;
+      this.setTint(0xaaccaa);
+      this.ctx.requestBanter('boss_down', this.enemyKey);
+    }
+
+    this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+
+    if (next.shouldFireAttack) {
+      switch (next.phase) {
+        case 1: case 2: this.fireStoorWormSpray(tx, ty, next.phase === 2 ? 5 : 3); break;
+        case 3:         this.fireStoorWormThrash(); break;
+      }
+    }
+  }
+
+  /** Stoor Worm acid/bile fan — shardCount 3 (phase 1) or 5 (phase 2). */
+  private fireStoorWormSpray(tx: number, ty: number, shardCount: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const spread = 0.55;
+    const step = shardCount > 1 ? spread / (shardCount - 1) : 0;
+    const spawnedPlayer = this.ctx.getPlayer();
+    const color = shardCount === 3 ? 0x44aa22 : 0x88cc00;
+    for (let i = 0; i < shardCount; i++) {
+      const angle = baseAngle - spread / 2 + step * i;
+      const proj = this.scene.add.circle(this.x, this.y, 8, color, 0.9);
+      this.scene.physics.add.existing(proj);
+      const body = proj.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * 130, Math.sin(angle) * 130);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return; hit = true;
+        try { this.scene.physics.world.removeCollider(ol); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+      };
+      const dmg = this.damage;
+      const ol = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+        if (hit) return; cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(Math.round(dmg * 0.7));
+        cur.applyNetSlow(600);
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 3500, cleanup);
+    }
+  }
+
+  /** Stoor Worm Phase 3 Death Thrash — 360° 8-shard burst. */
+  private fireStoorWormThrash(): void {
+    const shardCount = 8;
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (let i = 0; i < shardCount; i++) {
+      const angle = (Math.PI * 2 * i) / shardCount;
+      const proj = this.scene.add.circle(this.x, this.y, 7, 0xaacc44, 0.9);
+      this.scene.physics.add.existing(proj);
+      const body = proj.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * 160, Math.sin(angle) * 160);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return; hit = true;
+        try { this.scene.physics.world.removeCollider(ol); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+      };
+      const dmg = this.damage;
+      const ol = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+        if (hit) return; cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(Math.round(dmg * 0.55));
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2800, cleanup);
+    }
+  }
+
+  // ── Ninth Legion ───────────────────────────────────────────────────────────
+
+  private behaviorNinthLegion(tx: number, ty: number, delta: number): void {
+    const next = simulateNinthLegionBehaviour(this.ninthLegionState, {
+      deltaMs: delta,
+      hpPct: this.maxHp > 0 ? this.hp / this.maxHp : 1.0,
+    });
+    this.ninthLegionState = next;
+
+    if (next.shouldLiftShroud) {
+      // Shroud lifts — silver centurion reveals.
+      this.baseTint = 0xcccccc;
+      this.setTint(0xcccccc);
+      this.ctx.requestBanter('boss_warn', this.enemyKey);
+    }
+
+    if (next.isShrouded) {
+      // Slow drift toward player while shrouded.
+      this.setVelocityToward(tx, ty, this.speed * 0.4);
+    } else {
+      this.setVelocityToward(tx, ty, this.speed * next.speedMul);
+    }
+
+    if (next.shouldSpawnWave) {
+      this.spawnNinthLegionWave(NINTH_LEGION_WAVE_SIZE);
+    }
+    if (next.shouldFireAttack) {
+      this.fireNinthLegionFormation(tx, ty);
+    }
+    if (next.shouldSpawnRearguard) {
+      this.spawnNinthLegionWave(NINTH_LEGION_REARGUARD_SIZE);
+    }
+  }
+
+  private spawnNinthLegionWave(count: number): void {
+    const spawnSystem = this.ctx.getSpawnSystem();
+    const pool = spawnSystem.getEnemyGroup();
+    const config = ENEMY_TYPES['spectre_legionary'];
+    if (!config) return;
+    const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
+    for (let i = 0; i < count; i++) {
+      const minion = Enemy.acquireFromPool(pool, this.ctxScene);
+      if (!minion) break;
+      const angle = ((Math.PI * 2) / count) * i;
+      minion.spawn(
+        this.x + Math.cos(angle) * 60,
+        this.y + Math.sin(angle) * 60,
+        config,
+        gameTime,
+      );
+    }
+  }
+
+  /** Ninth Legion formation attack — 3 simultaneous pilum throws in a spread. */
+  private fireNinthLegionFormation(tx: number, ty: number): void {
+    const baseAngle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const offsets = [-0.35, 0, 0.35];
+    const spawnedPlayer = this.ctx.getPlayer();
+    for (const off of offsets) {
+      const angle = baseAngle + off;
+      const proj = this.scene.add.rectangle(this.x, this.y, 14, 4, 0xccccaa, 0.9);
+      this.scene.physics.add.existing(proj);
+      const body = proj.body as Phaser.Physics.Arcade.Body;
+      body.setVelocity(Math.cos(angle) * 200, Math.sin(angle) * 200);
+      let hit = false;
+      const cleanup = () => {
+        if (hit) return; hit = true;
+        try { this.scene.physics.world.removeCollider(ol); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
+      };
+      const dmg = this.damage;
+      const ol = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
+        if (hit) return; cleanup();
+        const cur = this.ctx.getPlayer();
+        if (cur !== spawnedPlayer) return;
+        if (cur.tryParryProjectile()) return;
+        cur.takeDamage(Math.round(dmg * 0.65));
+      });
+      this.ctx.getUpdateTickers().addOnce('raw', 2200, cleanup);
+    }
+  }
+
   private behaviorRanged(tx: number, ty: number, delta: number): void {
     // Single sqrt feeds three decisions: standoff bands + cooldown gate.
     // The unit components `(dx/dist, dy/dist)` are exactly `cos(angle), sin(angle)`
@@ -2483,6 +2680,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       amount = Math.ceil(amount * 0.5);
     }
 
+    // Stoor Worm: 80% DR while scale-locked (sealed window).
+    if (this.behavior === 'stoor_worm' && this.stoorWormState.isScaleLocked) {
+      amount = Math.max(1, Math.round(amount * (1 - STOOR_WORM_SCALE_LOCK_DR)));
+    }
+
+    // Ninth Legion: 90% DR while centurion is shrouded (phase 1).
+    if (this.behavior === 'ninth_legion' && this.ninthLegionState.isShrouded) {
+      amount = Math.max(1, Math.round(amount * (1 - NINTH_LEGION_SHROUD_DR)));
+    }
+
     // Wool armor absorbs one hit
     if (this.woolArmor > 0) {
       this.woolArmor--;
@@ -2695,6 +2902,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.auldReekieState = initialAuldReekieState();
     // Taxman — reset phase state so pool re-use starts in Phase 1.
     this.taxmanGrudgeState = initialTaxmanGrudgeState();
+    this.stoorWormState = initialStoorWormState();
+    this.ninthLegionState = initialNinthLegionState();
   }
 
   destroy(fromScene?: boolean): void {
@@ -2723,6 +2932,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.auldReekieInitialized = false;
     this.auldReekieState = initialAuldReekieState();
     this.taxmanGrudgeState = initialTaxmanGrudgeState();
+    this.stoorWormState = initialStoorWormState();
+    this.ninthLegionState = initialNinthLegionState();
     super.destroy(fromScene);
   }
 

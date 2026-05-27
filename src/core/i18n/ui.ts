@@ -1233,6 +1233,10 @@ export const ui = {
     nessie: 'Something long just broke the surface. That is not a log.',
     /** Urban — Auld Reekie Ghaist. Victorian gas-lamp ghost of the Old Town. */
     auld_reekie: "The Old Town's ghaist is oot — and the lamps are on.",
+    /** B8 — Stoor Worm. The Great Worm rises from the sea. */
+    stoor_worm: 'The Stoor Worm surfaces — eldest of all things that feed. Run.',
+    /** B8 — Lost Ninth Legion. The Hispana marches from the fog. */
+    ninth_legion: 'The Ninth Legion emerges — four centuries late and still marching.',
   },
   game: {
     evolution_primed: 'Legend ready: {name} — crack a chest and let it loose!',
@@ -1279,6 +1283,8 @@ export const ui = {
     boss_killed_wicker_haggis: 'The Wicker Haggis is doon! The moor smells of woodsmoke — and something worth celebrating.',
     boss_killed_nessie: 'Nessie is doon! The loch has it back. The postcards were wrong the whole time.',
     boss_killed_auld_reekie: 'The Auld Reekie Ghaist is doon! The lamps go cold. The close breathes again.',
+    boss_killed_stoor_worm: 'The Stoor Worm is doon! The sea is quieter. Every tooth is a mountain now.',
+    boss_killed_ninth_legion: 'The Ninth is doon! Four hundred years of marching — and a haggis ends it.',
     boss_killed_generic: 'Boss doon! Get it right round ye!',
     achievement_unlock: '★ {title}',
     upgrade_new_weapon: 'New kit: {name} — get it right round them!',
@@ -1659,6 +1665,20 @@ export const ui = {
         b: 'Ghaist fae the Old Town closes. Amber eyes, nae face, definitely haunting me.',
         c: 'Yer tourists are orbiting it. That happens noo.',
       },
+      // B8 — Stoor Worm. The great Orcadian sea serpent rises.
+      // Edge register: awe flipping immediately to pragmatic terror.
+      stoor_worm: {
+        a: "That's the Stoor Worm. The whole sea is it. Move.",
+        b: 'Eldest of all the serpents — and it kens where I am.',
+        c: "Three phases. Scale-locked, then gaping, then FURIOUS. It'll get worse.",
+      },
+      // B8 — Lost Ninth Legion. The Hispana marches from the fog.
+      // Edge register: historical dread, dark absurdity.
+      ninth_legion: {
+        a: 'Roman ghosts. Four hundred years late. Still in formation.',
+        b: "The Ninth emerges — and they've brought the whole bloody legion.",
+        c: 'Spectral pilums incoming. The past is still trying to conquer something.',
+      },
     },
     low_hp: {
       a: 'Yer on the last shred, wee yin.',
@@ -1941,6 +1961,18 @@ export const ui = {
         a: 'Lamps oot. Close is just a close again.',
         b: 'Victorian ghaist telt tae move oan. The amber light went wi\' it.',
         c: 'The tourists dispersed. The ghaist dispersed. The moor smells of nothing.',
+      },
+      // B8 — Stoor Worm doon. The Orcadian sea is silent.
+      stoor_worm: {
+        a: 'Eldest o the serpents — doon. The sea is quieter for it.',
+        b: "The Stoor Worm is oot. Its teeth are islands noo. The haggis earned that.",
+        c: 'Three phases, one haggis. The Orcadian myth has a new ending.',
+      },
+      // B8 — Lost Ninth Legion doon. The march ends.
+      ninth_legion: {
+        a: 'The Ninth is doon. Four centuries of marching, stopped by something small and determined.',
+        b: 'Legio IX Hispana — finally accounted for. By a haggis. The historians will hate this.',
+        c: 'The fog cleared. The legion dispersed. The haggis is still standing in it.',
       },
     },
     weapon_evolve: {
@@ -2930,6 +2962,24 @@ export const ui = {
         b: 'Deer trails. The forest made them; the haggis is borrowing them.',
         c: 'Oak and birch, bluebells underfoot in April. Rich country.',
         d: 'The forest takes your side here. Not sure why, but grateful.',
+      },
+      edinburgh_old_town: {
+        a: 'These closes were built for hiding in. The haggis approves.',
+        b: 'Something in the gaslight makes the drift worse. Or maybe it\'s the history.',
+        c: 'The Canongate kens every secret. So does the haggis, now.',
+        d: 'Ghosts in every wynd. The haggis has met worse on the moor.',
+      },
+      cairngorm_woods: {
+        a: 'Four hundred years, this pine. The haggis is a tourist.',
+        b: 'Resin and deep time. The forest floor does not hurry.',
+        c: 'A pine marten is watching. The haggis pretends not to notice.',
+        d: 'Caledonian pine — not planted, not managed. Just ancient and unconcerned.',
+      },
+      orkney: {
+        a: 'The wind here has been blowing since before anything had a name.',
+        b: 'Skara Brae under the sand. The haggis is running over four thousand years.',
+        c: 'Sixty stones in a perfect circle. Someone cared a great deal about circles.',
+        d: 'Atlantic grey and standing stones. The oldest feeling on the island.',
       },
     },
     moor_moment: {

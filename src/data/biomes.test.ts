@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all sixteen biomes with required fields (B7 drop added fingals_cave, callanish, trossachs)', () => {
-    expect(BIOME_IDS.length).toBe(16);
+  it('defines all nineteen biomes with required fields (B8 drop added edinburgh_old_town, cairngorm_woods, orkney)', () => {
+    expect(BIOME_IDS.length).toBe(19);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -43,6 +43,24 @@ describe('biomes data', () => {
     // (most grounded/grave). Lock the floor so a balance edit
     // cannot brighten it without a design pass.
     expect(frost.moodTimbre).toBeLessThan(BIOMES.bog.moodTimbre);
+  });
+
+  it('edinburgh_old_town biome is registered (B8)', () => {
+    expect(BIOME_IDS).toContain('edinburgh_old_town');
+    expect(BIOMES.edinburgh_old_town.modifier).toBe('edinburghSmoke');
+    expect(BIOMES.edinburgh_old_town.nameKey).toBe('biomes.edinburgh_old_town.name');
+  });
+
+  it('cairngorm_woods biome is registered (B8)', () => {
+    expect(BIOME_IDS).toContain('cairngorm_woods');
+    expect(BIOMES.cairngorm_woods.modifier).toBe('cairngormWood');
+    expect(BIOMES.cairngorm_woods.nameKey).toBe('biomes.cairngorm_woods.name');
+  });
+
+  it('orkney biome is registered (B8)', () => {
+    expect(BIOME_IDS).toContain('orkney');
+    expect(BIOMES.orkney.modifier).toBe('orkneyWind');
+    expect(BIOMES.orkney.nameKey).toBe('biomes.orkney.name');
   });
 
   it('spawn weight multipliers are all positive', () => {

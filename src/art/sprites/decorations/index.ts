@@ -43,6 +43,9 @@ import {
   bakeHazardBasaltCrack,
   bakeHazardStoneRing,
   bakeHazardRootTrip,
+  bakeHazardCobbleGap,
+  bakeHazardFallenPine,
+  bakeHazardStandingSlab,
 } from './biomeHazards';
 import {
   bakeAutumnLeafScatter,
@@ -93,6 +96,12 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeHazardStoneRing(scene);
   // Trossachs Forest hazard.
   bakeHazardRootTrip(scene);
+  // Edinburgh Old Town hazard.
+  bakeHazardCobbleGap(scene);
+  // Cairngorm Woods hazard.
+  bakeHazardFallenPine(scene);
+  // Orkney Neolithic hazard.
+  bakeHazardStandingSlab(scene);
   bakeAutumnLeafScatter(scene);
   bakeSpringShoot(scene);
   bakeThawPuddle(scene);

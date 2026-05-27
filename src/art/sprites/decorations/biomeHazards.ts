@@ -918,3 +918,117 @@ export function bakeHazardRootTrip(scene: Phaser.Scene): void {
   g.generateTexture('hazard_root_trip', w, h);
   g.destroy();
 }
+
+// ── B8 hazards ────────────────────────────────────────────────────────────────
+
+/** Edinburgh Old Town — cobble_gap: missing Royal Mile cobblestone.
+ *  A roughly-rectangular dark void in grey cobble, with loose mortar crumble. */
+export function bakeHazardCobbleGap(scene: Phaser.Scene): void {
+  const w = 22, h = 18;
+  const g = scene.add.graphics();
+
+  // Cobble surround — Edinburgh sandstone grey
+  g.fillStyle(0x8a8890, 1);
+  g.fillRect(0, 0, w, h);
+
+  // Mortar lines
+  g.fillStyle(0x6a6870, 1);
+  g.fillRect(0, 6, w, 1);
+  g.fillRect(0, 12, w, 1);
+  g.fillRect(7, 0, 1, h);
+  g.fillRect(15, 0, 1, h);
+
+  // The gap — dark absence where a stone is missing
+  g.fillStyle(0x181820, 1);
+  g.fillRect(4, 3, 14, 12);
+
+  // Loose grit at gap edge
+  g.fillStyle(0x5a5860, 0.75);
+  g.fillRect(4, 3, 14, 1);
+  g.fillRect(4, 14, 14, 1);
+
+  // Damp shimmer at gap base
+  g.fillStyle(0x303040, 0.55);
+  g.fillRect(7, 10, 8, 3);
+
+  g.generateTexture('hazard_cobble_gap', w, h);
+  g.destroy();
+}
+
+/** Cairngorm Woods — fallen_pine: downed Caledonian pine across the trail. */
+export function bakeHazardFallenPine(scene: Phaser.Scene): void {
+  const w = 36, h = 16;
+  const g = scene.add.graphics();
+  const cy = h / 2;
+
+  // Shadow beneath trunk
+  g.fillStyle(0x1a2a18, 0.35);
+  g.fillEllipse(18, cy + 2, 34, 10);
+
+  // Main trunk — old Caledonian pine, red-brown bark
+  g.fillStyle(0x5a3820, 1);
+  g.fillEllipse(18, cy, 34, 9);
+  // Heartwood lighter stripe
+  g.fillStyle(0x7a5030, 1);
+  g.fillEllipse(18, cy - 0.5, 30, 5);
+
+  // Bark texture — dark furrow lines
+  g.fillStyle(0x3a2010, 0.70);
+  g.fillRect(6, cy - 1, 2, 2);
+  g.fillRect(14, cy - 2, 2, 4);
+  g.fillRect(22, cy - 1, 2, 3);
+  g.fillRect(30, cy - 1, 2, 2);
+
+  // Broken-end splintering on left
+  g.fillStyle(0x9a6840, 1);
+  g.fillRect(0, cy - 2, 4, 1);
+  g.fillRect(0, cy + 1, 3, 1);
+  g.fillStyle(0xba8860, 0.80);
+  g.fillRect(0, cy - 1, 2, 2);
+
+  // Small pine cone beside trunk
+  g.fillStyle(0x4a3018, 1);
+  g.fillEllipse(32, cy + 5, 4, 6);
+  g.fillStyle(0x3a2010, 0.65);
+  g.fillEllipse(32, cy + 4, 3, 2);
+
+  g.generateTexture('hazard_fallen_pine', w, h);
+  g.destroy();
+}
+
+/** Orkney Neolithic — standing_slab: toppled prehistoric standing stone. */
+export function bakeHazardStandingSlab(scene: Phaser.Scene): void {
+  const w = 28, h = 20;
+  const g = scene.add.graphics();
+
+  // Ground shadow
+  g.fillStyle(0x445548, 0.35);
+  g.fillEllipse(14, 17, 26, 7);
+
+  // The slab — grey Orcadian sandstone lying flat, slightly angled
+  g.fillStyle(0x8a8870, 1);
+  g.fillRect(2, 6, 24, 10);
+  // Stone face — lighter surface where sunlight hits
+  g.fillStyle(0xaaaa90, 1);
+  g.fillRect(3, 7, 22, 4);
+
+  // Lichen patches — orange and grey-green
+  g.fillStyle(0xcc8844, 0.60);
+  g.fillCircle(8, 10, 2);
+  g.fillCircle(20, 9, 1.5);
+  g.fillStyle(0x7a9060, 0.55);
+  g.fillCircle(15, 12, 2.5);
+  g.fillCircle(6, 13, 1.5);
+
+  // Carved cup-mark petroglyphs (faint)
+  g.fillStyle(0x6a6858, 0.65);
+  g.fillCircle(11, 9, 1.2);
+  g.fillCircle(18, 11, 1.0);
+
+  // Edge shadow giving slab depth
+  g.fillStyle(0x5a5848, 0.80);
+  g.fillRect(2, 15, 24, 1);
+
+  g.generateTexture('hazard_standing_slab', w, h);
+  g.destroy();
+}

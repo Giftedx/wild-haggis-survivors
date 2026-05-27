@@ -168,6 +168,42 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_bus_stop',
     'deco_waymarker_post',
   ],
+  // B8 — Edinburgh Old Town: closes, wynds, tenement archaeology.
+  // Close door (the defining prop), scaffold post (perpetual Glesga/Edinburgh
+  // maintenance), waymarker post (Royal Mile direction sign), newsprint
+  // (Edinburgh Evening News, crumpled), milestone (the Mile has them).
+  edinburgh_old_town: [
+    'deco_close_door',
+    'deco_waymarker_post',
+    'deco_scaffold_post',
+    'deco_newsprint',
+    'deco_milestone',
+  ],
+  // B8 — Cairngorm Woods: ancient Caledonian pine forest.
+  // Ruined croft (absent settlers — NO Clearances-dignity risk here as the
+  // woods predate the Clearances; this is archaeological, not expulsive),
+  // pine cone equivalent reuse (pech tools for pre-historic woodland), catsith
+  // saucer (the cat sith runs through old forests), standing stone glyph
+  // (Pictish symbol stones in woodland clearings), antler shed.
+  cairngorm_woods: [
+    'deco_ruined_croft',
+    'deco_pech_tools',
+    'deco_catsith_saucer',
+    'deco_standing_stone_glyph',
+    'deco_antler_shed',
+  ],
+  // B8 — Orkney: windswept Neolithic machair.
+  // Standing stone glyph (Ring of Brodgar stones), pictish stone (Orkney
+  // has many), brahan eye stone (the seer's cold stone fits Orkney's
+  // ancient-mystery register), antler shed (red deer and ptarmigan
+  // territory), milestone (Neolithic alignment markers).
+  orkney: [
+    'deco_standing_stone_glyph',
+    'deco_pictish_stone',
+    'deco_brahan_eye_stone',
+    'deco_antler_shed',
+    'deco_milestone',
+  ],
   // B7 — Fingal's Cave: basalt columns, Atlantic sea-spray. Reuses
   // coastal props (kelp, barnacle, whelk) + driftwood + machair shell.
   fingals_cave: [
@@ -352,6 +388,42 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_thistle', 0.72],
     ['deco_abandoned_pint', 0.84],
     ['deco_rock_2', 0.94],
+    ['deco_rock_3', 1.0],
+  ],
+  // B8 — Edinburgh Old Town. Hard urban surface: cobbles, close walls.
+  // Rock rubble (broken flagstone), traffic cone (always somewhere on the
+  // Royal Mile), wind grass (grows through every crack), thistle, close
+  // door (reused as a wall-detail prop at low density). No heather.
+  edinburgh_old_town: [
+    ['deco_rock', 0.20],
+    ['deco_traffic_cone', 0.38],
+    ['deco_wind_grass', 0.56],
+    ['deco_thistle', 0.70],
+    ['deco_close_door', 0.80],
+    ['deco_rock_2', 0.90],
+    ['deco_rock_3', 1.0],
+  ],
+  // B8 — Cairngorm Woods. Forest floor: roots, pine cones, mushrooms,
+  // rowan berries, bracken. Richer than trossachs — the ancient pines
+  // drop more debris. Heather at the woodland edge.
+  cairngorm_woods: [
+    ['deco_roots', 0.18],
+    ['deco_pine_cone', 0.36],
+    ['deco_mushrooms', 0.52],
+    ['deco_rowan_berries', 0.66],
+    ['deco_bracken', 0.78],
+    ['deco_heather', 0.90],
+    ['deco_rock_3', 1.0],
+  ],
+  // B8 — Orkney. Open windswept machair: bog cotton, wind grass, rock.
+  // Almost no cover — the Orkney machair is spare and ancient. Some
+  // heather at lower ground; driftwood on the shore margins.
+  orkney: [
+    ['deco_bog_cotton', 0.22],
+    ['deco_wind_grass', 0.44],
+    ['deco_rock', 0.60],
+    ['deco_heather', 0.74],
+    ['deco_rock_2', 0.88],
     ['deco_rock_3', 1.0],
   ],
   // B7 — Fingal's Cave. Sea-cave floor: kelp, barnacle rock, wet rock,

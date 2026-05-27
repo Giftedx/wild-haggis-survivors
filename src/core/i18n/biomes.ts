@@ -95,4 +95,22 @@ export const biomes = {
     loreSnippet: "Ancient oak and birch, bluebells in April. Outlaw country.",
     lore: "The Trossachs — the bristly country, from the Gaelic — is ancient oak and birch woodland between Loch Katrine and Loch Achray. Rob Roy MacGregor lived and fought these hills; Walter Scott set a poem and a novel here and invented the Scottish tourist industry in the same stroke. Bluebells carpet the floor in April, osprey fish the loch, red squirrels run the canopy. The deer trails are older than any map of them. The forest keeps its own time, and it takes the haggis's side.",
   },
+  edinburgh_old_town: {
+    name: 'Edinburgh Old Town',
+    entry: "The closes are watching. Every wynd has a ghost that knows your name.",
+    loreSnippet: "Tenement history and gaslit closes. The Canongate remembers everything.",
+    lore: "The Old Town grew upward, not outward — the medieval street plan forced ten-storey tenements onto a spine of volcanic rock. The Royal Mile runs from the castle to the palace; the closes and wynds slant off it like ribs, dark even at noon. Mary, Queen of Scots slept here. Burke and Hare worked the Grassmarket. The town was built on plague pits and compromise. The gaslight came and made everything amber-beautiful and tuberculosis-thick in the same decade. The haggis moves fast through the closes. It has practice.",
+  },
+  cairngorm_woods: {
+    name: 'Cairngorm Woods',
+    entry: "Ancient pines. The forest floor smells of resin and deep time.",
+    loreSnippet: "Caledonian pine remnants. The oldest living trees in Britain.",
+    lore: "The Caledonian pinewoods are remnants of a forest that once covered most of the Scottish Highlands after the last ice age. The trees in places like Rothiemurchus and Glen Affric are descendants of the post-glacial pioneer stock — not planted, not managed into rows, but self-seeded across ten thousand years. A grandmother pine may be four hundred years old and no taller than a man is wide. Red squirrels run the canopy; pine martens patrol the floor; capercaillie boom in the pre-dawn. The forest smells of resin and something older than resin. The haggis fits here the way a rune fits a stone.",
+  },
+  orkney: {
+    name: 'Orkney',
+    entry: "Wind and stone and the Atlantic. The oldest stories are carved in the rock.",
+    loreSnippet: "Neolithic landscape older than the pyramids. Skara Brae, Maeshowe, Brodgar.",
+    lore: "Orkney was settled five thousand years ago by farmers who built in stone because there were no trees. Skara Brae is a Neolithic village preserved under sand for four millennia — stone beds, stone dressers, stone hearths, a plumbing system. Maeshowe is a chambered cairn aligned so the winter solstice sun illuminates the back wall for seventeen minutes. The Ring of Brodgar is sixty standing stones in a perfect circle on an isthmus between two lochs. Vikings carved runes in Maeshowe eight hundred years ago boasting about treasure and women. The landscape is wide and Atlantic-grey and the wind never stops. The haggis leans into it.",
+  },
 } as const;

@@ -1627,7 +1627,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'glasgowClose'
       | 'fingalEcho'
       | 'callanishAlignment'
-      | 'trossachsCanopy',
+      | 'trossachsCanopy'
+      | 'edinburghSmoke'
+      | 'cairngormWood'
+      | 'orkneyWind',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1737,6 +1740,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // Dense woodland kills pay more (+10% XP).
         this.biomeSpeedMul = 1.08;
         this.biomeXpMul = 1.10;
+        break;
+      case 'edinburghSmoke':
+        // Closes and wynds — cramped and scholar-dense. -10% speed (you
+        // cannae sprint through a pend); +12% XP (Edinburgh's intellectual
+        // energy — even the ghosts are well-read).
+        this.biomeSpeedMul = 0.90;
+        this.biomeXpMul = 1.12;
+        break;
+      case 'cairngormWood':
+        // Ancient Caledonian pine below the plateau. The deer trails give
+        // +6% speed. The canopy straightens sight-lines and corridors —
+        // navigation is easier (-10% drift).
+        this.biomeSpeedMul = 1.06;
+        this.biomeDriftMul = 0.90;
+        break;
+      case 'orkneyWind':
+        // Constant Atlantic westerly — same push-force mechanic as
+        // benNevisWind but stronger (65 vs 50 x). +12% XP: ancient power
+        // flows through the Ring of Brodgar, and the haggis absorbs some.
+        this.biomeWindX = 65;
+        this.biomeWindY = 10;
+        this.biomeXpMul = 1.12;
         break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we

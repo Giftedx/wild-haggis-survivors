@@ -84,6 +84,12 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   callanish: 0x8870c0,
   // B7 — Trossachs: deep forest green, Rob Roy country in full leaf.
   trossachs: 0x3a6030,
+  // B8 — Edinburgh Old Town: gaslit amber-gold, sodium lanterns on the Mile.
+  edinburgh_old_town: 0xd09040,
+  // B8 — Cairngorm Woods: rich Caledonian pine-green, deep canopy.
+  cairngorm_woods: 0x3a6020,
+  // B8 — Orkney: Neolithic grey-teal, the ancient stone light.
+  orkney: 0x7aaa90,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

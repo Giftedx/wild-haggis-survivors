@@ -80,6 +80,9 @@ describe('WAVE_TIMELINE', () => {
       // Boss-summoned minion — spawned by Auld Reekie Ghaist only, never in
       // the open-world wave pool. appearsAt: 9999 is a sentinel, not a mistake.
       'tourist_ghost',
+      // Boss-summoned minion — spawned by Lost Ninth Legion only, never in
+      // the open-world wave pool. appearsAt: 9999 is a sentinel.
+      'spectre_legionary',
     ]);
     for (const key of Object.keys(ENEMY_TYPES)) {
       if (bossKeys.has(key)) continue;
