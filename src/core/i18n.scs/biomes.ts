@@ -131,4 +131,10 @@ export const biomes = {
     loreSnippet: "Mineral pools in tha Cuillin foothills. Tha watter tastes o deep time.",
     lore: "Tha fairy pools o Glen Brittle lig at tha fit o tha Black Cuillin — a series o crystal clear pools an wee waterfalls ower black gabbro rock, coloured mineral-blue an turquoise bi tha watter chemistry. Thay hae nae record afore tha twentieth century; tha name micht be tourism, or it micht be that these pools simply kept thair ain counsel fer centuries. Tha Cuillin hauds some o tha maist challengin rock in Britain; tha pools are whit tha munetin drinks frae. Tha haggis wades shallow an watches tha depth.",
   },
+  hebridean_shore: {
+    name: 'Hebridean Shore',
+    entry: "Machair an Atlantic. Tha grey seals are watchin.",
+    loreSnippet: "Wildflooer meadae at tha ocean's edge. Harris Tweed kintra.",
+    lore: "Tha machair is ane o tha rarest habitats in Europe — a laich plain o wind-blawn shell-saund ahint tha Atlantic dunes, carpeted in wildflooers ilka simmer: reid clover, wild thyme, yellae rattle, eyebricht. It exists anely on tha wastren edges o Scotland an Ireland, whaur tha Atlantic wind cairries eneuch shell-saund inby tae sweeten tha soil. On tha Ooter Hebrides — Lewis, Harris, tha Uists — tha machair supports corncrakes, lapwings, dunlin, an tha heighest density o breedin waders in Britain. Tha grey seals haul oot on tha skerries. Tha licht here chynges ilka oor, an ilka oor it is something ye haenae seen afore.",
+  },
 } as const;

@@ -134,7 +134,7 @@ Families worth sketching (pick one per content drop):
 - ~~**Earl Beardie**~~ — ✅ shipped 2026-05-24 (`src/entities/cardDealBehaviour.ts` + Enemy.ts `card_deal` behavior). Glamis ghost spawns at 22:30 (spawnTimeSec: 1350) — fires a fan of 3 spectral playing cards every 3.5 s; parryable via Shinty Parry. Full EN + SCS i18n, banter pools, wee-tale entries. (*Ref: `SCOTTISH_RESEARCH.md` §1.4.*)
 - ~~**Black Douglas**~~ — ✅ shipped 2026-05-24 (`src/entities/hushBehaviour.ts` + Enemy.ts `hush` behavior). Post-bell exclusive (`postBellOnly: true`); fast chase 130 px/s + 4 s cadence fear-shout (600 ms dark-ring telegraph, 220 px AoE, 18 dmg + 1.5 s net-slow). Full EN + SCS i18n, banter pools, wee-tale entries. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
 - ~~**The Lost Ninth Legion**~~ — ✅ shipped 2026-05-27 (`ninth_legion` boss + `spectre_legionary` minion, `src/entities/ninthLegionBehaviour.ts`). Post-bell wave-boss; shroud DR (90%) until phase 3; 3 timed waves of 4 Spectre Legionaries (0s/10s/20s). Full EN + SCS i18n, banter, beastie lore. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.1.*)
-- **The Corryvreckan** — not a boss per se; the Cailleach's washing-pot whirlpool as a hazard-arena mini-boss encounter. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
+- ~~**The Corryvreckan**~~ — ✅ shipped 2026-05-27 (`corryVreckanEncounter.ts` + `installCorryVreckan.ts`). Hazard-arena encounter in the `corryvreckan` biome past 90 s; warning (10 s pull × 0.30) → active (45 s pull × 1.0, enemies consumed at inner radius) → survived (golden chest) or failed (35% max-HP damage). 4-ring spinning whirlpool visual + breathe-pulsed danger circle. Full EN + SCS banter (`corryvreckan_warn` / `corryvreckan_survived`). (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 
 Every boss ships: entry ritual (3–5 s) → three phases with distinct telegraphs → outro (2–3 s) → chronicle entry → a11y captions.
 
@@ -149,9 +149,9 @@ Candidates:
 - ~~**Cairngorm Plateau**~~ — ✅ shipped 2026-05-12 (`cairngorm` biome, B6 Highland Horrors). Cold slate; `cairngormWind` modifier (-10% speed, +15% knockback); wind_shear hazard.
 - ~~**Glen Coe**~~ — ✅ shipped 2026-05-12 (`glen_coe` biome, B6 Highland Horrors). Mourning red-black; `glenCoeEcho` modifier (+20% knockback); highland_mist hazard. Cultural sensitivity per Soul Charter observed.
 - ~~**Cairngorm Woods**~~ — ✅ shipped 2026-05-27 (`cairngorm_woods`, tint 0x1a3318, `cairngormWood`: +6% speed / -10% drift. Hazard: `fallen_pine` (7 dmg, 14px, 6.5s, 9.5s interval). Wildlife weights, flora, story props wired. Full EN + SCS i18n + banter.)
-- **Hebridean Shore** — tide-like boundary changes (opt-in).
+- ~~**Hebridean Shore**~~ — ✅ shipped 2026-05-27 (`hebridean_shore`, tint 0x1a4860, `hebrideanTide`: +10% XP / +10% knockback. Hazard: `kelp_strand` (5 dmg, 19px, 15s, 10s interval). B9 bug fix also shipped: `corry_maelstrom`, `shetland_squall`, `fairy_mist` bake functions added. Full EN + SCS i18n + banter + wee tales.)
 - ~~**Glasgow Close**~~ — ✅ shipped 2026-05-24 (`glasgow_close`, tint 0xf06010, `glasgowClose`: +18% XP / -12% speed. Hazard: `buckfast_pool` (8 dmg, 15px, 8s, 9.5s interval). Banter + i18n wired.)
-- **Skye Fairy Pool** — buff/debuff water tiles.
+- ~~**Skye Fairy Pool**~~ — ✅ shipped 2026-05-27 (`skye_fairy_pool`, tint 0x2a8a88, `fairyPoolGlow`: +25% XP / -5% speed, hazard: `fairy_mist`). Banter + i18n wired.
 - ~~**Ben Nevis Summit**~~ — ✅ shipped 2026-05-24 (`ben_nevis`, tint 0x8899b8, `benNevisWind`: -8% speed + Atlantic wind push (biomeWindX=50, biomeWindY=25). Hazard: `summit_gust` (9 dmg, 11px, 4s, 8.5s interval). Banter + i18n wired.)
 - ~~**Edinburgh Old Town**~~ — ✅ shipped 2026-05-27 (`edinburgh_old_town`, tint 0x5a5060, `edinburghSmoke`: -10% speed / +12% XP. Hazard: `cobble_gap` (8 dmg, 9px, 5.5s, 9.5s interval). Wildlife weights, flora, story props wired. Full EN + SCS i18n + banter.)
 - ~~**The Black Bog (post-bell)**~~ — ✅ shipped 2026-05-24 (`black_bog`, tint 0x100808, `blackBogInk`: -15% speed + ×2 drift. Hazard: `ink_pool` (3 dmg, 22px, 14s, 9s interval). Banter + i18n wired.)
@@ -161,11 +161,11 @@ Candidates:
 - ~~**Clyde Shipyard**~~ — ✅ shipped 2026-05-24 (`clyde_shipyard`, tint 0x5a4a38, `clydeRivets`: +15% XP / -8% speed. Hazard: `molten_slag` (14 dmg, 13px, 5s, 10s interval). Wildlife: salmon 0.6, grey_seal 0.4, rook 0.5, pipistrelle_bat 0.4, otter 0.3. Story props: scaffold_post, close_door, newsprint, bus_stop, waymarker_post. Banter + weeTale wired. Thematically pairs with Steam Engine.)
 - **St Kilda (evacuated)** — lonely-green cliff biome, seabird-cliffs of staggering scale. Cultural-ghost village (1930 evacuation). (*Handle respectfully.*) (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §2.5.*)
 - ~~**Fingal's Cave (Staffa)**~~ — ✅ shipped 2026-05-27 (`fingals_cave`, tint 0x1a2a38, `fingalEcho`: +12% knockback / -8% speed, hazard: `basalt_crack`). (*Ref: §3.1.*)
-- **Corryvreckan Whirlpool Coast** — sea-green foam-white; whirlpool pull-tiles; Cailleach's washing-pot. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
+- ~~**Corryvreckan Whirlpool Coast**~~ — ✅ shipped 2026-05-27 (`corryvreckan`, tint 0x0a2030, `corryVreckan`: -5% speed / +10% knockback, hazard: `corry_maelstrom`. Full encounter: `installCorryVreckan.ts` — whirlpool pull force, warning/active/survived/failed phases, banter + chest spawn.) (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 - **Jacobite Moor (Culloden)** — sombre grey-purple; musket-volley rains; Jacobite + Redcoat spectres. *(Handle respectfully.)* (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
 - ~~**Trossachs Forest**~~ — ✅ shipped 2026-05-27 (`trossachs`, tint 0x1a4018, `trossachsCanopy`: +8% speed / +10% XP, hazard: `root_trip`). (*Ref: §3.1 + §6.10.*)
 - **Beltane Fire Festival (Calton Hill)** — seasonal event biome. Vermillion, bonfire-gold, fire-pillar hazards, May Queen + Green Man. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.1.*)
-- **Shetland Simmer Dim** — midsummer twilight biome. Perpetual dusk; Up Helly Aa hazards. (*Ref: §1.6.*)
+- ~~**Shetland Simmer Dim**~~ — ✅ shipped 2026-05-27 (`shetland_voe`, tint 0x5a6878, `shetlandVoe`: +10% speed / -10% drift, hazard: `shetland_squall`). Banter + i18n wired. (*Ref: §1.6.*)
 - **Arran (Scotland in miniature)** — biome that shifts mid-run, containing all other biomes in fragments. (*Ref: §3.3.*)
 
 ---
@@ -190,7 +190,7 @@ Candidate weapons (pick 4 for a content drop):
 - ~~**Waulking Mallet**~~ — ✅ shipped 2026-05-12 (`waulking_mallet` → `pibroch_hammer` evolution, passive `tuning_fork`, Wild Living World Phase 2 `514f5e9`). Aura-pulse rhythm weapon (2000ms cooldown, 96px radius); Pibroch Hammer evolution lands a crescendo on every fourth beat via `applyPibrochHammerRhythm` in `src/systems/music/waulkingRhythm.ts`. Syncs with the Waulking Rhythm music bed.
 - ~~**Hagstone Sling**~~ — ✅ shipped 2026-05-27 (`hagstone_sling` → `rowan_hail` evolution, passive `rowan_amulet`, `piercing` behaviour). Second-hit +40% bonus through the hole. Rowan Hail fans three stones in a 30° spread, each carrying the pierce bonus.
 - ~~**Wallace Sword**~~ — ✅ shipped 2026-05-12 (`wallace_sword` → `freedom_blade` evolution, passive `stirling_medal`, B6 Highland Horrors). Giant two-hander slow sweep via `fireFreedomBlade`. `stirling_medal` grants +10% crit. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
-- **Fingal's Horn** — summons 3 Fianna-warrior allies for 10s. Relic-tier rare. (*Ref: `SCOTTISH_RESEARCH.md` §1.6.*)
+- ~~**Fingal's Horn**~~ — ✅ shipped 2026-05-27 (`fingals_horn`, relic rare, `activate: true`, `FiannaSpirit` entity — 3 spirits fan from player, 260 speed, 8 dmg/350ms, `fiannaSpiritMath.pickNearestEnemy` with boss-skip, `RelicOrchestrator.activateFingalsHorn`, `RelicEffectDriver.activateFingalsHorn`, pause-menu wiring, `fx_fianna_spirit` sprite). (*Ref: `SCOTTISH_RESEARCH.md` §1.6.*)
 - ~~**Steam Engine (James Watt)**~~ — ✅ shipped 2026-05-24 (`steam_engine`, `aoe_pulse`, 165px, 7s CD, 18 dmg, heavy knockback, no freeze). Two grey smoke rings (0x6a6a6a). Paired passive `copper_rivet` (+10% attack speed). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §20.2.*)
 - ~~**Cullen Skink Ladle**~~ — ✅ shipped 2026-05-24 (`cullen_skink_ladle`, `lob_puddle`, 54px, 3.5s CD, 0 dmg pure slow). Slows enemies 45% for 2.8 s. `spawnSkinkPuddle` sister to `spawnBurnPuddle`. Paired passive `smoked_haddock` (+12 max HP).
 - ~~**Flying Porridge Pot**~~ — ✅ shipped 2026-05-27 (`porridge_pot` → `brose_cannon` evolution, passive `pinhead_oats`, `lob_puddle` behaviour — slows + damages). Comedy weapon.

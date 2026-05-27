@@ -131,4 +131,10 @@ export const biomes = {
     loreSnippet: "Mineral pools in the Cuillin foothills. The water tastes of deep time.",
     lore: "The fairy pools of Glen Brittle lie at the foot of the Black Cuillin — a series of crystal clear pools and small waterfalls over black gabbro rock, coloured mineral-blue and turquoise by the water chemistry. They have no record before the twentieth century; the name may be tourism, or it may be that these pools simply kept their own counsel for centuries. The Cuillin holds some of the most challenging rock in Britain; the pools are what the mountain drinks from. The haggis wades shallow and watches the depth.",
   },
+  hebridean_shore: {
+    name: 'Hebridean Shore',
+    entry: "Machair and Atlantic. The grey seals are watching.",
+    loreSnippet: "Wildflower meadow at the ocean's edge. Harris Tweed country.",
+    lore: "The machair is one of the rarest habitats in Europe — a low-lying plain of wind-blown shell-sand behind the Atlantic dunes, carpeted in wildflowers each summer: red clover, wild thyme, yellow rattle, eyebright. It exists only on the western edges of Scotland and Ireland, wherever the Atlantic wind carries enough shell-sand inland to sweeten the soil. On the Outer Hebrides — Lewis, Harris, the Uists — the machair supports corncrakes, lapwings, dunlin, and the highest density of breeding waders in Britain. The grey seals haul out on the skerries. The light here changes every hour, and every hour it is something you have not seen before.",
+  },
 } as const;

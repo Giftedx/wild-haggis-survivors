@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all twenty-two biomes with required fields (B9 drop added corryvreckan, shetland_voe, skye_fairy_pool)', () => {
-    expect(BIOME_IDS.length).toBe(22);
+  it('defines all twenty-three biomes with required fields (B10 added hebridean_shore)', () => {
+    expect(BIOME_IDS.length).toBe(23);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -79,6 +79,13 @@ describe('biomes data', () => {
     expect(BIOME_IDS).toContain('skye_fairy_pool');
     expect(BIOMES.skye_fairy_pool.modifier).toBe('fairyPoolGlow');
     expect(BIOMES.skye_fairy_pool.nameKey).toBe('biomes.skye_fairy_pool.name');
+  });
+
+  it('hebridean_shore biome is registered (B10)', () => {
+    expect(BIOME_IDS).toContain('hebridean_shore');
+    expect(BIOMES.hebridean_shore.modifier).toBe('hebrideanTide');
+    expect(BIOMES.hebridean_shore.nameKey).toBe('biomes.hebridean_shore.name');
+    expect(BIOMES.hebridean_shore.tint).toBe(0x1a4860);
   });
 
   it('spawn weight multipliers are all positive', () => {

@@ -1032,3 +1032,114 @@ export function bakeHazardStandingSlab(scene: Phaser.Scene): void {
   g.generateTexture('hazard_standing_slab', w, h);
   g.destroy();
 }
+
+// ── B9 missing hazard sprites ────────────────────────────────────────────────
+
+export function bakeHazardCorryMaelstrom(scene: Phaser.Scene): void {
+  const w = 24, h = 20;
+  const g = scene.add.graphics();
+  // Swirling teal wave surge — concentric arcs suggesting a whirlpool mouth.
+  g.fillStyle(0x0a3848, 0.55);
+  g.fillEllipse(12, 10, 22, 18);
+  g.fillStyle(0x1a5068, 0.75);
+  g.fillEllipse(12, 10, 16, 13);
+  g.fillStyle(0x40a8c0, 0.85);
+  g.fillEllipse(12, 10, 9, 7);
+  g.fillStyle(0xc8eaf0, 0.95);
+  g.fillCircle(12, 10, 2.5);
+  // Three spiral arm strokes.
+  g.lineStyle(2, 0x40a8c0, 0.80);
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2;
+    g.beginPath();
+    g.arc(12, 10, 7, a, a + Math.PI * 0.55, false);
+    g.strokePath();
+  }
+  g.generateTexture('hazard_corry_maelstrom', w, h);
+  g.destroy();
+}
+
+export function bakeHazardShetlandSquall(scene: Phaser.Scene): void {
+  const w = 22, h = 16;
+  const g = scene.add.graphics();
+  // Cloud-grey gust streaks — angled dashes suggesting a violent wind burst.
+  g.fillStyle(0xaab8c0, 0.30);
+  g.fillEllipse(11, 8, 20, 14);
+  g.fillStyle(0x8898a8, 0.55);
+  // Three horizontal streak bands.
+  g.fillRect(2, 4, 14, 2);
+  g.fillRect(4, 7, 16, 2);
+  g.fillRect(3, 10, 13, 2);
+  // Leading-edge brighter tips.
+  g.fillStyle(0xdde8ee, 0.80);
+  g.fillRect(15, 4, 5, 2);
+  g.fillRect(18, 7, 2, 2);
+  g.fillRect(15, 10, 3, 2);
+  g.generateTexture('hazard_shetland_squall', w, h);
+  g.destroy();
+}
+
+export function bakeHazardFairyMist(scene: Phaser.Scene): void {
+  const w = 26, h = 22;
+  const g = scene.add.graphics();
+  // Pale teal ethereal mist — soft layered ovals with iridescent centre.
+  g.fillStyle(0x88cccc, 0.20);
+  g.fillEllipse(13, 11, 25, 21);
+  g.fillStyle(0xaadddd, 0.35);
+  g.fillEllipse(13, 11, 18, 15);
+  g.fillStyle(0xcceeee, 0.55);
+  g.fillEllipse(13, 11, 11, 9);
+  // Faint shimmer core — slightly violet to hint at the uncanny.
+  g.fillStyle(0xd4bbee, 0.65);
+  g.fillCircle(13, 11, 3.5);
+  g.fillStyle(0xfaf0ff, 0.90);
+  g.fillCircle(13, 11, 1.5);
+  // Wisp tendrils.
+  g.lineStyle(1, 0xaadddd, 0.50);
+  g.beginPath();
+  g.moveTo(4, 9); g.lineTo(10, 11);
+  g.moveTo(22, 9); g.lineTo(16, 11);
+  g.moveTo(13, 3); g.lineTo(13, 8);
+  g.strokePath();
+  g.generateTexture('hazard_fairy_mist', w, h);
+  g.destroy();
+}
+
+// ── Hebridean Shore hazard ────────────────────────────────────────────────────
+
+export function bakeHazardKelpStrand(scene: Phaser.Scene): void {
+  const w = 34, h = 20;
+  const g = scene.add.graphics();
+  // Olive-brown kelp ribbon tangled on shore — slick underfoot.
+  // Wet sand base.
+  g.fillStyle(0x9a8860, 0.40);
+  g.fillEllipse(17, 13, 32, 10);
+  // Main kelp frond — sinuous ribbon from left to right.
+  g.lineStyle(5, 0x4a6030, 0.90);
+  g.beginPath();
+  g.moveTo(2, 14);
+  g.lineTo(8, 10);
+  g.lineTo(14, 13);
+  g.lineTo(20, 9);
+  g.lineTo(26, 12);
+  g.lineTo(32, 10);
+  g.strokePath();
+  // Bulb nodes.
+  g.fillStyle(0x3a5025, 0.95);
+  g.fillCircle(8, 10, 3);
+  g.fillCircle(20, 9, 2.5);
+  // Leaflet fronds.
+  g.lineStyle(2, 0x5a7838, 0.75);
+  g.beginPath();
+  g.moveTo(8, 10); g.lineTo(8, 4);
+  g.moveTo(14, 13); g.lineTo(12, 7);
+  g.moveTo(20, 9); g.lineTo(22, 3);
+  g.moveTo(26, 12); g.lineTo(28, 6);
+  g.strokePath();
+  // Wet sheen highlight.
+  g.fillStyle(0x88ccaa, 0.35);
+  g.fillCircle(8, 9, 2);
+  g.fillCircle(20, 8, 1.5);
+  g.generateTexture('hazard_kelp_strand', w, h);
+  g.destroy();
+}

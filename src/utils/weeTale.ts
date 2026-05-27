@@ -86,6 +86,7 @@ export type WeeTaleTag =
   | 'biome_fingals_cave' | 'biome_callanish' | 'biome_trossachs'
   | 'biome_edinburgh_old_town' | 'biome_cairngorm_woods' | 'biome_orkney'
   | 'biome_corryvreckan' | 'biome_shetland_voe' | 'biome_skye_fairy_pool'
+  | 'biome_hebridean_shore'
   | 'has_name'
   | VariantKey;
 
@@ -457,6 +458,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   { key: 'ui.weeTale.victory.biome_shetland_voe', requires: ['victory', 'biome_shetland_voe'] },
   { key: 'ui.weeTale.death.biome_skye_fairy_pool', requires: ['death', 'biome_skye_fairy_pool'] },
   { key: 'ui.weeTale.victory.biome_skye_fairy_pool', requires: ['victory', 'biome_skye_fairy_pool'] },
+  // Hebridean Shore — machair + Atlantic light + grey seals.
+  { key: 'ui.weeTale.death.biome_hebridean_shore', requires: ['death', 'biome_hebridean_shore'] },
+  { key: 'ui.weeTale.victory.biome_hebridean_shore', requires: ['victory', 'biome_hebridean_shore'] },
 
   // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
   // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".

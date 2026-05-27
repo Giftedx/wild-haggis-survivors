@@ -46,6 +46,10 @@ import {
   bakeHazardCobbleGap,
   bakeHazardFallenPine,
   bakeHazardStandingSlab,
+  bakeHazardCorryMaelstrom,
+  bakeHazardShetlandSquall,
+  bakeHazardFairyMist,
+  bakeHazardKelpStrand,
 } from './biomeHazards';
 import {
   bakeAutumnLeafScatter,
@@ -102,6 +106,12 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeHazardFallenPine(scene);
   // Orkney Neolithic hazard.
   bakeHazardStandingSlab(scene);
+  // B9 biome hazards (Corryvreckan, Shetland Voe, Skye Fairy Pool).
+  bakeHazardCorryMaelstrom(scene);
+  bakeHazardShetlandSquall(scene);
+  bakeHazardFairyMist(scene);
+  // Hebridean Shore hazard.
+  bakeHazardKelpStrand(scene);
   bakeAutumnLeafScatter(scene);
   bakeSpringShoot(scene);
   bakeThawPuddle(scene);

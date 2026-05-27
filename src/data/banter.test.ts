@@ -61,6 +61,9 @@ describe('BANTER_POOLS structure', () => {
     'taxman_grudge_phase2',
     // DESIGN_IDEAS §3 — Taxman's Retinue post-bell wave arrival
     'taxman_retinue_wave',
+    // DESIGN_IDEAS §3 — Corryvreckan whirlpool encounter (warn + survived)
+    'corryvreckan_warn',
+    'corryvreckan_survived',
     // DESIGN_IDEAS §13 — Lemmings Easter Egg cliff-edge parade trigger
     'lemmings_remember',
     // DESIGN_IDEAS §1 — Race the Beithir venom-sting race window

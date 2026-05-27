@@ -136,6 +136,12 @@ export interface TickFrameWorldDeps {
    * frame). Null between runs and during early scene boot.
    */
   getCailleachGauntletScheduler: () => import('./CailleachGauntletScheduler').CailleachGauntletScheduler | null;
+  /**
+   * Corryvreckan encounter install (DESIGN_IDEAS §3). Ticked per-frame
+   * after the gauntlet; applies whirlpool pull force to player + nearby
+   * enemies and advances the encounter state machine. Null between runs.
+   */
+  getCorryVreckanInstall: () => import('./installCorryVreckan').CorryVreckanInstall | null;
   /** Engineer variant — null when variant is not engineer. */
   getEngineerTurretSystem: () => EngineerTurretSystem | null;
   /** Tufted variant — null when variant is not tufted. */
@@ -291,6 +297,13 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   const gauntletSched = deps.getCailleachGauntletScheduler();
   if (gauntletSched) {
     gauntletSched.tick();
+  }
+
+  // DESIGN_IDEAS §3 — Corryvreckan encounter. Ticked AFTER the gauntlet;
+  // applies whirlpool pull force to player + enemies, advances state machine.
+  const corryVreckan = deps.getCorryVreckanInstall();
+  if (corryVreckan) {
+    corryVreckan.tick(scaledDelta);
   }
 
   // Engineer variant — tick turret AFTER gauntlet so all cairn/boss state

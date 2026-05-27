@@ -75,7 +75,9 @@ export type HazardKey =
   // B9 — Shetland Voe — abrupt squall off the clifftop.
   | 'shetland_squall'
   // B9 — Skye Fairy Pools — enchanted mist drifting up from the mineral pools.
-  | 'fairy_mist';
+  | 'fairy_mist'
+  // Hebridean Shore — kelp ribbon left by the tide; slick underfoot.
+  | 'kelp_strand';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -355,6 +357,19 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 14000,
     spawnIntervalMs: 10000,
   },
+  // Hebridean Shore — kelp ribbon left by the tide; slick underfoot. Low
+  // chip damage (5), wide hitbox (19 px), long lifetime (15 s). The machair
+  // walk is leisurely, the kelp hidden under surf — same loiter penalty as
+  // tidal_wrack but wider spread, offset by hebrideanTide's +10% XP bonus.
+  kelp_strand: {
+    key: 'kelp_strand',
+    texture: 'hazard_kelp_strand',
+    biome: 'hebridean_shore',
+    damage: 5,
+    hitboxRadius: 19,
+    lifetimeMs: 15000,
+    spawnIntervalMs: 10000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -381,4 +396,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'corry_maelstrom',
   'shetland_squall',
   'fairy_mist',
+  'kelp_strand',
 ];

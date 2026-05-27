@@ -3166,6 +3166,12 @@ export const ui = {
         c: 'Fairy territory. The haggis is polite and does not stay long.',
         d: 'The water here tastes of rock and deep time.',
       },
+      hebridean_shore: {
+        a: 'Island shore. The machair behind, the Atlantic ahead. The haggis decides: forward.',
+        b: 'Harris Tweed country. Even the sheep here look like they know something.',
+        c: 'The grey seal watches from the skerry. Appraises. Moves on.',
+        d: "Hebridean light changes every hour. Right now it's melancholy. The haggis runs through it.",
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',
@@ -3547,6 +3553,24 @@ export const ui = {
       b: "Ledger-wraiths dinnae need a maister. They just clock in.",
       c: "Auditors dispatched. He'd filed the forms ahead o' dyin'.",
       d: "Even deid, the Taxman's filing by proxy.",
+    },
+    /** Corryvreckan encounter — warning phase. Edge tone: very old peril,
+     *  unhurried. The Cailleach has been washing her plaid here since
+     *  before the hills. Four leaves; DESIGN_IDEAS §3. */
+    corryvreckan_warn: {
+      toast: "The Corryvreckan stirs — keep yer distance.",
+      a: "The Cailleach's washing-pot. Don't let it pull ye in.",
+      b: "Corryvreckan stirs. Third-largest whirlpool in the world — the haggis kens this now.",
+      c: "She washes her great plaid here. When it's clean, winter begins.",
+      d: "The maw opens. Step wide, or get laundered.",
+    },
+    /** Corryvreckan encounter — survived phase. Hearth tone: quiet, old-moor
+     *  relief. The haggis outlasted the Cailleach's washing-pot. */
+    corryvreckan_survived: {
+      a: "Survived the Corryvreckan. The Cailleach's laundry will wait another day.",
+      b: "The whirlpool quiets. Even the moor has its off days.",
+      c: "Outlasted the washing-pot. Gran would be proud — she irons wi' it.",
+      d: "The Cailleach got her whites done. Ye're still standin'.",
     },
     /** Race the Beithir (DESIGN_IDEAS §1). The Beithir's venom-fang
      *  opens an 8 s race window — reach a heal patch (folkloric
@@ -5142,6 +5166,7 @@ export const ui = {
       biome_corryvreckan: 'The whirlpool had it at {time}. The Cailleach does not pause her laundry.',
       biome_shetland_voe: 'The voe wind took it at {time}. The simmer dim still rose. The voe kept what it had.',
       biome_skye_fairy_pool: 'The pool held the shape at {time}. Then the fey had it, and the fey give nothing back.',
+      biome_hebridean_shore: '{time} on the Hebridean shore. The wrack-line keeps its own counting. The moor kens what the tide took.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -5200,6 +5225,7 @@ export const ui = {
       biome_corryvreckan: 'Past the whirlpool and home at {time}. The Cailleach noticed. Did not stop her.',
       biome_shetland_voe: 'Walked the voe at {time}. The simmer dim held the light. The haggis held the road.',
       biome_skye_fairy_pool: 'Left the pools at {time}. The water was clear. The fey waved nothing off — but they did not follow.',
+      biome_hebridean_shore: 'Left the Hebridean shore at {time}. The grey seal lifted a head. The Atlantic carried on.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".

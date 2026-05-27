@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney' | 'corryvreckan' | 'shetland_voe' | 'skye_fairy_pool';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney' | 'corryvreckan' | 'shetland_voe' | 'skye_fairy_pool' | 'hebridean_shore';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -32,7 +32,8 @@ export type BiomeModifierKind =
   | 'orkneyWind'
   | 'corryVreckan'
   | 'shetlandVoe'
-  | 'fairyPoolGlow';
+  | 'fairyPoolGlow'
+  | 'hebrideanTide';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -654,9 +655,40 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // Light mist rising from the mineral pools — lower than haar.
     ambientHaarDensity: 0.20,
   },
+  // Hebridean Shore — machair grassland meets Atlantic shore. Wide sand and
+  // wildflower meadow fringe, grey seals on the skerries. `hebrideanTide`
+  // modifier: +10% XP (the shore is alive with wading birds and tideline
+  // finds — every kill yields deeper reward), +10% knockback (wave surge
+  // amplifies every impact on the exposed strand).
+  hebridean_shore: {
+    id: 'hebridean_shore',
+    nameKey: 'biomes.hebridean_shore.name',
+    tint: 0x1a4860,
+    entryToastKey: 'biomes.hebridean_shore.entry',
+    loreSnippetKey: 'biomes.hebridean_shore.loreSnippet',
+    loreKey: 'biomes.hebridean_shore.lore',
+    toastColor: '#3a7898',
+    spawnWeightMods: {
+      kelpie: 1.6,
+      selkie: 1.5,
+      seal_pup: 1.4,
+      seagull: 1.3,
+      crab: 1.2,
+      tourist: 0.6,
+      sheep: 0.8,
+      highland_cow: 0.2,
+      eagle: 0.9,
+    },
+    modifier: 'hebrideanTide',
+    // Open Atlantic light — brighter than corryvreckan (0.55), more muted
+    // than loch (0.65); the shore has a pale, washed-out quality.
+    moodTimbre: 0.58,
+    // Light sea-spray haze — lower than haar, higher than coastal.
+    ambientHaarDensity: 0.45,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool', 'hebridean_shore'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

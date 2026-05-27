@@ -111,6 +111,13 @@ export type BanterContext =
   // mid-urgency, interrupting ambient lines but yielding to HP crisis.
   // No sub-pool tags — flat pool, four authored leaves on the ring.
   | 'taxman_retinue_wave'
+  // DESIGN_IDEAS §3 Corryvreckan encounter — whirlpool pull begins (warn)
+  // and the player survives (survived). Edge for the pull warning; hearth
+  // for the survival relief. Priority 65 (warn) and 60 (survived) — both
+  // sit below boss_down (70), interrupt ambient banter but yield to combat
+  // urgency. Flat pools, four leaves each; no sub-pool tags.
+  | 'corryvreckan_warn'
+  | 'corryvreckan_survived'
   // DESIGN_IDEAS §13 Lemmings Easter Egg — fires once when the cliff-edge
   // parade triggers (90 s idle in coastal biome, once per variant
   // lifetime). Hearth tone; the toast that follows the OH NO! parade.
@@ -1700,6 +1707,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.skye_fairy_pool.b',
         'ui.banter.biome_change.skye_fairy_pool.c',
         'ui.banter.biome_change.skye_fairy_pool.d',
+      ],
+      // Hebridean Shore: machair wildflower plain, Atlantic light, grey seals.
+      // Hearth register: quiet wonder, washed-out melancholy.
+      hebridean_shore: [
+        'ui.banter.biome_change.hebridean_shore.a',
+        'ui.banter.biome_change.hebridean_shore.b',
+        'ui.banter.biome_change.hebridean_shore.c',
+        'ui.banter.biome_change.hebridean_shore.d',
       ],
     },
   },
@@ -3696,6 +3711,35 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.taxman_retinue_wave.b',
       'ui.banter.taxman_retinue_wave.c',
       'ui.banter.taxman_retinue_wave.d',
+    ],
+  },
+  // DESIGN_IDEAS §3 Corryvreckan encounter — whirlpool pull warning.
+  // Edge tone: the moor's mythic peril reasserts itself, unhurried and
+  // very old. Priority 63 — interrupts ambient banter but yields to
+  // boss warnings and HP crisis.
+  {
+    context: 'corryvreckan_warn',
+    tone: 'edge',
+    priority: 63,
+    keys: [
+      'ui.banter.corryvreckan_warn.a',
+      'ui.banter.corryvreckan_warn.b',
+      'ui.banter.corryvreckan_warn.c',
+      'ui.banter.corryvreckan_warn.d',
+    ],
+  },
+  // DESIGN_IDEAS §3 Corryvreckan encounter — survived the whirlpool.
+  // Hearth tone: quiet, old-moor relief — the haggis outlasted the
+  // Cailleach's washing-pot. Priority 58 — softer than the warning.
+  {
+    context: 'corryvreckan_survived',
+    tone: 'hearth',
+    priority: 58,
+    keys: [
+      'ui.banter.corryvreckan_survived.a',
+      'ui.banter.corryvreckan_survived.b',
+      'ui.banter.corryvreckan_survived.c',
+      'ui.banter.corryvreckan_survived.d',
     ],
   },
   // DESIGN_IDEAS §1 Race the Beithir. Venom-fang sting opens the 8 s

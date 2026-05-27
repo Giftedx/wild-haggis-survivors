@@ -2558,6 +2558,12 @@ export const ui = {
         c: 'Fairy territory. Tha haggis is polite an disnae stay lang.',
         d: 'Tha watter here tastes o rock an deep time.',
       },
+      hebridean_shore: {
+        a: 'Island shore. Tha machair ahint, tha Atlantic aheid. Tha haggis decides: forrit.',
+        b: 'Harris Tweed kintra. Even tha sheep here look like they ken somethin.',
+        c: 'Tha grey seal watches frae tha skerry. Appraises. Moves on.',
+        d: "Hebridean licht chynges ilka oor. Richt noo it's dowie. Tha haggis rins through it.",
+      },
     },
     moor_moment: {
       a: 'Tha moor noticed ye. That\'s rare.',
@@ -2894,6 +2900,26 @@ export const ui = {
       b: "Ledger-wraiths dinnae need a maister. They just clock in.",
       c: "Auditors dispatched. He'd filed the forms afore he deid.",
       d: "Even deid, the Taxman's filin' by proxy.",
+    },
+    //    corryvreckan_warn (DESIGN_IDEAS §3). Edge register; the Cailleach's
+    //    washing-pot is ancient Highland lore (SCOTTISH_RESEARCH §1.8).
+    //    Scots tightening: "ken" for "know", "dinnae" contractions, "yer"
+    //    for "your". Line c uses "plaidie" diminutive (affectionate-dread).
+    corryvreckan_warn: {
+      toast: "The Corryvreckan stirs — keep yer distance.",
+      a: "The Cailleach's washin-pot. Dinnae let it pull ye in.",
+      b: "Corryvreckan stirs. Third-largest whirlpool in the warld — the haggis kens this noo.",
+      c: "She washes her great plaidie here. When it's clean, winter begins.",
+      d: "The maw opens. Step wide, or get laundered.",
+    },
+    //    corryvreckan_survived (DESIGN_IDEAS §3). Hearth register; quiet
+    //    moor-warmth after old-world peril. "braw" (fine/good), "awfy"
+    //    (awfully/very), "wis" (was) for Scots tightening.
+    corryvreckan_survived: {
+      a: "Survived the Corryvreckan. The Cailleach's laundry will bide anither day.",
+      b: "The whirlpool quiets. Even the moor has its aff days.",
+      c: "Outlasted the washin-pot. Gran wid be proud — she irons wi' it.",
+      d: "The Cailleach got her whites done. Ye're still standin'.",
     },
     //    beithir_sting (DESIGN_IDEAS §1). Scots overlay for the venom
     //    race. The beithir is named verbatim (Scots/Gaelic loanword
@@ -4245,6 +4271,7 @@ export const ui = {
       biome_corryvreckan: 'Tha whirlpool had it at {time}. Tha Cailleach disnae pause her washin.',
       biome_shetland_voe: 'Tha voe wind taen it at {time}. Tha simmer dim still rose. Tha voe kept whit it had.',
       biome_skye_fairy_pool: 'Tha pool held tha shape at {time}. Than tha fey had it, an tha fey gie naethin back.',
+      biome_hebridean_shore: '{time} on tha Hebridean shore. Tha wrack-line keeps its ain countin. Tha moor kens whit tha tide taen.',
     },
     victory: {
       fallback_a: 'Walked hame at {time}. Tha kettle wis oan.',
@@ -4290,6 +4317,7 @@ export const ui = {
       biome_corryvreckan: 'Past tha whirlpool an hame at {time}. Tha Cailleach noticed. Didnae stop her.',
       biome_shetland_voe: 'Walked tha voe at {time}. Tha simmer dim held tha licht. Tha haggis held tha road.',
       biome_skye_fairy_pool: 'Left tha pools at {time}. Tha watter wis clear. Tha fey waved naethin aff — but they didnae follae.',
+      biome_hebridean_shore: 'Left tha Hebridean shore at {time}. Tha grey seal lifted a heid. Tha Atlantic cairried on.',
     },
     variant: {
       cailleach: {

@@ -1633,7 +1633,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'orkneyWind'
       | 'corryVreckan'
       | 'shetlandVoe'
-      | 'fairyPoolGlow',
+      | 'fairyPoolGlow'
+      | 'hebrideanTide',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1786,6 +1787,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // shallows costs a little (-5% speed). The pools are worth the price.
         this.biomeXpMul = 1.25;
         this.biomeSpeedMul = 0.95;
+        break;
+      case 'hebrideanTide':
+        // Atlantic machair shore — the tideline is full of finds (+10% XP).
+        // Wave surge on the exposed strand throws everything further (+10%
+        // knockback). No speed tax — the hard-packed sand is good footing.
+        this.biomeXpMul = 1.10;
+        this.biomeKnockbackBonus = 1.10;
         break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we

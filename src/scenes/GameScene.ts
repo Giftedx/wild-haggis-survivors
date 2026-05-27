@@ -94,6 +94,7 @@ import { CairnBoonPickerScene } from './CairnBoonPickerScene';
 import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
 import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
 import { installCailleachGauntlet } from './game/installCailleachGauntlet';
+import { installCorryVreckan } from './game/installCorryVreckan';
 import { EngineerTurretSystem } from './game/EngineerTurretSystem';
 import { TuftedFamiliarSystem } from './game/TuftedFamiliarSystem';
 import { installVariantCompanions } from './game/installVariantCompanions';
@@ -564,6 +565,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   cailleachGauntletScheduler!: CailleachGauntletScheduler;
   /** V2 — opaque teardown returned by `installCailleachGauntlet`. */
   private gauntletTeardown: (() => void) | null = null;
+  /**
+   * DESIGN_IDEAS §3 — Corryvreckan encounter install. Ticked per-frame
+   * via `tickFrameWorld`; null between runs. Reset on each `create()`.
+   */
+  corryVreckanInstall: import('./game/installCorryVreckan').CorryVreckanInstall | null = null;
   /** Engineer variant turret — null when variant is not engineer. */
   engineerTurretSystem: EngineerTurretSystem | null = null;
   /** Turret sprite — held here so resetTransientRunState can destroy it. */
@@ -1527,6 +1533,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     this.cailleachGauntletScheduler = gauntletInstall.scheduler;
     this.gauntletTeardown = gauntletInstall.teardown;
+
+    // DESIGN_IDEAS §3 — Corryvreckan encounter. Teardown (destroy visuals)
+    // is called on each reset so graphics from a prior run don't leak.
+    this.corryVreckanInstall?.teardown();
+    this.corryVreckanInstall = installCorryVreckan({
+      scene: this,
+      getPlayer: () => this.player ?? null,
+      getSpawnSystem: () => this.spawnSystem,
+      getJuice: () => this.juice,
+      getBanter: () => this.banter ?? null,
+      getCurrentBiomeId: () => this.getCurrentBiomeId(),
+      getGameTimeSec: () => this.spawnSystem?.getGameTimeSec() ?? 0,
+      getRunRng: () => this.runRng,
+      onSurvived: () => this.pickupSpawner.spawnGoldenChest(),
+      onFailed: () => {
+        const player = this.player;
+        if (!player?.active) return;
+        const dmg = Math.floor(player.getMaxHp() * 0.35);
+        player.takeDamage(dmg);
+      },
+    });
 
     this.engineerTurretSprite?.destroy();
     this.tuftedPupSprite?.destroy();

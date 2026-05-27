@@ -105,6 +105,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     setAncestralEcho: (v) => { scene.ancestralEcho = v; },
     getCairnOfEchoesScheduler: () => scene.cairnOfEchoesScheduler ?? null,
     getCailleachGauntletScheduler: () => scene.cailleachGauntletScheduler ?? null,
+    getCorryVreckanInstall: () => scene.corryVreckanInstall ?? null,
     getEngineerTurretSystem: () => scene.engineerTurretSystem ?? null,
     getTuftedFamiliarSystem: () => scene.tuftedFamiliarSystem ?? null,
     getRelicSlotUI: () => scene.relicSlotUI,
