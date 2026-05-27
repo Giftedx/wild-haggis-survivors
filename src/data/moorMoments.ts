@@ -359,6 +359,26 @@ export const MOOR_MOMENTS: readonly MoorMomentDef[] = [
     captionKeyHome: 'ui.moor_moment.pool_light.caption_home',
     toastKeyHome: 'ui.moor_moment.pool_light.toast_home',
   },
+  // B10 — Hebridean Shore: kelp-song magnet pulse from the surf.
+  {
+    id: 'kelp_song',
+    captionKey: 'ui.moor_moment.kelp_song.caption',
+    toastKey: 'ui.moor_moment.kelp_song.toast',
+    reward: { kind: 'magnet', flatPx: 12, durationMs: 4000 },
+    homeBiome: 'hebridean_shore',
+    captionKeyHome: 'ui.moor_moment.kelp_song.caption_home',
+    toastKeyHome: 'ui.moor_moment.kelp_song.toast_home',
+  },
+  // B11 — Calton Hill: ember warmth heals a sliver, Beltane echo.
+  {
+    id: 'calton_embers',
+    captionKey: 'ui.moor_moment.calton_embers.caption',
+    toastKey: 'ui.moor_moment.calton_embers.toast',
+    reward: { kind: 'heal', amount: 8 },
+    homeBiome: 'calton_hill',
+    captionKeyHome: 'ui.moor_moment.calton_embers.caption_home',
+    toastKeyHome: 'ui.moor_moment.calton_embers.toast_home',
+  },
 ];
 
 export function shuffleMoorMoments(rng: RNG): MoorMomentDef[] {

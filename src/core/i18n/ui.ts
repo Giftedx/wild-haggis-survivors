@@ -1701,6 +1701,18 @@ export const ui = {
       caption_home: 'The fairy pool opens its mineral eye — what ye see comes back as knowledge.',
       toast_home: 'Skye pool — +{xp} XP, mineral and blue.',
     },
+    kelp_song: {
+      caption: 'The Atlantic surf carries something in — the kelp keeps time and so does yer reach.',
+      toast: 'Kelp-song — pickup range swells with the tide.',
+      caption_home: 'The shore hears yer step — the kelp draws yer pickups near.',
+      toast_home: 'Hebridean pull — the Atlantic bends things yer way.',
+    },
+    calton_embers: {
+      caption: 'An ember from the hilltop fire finds its way down — it\'s warmer than ye expected.',
+      toast: 'Calton ember — +{heal} HP from the Beltane warmth.',
+      caption_home: 'Ye stood at the crown of the hill and the fire remembered ye.',
+      toast_home: 'Hilltop hearth — +{heal} HP, Edinburgh below.',
+    },
     boon_at_ceiling: 'XP bar\'s chokker — have +{gold}g instead, ya legend.',
   },
   /** Run-start identity handoff (variant + intent); shown as an early toast in GameScene. */

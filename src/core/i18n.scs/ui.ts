@@ -930,6 +930,18 @@ export const ui = {
       caption_home: 'Tha fairy pool opens its mineral eye — whit ye see comes back as knowledge.',
       toast_home: 'Skye pool — +{xp} XP, mineral an blue.',
     },
+    kelp_song: {
+      caption: 'Tha Atlantic surf carries somethin in — tha kelp keeps time an sae daes yer reach.',
+      toast: 'Kelp-sang — pickup range swells wi tha tide.',
+      caption_home: 'Tha shore hears yer step — tha kelp draws yer pickups near.',
+      toast_home: 'Hebridean pull — tha Atlantic bends things yer wey.',
+    },
+    calton_embers: {
+      caption: 'An ember fae tha hilltop fire finds its wey doon — it\'s warmer than ye expected.',
+      toast: 'Calton ember — +{heal} HP fae tha Beltane warmth.',
+      caption_home: 'Ye stuid at tha croun o tha hill an tha fire remembered ye.',
+      toast_home: 'Hilltop hearth — +{heal} HP, Edinburgh below.',
+    },
     boon_at_ceiling: 'XP bar\'s chokker — hae +{gold}g insteid, ya legend.',
   },
   run: {
