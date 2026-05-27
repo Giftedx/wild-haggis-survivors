@@ -82,6 +82,11 @@ import {
   NINTH_LEGION_REARGUARD_SIZE,
   type NinthLegionState,
 } from './ninthLegionBehaviour';
+import {
+  simulateCuSithBehaviour,
+  initialCuSithState,
+  type CuSithState,
+} from './cuSithBehaviour';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -179,14 +184,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private phaseTimer: number = 0;
   private isPhased: boolean = false;
 
-  /**
-   * Three-Bay Warning state — Cu Sith signature behaviour.
-   *  0 = approaching (chase at base speed until within trigger radius).
-   *  1, 2 = pre-charge bays — pause for hool, no movement.
-   *  3 = charging — sprint at 3× speed toward last-known player position.
-   *  4 = post-charge cooldown / chase fallback.
-   */
-  private threeBayStage: 0 | 1 | 2 | 3 | 4 = 0;
   /** V2 — Cailleach Gauntlet boss state (only used when behavior === 'wail'). */
   private wailState: WailState = { msSinceLastLance: 0, hasWailed: false };
   /** Earl Beardie boss state (only used when behavior === 'card_deal'). */
@@ -223,11 +220,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private lampAnchorPositions: Array<{ x: number; y: number }> = [];
   /** True once lamp posts have been spawned for the current boss encounter. */
   private auldReekieInitialized: boolean = false;
-  /** Countdown ms within the current three-bay stage. */
-  private threeBayTimerMs: number = 0;
-  /** Charge target locked at start of stage 3. */
-  private threeBayChargeTargetX: number = 0;
-  private threeBayChargeTargetY: number = 0;
+  /** Cù Sìth three-bay charge state (only used when behavior === 'three_bay'). */
+  private cuSithState: CuSithState = initialCuSithState();
 
   /** Status effects */
   private burnDamage: number = 0;
@@ -794,68 +788,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * slow-motion + pause behave the same as other behaviours.
    */
   private behaviorThreeBay(tx: number, ty: number, delta: number): void {
-    const THREE_BAY_TRIGGER_PX = 250;
-    const HOOL_DURATION_MS = 1500;
-    const CHARGE_DURATION_MS = 1500;
-    const CHARGE_SPEED_MUL = 3;
-
-    if (this.threeBayStage === 0) {
-      // Approach phase — chase at base speed until inside trigger radius.
-      const dx = tx - this.x;
-      const dy = ty - this.y;
-      const distSq = dx * dx + dy * dy;
-      if (distSq <= THREE_BAY_TRIGGER_PX * THREE_BAY_TRIGGER_PX) {
-        this.threeBayStage = 1;
-        this.threeBayTimerMs = HOOL_DURATION_MS;
-        this.setVelocity(0, 0);
-        // First bay — fires the moment the trigger radius is crossed.
-        globalEventBus.emit('CU_SITH_BAY', { stage: 1, x: this.x, y: this.y });
-      } else {
-        this.setVelocityToward(tx, ty, this.speed);
-      }
-      return;
-    }
-
-    if (this.threeBayStage === 1 || this.threeBayStage === 2) {
-      // Pre-charge bays — frozen in place, telegraphing.
+    const result = simulateCuSithBehaviour(this.cuSithState, {
+      tx, ty, ex: this.x, ey: this.y, deltaMs: delta,
+    });
+    this.cuSithState = result.nextState;
+    if (result.velocityMode === 'freeze') {
       this.setVelocity(0, 0);
-      this.threeBayTimerMs -= delta;
-      if (this.threeBayTimerMs <= 0) {
-        const next = (this.threeBayStage + 1) as 2 | 3;
-        this.threeBayStage = next;
-        this.threeBayTimerMs = next === 3 ? CHARGE_DURATION_MS : HOOL_DURATION_MS;
-        if (next === 3) {
-          // Lock player position at charge start so the player can side-
-          // step the third bay if they read it.
-          this.threeBayChargeTargetX = tx;
-          this.threeBayChargeTargetY = ty;
-        }
-        // Bay 2 fires when stage moves 1→2; bay 3 fires when stage 2→3
-        // (charge lock-on coincides with third bay).
-        globalEventBus.emit('CU_SITH_BAY', { stage: next, x: this.x, y: this.y });
-      }
-      return;
-    }
-
-    if (this.threeBayStage === 3) {
-      // Charge phase — sprint toward the locked target. The locked
-      // target can be sidestepped by a quick player; the third hool
-      // is the warning, the lock-on is the read.
+    } else if (result.velocityMode === 'charge') {
       this.setVelocityToward(
-        this.threeBayChargeTargetX,
-        this.threeBayChargeTargetY,
-        this.speed * CHARGE_SPEED_MUL,
+        result.nextState.lockedTargetX, result.nextState.lockedTargetY,
+        this.speed * result.speedMul,
       );
-      this.threeBayTimerMs -= delta;
-      if (this.threeBayTimerMs <= 0) {
-        this.threeBayStage = 4;
-      }
-      return;
+    } else {
+      // 'approach' or 'chase' — both head toward current player position.
+      this.setVelocityToward(tx, ty, this.speed);
     }
-
-    // Stage 4 — post-charge fallback to ordinary chase. The Cu Sith
-    // doesn't re-trigger; one warning per encounter.
-    this.setVelocityToward(tx, ty, this.speed);
+    if (result.bayFired !== null) {
+      globalEventBus.emit('CU_SITH_BAY', { stage: result.bayFired, x: this.x, y: this.y });
+    }
   }
 
   /**
