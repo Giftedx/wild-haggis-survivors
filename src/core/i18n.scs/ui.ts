@@ -3679,6 +3679,16 @@ export const ui = {
         a: 'Swaurm o midges. Keep a wind at yer back.',
         b: 'Clood o bites. Blaw them aff, dinnae stap.',
       },
+      beithir: {
+        a: 'Beithir on tha brae. Gie it room — it\'s been waitin.',
+        b: 'Tha lichtnin serpent. Dinnae let it sting ye.',
+        c: 'Auld serpent, this. Patient as tha pass itsel.',
+      },
+      bodach_glas: {
+        a: 'Bodach Glas. He paces. Slow\'s nae safe.',
+        b: 'Tha grey man o Ben Macdui. He disnae hurry.',
+        c: 'Tha thing ahint ye disnae rin. It disnae need tae.',
+      },
     },
     // ── First-time reserved (B1 Phase 3 Task 18). SCS pair for
     //    ui.banter.first_time.*. One-shot milestone lines, priority 110.

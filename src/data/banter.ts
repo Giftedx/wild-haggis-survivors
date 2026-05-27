@@ -3358,6 +3358,18 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.midgie_swarm.a',
         'ui.banter.enemy_ambient.midgie_swarm.b',
       ],
+      // ── B5 Phase 2 additions. Regular wave-spawn enemies that slot
+      //    alongside the Moor-Classic family but arrived later.
+      beithir: [
+        'ui.banter.enemy_ambient.beithir.a',
+        'ui.banter.enemy_ambient.beithir.b',
+        'ui.banter.enemy_ambient.beithir.c',
+      ],
+      bodach_glas: [
+        'ui.banter.enemy_ambient.bodach_glas.a',
+        'ui.banter.enemy_ambient.bodach_glas.b',
+        'ui.banter.enemy_ambient.bodach_glas.c',
+      ],
     },
   },
   {

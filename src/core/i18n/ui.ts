@@ -4362,6 +4362,16 @@ export const ui = {
         a: 'Swarm o midges. Keep a breeze at yer back.',
         b: 'Cloud o bites. Blow them off, dinnae stop.',
       },
+      beithir: {
+        a: 'Beithir on the hillside. Give it room — it\'s been waitin.',
+        b: 'The lightning serpent. Dinnae let it sting ye.',
+        c: 'Auld serpent, this. Patient as the pass itself.',
+      },
+      bodach_glas: {
+        a: 'Bodach Glas. He paces. Slow isnae safe.',
+        b: 'The grey man o Ben Macdui. He disnae hurry.',
+        c: 'That thing behind ye disnae run. It disnae need tae.',
+      },
     },
     // ── First-time reserved (B1 Phase 3 Task 18). Priority 110 — these
     //    fire ONCE per save, ever, the tick the milestone lands. Tone
