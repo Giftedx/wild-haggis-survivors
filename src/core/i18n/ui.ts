@@ -2981,6 +2981,24 @@ export const ui = {
         c: 'Sixty stones in a perfect circle. Someone cared a great deal about circles.',
         d: 'Atlantic grey and standing stones. The oldest feeling on the island.',
       },
+      corryvreckan: {
+        a: "That roar is the Cailleach's washday. Do not disturb the laundry.",
+        b: 'Corryvreckan. Even Orwell nearly drowned here.',
+        c: 'The whirlpool does not want anything. It simply is.',
+        d: 'The water runs deep and fast and does not ask permission.',
+      },
+      shetland_voe: {
+        a: 'Norse wind. The longships read this coast by the smell of it.',
+        b: 'Simmer dim — the light that refuses to give up.',
+        c: 'The voe runs deeper than it looks. Keep to the shore.',
+        d: 'Puffins off the stack. The haggis notes they look ridiculous and keeps moving.',
+      },
+      skye_fairy_pool: {
+        a: 'Blue water in black rock. The Cuillin feeds these.',
+        b: 'The pools are clear. The fey are not.',
+        c: 'Fairy territory. The haggis is polite and does not stay long.',
+        d: 'The water here tastes of rock and deep time.',
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',

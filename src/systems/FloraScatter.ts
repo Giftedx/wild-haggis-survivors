@@ -233,6 +233,40 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_bracken',
     'deco_wind_grass',
   ],
+  // B9 — Corryvreckan: Atlantic sea-strait, whirlpool mythology, spray.
+  // Kelp and barnacle rock (strait floor wrack), driftwood (Atlantic
+  // debris), selkie skin (selkie-folk of the strait), machair shell
+  // (storm-cast shells from the whirlpool wash).
+  corryvreckan: [
+    'deco_kelp_strand',
+    'deco_barnacle_rock',
+    'deco_selkie_skin',
+    'deco_driftwood',
+    'deco_machair_shell',
+  ],
+  // B9 — Shetland Voe: Norse sea inlet, Viking heritage, puffin cliffs.
+  // Fishing net (Norse-tradition voe fishing), driftwood (Viking wrack),
+  // machair shell (voe shore shells), waymarker post (Norse navigational
+  // mark — re-read as a voe-side marker), bridge plank (voe crossing).
+  shetland_voe: [
+    'deco_fishing_net',
+    'deco_driftwood',
+    'deco_machair_shell',
+    'deco_waymarker_post',
+    'deco_bridge_plank',
+  ],
+  // B9 — Skye Fairy Pools: mineral-blue pools in black gabbro gorges.
+  // Rowan charm (ward against fey — placed by the pool-side), catsith
+  // saucer (cat sith patrols Skye's fairy territory), standing stone
+  // glyph (Cuillin has old stones), brahan eye stone (seer's pool),
+  // fairy ring (fey territory marker — the pools are meeting places).
+  skye_fairy_pool: [
+    'deco_rowan_charm',
+    'deco_catsith_saucer',
+    'deco_standing_stone_glyph',
+    'deco_brahan_eye_stone',
+    'deco_fairy_ring',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -458,6 +492,44 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_wind_grass', 0.84],
     ['deco_heather', 0.94],
     ['deco_rock', 1.0],
+  ],
+  // B9 — Corryvreckan. Sea-strait floor: kelp, barnacle rock, wet rock,
+  // sea foam, whelk shell, driftwood. No land vegetation — the strait
+  // is below the tide-line and the spray strips the shore bare.
+  corryvreckan: [
+    ['deco_kelp_strand', 0.22],
+    ['deco_barnacle_rock', 0.42],
+    ['deco_rock', 0.58],
+    ['deco_driftwood', 0.72],
+    ['deco_foam_line', 0.84],
+    ['deco_whelk_shell', 0.94],
+    ['deco_rock_2', 1.0],
+  ],
+  // B9 — Shetland Voe. Windswept voe shore: bog cotton (machair), wind
+  // grass, rock, heather (lower ground), driftwood (Norse wrack), whelk
+  // shell (voe shore). Sparse and Atlantic-grey — the simmer dim keeps
+  // the colour subdued.
+  shetland_voe: [
+    ['deco_bog_cotton', 0.20],
+    ['deco_wind_grass', 0.38],
+    ['deco_rock', 0.54],
+    ['deco_heather', 0.68],
+    ['deco_rock_2', 0.82],
+    ['deco_driftwood', 0.92],
+    ['deco_whelk_shell', 1.0],
+  ],
+  // B9 — Skye Fairy Pools. Mineral gorge floor: reeds at pool edges,
+  // ripple (pool surface), dark wet rock, bog cotton (pool margin),
+  // mushrooms (fairy territory always has mushrooms), heather above the
+  // gorge lip, stone at the pool base.
+  skye_fairy_pool: [
+    ['deco_reeds', 0.20],
+    ['deco_ripple', 0.36],
+    ['deco_rock_2', 0.52],
+    ['deco_bog_cotton', 0.66],
+    ['deco_mushrooms', 0.78],
+    ['deco_heather', 0.90],
+    ['deco_rock_3', 1.0],
   ],
 };
 

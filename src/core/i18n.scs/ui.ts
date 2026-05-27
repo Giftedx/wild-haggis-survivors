@@ -2379,6 +2379,24 @@ export const ui = {
         c: 'Sixty stanes in a perfect circle. Somebody cared a great deal aboot circles.',
         d: 'Atlantic grey an staunin stanes. Tha auldest feelin on tha island.',
       },
+      corryvreckan: {
+        a: "That roar is tha Cailleach's washin day. Dinnae disturb tha laundry.",
+        b: 'Corryvreckan. Even Orwell near drowned here.',
+        c: 'Tha whirlpool disnae want onythin. It simply is.',
+        d: 'Tha watter rins deep an fast an disnae ask permission.',
+      },
+      shetland_voe: {
+        a: 'Norse wind. Tha langships read this coast bi tha smell o it.',
+        b: 'Simmer dim — tha licht that refuses tae gie up.',
+        c: 'Tha voe rins deeper nor it looks. Keep tae tha shore.',
+        d: 'Puffins aff tha stack. Tha haggis notes thay look ridiculous an keeps movin.',
+      },
+      skye_fairy_pool: {
+        a: 'Blue watter in black rock. Tha Cuillin feeds these.',
+        b: 'Tha pools are clear. Tha fey are no.',
+        c: 'Fairy territory. Tha haggis is polite an disnae stay lang.',
+        d: 'Tha watter here tastes o rock an deep time.',
+      },
     },
     moor_moment: {
       a: 'Tha moor noticed ye. That\'s rare.',

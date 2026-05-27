@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney' | 'corryvreckan' | 'shetland_voe' | 'skye_fairy_pool';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -29,7 +29,10 @@ export type BiomeModifierKind =
   | 'trossachsCanopy'
   | 'edinburghSmoke'
   | 'cairngormWood'
-  | 'orkneyWind';
+  | 'orkneyWind'
+  | 'corryVreckan'
+  | 'shetlandVoe'
+  | 'fairyPoolGlow';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -558,9 +561,102 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     moodTimbre: 0.50,
     ambientHaarDensity: 0.25,
   },
+  // B9 — Corryvreckan. The strait between Jura and Scarba; third-largest
+  // whirlpool in the world. The Cailleach washes her great plaid here at
+  // winter's turn. `corryVreckan` modifier: constant random-direction
+  // current pushes the player (milder than benNevisWind; the whirlpool
+  // spirals rather than blasts). −5% speed (wading the swell), +10%
+  // knockback (the surge amplifies every impact).
+  corryvreckan: {
+    id: 'corryvreckan',
+    nameKey: 'biomes.corryvreckan.name',
+    tint: 0x0a2030,
+    entryToastKey: 'biomes.corryvreckan.entry',
+    loreSnippetKey: 'biomes.corryvreckan.loreSnippet',
+    loreKey: 'biomes.corryvreckan.lore',
+    toastColor: '#3a7088',
+    spawnWeightMods: {
+      kelpie: 2.0,
+      blue_man_of_minch: 1.8,
+      haar_wraith: 1.3,
+      ghost: 1.2,
+      eagle: 0.3,
+      tourist: 0.1,
+      chef: 0.05,
+      sheep: 0.05,
+      highland_cow: 0.05,
+    },
+    modifier: 'corryVreckan',
+    // Deep mythic water — lower timbre than coastal (0.65); the whirlpool
+    // is heavy with history and the Cailleach's weight.
+    moodTimbre: 0.35,
+    // Atlantic spray from the strait — denser than coastal, lighter than haar.
+    ambientHaarDensity: 0.40,
+  },
+  // B9 — Shetland Voe. Norse-inflected sea inlet between Shetland cliffs;
+  // midsummer twilight (simmer dim), Viking heritage, puffin stacks.
+  // `shetlandVoe` modifier: +10% speed (quick on the voe shore — Viking
+  // pragmatism), −10% drift (Norse linearity steadies the path).
+  shetland_voe: {
+    id: 'shetland_voe',
+    nameKey: 'biomes.shetland_voe.name',
+    tint: 0x5a6878,
+    entryToastKey: 'biomes.shetland_voe.entry',
+    loreSnippetKey: 'biomes.shetland_voe.loreSnippet',
+    loreKey: 'biomes.shetland_voe.lore',
+    toastColor: '#88a0b8',
+    spawnWeightMods: {
+      ghost: 1.3,
+      haar_wraith: 1.1,
+      eagle: 1.2,
+      golden_eagle: 0.8,
+      tourist: 0.3,
+      chef: 0.2,
+      sheep: 0.9,
+      highland_cow: 0.3,
+      blue_man_of_minch: 0.8,
+    },
+    modifier: 'shetlandVoe',
+    // Norse bright — brighter than coastal (0.65), almost airy. The
+    // simmer dim gives a silver clarity that reads as high moodTimbre.
+    moodTimbre: 0.60,
+    // Shetland haar off the voe — lighter than haar biome (0.7).
+    ambientHaarDensity: 0.30,
+  },
+  // B9 — Skye Fairy Pools. Crystal mineral pools in black gabbro gorges
+  // below the Black Cuillin above Glenbrittle. `fairyPoolGlow` modifier:
+  // +25% XP (the pools are fey-charged — every kill resonates deeper),
+  // −5% speed (wading the crystal shallows). Ethereal, gorgeous, fey.
+  skye_fairy_pool: {
+    id: 'skye_fairy_pool',
+    nameKey: 'biomes.skye_fairy_pool.name',
+    tint: 0x2a8a88,
+    entryToastKey: 'biomes.skye_fairy_pool.entry',
+    loreSnippetKey: 'biomes.skye_fairy_pool.loreSnippet',
+    loreKey: 'biomes.skye_fairy_pool.lore',
+    toastColor: '#5accc8',
+    spawnWeightMods: {
+      haar_wraith: 1.8,
+      seelie_piper: 1.5,
+      unseelie_fiddler: 1.4,
+      ghost: 1.3,
+      kelpie: 1.2,
+      tourist: 0.4,
+      chef: 0.2,
+      sheep: 0.2,
+      highland_cow: 0.1,
+      eagle: 0.5,
+    },
+    modifier: 'fairyPoolGlow',
+    // Ethereal and bright — higher than coastal (0.65), almost ben_nevis
+    // (0.90) territory; the pools have a luminous quality.
+    moodTimbre: 0.75,
+    // Light mist rising from the mineral pools — lower than haar.
+    ambientHaarDensity: 0.20,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

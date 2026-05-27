@@ -90,6 +90,12 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   cairngorm_woods: 0x3a6020,
   // B8 — Orkney: Neolithic grey-teal, the ancient stone light.
   orkney: 0x7aaa90,
+  // B9 — Corryvreckan: deep Atlantic teal, the whirlpool's churning colour.
+  corryvreckan: 0x1a5868,
+  // B9 — Shetland Voe: silver-slate, the simmer dim at midnight.
+  shetland_voe: 0x8898b0,
+  // B9 — Skye Fairy Pools: mineral turquoise, the pool's glow from below.
+  skye_fairy_pool: 0x40c8c0,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

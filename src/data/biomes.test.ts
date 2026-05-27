@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all nineteen biomes with required fields (B8 drop added edinburgh_old_town, cairngorm_woods, orkney)', () => {
-    expect(BIOME_IDS.length).toBe(19);
+  it('defines all twenty-two biomes with required fields (B9 drop added corryvreckan, shetland_voe, skye_fairy_pool)', () => {
+    expect(BIOME_IDS.length).toBe(22);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -61,6 +61,24 @@ describe('biomes data', () => {
     expect(BIOME_IDS).toContain('orkney');
     expect(BIOMES.orkney.modifier).toBe('orkneyWind');
     expect(BIOMES.orkney.nameKey).toBe('biomes.orkney.name');
+  });
+
+  it('corryvreckan biome is registered (B9)', () => {
+    expect(BIOME_IDS).toContain('corryvreckan');
+    expect(BIOMES.corryvreckan.modifier).toBe('corryVreckan');
+    expect(BIOMES.corryvreckan.nameKey).toBe('biomes.corryvreckan.name');
+  });
+
+  it('shetland_voe biome is registered (B9)', () => {
+    expect(BIOME_IDS).toContain('shetland_voe');
+    expect(BIOMES.shetland_voe.modifier).toBe('shetlandVoe');
+    expect(BIOMES.shetland_voe.nameKey).toBe('biomes.shetland_voe.name');
+  });
+
+  it('skye_fairy_pool biome is registered (B9)', () => {
+    expect(BIOME_IDS).toContain('skye_fairy_pool');
+    expect(BIOMES.skye_fairy_pool.modifier).toBe('fairyPoolGlow');
+    expect(BIOMES.skye_fairy_pool.nameKey).toBe('biomes.skye_fairy_pool.name');
   });
 
   it('spawn weight multipliers are all positive', () => {

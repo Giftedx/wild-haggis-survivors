@@ -60,24 +60,24 @@ const COUNTS: Record<WildlifeKey, number> = {
 // sheep/highland_cow (high-tops are no grazing biome) and no
 // wetland creatures (otter / salmon / common_frog).
 const VALID_BIOMES: Record<WildlifeKey, Set<BiomeId>> = {
-  hare: new Set(['heather', 'pine']),
-  red_deer: new Set(['heather', 'pine', 'frost']),
-  buzzard: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
+  hare: new Set(['heather', 'pine', 'skye_fairy_pool']),
+  red_deer: new Set(['heather', 'pine', 'frost', 'skye_fairy_pool']),
+  buzzard: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool']),
   red_squirrel: new Set(['heather', 'pine']),
   pine_marten: new Set(['heather', 'pine']),
   capercaillie: new Set(['heather', 'pine']),
-  otter: new Set(['bog', 'loch', 'coastal']),
-  puffin: new Set(['bog', 'loch', 'heather', 'coastal', 'haar']),
-  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
+  otter: new Set(['bog', 'loch', 'coastal', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool']),
+  puffin: new Set(['bog', 'loch', 'heather', 'coastal', 'haar', 'corryvreckan', 'shetland_voe']),
+  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool']),
   scottish_wildcat: new Set(['heather', 'pine', 'frost']),
-  rook: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
-  sheep: new Set(['heather']),
-  grey_seal: new Set(['loch', 'coastal']),
-  ptarmigan: new Set(['heather', 'pine', 'frost']),
-  common_frog: new Set(['bog', 'loch']),
-  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
+  rook: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'shetland_voe']),
+  sheep: new Set(['heather', 'shetland_voe']),
+  grey_seal: new Set(['loch', 'coastal', 'corryvreckan', 'shetland_voe']),
+  ptarmigan: new Set(['heather', 'pine', 'frost', 'shetland_voe']),
+  common_frog: new Set(['bog', 'loch', 'skye_fairy_pool']),
+  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool']),
   field_mouse: new Set(['heather', 'pine']),
-  salmon: new Set(['bog', 'loch', 'coastal']),
+  salmon: new Set(['bog', 'loch', 'coastal', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool']),
 };
 
 const FLEE_DIST = 200;

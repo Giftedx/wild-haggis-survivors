@@ -113,4 +113,22 @@ export const biomes = {
     loreSnippet: "Neolithic landscape aulder nor tha pyramids. Skara Brae, Maeshowe, Brodgar.",
     lore: "Orkney wis settled five thoosand year syne by fermers wha built in stane because there war nae trees. Skara Brae is a Neolithic clachan preserved unner sand for fower millennia — stane beds, stane dressers, stane hearths, a plumbing system. Maeshowe is a chambered cairn aligned sae tha winter solstice sun illuminates tha back wall for seventeen meenits. Tha Ring o Brodgar is sixty standin stanes in a perfect circle on an isthmus atween twa lochs. Vikings carved runes in Maeshowe eight hunner year syne bragging aboot treisure an weemin. Tha landscape is wide an Atlantic-grey an tha wind never staps. Tha haggis leans intae it.",
   },
+  corryvreckan: {
+    name: 'Corryvreckan',
+    entry: "Tha whirlpool's roarin. Tha Cailleach washes her plaid here.",
+    loreSnippet: "Tha Cailleach's washin pot. Tha third-muckle-maist whirlpool i tha warld.",
+    lore: "Corryvreckan — cauldron o tha speckled seas, frae tha Gaelic. Tha strait atween Jura an Scarba hides tha third-muckle-maist whirlpool i tha warld: a staunin wave that George Orwell near drowned in, an a roar that cairries ten mile on a still mornin. Tha Cailleach washes her great plaid here at winter's turn, an whan tha white waves brek across tha channel, winter haes officially arrived. Tha whirlpool isnae malicious. It simply disnae care. Tha sea flair draps frae six tae twa hunner an fifty metres in tha space o a step.",
+  },
+  shetland_voe: {
+    name: 'Shetland Voe',
+    entry: "Norse wind, Norse stane. Tha voe rins deep an tha simmer dim never fully fails.",
+    loreSnippet: "Sea inlet amang tha cliffs. Viking langships rested here.",
+    lore: "A voe is a Norse wird — sea inlet, narrae an fjord-like, cuttin atween Shetland cliffs. Shetland haes mair Norse vocabulary nor Scottish; 'Up Helly Aa' is frae Auld Norse, an tha men wha burn tha galley ilka Januar are follyin a practice that haes been here since langships. Tha simmer dim — tha midsummer twilicht that never fully darkens — maks tha voe siller at midnight. Puffins mob tha stack aff tha heids; grey seals haul oot on tha tide-cut skerries. Tha wind is constant. Tha haggis haes learned tae lean.",
+  },
+  skye_fairy_pool: {
+    name: 'Skye Fairy Pools',
+    entry: "Blue watter in black rock. Tha pools are clear an tha fey are close.",
+    loreSnippet: "Mineral pools in tha Cuillin foothills. Tha watter tastes o deep time.",
+    lore: "Tha fairy pools o Glen Brittle lig at tha fit o tha Black Cuillin — a series o crystal clear pools an wee waterfalls ower black gabbro rock, coloured mineral-blue an turquoise bi tha watter chemistry. Thay hae nae record afore tha twentieth century; tha name micht be tourism, or it micht be that these pools simply kept thair ain counsel fer centuries. Tha Cuillin hauds some o tha maist challengin rock in Britain; tha pools are whit tha munetin drinks frae. Tha haggis wades shallow an watches tha depth.",
+  },
 } as const;

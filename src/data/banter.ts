@@ -1669,6 +1669,30 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.orkney.c',
         'ui.banter.biome_change.orkney.d',
       ],
+      // B9 — Corryvreckan: mythic whirlpool, Cailleach's washing pot.
+      // Edge register: elemental, raw, awe-and-danger.
+      corryvreckan: [
+        'ui.banter.biome_change.corryvreckan.a',
+        'ui.banter.biome_change.corryvreckan.b',
+        'ui.banter.biome_change.corryvreckan.c',
+        'ui.banter.biome_change.corryvreckan.d',
+      ],
+      // B9 — Shetland Voe: Norse inlet, simmer dim, puffin stacks.
+      // Hearth register: quiet wonder, Norse-inflected.
+      shetland_voe: [
+        'ui.banter.biome_change.shetland_voe.a',
+        'ui.banter.biome_change.shetland_voe.b',
+        'ui.banter.biome_change.shetland_voe.c',
+        'ui.banter.biome_change.shetland_voe.d',
+      ],
+      // B9 — Skye Fairy Pools: mineral pools, Cuillin fey territory.
+      // Hearth + faint Edge register: wonder, politely alert.
+      skye_fairy_pool: [
+        'ui.banter.biome_change.skye_fairy_pool.a',
+        'ui.banter.biome_change.skye_fairy_pool.b',
+        'ui.banter.biome_change.skye_fairy_pool.c',
+        'ui.banter.biome_change.skye_fairy_pool.d',
+      ],
     },
   },
   {

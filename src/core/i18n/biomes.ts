@@ -113,4 +113,22 @@ export const biomes = {
     loreSnippet: "Neolithic landscape older than the pyramids. Skara Brae, Maeshowe, Brodgar.",
     lore: "Orkney was settled five thousand years ago by farmers who built in stone because there were no trees. Skara Brae is a Neolithic village preserved under sand for four millennia — stone beds, stone dressers, stone hearths, a plumbing system. Maeshowe is a chambered cairn aligned so the winter solstice sun illuminates the back wall for seventeen minutes. The Ring of Brodgar is sixty standing stones in a perfect circle on an isthmus between two lochs. Vikings carved runes in Maeshowe eight hundred years ago boasting about treasure and women. The landscape is wide and Atlantic-grey and the wind never stops. The haggis leans into it.",
   },
+  corryvreckan: {
+    name: 'Corryvreckan',
+    entry: "The whirlpool's roarin'. The Cailleach washes her plaid here.",
+    loreSnippet: "Cailleach's washing pot. The third-largest whirlpool in the world.",
+    lore: "Corryvreckan — cauldron of the speckled seas, from the Gaelic. The strait between Jura and Scarba hides the third-largest whirlpool in the world: a standing wave that George Orwell nearly drowned in, and a roar that carries ten miles on a still morning. The Cailleach washes her great plaid here at winter's turn, and when the white waves break across the channel, winter has officially arrived. The whirlpool is not malicious. It simply doesn't care. The sea floor drops from six to two hundred and fifty metres in the space of a stride.",
+  },
+  shetland_voe: {
+    name: 'Shetland Voe',
+    entry: "Norse wind, Norse stone. The voe runs deep and the simmer dim never fully fails.",
+    loreSnippet: "Sea inlet among the cliffs. Viking longships rested here.",
+    lore: "A voe is a Norse word — sea inlet, narrow and fjord-like, cutting between Shetland cliffs. Shetland has more Norse vocabulary than Scottish; 'Up Helly Aa' is from Old Norse, and the men who burn the galley every January are following a practice that has been here since longships. The simmer dim — the midsummer twilight that never fully darkens — makes the voe silver at midnight. Puffins mob the stack off the headland; grey seals haul out on the tide-cut skerries. The wind is constant. The haggis has learned to lean.",
+  },
+  skye_fairy_pool: {
+    name: 'Skye Fairy Pools',
+    entry: "Blue water in black rock. The pools are clear and the fey are close.",
+    loreSnippet: "Mineral pools in the Cuillin foothills. The water tastes of deep time.",
+    lore: "The fairy pools of Glen Brittle lie at the foot of the Black Cuillin — a series of crystal clear pools and small waterfalls over black gabbro rock, coloured mineral-blue and turquoise by the water chemistry. They have no record before the twentieth century; the name may be tourism, or it may be that these pools simply kept their own counsel for centuries. The Cuillin holds some of the most challenging rock in Britain; the pools are what the mountain drinks from. The haggis wades shallow and watches the depth.",
+  },
 } as const;

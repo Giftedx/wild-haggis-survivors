@@ -275,6 +275,10 @@ export class AudioSystem {
       cobble_gap:    { f0: 650, f1: 350, type: 'square', dur: 0.08, vol: 0.07 },    // stone clop + hollow drop
       fallen_pine:   { f0: 160, f1: 80, type: 'sawtooth', dur: 0.14, vol: 0.09 },  // woody crack + thud
       standing_slab: { f0: 95, f1: 55, type: 'sine', dur: 0.36, vol: 0.08 },       // deep Neolithic toll
+      // B9 biomes — Corryvreckan (churning surge), Shetland (cliff squall), Skye (ethereal chime).
+      corry_maelstrom: { f0: 300, f1: 60, type: 'sine', dur: 0.35, vol: 0.09 },    // deep whirlpool surge
+      shetland_squall: { f0: 1000, f1: 200, type: 'sawtooth', dur: 0.16, vol: 0.09 }, // cliff-top wind crack
+      fairy_mist:      { f0: 1200, f1: 800, type: 'triangle', dur: 0.30, vol: 0.06 }, // ethereal fey chime
     };
     const p = presets[hazardKey];
     osc.type = p.type;

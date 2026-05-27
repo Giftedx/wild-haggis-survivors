@@ -1630,7 +1630,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'trossachsCanopy'
       | 'edinburghSmoke'
       | 'cairngormWood'
-      | 'orkneyWind',
+      | 'orkneyWind'
+      | 'corryVreckan'
+      | 'shetlandVoe'
+      | 'fairyPoolGlow',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1762,6 +1765,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.biomeWindX = 65;
         this.biomeWindY = 10;
         this.biomeXpMul = 1.12;
+        break;
+      case 'corryVreckan':
+        // The whirlpool surge — wading the swell costs (-5% speed). Every
+        // impact is amplified by the surging current (+10% knockback). Less
+        // speed tax than bogSlow (-15%); the whirlpool is fast, not thick.
+        this.biomeSpeedMul = 0.95;
+        this.biomeKnockbackBonus = 1.10;
+        break;
+      case 'shetlandVoe':
+        // Norse voe shore — quick and direct (+10% speed; the haggis moves
+        // like a Viking longship, purposeful). Norse linearity steadies the
+        // path (-10% drift). No XP modifier — the voe gives you clarity, not bounty.
+        this.biomeSpeedMul = 1.10;
+        this.biomeDriftMul = 0.90;
+        break;
+      case 'fairyPoolGlow':
+        // Fey-charged mineral pools — every kill resonates deeper in the
+        // ley-line (+25% XP, the highest in the catalog). Wading the crystal
+        // shallows costs a little (-5% speed). The pools are worth the price.
+        this.biomeXpMul = 1.25;
+        this.biomeSpeedMul = 0.95;
         break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we

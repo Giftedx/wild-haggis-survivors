@@ -69,7 +69,13 @@ export type HazardKey =
   // Cairngorm Woods — fallen Caledonian pine trunk across the trail.
   | 'fallen_pine'
   // Orkney Neolithic — toppled standing slab on the windswept machair.
-  | 'standing_slab';
+  | 'standing_slab'
+  // B9 — Corryvreckan strait — sudden surge from the whirlpool's outer rotor.
+  | 'corry_maelstrom'
+  // B9 — Shetland Voe — abrupt squall off the clifftop.
+  | 'shetland_squall'
+  // B9 — Skye Fairy Pools — enchanted mist drifting up from the mineral pools.
+  | 'fairy_mist';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -310,6 +316,45 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 7000,
     spawnIntervalMs: 10000,
   },
+  // B9 — Corryvreckan surge. A sudden wave from the whirlpool's outer
+  // rotor — high damage (11), mid hitbox (15 px), medium lifetime (8 s).
+  // The wave rolls fast and retreats fast; the danger is the next one.
+  corry_maelstrom: {
+    key: 'corry_maelstrom',
+    texture: 'hazard_corry_maelstrom',
+    biome: 'corryvreckan',
+    damage: 11,
+    hitboxRadius: 15,
+    lifetimeMs: 8000,
+    spawnIntervalMs: 9000,
+  },
+  // B9 — Shetland squall. An abrupt cliff-top gust that hits hard and
+  // dissolves fast. High damage (10), tight hitbox (12 px), short
+  // lifetime (5 s) — the squall arrives without warning and is gone.
+  // Paired with shetlandVoe's −10% drift: the squall is the spike.
+  shetland_squall: {
+    key: 'shetland_squall',
+    texture: 'hazard_shetland_squall',
+    biome: 'shetland_voe',
+    damage: 10,
+    hitboxRadius: 12,
+    lifetimeMs: 5000,
+    spawnIntervalMs: 8500,
+  },
+  // B9 — Fairy mist. Enchanted mineral mist rising from the Skye pools.
+  // Low damage (5), wide hitbox (18 px), long lifetime (14 s) — the
+  // mist is not violent; it merely does not let go. Low damage mirrors
+  // burn_water and tidal_wrack (chip-on-loiter), but the fairyPoolGlow
+  // +25% XP modifier means lingering in it can be a calculated trade.
+  fairy_mist: {
+    key: 'fairy_mist',
+    texture: 'hazard_fairy_mist',
+    biome: 'skye_fairy_pool',
+    damage: 5,
+    hitboxRadius: 18,
+    lifetimeMs: 14000,
+    spawnIntervalMs: 10000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -333,4 +378,7 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'cobble_gap',
   'fallen_pine',
   'standing_slab',
+  'corry_maelstrom',
+  'shetland_squall',
+  'fairy_mist',
 ];
