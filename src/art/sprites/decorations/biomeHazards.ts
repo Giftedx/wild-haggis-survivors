@@ -748,3 +748,173 @@ export function bakeHazardBuckfastPool(scene: Phaser.Scene): void {
   g.generateTexture('hazard_buckfast_pool', w, h);
   g.destroy();
 }
+
+// Fingal's Cave — fractured basalt column crack.
+// Dark hexagonal column face split by a stress fracture, wet with spray.
+// Silhouette: angular crack across a dark geometric shape — unmistakably
+// structural failure, not organic ground. Blue-grey basalt, white seafoam
+// seeping into the crack.
+export function bakeHazardBasaltCrack(scene: Phaser.Scene): void {
+  const w = 22, h = 22;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Outer shadow halo on the column face
+  g.fillStyle(0x0a1218, 0.50);
+  g.fillCircle(cx, cy, 10);
+
+  // Basalt column face — dark blue-grey, hexagonal approximated as a circle
+  g.fillStyle(0x1e2a36, 1);
+  g.fillCircle(cx, cy, 9);
+  g.fillStyle(0x2a3a48, 1);
+  g.fillCircle(cx, cy, 7);
+
+  // Column tonal layers — the basalt is not uniform
+  g.fillStyle(0x344858, 0.70);
+  g.fillEllipse(cx - 1, cy - 1, 9, 6);
+
+  // Main fracture crack — diagonal NW→SE, irregular width
+  g.fillStyle(0x080e14, 1);
+  g.fillRect(cx - 6, cy - 4, 2, 2);
+  g.fillRect(cx - 5, cy - 2, 2, 2);
+  g.fillRect(cx - 4, cy, 2, 2);
+  g.fillRect(cx - 3, cy + 2, 2, 2);
+  g.fillRect(cx - 1, cy + 3, 2, 2);
+  g.fillRect(cx + 1, cy + 4, 1, 1);
+
+  // Secondary hairline crack branching off NE
+  g.fillStyle(0x0c1620, 0.85);
+  g.fillRect(cx - 3, cy - 1, 1, 1);
+  g.fillRect(cx - 2, cy - 2, 1, 1);
+  g.fillRect(cx, cy - 3, 1, 1);
+
+  // Seafoam seeping into the crack — the cave is wet
+  g.fillStyle(0xe0ecf4, 0.65);
+  g.fillCircle(cx - 5, cy - 3, 0.9);
+  g.fillCircle(cx - 2, cy + 1, 0.7);
+  g.fillStyle(0xffffff, 0.45);
+  g.fillCircle(cx - 5, cy - 3.5, 0.4);
+
+  // Basalt highlight — light catches the top-left column face
+  g.fillStyle(0x4a6070, 0.45);
+  g.fillEllipse(cx - 2, cy - 3, 7, 3);
+  g.fillStyle(0x6a8090, 0.25);
+  g.fillEllipse(cx - 3, cy - 4, 4, 1.5);
+
+  // Water sheen on the column surface
+  g.fillStyle(0x4a8ab0, 0.18);
+  g.fillEllipse(cx + 2, cy - 1, 6, 4);
+
+  g.generateTexture('hazard_basalt_crack', w, h);
+  g.destroy();
+}
+
+// Callanish Standing Stones — alignment energy ring.
+// A faint ley-line pulse radiating from a standing stone's base: concentric
+// pale-violet rings, a bright violet-white centre. Distinct from wind_shear /
+// summit_gust (those are grey-blue mechanical). Neolithic purple register.
+export function bakeHazardStoneRing(scene: Phaser.Scene): void {
+  const w = 26, h = 26;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Outer ley ring — very faint violet wash
+  g.fillStyle(0x6050a0, 0.18);
+  g.fillCircle(cx, cy, 12);
+
+  // Mid ring — stronger violet
+  g.fillStyle(0x8070c0, 0.30);
+  g.fillCircle(cx, cy, 9);
+
+  // Inner ring — bright violet-purple
+  g.fillStyle(0xa890e0, 0.50);
+  g.fillCircle(cx, cy, 6);
+
+  // Core pulse — near-white violet, the discharge point
+  g.fillStyle(0xd0c0f8, 0.75);
+  g.fillCircle(cx, cy, 3.5);
+  g.fillStyle(0xf0eaff, 0.90);
+  g.fillCircle(cx, cy, 2);
+  g.fillStyle(0xffffff, 0.85);
+  g.fillCircle(cx, cy, 1);
+
+  // Stone silhouette at the base of the ring — a small upright rect
+  // The ring radiates from where the stone meets the earth
+  g.fillStyle(0x2a2038, 1);
+  g.fillRect(cx - 2, cy + 3, 4, 5);
+  g.fillStyle(0x3a3050, 1);
+  g.fillRect(cx - 1.5, cy + 3, 3, 4);
+
+  // Ley tendrils — 4 faint radial wisps at cardinal angles
+  g.fillStyle(0x9080d0, 0.22);
+  g.fillRect(cx - 0.5, cy - 12, 1, 5);
+  g.fillRect(cx - 0.5, cy + 7, 1, 5);
+  g.fillRect(cx - 12, cy - 0.5, 5, 1);
+  g.fillRect(cx + 7, cy - 0.5, 5, 1);
+
+  g.generateTexture('hazard_stone_ring', w, h);
+  g.destroy();
+}
+
+// Trossachs Forest — exposed root trip across the deer trail.
+// A gnarled oak root arching above the path: brown-earth base, darker root
+// body, pale worn wood at the arch crest. Silhouette: curved horizontal
+// obstacle. The root is obvious once you look; the haggis was distracted.
+export function bakeHazardRootTrip(scene: Phaser.Scene): void {
+  const w = 28, h = 18;
+  const g = scene.add.graphics();
+  const cy = h / 2;
+
+  // Muddy trail shadow beneath the root
+  g.fillStyle(0x2a1e10, 0.45);
+  g.fillEllipse(14, cy + 3, 24, 7);
+
+  // Earth around the root — wet woodland soil
+  g.fillStyle(0x3a2a18, 0.65);
+  g.fillEllipse(14, cy + 2, 26, 10);
+
+  // Root body — arching upward. Built as a thick curved band using
+  // stacked filled circles along the arc.
+  g.fillStyle(0x4a2e14, 1);
+  // Left anchor into soil
+  g.fillEllipse(3, cy + 2, 5, 4);
+  // Arch rising left
+  g.fillEllipse(7, cy, 5, 5);
+  g.fillEllipse(11, cy - 2, 5, 4);
+  // Crown of the arch
+  g.fillEllipse(14, cy - 3, 5, 4);
+  // Arch descending right
+  g.fillEllipse(17, cy - 2, 5, 4);
+  g.fillEllipse(21, cy, 5, 5);
+  // Right anchor into soil
+  g.fillEllipse(25, cy + 2, 5, 4);
+
+  // Root surface highlight — worn pale wood at the arch crest
+  g.fillStyle(0x8a6040, 1);
+  g.fillEllipse(7, cy - 0.5, 3, 3);
+  g.fillEllipse(11, cy - 2.5, 3, 2.5);
+  g.fillEllipse(14, cy - 3.5, 3, 2.5);
+  g.fillEllipse(17, cy - 2.5, 3, 2.5);
+  g.fillEllipse(21, cy - 0.5, 3, 3);
+
+  // Pale crest — where countless hooves have worn the bark smooth
+  g.fillStyle(0xc09870, 0.70);
+  g.fillEllipse(11, cy - 3, 2, 1.5);
+  g.fillEllipse(14, cy - 4, 2, 1.5);
+  g.fillEllipse(17, cy - 3, 2, 1.5);
+
+  // Moss patches on the root sides — damp woodland
+  g.fillStyle(0x3a5030, 0.65);
+  g.fillCircle(5, cy + 1, 1.2);
+  g.fillCircle(23, cy + 1, 1.1);
+  g.fillCircle(9, cy - 1, 0.8);
+
+  // Loose dead leaf at the root base — forest floor detail
+  g.fillStyle(0x6a4820, 0.80);
+  g.fillEllipse(2, cy + 4, 3, 1.5);
+  g.fillStyle(0x8a6030, 0.65);
+  g.fillEllipse(25, cy + 4, 3, 1.5);
+
+  g.generateTexture('hazard_root_trip', w, h);
+  g.destroy();
+}

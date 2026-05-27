@@ -57,7 +57,13 @@ export type HazardKey =
   // Ben Nevis Summit — sudden rotor gust pocket on the exposed plateau.
   | 'summit_gust'
   // Glasgow Close — Buckfast bottle-pool on the close flagstones.
-  | 'buckfast_pool';
+  | 'buckfast_pool'
+  // Fingal's Cave — fractured basalt column crack underfoot.
+  | 'basalt_crack'
+  // Callanish Standing Stones — alignment energy ring, brief and sharp.
+  | 'stone_ring'
+  // Trossachs Forest — exposed root trip across the deer trail.
+  | 'root_trip';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -223,6 +229,45 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 8000,
     spawnIntervalMs: 9500,
   },
+  // Fingal's Cave — fractured basalt column crack underfoot.
+  // Medium damage (10), tight hitbox (10 px) — the crack is narrow but the
+  // basalt lip catches a hoof cleanly. Medium lifetime (5500 ms) — cracks
+  // linger after the column shifts. Calmer interval (9000 ms) than falling
+  // slate because cave acoustics warn you first.
+  basalt_crack: {
+    key: 'basalt_crack',
+    texture: 'hazard_basalt_crack',
+    biome: 'fingals_cave',
+    damage: 10,
+    hitboxRadius: 10,
+    lifetimeMs: 5500,
+    spawnIntervalMs: 9000,
+  },
+  // Callanish Standing Stones — alignment energy ring.
+  // The stones discharge a pulse of ley energy. Medium damage (9), mid
+  // hitbox (12 px), medium lifetime (7000 ms — the ring fades slowly).
+  // Wider interval (10000 ms) — the stones fire on their own rhythm.
+  stone_ring: {
+    key: 'stone_ring',
+    texture: 'hazard_stone_ring',
+    biome: 'callanish',
+    damage: 9,
+    hitboxRadius: 12,
+    lifetimeMs: 7000,
+    spawnIntervalMs: 10000,
+  },
+  // Trossachs Forest — exposed root across the deer trail.
+  // Low damage (6), mid hitbox (11 px), medium lifetime (6000 ms).
+  // Trip hazard: the root is always there; the haggis just wasn't watching.
+  root_trip: {
+    key: 'root_trip',
+    texture: 'hazard_root_trip',
+    biome: 'trossachs',
+    damage: 6,
+    hitboxRadius: 11,
+    lifetimeMs: 6000,
+    spawnIntervalMs: 9000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -240,4 +285,7 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'ink_pool',
   'summit_gust',
   'buckfast_pool',
+  'basalt_crack',
+  'stone_ring',
+  'root_trip',
 ];

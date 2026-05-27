@@ -78,6 +78,12 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   ben_nevis: 0x8899b8,
   // Glasgow Close — sodium amber, the close's defining streetlight colour.
   glasgow_close: 0xf06010,
+  // B7 — Fingal's Cave: deep Atlantic teal, the cave-pool colour at low tide.
+  fingals_cave: 0x3a6a88,
+  // B7 — Callanish: violet-mauve, the Lewis dusk that makes the stones glow.
+  callanish: 0x8870c0,
+  // B7 — Trossachs: deep forest green, Rob Roy country in full leaf.
+  trossachs: 0x3a6030,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

@@ -77,4 +77,22 @@ export const biomes = {
     loreSnippet: 'Sodium licht on weet flagstanes. Three flights up an a midden at tha back.',
     lore: 'A Glasgow close is a shared entrance passage rinnin through a tenement block — flagstane flair, tiled waws, tha smell o damp stane an last nicht\'s cairry-oot. Thay rin fae street tae backcourt, five storeys abuin an a midden ablow. Tha sodium streetlicht turns awthin amber efter dark; tha rain keeps tha flagstanes glossy aw year. Neebors share tha stair, tha washin green, an a workin unnerstaunin o each ither\'s oors. Cities biggit fae necessity mak communities biggit fae necessity; Glasgow\'s closes ar still staunin twa hunner year later, an tha folk inside them are no gaun onieway.',
   },
+  fingals_cave: {
+    name: "Fingal's Cave",
+    entry: "Basalt aneath yer feet, tha sea singin in tha columns. Watch tha cracks.",
+    loreSnippet: "Hexagonal columns, Atlantic swell. Mendelssohn heard this place an scrieved an overture.",
+    lore: "Staffa is a wird frae Auld Norse — stave island, fer tha columns. Saxty-fit hexagonal basalt pillars, formed whan a lava flow cooled evenly fifty-echt million year syne. Felix Mendelssohn veesited in 1829, heard tha swell movin through tha cave an scrieved tha Hebrides Overture on tha boat hame. Tha Gaelic name is An Uamh Bhinn — tha melodious cave. Tha acoustics are real: soond resonates in tha basalt, an a shout comes back altered, laicher, richer. Tha floor is uneven an weet. Tha sea disnae care hoo lang ye hae come tae admire it.",
+  },
+  callanish: {
+    name: 'Calanais Staunin Stanes',
+    entry: "Tha stanes are watchin. Thay war here lang afore tha muir had a name.",
+    loreSnippet: "Neolithic cruciform alignment on Lewis. Tha stanes walk tae tha loch at midsummer.",
+    lore: "Calanais wis erected aroond 2900 BC — aulder nor Stonehenge, aulder nor maist things wi a name. Thirteen tall stanes in a cruciform alignment, a central monolith ower fifteen fit, a wee chamber cairn at tha crossin. Tha avenue rins north tae tha muin's risin pynt ower tha hills o Uig. In tha nineteenth century, fower tae five fit o peat war cut awa tae reveal them; thay had been buried an forgotten. Tha stanes are said tae walk tae tha loch at midsummer. Local traidetion says thay ar Fir Bhreige — fause men, giants turned tae stane fer refusin Christianity.",
+  },
+  trossachs: {
+    name: 'The Trossachs',
+    entry: "Intae tha trees. Rob Roy kens ilka deer trail here.",
+    loreSnippet: "Auld aik an birch, bluebells in Aprile. Ootlaw kintra.",
+    lore: "Tha Trossachs — tha bristly kintra, frae tha Gaelic — is auld aik an birch wuidland atween Loch Katrine an Loch Achray. Rob Roy MacGregor bided an focht these hills; Walter Scott set a poem an a novelle here an invented tha Scottish tourist industry in tha same stroke. Bluebells carpet tha flure in Aprile, osprey fish tha loch, reid squirrels rin tha canopy. Tha deer trails are aulder than ony map o them. Tha forest keeps its ain time, an it taks tha haggis's side.",
+  },
 } as const;

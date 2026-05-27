@@ -2319,6 +2319,24 @@ export const ui = {
         c: 'Three flights up, midden at tha back. Welcome tae tha close.',
         d: 'Sodium licht, weet causey, a ned on ilka corner. Hame.',
       },
+      fingals_cave: {
+        a: 'Basalt columns. Ilka soond comes back different here.',
+        b: 'Mendelssohn heard this place an scrieved an overture. Tha haggis heard it an kept rinnin.',
+        c: "Tha sea's inside tha rock. Atlantic aw tha wey through.",
+        d: 'Hexagonal flair. Nane o tha holes ar whaur ye expect them.',
+      },
+      callanish: {
+        a: 'Tha stanes ar aulder nor tha idea o Scotland.',
+        b: "They've been staunin here three thoosand year. Tha drift feels lichter.",
+        c: 'Neolithic. Tha alignment rins north. Somethin rins wi it.',
+        d: 'Fause men, tha auld name says. Stood here refusin Christianity. Fair aneuch.',
+      },
+      trossachs: {
+        a: 'Rob Roy kens ilka inch o this. Tha haggis is learnin fast.',
+        b: 'Deer trails. Tha forest made them; tha haggis is borrowin them.',
+        c: 'Aik an birch, bluebells underfit in Aprile. Rich kintra.',
+        d: 'Tha forest taks yer side here. No sure why, but gratefu.',
+      },
     },
     moor_moment: {
       a: 'Tha moor noticed ye. That\'s rare.',

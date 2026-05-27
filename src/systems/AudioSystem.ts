@@ -267,6 +267,10 @@ export class AudioSystem {
       // wet mid gurgle. Lighter than burn_water (0.08→0.07 vol) — the
       // close doesn't announce itself.
       buckfast_pool: { f0: 1400, f1: 300, type: 'triangle', dur: 0.16, vol: 0.07 }, // glass clink → liquid splash
+      // B7 biomes — Fingal's Cave (resonant basalt column), Callanish (Neolithic pure tone), Trossachs (earthy root thud).
+      basalt_crack: { f0: 120, f1: 60, type: 'sine', dur: 0.30, vol: 0.09 },       // low cave resonance
+      stone_ring:   { f0: 880, f1: 660, type: 'triangle', dur: 0.24, vol: 0.07 }, // standing-stone bell
+      root_trip:    { f0: 200, f1: 90, type: 'sawtooth', dur: 0.10, vol: 0.08 },  // earthy thud
     };
     const p = presets[hazardKey];
     osc.type = p.type;

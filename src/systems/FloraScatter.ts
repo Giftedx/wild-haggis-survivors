@@ -168,6 +168,35 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_bus_stop',
     'deco_waymarker_post',
   ],
+  // B7 — Fingal's Cave: basalt columns, Atlantic sea-spray. Reuses
+  // coastal props (kelp, barnacle, whelk) + driftwood + machair shell.
+  fingals_cave: [
+    'deco_kelp_strand',
+    'deco_barnacle_rock',
+    'deco_whelk_shell',
+    'deco_driftwood',
+    'deco_machair_shell',
+  ],
+  // B7 — Callanish Standing Stones: open Lewis moor, Neolithic markers.
+  // Reuses heather's pictish stone + standing_stone_glyph; brahan eye
+  // stone fits the alignment ritual context; bluebells in the stone rows.
+  callanish: [
+    'deco_standing_stone_glyph',
+    'deco_pictish_stone',
+    'deco_brahan_eye_stone',
+    'deco_rowan_charm',
+    'deco_bog_cotton',
+  ],
+  // B7 — Trossachs Forest: oak/birch canopy, deer trails, bluebells.
+  // Reuses pine/glen_coe flora (roots, rowan berries, mushrooms) plus
+  // fresh-growth textures (bracken, wind grass for trail clearings).
+  trossachs: [
+    'deco_roots',
+    'deco_rowan_berries',
+    'deco_mushrooms',
+    'deco_bracken',
+    'deco_wind_grass',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -324,6 +353,39 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_abandoned_pint', 0.84],
     ['deco_rock_2', 0.94],
     ['deco_rock_3', 1.0],
+  ],
+  // B7 — Fingal's Cave. Sea-cave floor: kelp, barnacle rock, wet rock,
+  // driftwood, whelk shell. No land vegetation — the cave is below
+  // the tide-line.
+  fingals_cave: [
+    ['deco_kelp_strand', 0.22],
+    ['deco_barnacle_rock', 0.44],
+    ['deco_rock', 0.60],
+    ['deco_driftwood', 0.76],
+    ['deco_whelk_shell', 0.90],
+    ['deco_rock_2', 1.0],
+  ],
+  // B7 — Callanish. Open Lewis moor with standing stones: heather, bog
+  // cotton, wind grass, rock. The stones themselves are the landmark
+  // system; flora stays sparse and moor-like.
+  callanish: [
+    ['deco_heather', 0.22],
+    ['deco_bog_cotton', 0.42],
+    ['deco_wind_grass', 0.60],
+    ['deco_rock', 0.76],
+    ['deco_thistle', 0.90],
+    ['deco_rock_2', 1.0],
+  ],
+  // B7 — Trossachs. Oak/birch woodland floor: roots, rowan berries,
+  // mushrooms, bracken, ferns. Denser and greener than pine.
+  trossachs: [
+    ['deco_roots', 0.20],
+    ['deco_rowan_berries', 0.38],
+    ['deco_mushrooms', 0.54],
+    ['deco_bracken', 0.70],
+    ['deco_wind_grass', 0.84],
+    ['deco_heather', 0.94],
+    ['deco_rock', 1.0],
   ],
 };
 

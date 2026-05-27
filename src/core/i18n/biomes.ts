@@ -77,4 +77,22 @@ export const biomes = {
     loreSnippet: 'Sodium light on wet flagstones. Three flights up and a midden at the back.',
     lore: 'A Glasgow close is a shared entrance passage running through a tenement block — flagstone floor, tiled walls, the smell of damp stone and last night\'s carry-out. They run from street to backcourt, five storeys above and a midden below. The sodium streetlight turns everything amber after dark; the rain keeps the flagstones glossy all year. Neighbours share the stair, the washing green, and a working understanding of each other\'s hours. Cities built from necessity make communities built from necessity; Glasgow\'s closes are still standing two hundred years later, and the folk inside them are no\' going anywhere either.',
   },
+  fingals_cave: {
+    name: "Fingal's Cave",
+    entry: "Basalt underfoot, the sea singin in the columns. Watch the cracks.",
+    loreSnippet: "Hexagonal columns, Atlantic swell. Mendelssohn heard this place and wrote an overture.",
+    lore: "Staffa is a word from Old Norse — stave island, for the columns. Sixty-foot hexagonal basalt pillars, formed when a lava flow cooled evenly fifty-eight million years ago. Felix Mendelssohn visited in 1829, heard the swell moving through the cave and wrote the Hebrides Overture on the boat home. The Gaelic name is An Uamh Bhinn — the melodious cave. The acoustics are real: sound resonates in the basalt, and a shout returns altered, lower, richer. The floor is uneven and wet. The sea does not care how long you have come to admire it.",
+  },
+  callanish: {
+    name: 'Callanish Standing Stones',
+    entry: "The stones are watchin. They were here lang before the moor was named.",
+    loreSnippet: "Neolithic cruciform alignment on Lewis. The stones walk to the loch at midsummer.",
+    lore: "Callanish was erected around 2900 BC — older than Stonehenge, older than most things with a name. Thirteen tall stones in a cruciform alignment, a central monolith over fifteen feet, a small chamber cairn at the crossing. The avenue runs north to the moon's rising point over the hills of Uig. In the nineteenth century, four to five feet of peat were cut away to reveal them; they had been buried and forgotten. The stones are said to walk to the loch at midsummer. Local tradition also says they are Fir Bhreige — false men, giants turned to stone for refusing Christianity.",
+  },
+  trossachs: {
+    name: 'The Trossachs',
+    entry: "Into the trees. Rob Roy knows every deer trail here.",
+    loreSnippet: "Ancient oak and birch, bluebells in April. Outlaw country.",
+    lore: "The Trossachs — the bristly country, from the Gaelic — is ancient oak and birch woodland between Loch Katrine and Loch Achray. Rob Roy MacGregor lived and fought these hills; Walter Scott set a poem and a novel here and invented the Scottish tourist industry in the same stroke. Bluebells carpet the floor in April, osprey fish the loch, red squirrels run the canopy. The deer trails are older than any map of them. The forest keeps its own time, and it takes the haggis's side.",
+  },
 } as const;

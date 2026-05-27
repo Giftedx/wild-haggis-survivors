@@ -40,6 +40,9 @@ import {
   bakeHazardInkPool,
   bakeHazardSummitGust,
   bakeHazardBuckfastPool,
+  bakeHazardBasaltCrack,
+  bakeHazardStoneRing,
+  bakeHazardRootTrip,
 } from './biomeHazards';
 import {
   bakeAutumnLeafScatter,
@@ -84,6 +87,12 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeHazardSummitGust(scene);
   // Glasgow Close hazard.
   bakeHazardBuckfastPool(scene);
+  // Fingal's Cave hazard.
+  bakeHazardBasaltCrack(scene);
+  // Callanish Standing Stones hazard.
+  bakeHazardStoneRing(scene);
+  // Trossachs Forest hazard.
+  bakeHazardRootTrip(scene);
   bakeAutumnLeafScatter(scene);
   bakeSpringShoot(scene);
   bakeThawPuddle(scene);

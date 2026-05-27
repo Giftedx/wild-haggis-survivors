@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -23,7 +23,10 @@ export type BiomeModifierKind =
   | 'clydeRivets'
   | 'blackBogInk'
   | 'benNevisWind'
-  | 'glasgowClose';
+  | 'glasgowClose'
+  | 'fingalEcho'
+  | 'callanishAlignment'
+  | 'trossachsCanopy';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -400,9 +403,98 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // mist. Lowest ambient haar of any biome with an urban flavour.
     ambientHaarDensity: 0.05,
   },
+  // Fingal's Cave — basalt sea cave on the Isle of Staffa.
+  // Hexagonal columns, resonant acoustics, spray from the Atlantic swell.
+  // `fingalEcho` modifier: +12% knockback (the cave amplifies every impact),
+  // -8% speed (the basalt floor is uneven, the ground tilts and shifts).
+  fingals_cave: {
+    id: 'fingals_cave',
+    nameKey: 'biomes.fingals_cave.name',
+    tint: 0x1a2a38,
+    entryToastKey: 'biomes.fingals_cave.entry',
+    loreSnippetKey: 'biomes.fingals_cave.loreSnippet',
+    loreKey: 'biomes.fingals_cave.lore',
+    toastColor: '#6a8aaa',
+    spawnWeightMods: {
+      blue_man_of_minch: 2.0,
+      seelie_piper: 1.5,
+      unseelie_fiddler: 1.5,
+      eagle: 1.2,
+      ghost: 1.3,
+      tourist: 0.2,
+      chef: 0.1,
+      sheep: 0.1,
+      highland_cow: 0.1,
+    },
+    modifier: 'fingalEcho',
+    // Resonant sea cave — haunting mid-range; higher timbre than glen_coe (0.2)
+    // because the water-light and echo give it an ethereal brightness.
+    moodTimbre: 0.50,
+    // Atlantic spray and sea-cave mist — consistent dampness without full haar density.
+    ambientHaarDensity: 0.30,
+  },
+  // Callanish Standing Stones — Neolithic site on the Isle of Lewis.
+  // Twilight-purple ancient stones in cruciform alignment; the stones are said
+  // to walk to the loch at midsummer. `callanishAlignment` modifier: −30% drift
+  // (the ancient alignment steadies the haggis's path), +10% XP (the stones
+  // carry the weight of deep time).
+  callanish: {
+    id: 'callanish',
+    nameKey: 'biomes.callanish.name',
+    tint: 0x3a2a5a,
+    entryToastKey: 'biomes.callanish.entry',
+    loreSnippetKey: 'biomes.callanish.loreSnippet',
+    loreKey: 'biomes.callanish.lore',
+    toastColor: '#9a88cc',
+    spawnWeightMods: {
+      ghost: 1.8,
+      unseelie_fiddler: 1.5,
+      seelie_piper: 1.3,
+      haar_wraith: 1.2,
+      redcap: 1.1,
+      tourist: 0.1,
+      chef: 0.05,
+      sheep: 0.4,
+    },
+    modifier: 'callanishAlignment',
+    // Twilight Neolithic — neither dark nor bright; the stones hold a lunar quality.
+    // Midway between coastal (0.65) and haar (0.45).
+    moodTimbre: 0.55,
+    ambientHaarDensity: 0.20,
+  },
+  // Trossachs Forest — emerald-bluebell woodland, Rob Roy country.
+  // Ancient oak and birch, deer trails worn to mud, bluebells in April.
+  // `trossachsCanopy` modifier: +8% speed (the haggis knows the deer trails),
+  // +10% XP (the forest is rich — every kill earns more in good cover).
+  trossachs: {
+    id: 'trossachs',
+    nameKey: 'biomes.trossachs.name',
+    tint: 0x1a4018,
+    entryToastKey: 'biomes.trossachs.entry',
+    loreSnippetKey: 'biomes.trossachs.loreSnippet',
+    loreKey: 'biomes.trossachs.lore',
+    toastColor: '#6aa050',
+    spawnWeightMods: {
+      ghost: 1.5,
+      berserker: 1.4,
+      haggis_hunter: 1.3,
+      eagle: 1.2,
+      golden_eagle: 1.1,
+      sheep: 0.6,
+      highland_cow: 0.3,
+      tourist: 0.4,
+      chef: 0.3,
+    },
+    modifier: 'trossachsCanopy',
+    // Warm woodland — brighter than bog (0.15), lighter than coastal (0.65).
+    // The canopy lets light in, and Rob Roy's country has a defiant warmth.
+    moodTimbre: 0.45,
+    // Morning mist among the trees — light, not oppressive. Lower than haar.
+    ambientHaarDensity: 0.10,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

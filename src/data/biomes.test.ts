@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all thirteen biomes with required fields (Glasgow Close added)', () => {
-    expect(BIOME_IDS.length).toBe(13);
+  it('defines all sixteen biomes with required fields (B7 drop added fingals_cave, callanish, trossachs)', () => {
+    expect(BIOME_IDS.length).toBe(16);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);

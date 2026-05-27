@@ -1599,6 +1599,30 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.glasgow_close.c',
         'ui.banter.biome_change.glasgow_close.d',
       ],
+      // Fingal's Cave — basalt sea cave, acoustic resonance, Atlantic spray.
+      // Hearth register: awed, musical, wonder-touched.
+      fingals_cave: [
+        'ui.banter.biome_change.fingals_cave.a',
+        'ui.banter.biome_change.fingals_cave.b',
+        'ui.banter.biome_change.fingals_cave.c',
+        'ui.banter.biome_change.fingals_cave.d',
+      ],
+      // Callanish Standing Stones — twilight Neolithic alignment, ancient quiet.
+      // Edge register: spare, reverential, unhurried.
+      callanish: [
+        'ui.banter.biome_change.callanish.a',
+        'ui.banter.biome_change.callanish.b',
+        'ui.banter.biome_change.callanish.c',
+        'ui.banter.biome_change.callanish.d',
+      ],
+      // Trossachs Forest — emerald oak and birch, Rob Roy country.
+      // Hearth register: warm, alert, pleased to be here.
+      trossachs: [
+        'ui.banter.biome_change.trossachs.a',
+        'ui.banter.biome_change.trossachs.b',
+        'ui.banter.biome_change.trossachs.c',
+        'ui.banter.biome_change.trossachs.d',
+      ],
     },
   },
   {

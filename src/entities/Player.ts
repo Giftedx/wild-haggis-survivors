@@ -1624,7 +1624,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'clydeRivets'
       | 'blackBogInk'
       | 'benNevisWind'
-      | 'glasgowClose',
+      | 'glasgowClose'
+      | 'fingalEcho'
+      | 'callanishAlignment'
+      | 'trossachsCanopy',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1714,6 +1717,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // clydeRivets (-8%/+15%) — the close is tighter and more alive.
         this.biomeSpeedMul = 0.88;
         this.biomeXpMul = 1.18;
+        break;
+      case 'fingalEcho':
+        // Basalt sea cave — uneven hexagonal floor (-8% speed). The acoustic
+        // resonance amplifies every impact (+12% knockback). Staffa's columns
+        // carry sound; a blow that would glance on the moor rings here.
+        this.biomeSpeedMul = 0.92;
+        this.biomeKnockbackBonus = 1.12;
+        break;
+      case 'callanishAlignment':
+        // The standing stones steady the drift — their celestial alignment
+        // straightens the haggis's path (-30% drift). Ancient power rewards
+        // engagement: +10% XP.
+        this.biomeDriftMul = 0.70;
+        this.biomeXpMul = 1.10;
+        break;
+      case 'trossachsCanopy':
+        // Rob Roy country — the haggis knows the deer trails (+8% speed).
+        // Dense woodland kills pay more (+10% XP).
+        this.biomeSpeedMul = 1.08;
+        this.biomeXpMul = 1.10;
         break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we

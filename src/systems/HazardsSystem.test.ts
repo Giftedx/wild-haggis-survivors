@@ -32,9 +32,9 @@ describe('pickHazardForBiome (biome → hazard mapping)', () => {
 });
 
 describe('HAZARDS catalog (config integrity)', () => {
-  it('exposes exactly thirteen hazards (Glasgow Close added buckfast_pool)', () => {
-    expect(HAZARD_KEYS).toHaveLength(13);
-    expect(Object.keys(HAZARDS)).toHaveLength(13);
+  it('exposes exactly sixteen hazards (B7 drop added basalt_crack, stone_ring, root_trip)', () => {
+    expect(HAZARD_KEYS).toHaveLength(16);
+    expect(Object.keys(HAZARDS)).toHaveLength(16);
   });
 
   it('each catalog entry self-references its own key', () => {
@@ -45,8 +45,8 @@ describe('HAZARDS catalog (config integrity)', () => {
 
   it('each hazard maps to a distinct biome (1:1 coverage)', () => {
     const biomes = HAZARD_KEYS.map((k) => HAZARDS[k].biome);
-    expect(new Set(biomes).size).toBe(13);
-    expect(biomes.sort()).toEqual(['ben_nevis', 'black_bog', 'bog', 'cairngorm', 'clyde_shipyard', 'coastal', 'frost', 'glasgow_close', 'glen_coe', 'haar', 'heather', 'loch', 'pine']);
+    expect(new Set(biomes).size).toBe(16);
+    expect(biomes.sort()).toEqual(['ben_nevis', 'black_bog', 'bog', 'cairngorm', 'callanish', 'clyde_shipyard', 'coastal', 'fingals_cave', 'frost', 'glasgow_close', 'glen_coe', 'haar', 'heather', 'loch', 'pine', 'trossachs']);
   });
 
   it('texture keys follow the validator-locked hazard_* prefix', () => {
@@ -124,6 +124,9 @@ describe('HAZARDS catalog (config integrity)', () => {
       'black_bog',
       'ben_nevis',
       'glasgow_close',
+      'fingals_cave',
+      'callanish',
+      'trossachs',
     ]);
     for (const key of HAZARD_KEYS) {
       expect(valid.has(HAZARDS[key].biome)).toBe(true);
@@ -131,7 +134,7 @@ describe('HAZARDS catalog (config integrity)', () => {
   });
 
   it('round-trips: every biome resolves to a hazard whose biome matches', () => {
-    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close'];
+    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs'];
     for (const b of biomes) {
       const k = pickHazardForBiome(b) as HazardKey;
       expect(k).not.toBeNull();

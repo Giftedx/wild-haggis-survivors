@@ -2913,6 +2913,24 @@ export const ui = {
         c: 'Three flights up, midden at the back. Welcome tae the close.',
         d: 'Sodium licht, wet cobbles, a ned on every corner. Home.',
       },
+      fingals_cave: {
+        a: 'Basalt columns. Every sound comes back different here.',
+        b: "Mendelssohn heard this place and wrote an overture. The haggis heard it and kept running.",
+        c: "The sea's inside the rock. Atlantic all the way through.",
+        d: 'Hexagonal floor. None of the holes are where ye expect them.',
+      },
+      callanish: {
+        a: 'The stones are aulder than the idea of Scotland.',
+        b: "They've been standing here three thousand years. The drift feels lighter.",
+        c: 'Neolithic. The alignment runs north. Something runs with it.',
+        d: 'False men, the old name says. Stood here refusing Christianity. Fair enough.',
+      },
+      trossachs: {
+        a: 'Rob Roy kens every inch of this. The haggis is learning fast.',
+        b: 'Deer trails. The forest made them; the haggis is borrowing them.',
+        c: 'Oak and birch, bluebells underfoot in April. Rich country.',
+        d: 'The forest takes your side here. Not sure why, but grateful.',
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',

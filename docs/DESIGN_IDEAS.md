@@ -156,14 +156,14 @@ Candidates:
 - **Edinburgh Old Town** — smoke-grey, chimney-smoke visibility debuff.
 - ~~**The Black Bog (post-bell)**~~ — ✅ shipped 2026-05-24 (`black_bog`, tint 0x100808, `blackBogInk`: -15% speed + ×2 drift. Hazard: `ink_pool` (3 dmg, 22px, 14s, 9s interval). Banter + i18n wired.)
 - **Iona Peaceful Isle** — reverent palette (soft gold, sea-blue); *no combat biome* — puzzle/exploration only. A rare reward route. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §3.1.*)
-- **Callanish Standing Stones** — Neolithic site, twilight purple palette. Stones fire aligned beams (mechanical). The Pech (dwarves) emerge if circled. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
+- ~~**Callanish Standing Stones**~~ — ✅ shipped 2026-05-27 (`callanish`, tint 0x3a2a5a, `callanishAlignment`: -30% drift / +10% XP, hazard: `stone_ring`). Pech-circling mechanic deferred. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 - **Orkney Neolithic** — Skara Brae / Maeshowe / Ring of Brodgar inspired. Wind-swept green, stone, ancient-cairn hazards. (*Ref: §2.7.*)
 - ~~**Clyde Shipyard**~~ — ✅ shipped 2026-05-24 (`clyde_shipyard`, tint 0x5a4a38, `clydeRivets`: +15% XP / -8% speed. Hazard: `molten_slag` (14 dmg, 13px, 5s, 10s interval). Wildlife: salmon 0.6, grey_seal 0.4, rook 0.5, pipistrelle_bat 0.4, otter 0.3. Story props: scaffold_post, close_door, newsprint, bus_stop, waymarker_post. Banter + weeTale wired. Thematically pairs with Steam Engine.)
 - **St Kilda (evacuated)** — lonely-green cliff biome, seabird-cliffs of staggering scale. Cultural-ghost village (1930 evacuation). (*Handle respectfully.*) (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §2.5.*)
-- **Fingal's Cave (Staffa)** — basalt hexagonal columns, sea-echo audio, acoustic-damage zones. (*Ref: §3.1.*)
+- ~~**Fingal's Cave (Staffa)**~~ — ✅ shipped 2026-05-27 (`fingals_cave`, tint 0x1a2a38, `fingalEcho`: +12% knockback / -8% speed, hazard: `basalt_crack`). (*Ref: §3.1.*)
 - **Corryvreckan Whirlpool Coast** — sea-green foam-white; whirlpool pull-tiles; Cailleach's washing-pot. (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 - **Jacobite Moor (Culloden)** — sombre grey-purple; musket-volley rains; Jacobite + Redcoat spectres. *(Handle respectfully.)* (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
-- **Trossachs Forest** — emerald-bluebell woodland; fog-reveal moments; Rob Roy theme. (*Ref: §3.1 + §6.10.*)
+- ~~**Trossachs Forest**~~ — ✅ shipped 2026-05-27 (`trossachs`, tint 0x1a4018, `trossachsCanopy`: +8% speed / +10% XP, hazard: `root_trip`). (*Ref: §3.1 + §6.10.*)
 - **Beltane Fire Festival (Calton Hill)** — seasonal event biome. Vermillion, bonfire-gold, fire-pillar hazards, May Queen + Green Man. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.1.*)
 - **Shetland Simmer Dim** — midsummer twilight biome. Perpetual dusk; Up Helly Aa hazards. (*Ref: §1.6.*)
 - **Arran (Scotland in miniature)** — biome that shifts mid-run, containing all other biomes in fragments. (*Ref: §3.3.*)
@@ -186,16 +186,16 @@ Candidate weapons (pick 4 for a content drop):
 - ~~**Grannie's Curse**~~ — ✅ shipped 2026-05-12 (`grannies_curse` → `banshee_wail` evolution, passive `widows_shawl`, B6 Highland Horrors). Homing hex; multiplies on kill via `fireBansheeWail`. `widows_shawl` grants +12 HP.
 - ~~**Clootie Rag**~~ — ✅ shipped 2026-05-24 (`clootie_rag`, `aura_pulse`, 72px, 350ms CD, uncommon card). Wounding aura — fast-tick damage, no slow, no freeze. Completes the bleed synergy family (with `dirk_dance` + `sgian_dubh`). Paired passive `rowan_thread` (+1.5 HP regen/sec).
 - ~~**Coastal Storm**~~ — ✅ shipped 2026-05-24 (`coastal_storm`, `aoe_pulse`, 680px, 22s CD, rare card, no evolution). Atlantic mega-AoE with three-ring expanding storm visual; massive knockback, no freeze.
-- **Clàrsach (Celtic Harp)** — melodic projectiles fire on strum intervals; synergises with music-as-mechanic. Pre-bagpipe national instrument. Paired passive: Wire Strings. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
+- ~~**Clàrsach (Celtic Harp)**~~ — ✅ shipped 2026-05-27 (`clarsach` → `clarsach_eternal` evolution, passive `wire_strings`, `arc_sweep` with amber-gold arc VFX). Three simultaneous arcs on evolution; each hit briefly stills its target. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
 - ~~**Waulking Mallet**~~ — ✅ shipped 2026-05-12 (`waulking_mallet` → `pibroch_hammer` evolution, passive `tuning_fork`, Wild Living World Phase 2 `514f5e9`). Aura-pulse rhythm weapon (2000ms cooldown, 96px radius); Pibroch Hammer evolution lands a crescendo on every fourth beat via `applyPibrochHammerRhythm` in `src/systems/music/waulkingRhythm.ts`. Syncs with the Waulking Rhythm music bed.
-- **Hagstone Sling** — hurls a stone with a hole; enemies hit *through the hole* take bonus damage. Geometry-reward weapon. Paired passive: Rowan Amulet.
+- ~~**Hagstone Sling**~~ — ✅ shipped 2026-05-27 (`hagstone_sling` → `rowan_hail` evolution, passive `rowan_amulet`, `piercing` behaviour). Second-hit +40% bonus through the hole. Rowan Hail fans three stones in a 30° spread, each carrying the pierce bonus.
 - ~~**Wallace Sword**~~ — ✅ shipped 2026-05-12 (`wallace_sword` → `freedom_blade` evolution, passive `stirling_medal`, B6 Highland Horrors). Giant two-hander slow sweep via `fireFreedomBlade`. `stirling_medal` grants +10% crit. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.3.*)
 - **Fingal's Horn** — summons 3 Fianna-warrior allies for 10s. Relic-tier rare. (*Ref: `SCOTTISH_RESEARCH.md` §1.6.*)
 - ~~**Steam Engine (James Watt)**~~ — ✅ shipped 2026-05-24 (`steam_engine`, `aoe_pulse`, 165px, 7s CD, 18 dmg, heavy knockback, no freeze). Two grey smoke rings (0x6a6a6a). Paired passive `copper_rivet` (+10% attack speed). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §20.2.*)
 - ~~**Cullen Skink Ladle**~~ — ✅ shipped 2026-05-24 (`cullen_skink_ladle`, `lob_puddle`, 54px, 3.5s CD, 0 dmg pure slow). Slows enemies 45% for 2.8 s. `spawnSkinkPuddle` sister to `spawnBurnPuddle`. Paired passive `smoked_haddock` (+12 max HP).
-- **Flying Porridge Pot** — thrown pot explodes into oatmeal splash. Comedy weapon.
-- **Deep-Fried Mars Bar** — absurdist heavy projectile; comedy proc (rare but satisfying). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §12.1.*)
-- **Port-à-Beul (Mouth Music) Chant** — area-slow aura that follows player; synced to music system. Gaelic vocal-percussion tradition. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
+- ~~**Flying Porridge Pot**~~ — ✅ shipped 2026-05-27 (`porridge_pot` → `brose_cannon` evolution, passive `pinhead_oats`, `lob_puddle` behaviour — slows + damages). Comedy weapon.
+- ~~**Deep-Fried Mars Bar**~~ — ✅ shipped 2026-05-27 (`deep_fried_mars_bar`, `piercing` behaviour — on-kill grease puddle proc, passive `batter_mix` +10% damage). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §12.1.*)
+- ~~**Port-à-Beul (Mouth Music) Chant**~~ — ✅ shipped 2026-05-27 (`port_a_beul` → `canntaireachd` evolution, passive `highland_trump`, `aura_pulse` cooldown-reducing chant aura). (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §17.2.*)
 - ~~**Bodhrán (Frame Drum)**~~ — ✅ shipped (`bodhran` aoe_pulse, evolves to `beltane_drum` via `drum_hoop` passive, warm amber VFX, no freeze, 1200ms cooldown, 76px radius).
 - ~~**Practice Chanter**~~ — ✅ shipped (`practice_chanter`). Fast weak projectile (4 dmg, 900ms cooldown, 320px range, count +1 at lv3/5). Pibroch variant's starter weapon via `startWithWeapons: ['practice_chanter']` in `VariantDef`; all other variants keep Thistle Shot. No evolution (the pibroch's upgrade axis is the Waulking Mallet line).
 
