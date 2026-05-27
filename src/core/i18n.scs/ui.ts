@@ -103,6 +103,46 @@ export const ui = {
         a: 'Tha Auld Toun ghaist. A hunner an fifty year o ghost tours — aboot time someone cancelled them.',
         b: 'A lamp\'s jist a lamp when tha gas runs oot. Ye kent that, an noo he does tae.',
       },
+      nuckelavee: {
+        a: 'Tha Nuckelavee. Skinless, so it is. Ma gran said ye could smell it afore ye saw it. Ye must hae held yer breath.',
+        b: 'Nae skin, nae mercy. Tha Orkney folk crossed burnin water tae get awa fae it. Ye jist got through it.',
+      },
+      earl_beardie: {
+        a: 'Earl Beardie played cairds wi tha deil on a Sunday. Lost his soul, so he did. Ye got tha last haund.',
+        b: 'Yon man wagered his eternal soul on a game o cairds. An then a haggis came alang an trumped tha lot.',
+      },
+      black_douglas: {
+        a: 'They used his name tae fricht tha bairns intae sleepin fer generations. An noo here we are wi a wee trophy.',
+        b: 'Tha Black Douglas. Tha nursery rhyme said he wouldnae get ye. Turns oot it wis right, so it wis.',
+      },
+      cailleach_boss: {
+        a: 'Tha Cailleach hersel. She made tha mountains, hen. Every loch, every frost. An ye bested her.',
+        b: "Winter's mither. Tha hale howlin mess o November — an she's on tha shelf noo. That's somethin.",
+      },
+      storm_cailleach: {
+        a: 'Tha Cailleach in her storm-cloak. Yon wind ye heard last November? That wis her angry. She\'s quieter noo.',
+        b: 'She washed her great plaid in tha Corryvreckan till tha sea turned white. An ye stopped tha laundry.',
+      },
+      twin_stones: {
+        a: 'An Càraid — tha Twin Stanes o Callanish. Five thoosand year auld, an they still found time tae bother ye.',
+        b: 'Tha standin stanes walk tae tha loch at midsummer, so tha auld stories say. They\'re no gaun onymair.',
+      },
+      wicker_haggis: {
+        a: "Bealltainn's tribute. There's a daurk tradition ahint yon, but ye turned it intae somethin tae celebrate.",
+        b: 'A wicker haggis. Tha moor had a sense o humour aboot yon sacrifice. So did ye, apparently.',
+      },
+      nessie: {
+        a: 'Nessie, reconsidered. Tha loch keeps its secrets — but no this wan.',
+        b: 'Every tourist wi a camera on yon shore has a wee theory. Noo ye hae a wee trophy.',
+      },
+      stoor_worm: {
+        a: "Tha Stoor Worm. Auldest thing in tha sea, tha auld tales say. An tha sea's a wee bit quieter fer it.",
+        b: 'When yon worm dee\'d, its teeth fell intae tha sea an became tha islands. Imagine tha dental bill.',
+      },
+      ninth_legion: {
+        a: 'Roman sodjers. Four hunner year o marchin, an no wan o them thocht tae ask directions.',
+        b: 'Legio IX Hispana — finally fund. By a haggis. Tha Romans had it comin, mind.',
+      },
     },
     title: 'GRAN\'S CROFT',
     subtitle: 'Hearth, kettle, an tha kindness o tha stove.',

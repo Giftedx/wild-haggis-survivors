@@ -119,6 +119,46 @@ export const ui = {
         a: 'The Old Town ghaist. A hundred and fifty year of ghost tours — about time someone cancelled them.',
         b: 'A lamp\'s just a lamp when the gas runs oot. Ye kent that, and noo he does tae.',
       },
+      nuckelavee: {
+        a: 'The Nuckelavee. Skinless, so it is. Ma gran said ye could smell it before ye saw it. Ye must have held yer breath.',
+        b: 'Nae skin, nae mercy. The Orkney folk crossed burnin water tae get away from it. Ye just got through it.',
+      },
+      earl_beardie: {
+        a: "Earl Beardie played cairds wi' the devil on a Sunday. Lost his soul, so he did. Ye got the last hand.",
+        b: "That man wagered his eternal soul on a game o' cards. And then a haggis came along and trumped the lot.",
+      },
+      black_douglas: {
+        a: "They used his name tae fright the bairns intae sleepin for generations. And noo here we are wi' a wee trophy.",
+        b: "The Black Douglas. The nursery rhyme said he wouldnae get ye. Turns oot it wis right, so it wis.",
+      },
+      cailleach_boss: {
+        a: 'The Cailleach hersel. She made the mountains, hen. Every loch, every frost. And ye bested her.',
+        b: "Winter's mother. The whole howlin mess o' November — and she's on the shelf noo. That's somethin.",
+      },
+      storm_cailleach: {
+        a: 'The Cailleach in her storm-cloak. That wind ye heard last November? That wis her angry. She\'s quieter noo.',
+        b: 'She washed her great plaid in the Corryvreckan till the sea turned white. And ye stopped the laundry.',
+      },
+      twin_stones: {
+        a: "An Càraid — the Twin Stanes o' Callanish. Five thousand year auld, and they still found time tae bother ye.",
+        b: "The standin stanes walk tae the loch at midsummer, so the old stories say. They're no' goin anywhere noo.",
+      },
+      wicker_haggis: {
+        a: "Bealltainn's tribute. There's a dark tradition behind yon, but ye turned it intae somethin tae celebrate.",
+        b: "A wicker haggis. The moor had a sense o' humour aboot that sacrifice. So did ye, apparently.",
+      },
+      nessie: {
+        a: 'Nessie, reconsidered. The loch keeps its secrets — but no\' this wan.',
+        b: "Every tourist wi' a camera on that shore has a wee theory. Noo ye have a wee trophy.",
+      },
+      stoor_worm: {
+        a: "The Stoor Worm. Eldest thing in the sea, the old tales say. And the sea's a wee bit quieter for it.",
+        b: "When yon worm died, its teeth fell intae the sea and became the islands. Imagine the dental bill.",
+      },
+      ninth_legion: {
+        a: "Roman soldiers. Four hundred year o' marchin, and no' wan o' them thought tae ask directions.",
+        b: 'Legio IX Hispana — finally found. By a haggis. The Romans had it comin, mind.',
+      },
     },
     /** Scene title — Hearth voice, kept short so the banner reads at a glance. */
     title: 'GRAN\'S CROFT',
