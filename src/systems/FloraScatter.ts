@@ -267,6 +267,24 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_brahan_eye_stone',
     'deco_fairy_ring',
   ],
+  // B10 — Hebridean Shore: machair shell, selkie skin, fishing net,
+  // salmon leap, bridge plank (causeways and tidal crossings).
+  hebridean_shore: [
+    'deco_machair_shell',
+    'deco_selkie_skin',
+    'deco_fishing_net',
+    'deco_salmon_leap',
+    'deco_bridge_plank',
+  ],
+  // B11 — Calton Hill (Edinburgh): Burns scrap, Pictish stone, waymarker,
+  // rowan charm, milestone (Royal Mile meets the hill).
+  calton_hill: [
+    'deco_burns_scrap',
+    'deco_pictish_stone',
+    'deco_waymarker_post',
+    'deco_rowan_charm',
+    'deco_milestone',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -530,6 +548,25 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_mushrooms', 0.78],
     ['deco_heather', 0.90],
     ['deco_rock_3', 1.0],
+  ],
+  // B10 — Hebridean Shore: machair shell, reeds at tidal margin,
+  // wind grass, rock, bog cotton, grouse feather.
+  hebridean_shore: [
+    ['deco_machair_shell', 0.22],
+    ['deco_reeds', 0.38],
+    ['deco_wind_grass', 0.54],
+    ['deco_rock', 0.70],
+    ['deco_bog_cotton', 0.84],
+    ['deco_grouse_feather', 1.0],
+  ],
+  // B11 — Calton Hill: urban rock dominant, thistle, heather on
+  // the slopes, wind grass at the exposed crown, rock_2 base fill.
+  calton_hill: [
+    ['deco_rock', 0.25],
+    ['deco_thistle', 0.50],
+    ['deco_heather', 0.72],
+    ['deco_wind_grass', 0.88],
+    ['deco_rock_2', 1.0],
   ],
 };
 

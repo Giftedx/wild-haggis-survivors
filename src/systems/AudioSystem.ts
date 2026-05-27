@@ -279,6 +279,9 @@ export class AudioSystem {
       corry_maelstrom: { f0: 300, f1: 60, type: 'sine', dur: 0.35, vol: 0.09 },    // deep whirlpool surge
       shetland_squall: { f0: 1000, f1: 200, type: 'sawtooth', dur: 0.16, vol: 0.09 }, // cliff-top wind crack
       fairy_mist:      { f0: 1200, f1: 800, type: 'triangle', dur: 0.30, vol: 0.06 }, // ethereal fey chime
+      // B10 Hebridean Shore — kelp wash; B11 Calton Hill — torch-fire crack.
+      kelp_strand: { f0: 350, f1: 180, type: 'sine', dur: 0.22, vol: 0.07 },        // tidal kelp wash
+      fire_pillar: { f0: 1600, f1: 400, type: 'sawtooth', dur: 0.14, vol: 0.10 },   // torch-fire crack
     };
     const p = presets[hazardKey];
     osc.type = p.type;

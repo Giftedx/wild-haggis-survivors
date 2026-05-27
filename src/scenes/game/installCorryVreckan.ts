@@ -96,7 +96,7 @@ export function installCorryVreckan(
 
   // Pre-compute spawn position using seeded runRng (deterministic replay).
   const rng = deps.getRunRng();
-  const spawnAngle = rng.float() * Math.PI * 2;
+  const spawnAngle = rng.float(0, Math.PI * 2);
   const spawnDist  = 240 + rng.int(0, 100);
   // Actual world coords resolved at trigger time from player position —
   // stored as offsets; snapped into absolute coords on the idle→warning edge.

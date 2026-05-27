@@ -96,6 +96,10 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   shetland_voe: 0x8898b0,
   // B9 — Skye Fairy Pools: mineral turquoise, the pool's glow from below.
   skye_fairy_pool: 0x40c8c0,
+  // B10 — Hebridean Shore: open Atlantic teal-green, kelp-laced surf.
+  hebridean_shore: 0x2a8878,
+  // B11 — Calton Hill: Beltane ember-orange, torchlight on Edinburgh's crown.
+  calton_hill: 0xc84820,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [
