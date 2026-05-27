@@ -1523,6 +1523,119 @@ export const ui = {
       caption: 'A wee flask left oan the moor — someone else\'s tomorrow is yer today.',
       toast: 'Wee nip o\' whisky — +{gold}g warmth for the hooves.',
     },
+    // B5 biome moments.
+    tide_gift: {
+      caption: 'Somethin\' turns up from the tide-line — the sea\'s in a givin\' mood.',
+      toast: 'Tide-gift — +{gold}g from the wrack line.',
+      caption_home: 'The seawrack gives up what it kept — the shore minds a longer ledger than the taxman.',
+      toast_home: 'Coastal find — +{gold}g from the high watermark.',
+    },
+    haar_rest: {
+      caption: 'The haar thins just long enough tae see what ye\'ve learned this run.',
+      toast: 'Haar-rest — +{xp} XP, quiet as fog.',
+      caption_home: 'The haar pulls back a moment — what ye\'ve done in the grey becomes clear.',
+      toast_home: 'Haar-edge — +{xp} XP from the still heart of it.',
+    },
+    frost_mercy: {
+      caption: 'The frost-moor has its ain kindness — nip in the air, warmth in the blood.',
+      toast: 'Frost mercy — +{hp} HP, like a dram.',
+      caption_home: 'The rime world cracks open a moment; something warm slips through.',
+      toast_home: 'Frost-gift — +{hp} HP, from the cold to ye.',
+    },
+    // B6 biome moments.
+    quartzite_glint: {
+      caption: 'The quartzite catches the light at this angle. Turns out that\'s worth something.',
+      toast: 'Mountain glint — +{gold}g from the plateau.',
+      caption_home: 'Cairngorm stone opens its face tae the sky — and tae ye.',
+      toast_home: 'Plateau find — +{gold}g, cold and clean.',
+    },
+    glen_echo: {
+      caption: 'The glen carries old sound — ye walk through an echo of something older than yourself.',
+      toast: 'Glen-echo — +{xp} XP from the listening walls.',
+      caption_home: 'The red hills hold old fighting in their bones; they pass it on tae ye.',
+      toast_home: 'Glen memory — +{xp} XP from the red walls.',
+    },
+    rivet_pull: {
+      caption: 'A hot rivet snapped from its hole — the metal still pulls at everything near it.',
+      toast: 'Rivet-pull — pickups caught by the forge current.',
+      caption_home: 'The dry-dock iron draws everything tae centre; so do ye, for a bit.',
+      toast_home: 'Clyde pull — the deck-iron bends things yer way.',
+    },
+    ink_give: {
+      caption: 'The black water sinks everything — but first it gives.',
+      toast: 'Bog-give — +{hp} HP from the dark.',
+      caption_home: 'The ink-bog opens — old peat warmth rises tae meet the haggis.',
+      toast_home: 'Home bog — +{hp} HP, black water, warm blood.',
+    },
+    summit_call: {
+      caption: 'The summit wind speaks at this altitude — nae words, just knowledge.',
+      toast: 'Ben-call — +{xp} XP from the top of Scotland.',
+      caption_home: 'The Ben breathes out; the haggis breathes in.',
+      toast_home: 'Summit gift — +{xp} XP, delivered by the Atlantic.',
+    },
+    close_find: {
+      caption: 'Something fell in the close in the night — the wynd gives back slow.',
+      toast: 'Close-find — +{gold}g from the wet flags.',
+      caption_home: 'Sodium light, wet cobbles, and a coin turned up against the wall.',
+      toast_home: 'Glesga find — +{gold}g, no questions asked.',
+    },
+    // B7 biome moments.
+    basalt_note: {
+      caption: 'Every sound in the cave multiplies — the haggis is louder here than it knows.',
+      toast: 'Basalt-note — +{xp} XP, returned by the columns.',
+      caption_home: 'The hexagonal hall plays the haggis\' footsteps back as music. Mendelssohn optional.',
+      toast_home: 'Cave resonance — +{xp} XP from the Atlantic columns.',
+    },
+    stone_patience: {
+      caption: 'The stones have patience — some of it rubs off.',
+      toast: 'Stone patience — +{hp} HP, passed on.',
+      caption_home: 'Ye stand where they stood at midwinter for three thousand years. The stones allow it.',
+      toast_home: 'Callanish gift — +{hp} HP, older than the name.',
+    },
+    forest_cache: {
+      caption: 'A forager\'s cache set by an earlier visitor — finder\'s gain.',
+      toast: 'Forest cache — +{gold}g from the bracken.',
+      caption_home: 'Rob Roy\'s country minds its ain — but the larder\'s open today.',
+      toast_home: 'Trossachs find — +{gold}g, left by the ferns.',
+    },
+    // B8 biome moments.
+    wynd_coin: {
+      caption: 'The wynd gives something up — what falls in the Old Town eventually surfaces.',
+      toast: 'Wynd-find — +{gold}g from the flagstones.',
+      caption_home: 'The Mile holds its coins close; today it pays one out.',
+      toast_home: 'Auld Town give — +{gold}g, wet-flag-fresh.',
+    },
+    resin_warmth: {
+      caption: 'Old resin cracks open in the warmth — something medicinal, something Caledonian.',
+      toast: 'Resin-gift — +{hp} HP from the ancient wood.',
+      caption_home: 'The pines breathe out terpene and four centuries — the haggis breathes in.',
+      toast_home: 'Wood-gift — +{hp} HP from the auld trees.',
+    },
+    neolithic_memory: {
+      caption: 'Ye step where the Ring o\' Brodgar builders stepped. Something transfers.',
+      toast: 'Neolithic memory — +{xp} XP from the grey stones.',
+      caption_home: 'The stone circle doesn\'t give — but the moor\'s memory of it does.',
+      toast_home: 'Orkney gift — +{xp} XP from the grey island wind.',
+    },
+    // B9 biome moments.
+    maelstrom_pull: {
+      caption: 'The whirlpool doesn\'t just pull water — the whole coast leans inward.',
+      toast: 'Maelstrom-pull — pickups catch the whirlpool current.',
+      caption_home: 'The Cailleach\'s washday centrifuge drags the shore in — and yer reach too.',
+      toast_home: 'Corry-pull — the whirlpool bends things yer way.',
+    },
+    voe_drift: {
+      caption: 'The voe brings things in on the simmer dim tide — finder\'s gain.',
+      toast: 'Voe-drift — +{gold}g from the inlet.',
+      caption_home: 'Da simmer dim holds the light and the finds — the voe gives one back.',
+      toast_home: 'Hame voe — +{gold}g from the Norn tide.',
+    },
+    pool_light: {
+      caption: 'The pool catches the Cuillin light and turns it into something ye can use.',
+      toast: 'Pool-light — +{xp} XP from the clear water.',
+      caption_home: 'The fairy pool opens its mineral eye — what ye see comes back as knowledge.',
+      toast_home: 'Skye pool — +{xp} XP, mineral and blue.',
+    },
     boon_at_ceiling: 'XP bar\'s chokker — have +{gold}g instead, ya legend.',
   },
   /** Run-start identity handoff (variant + intent); shown as an early toast in GameScene. */

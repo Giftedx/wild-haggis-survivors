@@ -96,27 +96,45 @@ describe('in-run HUD / game / juice i18n smoke', () => {
 
   it('resolves ui.moor_moment.* (timed hearth beats)', () => {
     assertResolves('ui.moor_moment.boon_at_ceiling', { gold: 12 });
-    const ids = [
-      'peat_glint', 'loch_breath', 'heather_rest', 'pine_pull',
-      'crow_bargain', 'distant_tune', 'warm_stone', 'wind_shift',
-      'amber_glow',
+    const goldIds = [
+      'peat_glint', 'crow_bargain', 'amber_glow',
+      // B5–B9 gold moments
+      'tide_gift', 'quartzite_glint', 'close_find', 'forest_cache', 'wynd_coin', 'voe_drift',
     ] as const;
-    for (const id of ids) {
+    const xpIds = [
+      'loch_breath', 'distant_tune',
+      // B5–B9 XP moments
+      'haar_rest', 'glen_echo', 'summit_call', 'basalt_note', 'neolithic_memory', 'pool_light',
+    ] as const;
+    const healIds = [
+      'heather_rest', 'warm_stone',
+      // B5–B9 heal moments
+      'frost_mercy', 'ink_give', 'stone_patience', 'resin_warmth',
+    ] as const;
+    const magnetIds = ['pine_pull', 'wind_shift', 'rivet_pull', 'maelstrom_pull'] as const;
+    for (const id of goldIds) {
       assertResolves(`ui.moor_moment.${id}.caption`);
       assertResolves(`ui.moor_moment.${id}.caption_home`);
-      if (id === 'pine_pull' || id === 'wind_shift') {
-        assertResolves(`ui.moor_moment.${id}.toast`);
-        assertResolves(`ui.moor_moment.${id}.toast_home`);
-      } else if (id === 'loch_breath' || id === 'distant_tune') {
-        assertResolves(`ui.moor_moment.${id}.toast`, { xp: 10 });
-        assertResolves(`ui.moor_moment.${id}.toast_home`, { xp: 10 });
-      } else if (id === 'heather_rest' || id === 'warm_stone') {
-        assertResolves(`ui.moor_moment.${id}.toast`, { hp: 5 });
-        assertResolves(`ui.moor_moment.${id}.toast_home`, { hp: 5 });
-      } else {
-        assertResolves(`ui.moor_moment.${id}.toast`, { gold: 8 });
-        assertResolves(`ui.moor_moment.${id}.toast_home`, { gold: 8 });
-      }
+      assertResolves(`ui.moor_moment.${id}.toast`, { gold: 8 });
+      assertResolves(`ui.moor_moment.${id}.toast_home`, { gold: 8 });
+    }
+    for (const id of xpIds) {
+      assertResolves(`ui.moor_moment.${id}.caption`);
+      assertResolves(`ui.moor_moment.${id}.caption_home`);
+      assertResolves(`ui.moor_moment.${id}.toast`, { xp: 10 });
+      assertResolves(`ui.moor_moment.${id}.toast_home`, { xp: 10 });
+    }
+    for (const id of healIds) {
+      assertResolves(`ui.moor_moment.${id}.caption`);
+      assertResolves(`ui.moor_moment.${id}.caption_home`);
+      assertResolves(`ui.moor_moment.${id}.toast`, { hp: 5 });
+      assertResolves(`ui.moor_moment.${id}.toast_home`, { hp: 5 });
+    }
+    for (const id of magnetIds) {
+      assertResolves(`ui.moor_moment.${id}.caption`);
+      assertResolves(`ui.moor_moment.${id}.caption_home`);
+      assertResolves(`ui.moor_moment.${id}.toast`);
+      assertResolves(`ui.moor_moment.${id}.toast_home`);
     }
   });
 
