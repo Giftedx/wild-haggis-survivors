@@ -63,7 +63,7 @@ If `git status` lists a huge set of files with **no line changes**—often `old 
 
 ### System Architecture (all instantiated by GameScene)
 - **SpawnSystem**: Enemy wave spawning based on game time; manages enemy group and boss spawns.
-- **WeaponSystem**: Manages all 15 weapon families with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 14 of the 15 weapons; bagpipes is utility-only with no evolution). `BURNS_EVOLUTION_THRESHOLD` is derived from `EVOLUTION_RECIPES.length` in `src/core/BalanceConfig.ts` and re-exported from `src/utils/save/schema.ts` for back-compat.
+- **WeaponSystem**: Manages 29 base weapon families (36 `WeaponKey` entries total; 7 evolved forms also have full `WeaponDef` definitions). 8 `WeaponBehavior` variants: projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse, lob_puddle. Shared projectile pool (max 200). Weapon evolution (lv5 weapon + matching passive = legendary form): 20 of the 29 bases have evolutions via `EVOLUTION_RECIPES`; 9 are pick-only (bagpipes is utility-only). `BURNS_EVOLUTION_THRESHOLD` is derived from `EVOLUTION_RECIPES.length` in `src/core/BalanceConfig.ts` and re-exported from `src/utils/save/schema.ts` for back-compat.
 - **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
 - **Player growth**: Visual/hitbox scaling on level-up via `Player.onLevelUp` and `playerGrowthScale` (no standalone GrowthSystem class).
 - **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails, hit freeze, boss death spectacle, combo counter, toast notifications.
