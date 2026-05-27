@@ -38,6 +38,8 @@ import type { RoutePick } from '../../data/routes';
 import type { ReplayBlobAny } from '../../replay/replayBlob';
 import { currentDailyDateKey } from '../../utils/rng';
 import { getActiveSeasonalEventKey } from '../../systems/SeasonalEventManager';
+import { makeChallengeId } from '../../utils/save/friendChallenges';
+import type { SharedRunSetup } from '../../utils/sharedRunUrl';
 
 export interface RunHistoryHooks {
   getSaveManager(): SaveManager;
@@ -102,6 +104,13 @@ export interface RunHistoryHooks {
    * empty array → field omitted from the entry.
    */
   getSporranPicks?(): readonly string[];
+  /**
+   * W27 Friend Challenges — the full `SharedRunSetup` that launched this
+   * run, if it came from a challenge URL. Optional so existing tests and
+   * non-challenge runs compile without change. `challenge` field on the
+   * setup carries the target time + outcome needed to record the attempt.
+   */
+  getActiveSharedRunSetup?(): SharedRunSetup | null;
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -193,6 +202,21 @@ export class RunHistoryRecorder {
     });
     if (h.isDailyRun()) {
       this.recordDailyChallengeResult(summary);
+    }
+    // W27 — if this run was launched from a challenge URL, persist the attempt.
+    const sharedSetup = h.getActiveSharedRunSetup?.();
+    if (sharedSetup?.challenge) {
+      const id = makeChallengeId(
+        sharedSetup.seed,
+        sharedSetup.variantKey,
+        sharedSetup.curseKey,
+        sharedSetup.challenge.timeSurvivedSec,
+      );
+      h.getSaveManager().recordFriendChallengeAttempt(id, {
+        timeSurvivedSec: summary.timeSurvivedSec,
+        outcome: summary.victory ? 'victory' : 'death',
+        ts: timestamp,
+      });
     }
   }
 

@@ -224,6 +224,10 @@ export class BootScene extends Phaser.Scene {
       const shared = parseSharedRunUrl(window.location.search);
       if (shared) {
         try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
+        // W27 — persist challenge so it appears in the Friend Challenges surface.
+        if (shared.challenge) {
+          try { new SaveManager().addFriendChallenge(shared); } catch { /* ignore */ }
+        }
         try {
           window.history.replaceState({}, '', window.location.pathname);
         } catch { /* ignore — best-effort URL hygiene */ }

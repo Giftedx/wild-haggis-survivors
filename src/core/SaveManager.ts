@@ -6,6 +6,15 @@ export type StorageLike = {
 
 import { emitSaveFailure } from '../utils/saveFailure';
 import { recordFallenCairn, markWreathed, markExtinguished, type FallenCairn } from '../utils/save/fallenCairns';
+import {
+  coerceFriendChallenges,
+  addChallenge,
+  appendAttempt,
+  makeChallengeId,
+  type FriendChallengeRecord,
+  type FriendChallengeAttempt,
+} from '../utils/save/friendChallenges';
+import type { SharedRunSetup } from '../utils/sharedRunUrl';
 
 export interface ISaveDataV1 {
   saveVersion: 1;
@@ -353,9 +362,20 @@ export interface ISaveDataV11 extends Omit<ISaveDataV10, 'saveVersion'> {
   saveVersion: 11;
 }
 
-export type ISaveData = ISaveDataV11;
+/**
+ * V12 — Friend Challenges (W27). Persists received shared-run challenge
+ * records so players can track attempted-vs-beaten friend challenges across
+ * sessions. Array is empty for saves that pre-date V12 or players who have
+ * never received a challenge URL. FIFO cap 20; attempts cap 10 per record.
+ */
+export interface ISaveDataV12 extends Omit<ISaveDataV11, 'saveVersion'> {
+  saveVersion: 12;
+  friendChallenges: FriendChallengeRecord[];
+}
 
-export const CURRENT_SAVE_VERSION = 11 as const;
+export type ISaveData = ISaveDataV12;
+
+export const CURRENT_SAVE_VERSION = 12 as const;
 
 export const MAX_RUN_HISTORY = 20;
 
@@ -380,6 +400,7 @@ const DEFAULT_SAVE: ISaveData = {
   codexCulledKeys: [],
   fallenCairns: [],
   oldDroverRevealedCount: 0,
+  friendChallenges: [],
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -844,6 +865,7 @@ export class SaveManager {
         codexCulledKeys: [],
         fallenCairns: [],
         oldDroverRevealedCount: 0,
+        friendChallenges: [],
       };
     }
 
@@ -869,6 +891,7 @@ export class SaveManager {
         codexCulledKeys: [],
         fallenCairns: [],
         oldDroverRevealedCount: 0,
+        friendChallenges: [],
       };
     }
 
@@ -894,6 +917,7 @@ export class SaveManager {
         codexCulledKeys: [],
         fallenCairns: [],
         oldDroverRevealedCount: 0,
+        friendChallenges: [],
       };
     }
 
@@ -919,6 +943,7 @@ export class SaveManager {
         codexCulledKeys: [],
         fallenCairns: [],
         oldDroverRevealedCount: 0,
+        friendChallenges: [],
       };
     }
 
@@ -944,6 +969,7 @@ export class SaveManager {
         codexCulledKeys: [],
         fallenCairns: [],
         oldDroverRevealedCount: 0,
+        friendChallenges: [],
       };
     }
 
@@ -972,6 +998,7 @@ export class SaveManager {
         codexCulledKeys: [],
         fallenCairns: [],
         oldDroverRevealedCount: 0,
+        friendChallenges: [],
       };
     }
 
@@ -999,6 +1026,7 @@ export class SaveManager {
         codexCulledKeys: [],
         fallenCairns: [],
         oldDroverRevealedCount: 0,
+        friendChallenges: [],
       };
     }
 
@@ -1023,6 +1051,7 @@ export class SaveManager {
       codexCulledKeys,
       fallenCairns,
       oldDroverRevealedCount,
+      friendChallenges: coerceFriendChallenges(obj.friendChallenges),
     };
   }
 
@@ -1063,6 +1092,53 @@ export class SaveManager {
     this.update((cur) => ({
       ...cur,
       fallenCairns: markExtinguished(cur.fallenCairns, savedAts, now),
+    }));
+  }
+
+  // ── W27 Friend Challenges ──
+
+  getFriendChallenges(): FriendChallengeRecord[] {
+    return this.load().friendChallenges;
+  }
+
+  /**
+   * Persist a received challenge URL. The `setup` must carry a non-null
+   * `challenge` field (i.e. the URL encoded `t` + `o`). Deduplicates by
+   * the stable ID derived from seed + variant + curse + targetTimeSec, so
+   * receiving the same URL twice is a no-op.
+   */
+  addFriendChallenge(setup: SharedRunSetup, now: number = Date.now()): void {
+    const challenge = setup.challenge;
+    if (!challenge) return;
+    const id = makeChallengeId(setup.seed, setup.variantKey, setup.curseKey, challenge.timeSurvivedSec);
+    const record: FriendChallengeRecord = {
+      id,
+      seed: setup.seed,
+      variantKey: setup.variantKey,
+      curseKey: setup.curseKey,
+      targetTimeSec: challenge.timeSurvivedSec,
+      targetOutcome: challenge.outcome,
+      receivedAt: now,
+      attempts: [],
+    };
+    this.update((cur) => ({
+      ...cur,
+      friendChallenges: addChallenge(cur.friendChallenges, record),
+    }));
+  }
+
+  /**
+   * Append an attempt result to the matching challenge record. Call at
+   * run-end when the run was launched from a challenge URL. No-op if `id`
+   * is not found (e.g. storage was cleared between receive and play).
+   */
+  recordFriendChallengeAttempt(
+    id: string,
+    attempt: FriendChallengeAttempt,
+  ): void {
+    this.update((cur) => ({
+      ...cur,
+      friendChallenges: appendAttempt(cur.friendChallenges, id, attempt),
     }));
   }
 }

@@ -10,8 +10,8 @@ class ThrowingStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
-const defaultV11 = {
-  saveVersion: 11 as const,
+const defaultV12 = {
+  saveVersion: 12 as const,
   totalKills: 0,
   totalKillsSpent: 0,
   unlockedWeapons: [] as string[],
@@ -31,10 +31,11 @@ const defaultV11 = {
   codexCulledKeys: [] as string[],
   fallenCairns: [] as FallenCairn[],
   oldDroverRevealedCount: 0,
+  friendChallenges: [] as import('../utils/save/friendChallenges').FriendChallengeRecord[],
 };
 
-/** Alias kept for clarity in migration tests that seed earlier blobs. */
-const defaultV9 = defaultV11;
+/** Aliases kept for clarity in migration tests that seed earlier blobs. */
+const defaultV9 = defaultV12;
 
 const sampleRun = (): IRunState => ({
   gameTimeSec: 600,
@@ -85,7 +86,7 @@ describe('SaveManager', () => {
     });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(11);
+    expect(loaded.saveVersion).toBe(12);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
     expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
@@ -140,7 +141,7 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(11);
+    expect(loaded.saveVersion).toBe(12);
     expect(loaded.codexCulledKeys).toEqual([]);
     expect(loaded.fallenCairns).toEqual([]);
     expect(loaded.oldDroverRevealedCount).toBe(0);
@@ -378,7 +379,7 @@ describe('SaveManager v9 → v10 migration', () => {
     });
     store.set('whs_meta_save', JSON.stringify(v9Blob));
     const loaded = sm.load();
-    expect(loaded.saveVersion).toBe(11);
+    expect(loaded.saveVersion).toBe(12);
     expect(loaded.fallenCairns).toEqual([]);
     expect(loaded.oldDroverRevealedCount).toBe(0);
     expect(loaded.totalKills).toBe(100);
@@ -509,7 +510,7 @@ describe('SaveManager v10 → v11 migration', () => {
     });
     store.set('whs_meta_save', JSON.stringify(v10Blob));
     const loaded = sm.load();
-    expect(loaded.saveVersion).toBe(11);
+    expect(loaded.saveVersion).toBe(12);
     expect(loaded.fallenCairns).toHaveLength(1);
     expect(loaded.fallenCairns[0].savedAt).toBe(42);
     expect(loaded.fallenCairns[0].wreathedAt).toBeUndefined();

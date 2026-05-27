@@ -47,6 +47,7 @@ import type { RunScoreState } from './RunScoreState';
 import type { RoutePick } from '../../data/routes';
 import type { RelicKey } from '../../data/relics';
 import type { ReplayBlobAny } from '../../replay/replayBlob';
+import type { SharedRunSetup } from '../../utils/sharedRunUrl';
 
 export interface InstallRunEndComposersOpts {
   // Shared system accessors (used by 2-3 of the composers).
@@ -100,6 +101,8 @@ export interface InstallRunEndComposersOpts {
    * chronicle persistence + Phase 2 replay-side pick replay.
    */
   getSporranPicks(): readonly string[];
+  /** W27 Friend Challenges — shared run setup if this run came from a challenge URL. */
+  getActiveSharedRunSetup?(): SharedRunSetup | null;
 
   // RunPersistenceCoordinator-only.
   isReplayPlayback(): boolean;
@@ -168,6 +171,7 @@ export function installRunEndComposers(
     getEvolvedWeaponCount: opts.getEvolvedWeaponCount,
     areSeasonalEventsDisabled: opts.areSeasonalEventsDisabled,
     getSporranPicks: opts.getSporranPicks,
+    getActiveSharedRunSetup: opts.getActiveSharedRunSetup,
   };
   const runHistoryRecorder = new RunHistoryRecorder(runHistoryHooks);
 

@@ -32,6 +32,8 @@ import { findLastSeededRun } from '../ui/chronicleAggregates';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { clickToScene } from './clickToScene';
 import { textStyle } from '../ui/typography';
+import { showFriendChallengesPanel } from './main-menu/friendChallengesPanel';
+import type { FriendChallengeRecord } from '../utils/save/friendChallenges';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -360,7 +362,66 @@ export class MainMenuScene extends Phaser.Scene {
     dailySubtitle.setInteractive({ useHandCursor: true });
     dailySubtitle.on('pointerdown', startDaily);
 
-    const metaY2 = dailyBtnY + btnHs + gap;
+    // W27 Friend Challenges — small text link shown only when ≥1 challenge received.
+    const challenges = this.saveManager.getFriendChallenges();
+    let challengesLinkH = 0;
+    if (challenges.length > 0) {
+      const seedLinkStyle = resolveSeedLinkStyle(highContrastUi, titleColor);
+      const challengeLinkY = dailyBtnY + btnHs + Math.round(10 * uiScale);
+      challengesLinkH = Math.round(22 * uiScale);
+      const challengesTxt = this.add
+        .text(bx, challengeLinkY, t('ui.menu.challenges', { n: challenges.length }), {
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: seedLinkStyle.idle.color,
+          stroke: seedLinkStyle.idle.stroke,
+          strokeThickness: seedLinkStyle.idle.strokeThickness,
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      challengesTxt.setScale(uiScale);
+      challengesTxt.on('pointerover', () => {
+        challengesTxt.setColor(seedLinkStyle.hover.color);
+        challengesTxt.setStroke(seedLinkStyle.hover.stroke, seedLinkStyle.hover.strokeThickness);
+      });
+      challengesTxt.on('pointerout', () => {
+        challengesTxt.setColor(seedLinkStyle.idle.color);
+        challengesTxt.setStroke(seedLinkStyle.idle.stroke, seedLinkStyle.idle.strokeThickness);
+      });
+      challengesTxt.on('pointerdown', () => {
+        const { width: sw, height: sh } = this.scale;
+        const dismissPanel = showFriendChallengesPanel({
+          scene: this,
+          centerX: sw / 2,
+          centerY: sh / 2,
+          panelW: Math.min(420 * uiScale, sw - 40),
+          panelH: Math.min(360 * uiScale, sh - 60),
+          depth: 200,
+          uiScale,
+          saveManager: this.saveManager,
+          onStartChallenge: (record: FriendChallengeRecord) => {
+            this.saveManager.clearActiveRun();
+            this.scene.start('Game', {
+              seed: record.seed,
+              forceVariantKey: record.variantKey,
+              curseKey: record.curseKey,
+              sharedRunMeta: {
+                seed: record.seed,
+                variantKey: record.variantKey,
+                curseKey: record.curseKey,
+                challenge: {
+                  outcome: record.targetOutcome,
+                  timeSurvivedSec: record.targetTimeSec,
+                },
+              },
+            });
+          },
+        });
+        void dismissPanel; // returned dismiss fn — panel self-manages via overlay click
+      });
+    }
+
+    const metaY2 = dailyBtnY + btnHs + challengesLinkH + gap;
     const { rect: metaBtn, label: metaTxt } = createGameButton(this, {
       x: bx, y: metaY2, width: btnW, height: btnH,
       label: t('ui.menu.meta_upgrades'),

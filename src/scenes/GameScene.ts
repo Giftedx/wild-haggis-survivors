@@ -410,6 +410,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * scene instance doesn't re-fire the banner).
    */
   private pendingSharedRunMeta: SharedRunSetup | null = null;
+  /** W27 — full setup retained through the run for challenge-attempt recording at run-end. */
+  private activeSharedRun: SharedRunSetup | null = null;
   /**
    * S1 Phase 2 — snapshot of the picks that actually landed at run
    * start (filtered to known cards via `applySporranPicks`). Read by
@@ -758,6 +760,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pendingCurseKey = resolved.pendingCurseKey;
     this.pendingSporranIds = resolved.pendingSporranIds;
     this.pendingSharedRunMeta = resolved.pendingSharedRunMeta;
+    this.activeSharedRun = resolved.pendingSharedRunMeta;
   }
 
   create(): void {
@@ -1240,6 +1243,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getEvolvedWeaponCount: () => this.weaponSystem?.getEvolvedWeaponCount() ?? 0,
       areSeasonalEventsDisabled: () => this.settingsManager.load().disableSeasonalEvents,
       getSporranPicks: () => this.committedSporranIds,
+      getActiveSharedRunSetup: () => this.activeSharedRun,
       // T401 P3 — replay-aware persistence; reads `this.replayInput` at
       // call time so the gate stays correct across create()'s lifecycle.
       isReplayPlayback: () => this.replayInput !== null,
