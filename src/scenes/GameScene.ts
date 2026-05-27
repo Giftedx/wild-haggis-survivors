@@ -1,7 +1,6 @@
 import * as Phaser from 'phaser';
 import { GAME } from '../config';
 import { Player } from '../entities/Player';
-import type { Enemy } from '../entities/Enemy';
 import { createGrudgeLedger, type GrudgeLedgerState } from '../entities/grudgeLedger';
 import type { SpawnSystem } from '../systems/SpawnSystem';
 import type { WeaponSystem } from '../systems/WeaponSystem';
@@ -1028,7 +1027,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunLifecycle: () => this.runLifecycle,
       getRelicEffectDriver: () => this.relicEffectDriver ?? null,
       getCurrentTimeMs: () => this.time.now,
-      tryMoorMercyLuck: (hp) => this.tryMoorMercyLuck(hp),
+      tryMoorMercyLuck: (hp) => moorMomentsTryMercyLuck(this.moorMomentsState, this.buildMoorMomentsContext(), hp),
     });
 
     ({
@@ -1356,7 +1355,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         // grans_teapot damage-free timer on every hit the haggis
         // survives. Fatal hits skip: no run remains to collect on.
         this.relicEffectDriver?.noteDamageTaken(this.time.now);
-        this.tryMoorMercyLuck(hpBefore);
+        moorMomentsTryMercyLuck(this.moorMomentsState, this.buildMoorMomentsContext(), hpBefore);
       },
       armIFrames: (ms) => this.armIFrames(ms),
       onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
@@ -1435,7 +1434,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getUiViewport: () => this.getUiViewport(),
       getBanter: () => this.banter,
       getActiveVariantKey: () => this.activeVariant.key,
-      hasEnemyNearby: (r) => this.hasEnemyNearby(r),
+      hasEnemyNearby: (r) => this.spawnSystem.hasEnemyNear(this.player?.x ?? 0, this.player?.y ?? 0, r),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       getXPSystem: () => this.xpSystem,
       getUpdateTickers: () => this.updateTickers,
@@ -1633,7 +1632,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }));
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
-    this.showRunIdentityToast(Boolean(resumeRun));
+    moorMomentsShowRunIdentityToast(this.buildMoorMomentsContext(), Boolean(resumeRun));
     // W82 Shared-run banner — fired right after the identity toast so
     // the queue order is "Classic · The original" → "Shared run ·
     // Classic · Heavy Legs". `pendingSharedRunMeta` is consumed once
@@ -1662,7 +1661,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     installRunStartupHud(this, {
       resumeRun,
       initNodeMapForAct: (act, stretch) => this.initNodeMapForAct(act, stretch),
-      trySpawnAncestralEcho: () => this.trySpawnAncestralEcho(),
+      trySpawnAncestralEcho: () => { const echo = moorMomentsTrySpawnAncestralEcho(this.buildMoorMomentsContext(), this.ancestralEcho !== null); if (echo) this.ancestralEcho = echo; },
       toggleUiPause: () => this.toggleUiPause(),
     });
   }
@@ -1785,12 +1784,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  // Phase 5 Bucket 3 — moor moments (mercy luck, ancestral echo, standing
-  // stones, reliquary, run-identity toast) extracted to
-  // `scenes/game/moorMoments.ts`. Methods below are thin delegators so
-  // existing call sites keep their `this.tryMoorMercyLuck(...)` /
-  // `this.spawnStandingStones(...)` shape.
-
   buildSecondTickHookContext(): SecondTickHookContext {
     return {
       spawnSystem: this.spawnSystem,
@@ -1806,10 +1799,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getBlackClootieSpawnSec: () => this.blackClootieSpawnSec,
       getStonesWarned: () => this.stonesWarned,
       markStonesWarned: () => { this.stonesWarned = true; },
-      spawnStandingStones: () => this.spawnStandingStones(),
-      spawnReliquary: () => this.spawnReliquary(),
-      spawnClootieTree: () => this.spawnClootieTree(),
-      spawnBlackClootieTree: () => this.spawnBlackClootieTree(),
+      spawnStandingStones: () => { if (!this.standingStones) this.standingStones = moorMomentsSpawnStandingStones(this.buildMoorMomentsContext()); },
+      spawnReliquary: () => { if (!this.reliquary) this.reliquary = moorMomentsSpawnReliquary(this.buildMoorMomentsContext()); },
+      spawnClootieTree: () => { if (!this.clootieTree) this.clootieTree = moorMomentsSpawnClootieTree(this.buildMoorMomentsContext()); },
+      spawnBlackClootieTree: () => { if (!this.blackClootieTree) this.blackClootieTree = moorMomentsSpawnBlackClootieTree(this.buildMoorMomentsContext()); },
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     };
   }
@@ -1831,42 +1824,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // is already persisted (RunLifecycle wrote it on the prior death).
       onEchoSettle: (x, y) => this.settleEchoIntoCairn(x, y),
     };
-  }
-
-  private tryMoorMercyLuck(hpBefore: number): void {
-    moorMomentsTryMercyLuck(this.moorMomentsState, this.buildMoorMomentsContext(), hpBefore);
-  }
-
-  private trySpawnAncestralEcho(): void {
-    const echo = moorMomentsTrySpawnAncestralEcho(
-      this.buildMoorMomentsContext(),
-      this.ancestralEcho !== null,
-    );
-    if (echo) this.ancestralEcho = echo;
-  }
-
-  private spawnStandingStones(): void {
-    if (this.standingStones) return;
-    this.standingStones = moorMomentsSpawnStandingStones(this.buildMoorMomentsContext());
-  }
-
-  private spawnReliquary(): void {
-    if (this.reliquary) return;
-    this.reliquary = moorMomentsSpawnReliquary(this.buildMoorMomentsContext());
-  }
-
-  private spawnClootieTree(): void {
-    if (this.clootieTree) return;
-    this.clootieTree = moorMomentsSpawnClootieTree(this.buildMoorMomentsContext());
-  }
-
-  private spawnBlackClootieTree(): void {
-    if (this.blackClootieTree) return;
-    this.blackClootieTree = moorMomentsSpawnBlackClootieTree(this.buildMoorMomentsContext());
-  }
-
-  private showRunIdentityToast(isResume: boolean): void {
-    moorMomentsShowRunIdentityToast(this.buildMoorMomentsContext(), isResume);
   }
 
   /**
@@ -2096,21 +2053,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   getCurrentBiomeId(): BiomeId | null {
     if (!this.biomeController || !this.player) return null;
     return this.biomeController.currentBiomeAt(this.player.x, this.player.y);
-  }
-
-  private hasEnemyNearby(radiusPx: number): boolean {
-    if (!this.player || !this.spawnSystem) return false;
-    const r2 = radiusPx * radiusPx;
-    const px = this.player.x;
-    const py = this.player.y;
-    const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
-    for (const e of enemies) {
-      if (!e.active) continue;
-      const dx = e.x - px;
-      const dy = e.y - py;
-      if (dx * dx + dy * dy <= r2) return true;
-    }
-    return false;
   }
 
   getBiomeManager(): BiomeManager | null {

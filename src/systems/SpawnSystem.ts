@@ -996,6 +996,17 @@ export class SpawnSystem {
 
   getEnemyGroup(): Phaser.GameObjects.Group { return this.pool; }
   getActiveCount(): number { return this.pool.countActive(true); }
+
+  /** True when any active enemy is within `radiusPx` of (`px`, `py`). */
+  hasEnemyNear(px: number, py: number, radiusPx: number): boolean {
+    const r2 = radiusPx * radiusPx;
+    for (const e of this.pool.getChildren() as Enemy[]) {
+      if (!e.active) continue;
+      const dx = e.x - px; const dy = e.y - py;
+      if (dx * dx + dy * dy <= r2) return true;
+    }
+    return false;
+  }
   getGameTimeSec(): number { return this.gameTimeSec; }
   getSpawnTimerSec(): number { return this.spawnTimer; }
   getSpawnIntervalSec(): number { return this.spawnInterval; }
