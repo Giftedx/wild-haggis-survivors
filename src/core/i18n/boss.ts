@@ -14,7 +14,7 @@ export const boss = {
   twin_stones: { name: 'An Càraid — the Twin Stones of Callanish' },
   wicker_haggis: { name: 'The Wicker Haggis — Bealltainn\'s Tribute' },
   nessie: { name: 'Nessie, Reconsidered' },
-  auld_reekie: { name: 'The Auld Reekie Ghaist' },
+  auld_reekie: { name: 'The Auld Reekie Ghaist', entryCaption: 'The Auld Reekie Ghaist takes form. Gas lamps flare amber.' },
   stoor_worm: { name: 'The Stoor Worm' },
   ninth_legion: { name: 'The Lost Ninth Legion' },
 } as const;

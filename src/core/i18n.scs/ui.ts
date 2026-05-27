@@ -99,6 +99,10 @@ export const ui = {
         a: 'Tha taxman. Pure dead brilliant tae see him aff. Here, hae a biscuit.',
         b: 'Every run o red ink in yon ledger\'s a wee victory, so it is.',
       },
+      auld_reekie: {
+        a: 'Tha Auld Toun ghaist. A hunner an fifty year o ghost tours — aboot time someone cancelled them.',
+        b: 'A lamp\'s jist a lamp when tha gas runs oot. Ye kent that, an noo he does tae.',
+      },
     },
     title: 'GRAN\'S CROFT',
     subtitle: 'Hearth, kettle, an tha kindness o tha stove.',

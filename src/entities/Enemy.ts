@@ -1572,7 +1572,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           this.lampPostSprites.push(lamp);
         }
       }
-      this.ctx.caption('auld_reekie_entry', t('ui.boss.auld_reekie.entryCaption'));
+      this.ctx.caption('auld_reekie_entry', t('boss.auld_reekie.entryCaption'));
       this.ctx.getSFXManager().tryPlay('auld_reekie_entry', () => audio.playAuldReekieEntry());
     }
 

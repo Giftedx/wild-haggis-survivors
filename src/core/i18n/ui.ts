@@ -115,6 +115,10 @@ export const ui = {
         a: 'The taxman. Pure dead brilliant tae see him off. Here, have a biscuit.',
         b: 'Every run of red ink in that ledger\'s a wee victory, so it is.',
       },
+      auld_reekie: {
+        a: 'The Old Town ghaist. A hundred and fifty year of ghost tours — about time someone cancelled them.',
+        b: 'A lamp\'s just a lamp when the gas runs oot. Ye kent that, and noo he does tae.',
+      },
     },
     /** Scene title — Hearth voice, kept short so the banner reads at a glance. */
     title: 'GRAN\'S CROFT',
