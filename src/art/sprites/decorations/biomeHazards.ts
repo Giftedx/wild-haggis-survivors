@@ -1143,3 +1143,35 @@ export function bakeHazardKelpStrand(scene: Phaser.Scene): void {
   g.generateTexture('hazard_kelp_strand', w, h);
   g.destroy();
 }
+
+// ── Calton Hill (Beltane) hazard ─────────────────────────────────────────────
+
+export function bakeHazardFirePillar(scene: Phaser.Scene): void {
+  const w = 20, h = 32;
+  const g = scene.add.graphics();
+  // Iron torch-stand post — dark vertical shaft.
+  g.fillStyle(0x2a1a00, 1);
+  g.fillRect(8, 18, 4, 14);
+  // Base — splayed legs suggesting a festival stand.
+  g.fillStyle(0x3a2a00, 0.90);
+  g.fillRect(5, 28, 10, 3);
+  // Fire head — layered flame petals, vermillion/amber/gold.
+  g.fillStyle(0xcc2200, 0.90);
+  g.fillEllipse(10, 14, 14, 12);
+  g.fillStyle(0xf05000, 0.85);
+  g.fillEllipse(10, 12, 10, 9);
+  g.fillStyle(0xf5a000, 0.90);
+  g.fillEllipse(10, 9, 7, 7);
+  g.fillStyle(0xffd060, 0.95);
+  g.fillEllipse(10, 6, 4, 5);
+  // Hot white core.
+  g.fillStyle(0xfff8e0, 1);
+  g.fillCircle(10, 5, 1.5);
+  // Ember sparks — three small circles rising.
+  g.fillStyle(0xf5a000, 0.70);
+  g.fillCircle(6, 3, 1);
+  g.fillCircle(14, 2, 0.8);
+  g.fillCircle(10, 1, 0.9);
+  g.generateTexture('hazard_fire_pillar', w, h);
+  g.destroy();
+}

@@ -164,7 +164,7 @@ Candidates:
 - ~~**Corryvreckan Whirlpool Coast**~~ — ✅ shipped 2026-05-27 (`corryvreckan`, tint 0x0a2030, `corryVreckan`: -5% speed / +10% knockback, hazard: `corry_maelstrom`. Full encounter: `installCorryVreckan.ts` — whirlpool pull force, warning/active/survived/failed phases, banter + chest spawn.) (*Ref: `SCOTTISH_RESEARCH.md` §1.8.*)
 - **Jacobite Moor (Culloden)** — sombre grey-purple; musket-volley rains; Jacobite + Redcoat spectres. *(Handle respectfully.)* (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
 - ~~**Trossachs Forest**~~ — ✅ shipped 2026-05-27 (`trossachs`, tint 0x1a4018, `trossachsCanopy`: +8% speed / +10% XP, hazard: `root_trip`). (*Ref: §3.1 + §6.10.*)
-- **Beltane Fire Festival (Calton Hill)** — seasonal event biome. Vermillion, bonfire-gold, fire-pillar hazards, May Queen + Green Man. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.1.*)
+- ~~**Beltane Fire Festival (Calton Hill)**~~ — ✅ shipped 2026-05-27 (`calton_hill`, tint 0x7a1a00, `caltonFlame`: +15% XP / +8% speed, hazard: `fire_pillar`. Banter a–d + wee tales + SCS overlays + i18n parity all wired.) (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.1.*)
 - ~~**Shetland Simmer Dim**~~ — ✅ shipped 2026-05-27 (`shetland_voe`, tint 0x5a6878, `shetlandVoe`: +10% speed / -10% drift, hazard: `shetland_squall`). Banter + i18n wired. (*Ref: §1.6.*)
 - **Arran (Scotland in miniature)** — biome that shifts mid-run, containing all other biomes in fragments. (*Ref: §3.3.*)
 

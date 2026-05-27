@@ -87,6 +87,7 @@ export type WeeTaleTag =
   | 'biome_edinburgh_old_town' | 'biome_cairngorm_woods' | 'biome_orkney'
   | 'biome_corryvreckan' | 'biome_shetland_voe' | 'biome_skye_fairy_pool'
   | 'biome_hebridean_shore'
+  | 'biome_calton_hill'
   | 'has_name'
   | VariantKey;
 
@@ -461,6 +462,9 @@ export const WEE_TALE_TEMPLATES: readonly WeeTaleTemplate[] = [
   // Hebridean Shore — machair + Atlantic light + grey seals.
   { key: 'ui.weeTale.death.biome_hebridean_shore', requires: ['death', 'biome_hebridean_shore'] },
   { key: 'ui.weeTale.victory.biome_hebridean_shore', requires: ['victory', 'biome_hebridean_shore'] },
+  // Calton Hill — Beltane fire, turn of the year, the hill always burns.
+  { key: 'ui.weeTale.death.biome_calton_hill', requires: ['death', 'biome_calton_hill'] },
+  { key: 'ui.weeTale.victory.biome_calton_hill', requires: ['victory', 'biome_calton_hill'] },
 
   // ── v2 — Cailleach (Gaelic-inflected stern-motherly elder) ─────
   // Voice register per `docs/VOICE_CARD.md` §"Cailleach (shipped)".

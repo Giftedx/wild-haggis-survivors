@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all twenty-three biomes with required fields (B10 added hebridean_shore)', () => {
-    expect(BIOME_IDS.length).toBe(23);
+  it('defines all twenty-four biomes with required fields (B11 added calton_hill)', () => {
+    expect(BIOME_IDS.length).toBe(24);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -86,6 +86,13 @@ describe('biomes data', () => {
     expect(BIOMES.hebridean_shore.modifier).toBe('hebrideanTide');
     expect(BIOMES.hebridean_shore.nameKey).toBe('biomes.hebridean_shore.name');
     expect(BIOMES.hebridean_shore.tint).toBe(0x1a4860);
+  });
+
+  it('calton_hill biome is registered (B11)', () => {
+    expect(BIOME_IDS).toContain('calton_hill');
+    expect(BIOMES.calton_hill.modifier).toBe('caltonFlame');
+    expect(BIOMES.calton_hill.nameKey).toBe('biomes.calton_hill.name');
+    expect(BIOMES.calton_hill.tint).toBe(0x7a1a00);
   });
 
   it('spawn weight multipliers are all positive', () => {

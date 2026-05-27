@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney' | 'corryvreckan' | 'shetland_voe' | 'skye_fairy_pool' | 'hebridean_shore';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney' | 'corryvreckan' | 'shetland_voe' | 'skye_fairy_pool' | 'hebridean_shore' | 'calton_hill';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -33,7 +33,8 @@ export type BiomeModifierKind =
   | 'corryVreckan'
   | 'shetlandVoe'
   | 'fairyPoolGlow'
-  | 'hebrideanTide';
+  | 'hebrideanTide'
+  | 'caltonFlame';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -686,9 +687,42 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // Light sea-spray haze — lower than haar, higher than coastal.
     ambientHaarDensity: 0.45,
   },
+  // Calton Hill, Edinburgh — Beltane Fire Festival. The May Eve torchlit
+  // procession up the hill: fire-jugglers, May Queen, Green Man, the
+  // burning of winter. `caltonFlame` modifier: +15% XP (the ritual fire
+  // blesses every kill; the festival marks the land's renewal) +8% speed
+  // (the dancers move fast and so does the haggis). No knockback bonus —
+  // the fire is celebratory, not combative.
+  calton_hill: {
+    id: 'calton_hill',
+    nameKey: 'biomes.calton_hill.name',
+    tint: 0x7a1a00,
+    entryToastKey: 'biomes.calton_hill.entry',
+    loreSnippetKey: 'biomes.calton_hill.loreSnippet',
+    loreKey: 'biomes.calton_hill.lore',
+    toastColor: '#cc4400',
+    spawnWeightMods: {
+      ghost: 1.4,
+      redcap: 1.3,
+      seelie_piper: 1.5,
+      unseelie_fiddler: 1.2,
+      tourist: 0.5,
+      highland_cow: 0.1,
+      sheep: 0.3,
+      eagle: 0.6,
+      haar_wraith: 0.3,
+    },
+    modifier: 'caltonFlame',
+    // Firelit night — warm amber light, high moodTimbre (the festival is
+    // celebratory and charged, between callanish (0.52) and loch (0.65)).
+    moodTimbre: 0.60,
+    // Bonfires + torch smoke create a slight haze — drier than coastal,
+    // no sea-spray; smoke rather than mist.
+    ambientHaarDensity: 0.18,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool', 'hebridean_shore'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool', 'hebridean_shore', 'calton_hill'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

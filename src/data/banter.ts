@@ -1716,6 +1716,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.hebridean_shore.c',
         'ui.banter.biome_change.hebridean_shore.d',
       ],
+      // Calton Hill (Beltane Fire Festival): bonfire-lit Edinburgh landmark,
+      // May Queen ceremony, fire pillars. Hearth register: festive, warm,
+      // pagan-undertoned. Beltane is the turn of the year — alive, urgent.
+      calton_hill: [
+        'ui.banter.biome_change.calton_hill.a',
+        'ui.banter.biome_change.calton_hill.b',
+        'ui.banter.biome_change.calton_hill.c',
+        'ui.banter.biome_change.calton_hill.d',
+      ],
     },
   },
   {

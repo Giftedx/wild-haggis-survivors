@@ -2564,6 +2564,12 @@ export const ui = {
         c: 'Tha grey seal watches frae tha skerry. Appraises. Moves on.',
         d: "Hebridean licht chynges ilka oor. Richt noo it's dowie. Tha haggis rins through it.",
       },
+      calton_hill: {
+        a: 'Tha torches are lit. Somethin aboot fire on a hilltop strips awthings back.',
+        b: 'May Queen on tha summit, Green Man below. Tha haggis rins atween tha fires.',
+        c: 'Beltane. Tha year turns here. Tha haggis turns wi it.',
+        d: "Edinburgh's burnin hill. Tha haggis haes seen waur. No mony things, but a few.",
+      },
     },
     moor_moment: {
       a: 'Tha moor noticed ye. That\'s rare.',
@@ -4272,6 +4278,7 @@ export const ui = {
       biome_shetland_voe: 'Tha voe wind taen it at {time}. Tha simmer dim still rose. Tha voe kept whit it had.',
       biome_skye_fairy_pool: 'Tha pool held tha shape at {time}. Than tha fey had it, an tha fey gie naethin back.',
       biome_hebridean_shore: '{time} on tha Hebridean shore. Tha wrack-line keeps its ain countin. Tha moor kens whit tha tide taen.',
+      biome_calton_hill: 'Tha fire haed it at {time}. Beltane disnae mourn — it renews.',
     },
     victory: {
       fallback_a: 'Walked hame at {time}. Tha kettle wis oan.',
@@ -4318,6 +4325,7 @@ export const ui = {
       biome_shetland_voe: 'Walked tha voe at {time}. Tha simmer dim held tha licht. Tha haggis held tha road.',
       biome_skye_fairy_pool: 'Left tha pools at {time}. Tha watter wis clear. Tha fey waved naethin aff — but they didnae follae.',
       biome_hebridean_shore: 'Left tha Hebridean shore at {time}. Tha grey seal lifted a heid. Tha Atlantic cairried on.',
+      biome_calton_hill: 'Cam doon frae Calton Hill at {time}. Tha torches were still burnin. Tha year haed turned.',
     },
     variant: {
       cailleach: {

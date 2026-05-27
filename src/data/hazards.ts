@@ -77,7 +77,9 @@ export type HazardKey =
   // B9 — Skye Fairy Pools — enchanted mist drifting up from the mineral pools.
   | 'fairy_mist'
   // Hebridean Shore — kelp ribbon left by the tide; slick underfoot.
-  | 'kelp_strand';
+  | 'kelp_strand'
+  // Calton Hill — Beltane fire-pillar; a torch-stand left from the procession.
+  | 'fire_pillar';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -370,6 +372,18 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 15000,
     spawnIntervalMs: 10000,
   },
+  // Calton Hill (Beltane) — torch-stand fire-pillar from the procession. High
+  // damage (12), mid hitbox (16 px), medium lifetime (7 s), fast interval (8 s).
+  // The fire burns bright and fierce and short — don't walk through the torches.
+  fire_pillar: {
+    key: 'fire_pillar',
+    texture: 'hazard_fire_pillar',
+    biome: 'calton_hill',
+    damage: 12,
+    hitboxRadius: 16,
+    lifetimeMs: 7000,
+    spawnIntervalMs: 8000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -397,4 +411,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'shetland_squall',
   'fairy_mist',
   'kelp_strand',
+  'fire_pillar',
 ];

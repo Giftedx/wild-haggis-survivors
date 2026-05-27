@@ -3172,6 +3172,12 @@ export const ui = {
         c: 'The grey seal watches from the skerry. Appraises. Moves on.',
         d: "Hebridean light changes every hour. Right now it's melancholy. The haggis runs through it.",
       },
+      calton_hill: {
+        a: 'The torches are lit. Something about fire on a hilltop strips everything back.',
+        b: 'May Queen on the summit, Green Man below. The haggis runs between the fires.',
+        c: 'Beltane. The year turns here. The haggis turns with it.',
+        d: "Edinburgh's burning hill. The haggis has seen worse. Not many things, but a few.",
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',
@@ -5167,6 +5173,7 @@ export const ui = {
       biome_shetland_voe: 'The voe wind took it at {time}. The simmer dim still rose. The voe kept what it had.',
       biome_skye_fairy_pool: 'The pool held the shape at {time}. Then the fey had it, and the fey give nothing back.',
       biome_hebridean_shore: '{time} on the Hebridean shore. The wrack-line keeps its own counting. The moor kens what the tide took.',
+      biome_calton_hill: 'The fire had it at {time}. Beltane does not mourn — it renews.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -5226,6 +5233,7 @@ export const ui = {
       biome_shetland_voe: 'Walked the voe at {time}. The simmer dim held the light. The haggis held the road.',
       biome_skye_fairy_pool: 'Left the pools at {time}. The water was clear. The fey waved nothing off — but they did not follow.',
       biome_hebridean_shore: 'Left the Hebridean shore at {time}. The grey seal lifted a head. The Atlantic carried on.',
+      biome_calton_hill: 'Came down from Calton Hill at {time}. The torches were still burning. The year had turned.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".

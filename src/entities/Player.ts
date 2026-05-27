@@ -1634,7 +1634,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'corryVreckan'
       | 'shetlandVoe'
       | 'fairyPoolGlow'
-      | 'hebrideanTide',
+      | 'hebrideanTide'
+      | 'caltonFlame',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1794,6 +1795,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // knockback). No speed tax — the hard-packed sand is good footing.
         this.biomeXpMul = 1.10;
         this.biomeKnockbackBonus = 1.10;
+        break;
+      case 'caltonFlame':
+        // Beltane fire festival on Calton Hill — the ritual fire blesses
+        // every kill with the year's renewal (+15% XP). The dancers move
+        // fast and the haggis keeps pace (+8% speed). The fire is
+        // celebratory — no knockback bonus; it pushes forward, not away.
+        this.biomeXpMul = 1.15;
+        this.biomeSpeedMul = 1.08;
         break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we

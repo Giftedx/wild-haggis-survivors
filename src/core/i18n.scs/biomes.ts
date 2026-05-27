@@ -137,4 +137,10 @@ export const biomes = {
     loreSnippet: "Wildflooer meadae at tha ocean's edge. Harris Tweed kintra.",
     lore: "Tha machair is ane o tha rarest habitats in Europe — a laich plain o wind-blawn shell-saund ahint tha Atlantic dunes, carpeted in wildflooers ilka simmer: reid clover, wild thyme, yellae rattle, eyebricht. It exists anely on tha wastren edges o Scotland an Ireland, whaur tha Atlantic wind cairries eneuch shell-saund inby tae sweeten tha soil. On tha Ooter Hebrides — Lewis, Harris, tha Uists — tha machair supports corncrakes, lapwings, dunlin, an tha heighest density o breedin waders in Britain. Tha grey seals haul oot on tha skerries. Tha licht here chynges ilka oor, an ilka oor it is something ye haenae seen afore.",
   },
+  calton_hill: {
+    name: 'Calton Hill',
+    entry: "Tha torches are lit. Beltane haes come tae Edinburgh.",
+    loreSnippet: "Beltane Fire Festival, May Eve. Tha May Queen an tha Green Man ascend.",
+    lore: "Calton Hill rises frae Edinburgh's East End, volcanic an abrupt. In 1988 tha Beltane Fire Society revived tha auld Gaelic festival o Bealltainn — tha simmer-fire threshold — wi a torchlit procession o twa thoosand fowk, fire-jugglers, tha May Queen in white, tha Green Man in leaves an reid yird, an tha winter's daith enacted in ceremony at tha hilltop. Tha revival wis controversial at first; it is noo ane o Edinburgh's maist distinctive events. Tha Beltane fires were originally lit on hilltops across Scotland sae each community could cairry tha livin flame hame. Calton Hill is tha city's version o that act — fire brocht intae stane an street an made visible frae tha Waverley below.",
+  },
 } as const;
