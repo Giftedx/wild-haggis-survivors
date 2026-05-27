@@ -84,7 +84,7 @@ Game balance is defined in data files, not scattered through logic:
 - `src/data/biomes.ts` — `BiomeId` union (24 biomes total: bog/loch/pine/heather/coastal/haar/frost + 17 named biomes through B11) + per-biome `BIOMES` defs (tint, weights, modifier, mood, ambientHaarDensity).
 - `src/data/eliteAffixes.ts` — elite enemy modifier roster.
 - `src/data/hazards.ts` — environmental footing hazards (7 keys, biome-routed). See HazardsSystem entry above for runtime.
-- `src/data/relics.ts` — R1 third-tier item bag (18 handcrafted relics, 3-slot cap). Drops from elites/bosses/legendary chests.
+- `src/data/relics.ts` — R1 third-tier item bag (19 handcrafted relics, 3-slot cap). Drops from elites/bosses/legendary chests. `stormcrown` is a restricted boss-key drop (Cailleach Gauntlet win only).
 - `src/data/runes.ts` — U1 30-rune rule-stack catalogue; condition + effect evaluators in `src/systems/runeConditions.ts` + `src/systems/runeEffects.ts`.
 - `src/data/nodeBanks.ts` + `src/data/nodeTypes.ts` — M1 Moor Road node graph (7 node types × 56 def entries across 3 act banks).
 - `src/data/routes.ts` — W2 Moor Road routes. `RouteDef` = `modifierDeltas` (applied at pick-resolve time) + optional `onResume(ctx: RouteResumeContext)` for side-effect callbacks (heal bursts, forced chests, timed spawn releases). `ROUTES_BY_SLOT` splits into picker A (act 1) and B (act 2). `DEFAULT_ROUTE_ON_SKIP` is the Skip-Intermissions fallback per slot.
