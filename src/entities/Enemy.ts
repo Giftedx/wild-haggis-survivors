@@ -2891,6 +2891,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   getXpValue(): number { return this.xpValue; }
   getEnemyKey(): string { return this.enemyKey; }
   getBehavior(): EnemyBehavior { return this.behavior; }
+  /** Test hook — the Taxman's Grudge phase (1 → 'transitioning' → 2).
+   *  Only meaningful when behavior === 'taxman_grudge'; otherwise stays 1. */
+  getTaxmanGrudgePhase(): TaxmanGrudgeState['phase'] { return this.taxmanGrudgeState.phase; }
   getHpFraction(): number { return this.maxHp > 0 ? this.hp / this.maxHp : 0; }
   getHp(): number { return this.hp; }
   getMaxHp(): number { return this.maxHp; }
