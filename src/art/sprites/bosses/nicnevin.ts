@@ -27,6 +27,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_NICNEVIN_CANVAS_SIZE = 80;
 
@@ -54,10 +55,13 @@ const GEM_GREEN = 0x4afac8;
 const GEM_GLOW = 0xa0ffe4;
 const HAND_PALE = 0x705a78;
 
-export function drawBossNicnevin(g: Phaser.GameObjects.Graphics): void {
+export function drawBossNicnevin(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_NICNEVIN_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2 + 6;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 6 + (frame.breathY ?? 0);
 
   // ── Shadow halo (rendered first; she casts a wider footprint than
   // her body, suggesting the host of unquiet spirits she leads) ─────
