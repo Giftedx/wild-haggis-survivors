@@ -69,14 +69,17 @@ export function drawBodachGlasBody(
   g.fillTriangle(cx + 8, cy + 17, cx + 10, cy + 17, cx + 9, cy + 20);
 
   // ── VISIBLE LEGS — the threat is that he WALKS. Two thin grey
-  // shins peeking from the cloak hem. ──
+  // shins peeking from the cloak hem. Stride offsets applied so the
+  // AnimationController can drive the walking cycle. ──
+  const leftY = frame.leftLegY ?? 0;
+  const rightY = frame.rightLegY ?? 0;
   g.fillStyle(0x3a3e48, 1);
-  g.fillRect(cx - 3, cy + 15, 1.5, 5);
-  g.fillRect(cx + 1.5, cy + 15, 1.5, 5);
-  // Boot tips — slightly darker
+  g.fillRect(cx - 3, cy + 15 + leftY, 1.5, 5);
+  g.fillRect(cx + 1.5, cy + 15 + rightY, 1.5, 5);
+  // Boot tips track the shin position.
   g.fillStyle(0x1a1c20, 1);
-  g.fillRect(cx - 3.2, cy + 19, 2, 1.5);
-  g.fillRect(cx + 1.3, cy + 19, 2, 1.5);
+  g.fillRect(cx - 3.2, cy + 19 + leftY, 2, 1.5);
+  g.fillRect(cx + 1.3, cy + 19 + rightY, 2, 1.5);
 
   // ── Staff/cane — slim wooden staff at right side, Highland
   // climber's tool. Vertical line just outside the cloak edge. ──
