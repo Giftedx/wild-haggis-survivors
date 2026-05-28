@@ -22,6 +22,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_NUCKELAVEE_CANVAS_SIZE = 96;
 
@@ -44,10 +45,13 @@ const HOOF_BLACK     = 0x0c0804;
 const HOOF_EDGE      = 0x241810;
 const SEA_MIST       = 0x181428;
 
-export function drawBossNuckelavee(g: Phaser.GameObjects.Graphics): void {
+export function drawBossNuckelavee(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_NUCKELAVEE_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2 + 8;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 8 + (frame.breathY ?? 0);
 
   // ── Ground shadow (large — horse mass) ────────────────────────────
   g.fillStyle(VOID_BLACK, 0.6);

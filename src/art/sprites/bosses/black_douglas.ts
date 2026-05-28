@@ -17,6 +17,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_BLACK_DOUGLAS_CANVAS_SIZE = 64;
 
@@ -35,10 +36,13 @@ const SWORD_STEEL    = 0x888898;
 const SWORD_EDGE     = 0xc8c8d8;
 const SWORD_GRIP     = 0x282810;
 
-export function drawBossBlackDouglas(g: Phaser.GameObjects.Graphics): void {
+export function drawBossBlackDouglas(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_BLACK_DOUGLAS_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2 + 2;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Ground shadow ─────────────────────────────────────────────────
   g.fillStyle(VOID_BLACK, 0.55);

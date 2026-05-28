@@ -17,6 +17,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_EARL_BEARDIE_CANVAS_SIZE = 64;
 
@@ -37,10 +38,13 @@ const CARD_EDGE     = 0xa09060;  // card border
 const EYE_AMBER     = 0xe0a020;
 const EYE_GLOW      = 0xffd060;
 
-export function drawBossEarlBeardie(g: Phaser.GameObjects.Graphics): void {
+export function drawBossEarlBeardie(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_EARL_BEARDIE_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2 + 4;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
 
   // ── Ground shadow (seated, so smaller than standing bosses) ──────
   g.fillStyle(VOID_BLACK, 0.45);

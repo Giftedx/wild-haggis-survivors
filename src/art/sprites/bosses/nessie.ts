@@ -14,6 +14,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_NESSIE_CANVAS_SIZE = 64;
 
@@ -31,10 +32,13 @@ const BIOLUME_GLOW   = 0x60ffe0;
 const EYE_AMBER      = 0xd08020;
 const EYE_GLOW       = 0xffe060;
 
-export function drawBossNessie(g: Phaser.GameObjects.Graphics): void {
+export function drawBossNessie(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_NESSIE_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // ── Ground shadow ─────────────────────────────────────────────────
   g.fillStyle(VOID_BLACK, 0.40);
