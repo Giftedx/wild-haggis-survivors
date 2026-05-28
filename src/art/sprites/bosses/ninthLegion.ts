@@ -149,12 +149,16 @@ export function bakeBossNinthLegion(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+export const SPECTRE_LEGIONARY_CANVAS_SIZE = 32;
+
 /** Spectre Legionary — rank-and-file ghost soldier summoned by the Centurion. */
-export function bakeSpectreLegionry(scene: Phaser.Scene): void {
-  const g = scene.add.graphics();
-  const s = 32;
-  const cx = s / 2;
-  const cy = s / 2;
+export function drawSpectreLegionry(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = SPECTRE_LEGIONARY_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // Ghost mist
   g.fillStyle(0x8899bb, 0.18);
@@ -197,7 +201,11 @@ export function bakeSpectreLegionry(scene: Phaser.Scene): void {
   // Ghost hem
   g.fillStyle(0x8899bb, 0.35);
   g.fillEllipse(cx, cy + 12, 14, 6);
+}
 
-  g.generateTexture('spectre_legionary', s, s);
+export function bakeSpectreLegionry(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawSpectreLegionry(g);
+  g.generateTexture('spectre_legionary', SPECTRE_LEGIONARY_CANVAS_SIZE, SPECTRE_LEGIONARY_CANVAS_SIZE);
   g.destroy();
 }

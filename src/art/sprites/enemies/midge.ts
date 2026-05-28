@@ -10,11 +10,17 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeMidge(scene: Phaser.Scene): void {
-  const s = 32;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2;
+export const MIDGE_CANVAS_SIZE = 32;
+
+export function drawMidgeBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = MIDGE_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // ── Motion-blur halo — shrunk 30% so the body reads as the
   // sprite, not a mote inside a haze. ──
@@ -111,7 +117,11 @@ export function bakeMidge(scene: Phaser.Scene): void {
   g.fillStyle(0xffccd8, 0.55);
   g.fillCircle(cx - 8.5, cy + 4.5, 0.75);
   g.fillCircle(cx - 10.5, cy + 2.5, 0.45);
+}
 
-  g.generateTexture('midge', s, s);
+export function bakeMidge(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawMidgeBody(g);
+  g.generateTexture('midge', MIDGE_CANVAS_SIZE, MIDGE_CANVAS_SIZE);
   g.destroy();
 }

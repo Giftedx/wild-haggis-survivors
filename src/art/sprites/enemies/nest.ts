@@ -9,11 +9,17 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeNest(scene: Phaser.Scene): void {
-  const s = 40;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const NEST_CANVAS_SIZE = 40;
+
+export function drawNestBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = NEST_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Dark outer twig ring — rough bowl silhouette. Lifted vertically
   // to break the flat low silhouette (audit dislike: "silhouette is
@@ -101,7 +107,12 @@ export function bakeNest(scene: Phaser.Scene): void {
   g.fillRect(cx + 7, cy - 10, 2.5, 0.3);
   g.fillRect(cx + 8, cy - 12, 2.5, 0.3);
 
-  g.generateTexture('nest', s, s);
+}
+
+export function bakeNest(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawNestBody(g);
+  g.generateTexture('nest', NEST_CANVAS_SIZE, NEST_CANVAS_SIZE);
   g.destroy();
 }
 

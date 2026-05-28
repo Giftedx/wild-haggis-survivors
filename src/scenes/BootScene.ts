@@ -105,6 +105,11 @@ import '../animation/frameDrawers/enemies/wickerHaggisFrames';
 import '../animation/frameDrawers/enemies/twinStonesFrames';
 import '../animation/frameDrawers/enemies/ninthLegionFrames';
 import '../animation/frameDrawers/enemies/stoorWormFrames';
+import '../animation/frameDrawers/enemies/midgeFrames';
+import '../animation/frameDrawers/enemies/midgieSwarmFrames';
+import '../animation/frameDrawers/enemies/nestFrames';
+import '../animation/frameDrawers/enemies/touristGhostFrames';
+import '../animation/frameDrawers/enemies/spectreLegionaryFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.

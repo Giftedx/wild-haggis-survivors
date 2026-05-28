@@ -10,11 +10,17 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeMidgieSwarm(scene: Phaser.Scene): void {
-  const s = 26;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2;
+export const MIDGIE_SWARM_CANVAS_SIZE = 26;
+
+export function drawMidgieSwarmBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = MIDGIE_SWARM_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // ── Outer sparse haze — softened so the cluster reads as MANY
   // small bugs, not a single portal-ring. ──
@@ -134,7 +140,11 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   g.fillStyle(0xffb0ba, 0.45);
   g.fillCircle(cx - 7, cy + 5, 0.55);
   g.fillCircle(cx + 6, cy - 6, 0.5);
+}
 
-  g.generateTexture('midgie_swarm', s, s);
+export function bakeMidgieSwarm(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawMidgieSwarmBody(g);
+  g.generateTexture('midgie_swarm', MIDGIE_SWARM_CANVAS_SIZE, MIDGIE_SWARM_CANVAS_SIZE);
   g.destroy();
 }
