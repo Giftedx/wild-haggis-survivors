@@ -112,6 +112,7 @@ import '../animation/frameDrawers/enemies/touristGhostFrames';
 import '../animation/frameDrawers/enemies/spectreLegionaryFrames';
 import '../animation/frameDrawers/enemies/berserkerFrames';
 import '../animation/frameDrawers/enemies/deepFryerFrames';
+import '../animation/frameDrawers/enemies/auldReekieFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
