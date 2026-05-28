@@ -4701,5 +4701,18 @@ export const ui = {
       locked: '???',
       complete: 'He is quiet noo. The muir is yours.',
     },
+    /** Field Notes v2 — Foundation entries use the same officious English
+     *  as the EN copy. The joke is the Foundation writes in English; the
+     *  haggis speaks Scots. SCS = EN verbatim by design. */
+    foundation: {
+      '01': "The Haggis Wildlife Foundation has monitored Haggis scoticus since 1967 with unwavering empirical rigour. Our mandate: document, classify, and preserve. That the subject is disputed by mainstream zoology is, frankly, mainstream zoology's problem.",
+      '02': "Two confirmed subspecies. H. scoticus dextrogyrus: clockwise ambulation bias, right legs shorter. H. s. sinistrogyrus: anticlockwise, left legs shorter. They cannot interbreed. The directional incompatibility is not a preference but a physical constraint.",
+      '03': "The asymmetric leg arrangement produces the characteristic rotational drift. Field researchers are advised not to correct the animal's trajectory. The drift is not a disability. It is, by every metric available to this Foundation, working as intended.",
+      '04': "The wild haggis subsists on highland heather, wind-carried oat dust, and what we have classified as 'ambient moor gloom.' Attempts to replicate this diet in captivity have produced only disappointed haggis. It appears the moor gloom is load-bearing.",
+      '05': "Classified threats: culinary interest (significant); tourist photography (moderate — haggis have learned to charge); English weather (statistical outlier — haggis appear immune); our previous field assistant, who walked anticlockwise on a clockwise-dominant moor and was never recovered.",
+      '06': "The haggis is not known to vocalise. During storm events on Rannoch Moor, researchers have reported a low-frequency tonal register which could be described as 'the moor itself breathing.' We have filed this under 'ambient.' It has not been further reviewed.",
+      '07': "The Foundation's 2024 census estimate: 'abundant.' Our methodology: we started counting, felt it was going well, and stopped before the number could disappoint us. Per HWF Resolution 14(b): 'a figure that feels correct is no less valid than one that doesn't.'",
+      '08': "After 57 years of rigorous study, we are prepared to confirm that the wild haggis exists. Evidence: we have seen it. More than once. That neither sighting was reproducible under laboratory conditions reflects the laboratory's failure to replicate the moor, not the moor's failure to be real.",
+    },
   },
 } as const;

@@ -11,7 +11,7 @@ import { PERMANENT_UPGRADES } from '../../data/permanentUpgrades';
 import { RELIQUARY_CURIOS } from '../../scenes/game/reliquary';
 
 describe('buildFindsEntries', () => {
-  it('yields one entry per acquirable thing across all six categories', () => {
+  it('yields one entry per acquirable thing across all seven categories', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog());
     const expectedCount =
       Object.keys(WEAPON_DEFS).length +
@@ -19,17 +19,20 @@ describe('buildFindsEntries', () => {
       PASSIVE_CARDS.length +
       PERMANENT_UPGRADES.length +
       RELIQUARY_CURIOS.length +
-      25; // old drover lore arc
+      25 + // old drover lore arc
+      8;   // foundation lore arc
     expect(entries.length).toBe(expectedCount);
   });
 
-  it('orders categories: weapon → evolution → passive → permanent → relic', () => {
+  it('orders categories: weapon → evolution → passive → permanent → relic → lore → foundation', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog());
     const indexOfFirst = (cat: string) => entries.findIndex((e) => e.category === cat);
     expect(indexOfFirst('weapon')).toBeLessThan(indexOfFirst('evolution'));
     expect(indexOfFirst('evolution')).toBeLessThan(indexOfFirst('passive'));
     expect(indexOfFirst('passive')).toBeLessThan(indexOfFirst('permanent'));
     expect(indexOfFirst('permanent')).toBeLessThan(indexOfFirst('relic'));
+    expect(indexOfFirst('relic')).toBeLessThan(indexOfFirst('lore'));
+    expect(indexOfFirst('lore')).toBeLessThan(indexOfFirst('foundation'));
   });
 
   it('marks an unacquired find with acquired=false, count=0, null firstAcquiredAt', () => {
@@ -138,6 +141,68 @@ describe('Old Drover entry — The Moor Remembers reveal arc', () => {
     const droverEntries = entries.filter((e) => e.key.startsWith('old_drover_'));
     expect(droverEntries).toHaveLength(25);
     expect(droverEntries.every((e) => e.acquired === false)).toBe(true);
+  });
+});
+
+describe('Foundation entries — Haggis Wildlife Foundation lore arc', () => {
+  it('renders 8 foundation entries with acquired=false when fieldNotesLifetime=0', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 0);
+    const found = entries.filter((e) => e.key.startsWith('foundation_'));
+    expect(found).toHaveLength(8);
+    expect(found.every((e) => e.acquired === false)).toBe(true);
+  });
+
+  it('unlocks entries in threshold order [1,3,7,12,20,30,50,75]', () => {
+    const thresholds = [1, 3, 7, 12, 20, 30, 50, 75] as const;
+    for (let i = 0; i < thresholds.length; i++) {
+      const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, thresholds[i]);
+      const found = entries.filter((e) => e.key.startsWith('foundation_'));
+      const unlocked = found.filter((e) => e.acquired);
+      expect(unlocked).toHaveLength(i + 1);
+    }
+  });
+
+  it('unlocks none when fieldNotesLifetime is below first threshold (1)', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 0);
+    const found = entries.filter((e) => e.key.startsWith('foundation_'));
+    expect(found.every((e) => e.acquired === false)).toBe(true);
+  });
+
+  it('unlocks all 8 when fieldNotesLifetime >= 75', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 75);
+    const found = entries.filter((e) => e.key.startsWith('foundation_'));
+    expect(found.every((e) => e.acquired === true)).toBe(true);
+  });
+
+  it('all foundation entries have category "foundation"', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 0);
+    const found = entries.filter((e) => e.key.startsWith('foundation_'));
+    expect(found.every((e) => e.category === 'foundation')).toBe(true);
+  });
+
+  it('uses ui.almanac.foundation.NN as both nameKey and descKey', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 1);
+    const first = entries.find((e) => e.key === 'foundation_01')!;
+    expect(first).toBeDefined();
+    expect(first.nameKey).toBe('ui.almanac.foundation.01');
+    expect(first.descKey).toBe('ui.almanac.foundation.01');
+  });
+
+  it('appears after lore (Old Drover) in the category ordering', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 1, 1);
+    const lastDroverIdx = entries.reduce(
+      (max, e, i) => (e.category === 'lore' ? i : max),
+      -1,
+    );
+    const firstFoundationIdx = entries.findIndex((e) => e.category === 'foundation');
+    expect(firstFoundationIdx).toBeGreaterThan(lastDroverIdx);
+  });
+
+  it('defaults to 0 fieldNotesLifetime when third arg is omitted (backward compat)', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0);
+    const found = entries.filter((e) => e.key.startsWith('foundation_'));
+    expect(found).toHaveLength(8);
+    expect(found.every((e) => e.acquired === false)).toBe(true);
   });
 });
 

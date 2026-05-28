@@ -198,7 +198,7 @@ export class AlmanacScene extends Phaser.Scene {
     switch (this.activeTab) {
       case 'beasties': return buildBeastiesEntries(log)[0]?.key ?? null;
       case 'weys':     return buildWeysEntries(log)[0]?.key ?? null;
-      case 'finds':    return buildFindsEntries(log, new SaveManager().load().oldDroverRevealedCount)[0]?.key ?? null;
+      case 'finds':    return buildFindsEntries(log, new SaveManager().load().oldDroverRevealedCount, loadSave().fieldNotesLifetime ?? 0)[0]?.key ?? null;
       case 'banter':   return buildBanterEntries(log)[0]?.key ?? null;
     }
   }
@@ -445,7 +445,12 @@ export class AlmanacScene extends Phaser.Scene {
     }
 
     if (this.activeTab === 'finds') {
-      const entries = buildFindsEntries(loadSave().discoveryLog, new SaveManager().load().oldDroverRevealedCount);
+      const mainSave = loadSave();
+      const entries = buildFindsEntries(
+        mainSave.discoveryLog,
+        new SaveManager().load().oldDroverRevealedCount,
+        mainSave.fieldNotesLifetime ?? 0,
+      );
       const tab: AlmanacTabKey = 'finds';
       this.activeBookHandle = renderFindsBook(this, viewport, entries, uiScale, {
         expandedKey: this.expandStates[tab].expandedKey,

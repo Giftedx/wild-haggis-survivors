@@ -37,6 +37,7 @@ import type { RelicEffectDriver } from '../../systems/relics/RelicEffectDriver';
 import type { LevelUpFlow } from './LevelUpFlow';
 import type { RuneSystemController } from './runeSystemController';
 import type { RunScoreState } from './RunScoreState';
+import { bumpFieldNotesLifetime } from '../../utils/save/bumpers';
 
 export interface InstallRuntimeAmbientOpts {
   scene: Phaser.Scene;
@@ -140,7 +141,10 @@ export function installRuntimeAmbient(
       opts.getFloatTextPool().acquire(x, y, str, color, fs, d),
     modifyHealOrbAmount: (a) => opts.getRelicEffectDriver().modifyHealOnOrb(a),
     onBurnsPlatterCollect: () => opts.getRuneSystemController().onBurnsPlatterCollect(),
-    onFieldNoteCollect: () => opts.getBanter()?.request('field_note_pickup'),
+    onFieldNoteCollect: () => {
+      opts.getBanter()?.request('field_note_pickup');
+      bumpFieldNotesLifetime();
+    },
   });
 
   return { weather, hazards, gameTickers, pickupSpawner };

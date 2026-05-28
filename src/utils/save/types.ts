@@ -234,6 +234,14 @@ export interface SaveData {
   cairnBlessingsLifetime?: number;
 
   /**
+   * Haggis Wildlife Foundation field-note pickups collected across all
+   * runs. Gates Foundation faction entries in the Highland Almanac
+   * Finds tab (DESIGN_IDEAS §11 — Foundation v2). Optional + defaulted
+   * to 0 via coerce; back-compat with pre-field-note-v2 saves.
+   */
+  fieldNotesLifetime?: number;
+
+  /**
    * Total cursed-run victories across all time. Unlocks the Cailleach
    * variant at count=3. Retroactively seeded from runHistory on first
    * load for existing players who already have past cursed victories.

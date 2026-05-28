@@ -206,6 +206,20 @@ export function bumpCairnBlessing(): number {
 }
 
 /**
+ * Field Notes v2 (DESIGN_IDEAS §11) — bump the lifetime field-note pickup
+ * counter. Gates Foundation faction entries in the Highland Almanac Finds
+ * tab. Best-effort — swallow storage errors so a pickup never blocks.
+ */
+export function bumpFieldNotesLifetime(): void {
+  try {
+    const cur = loadSave();
+    writeSave({ ...cur, fieldNotesLifetime: (cur.fieldNotesLifetime ?? 0) + 1 });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
  * B1 Phase 3 Task 17 — persist an enemy key into `seenEnemies` the first
  * time SpawnSystem encounters it. Best-effort — swallow storage errors
  * so banter never blocks gameplay. No-op when the key is already tracked.

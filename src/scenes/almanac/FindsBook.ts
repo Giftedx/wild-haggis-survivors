@@ -26,6 +26,7 @@ const CATEGORY_TINT: Record<FindEntryVM['category'], number> = {
   permanent: 0x8a6cd6,  // amethyst — between-run upgrades
   relic: 0xffb060,      // reliquary toast colour
   lore: 0x7ca4c0,       // haar blue — Old Drover whisper arc
+  foundation: 0x5a8050, // field-note moss green — HWF faction entries
 };
 
 const CATEGORY_TINT_DIM = 0x2a3550;

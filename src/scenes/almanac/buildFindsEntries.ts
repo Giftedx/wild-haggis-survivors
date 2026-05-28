@@ -21,7 +21,7 @@ import { EVOLUTION_RECIPES } from '../../core/BalanceConfig';
 import { PERMANENT_UPGRADES } from '../../data/permanentUpgrades';
 import { RELIQUARY_CURIOS } from '../../scenes/game/reliquary';
 
-export type FindCategory = 'weapon' | 'evolution' | 'passive' | 'permanent' | 'relic' | 'lore';
+export type FindCategory = 'weapon' | 'evolution' | 'passive' | 'permanent' | 'relic' | 'lore' | 'foundation';
 
 export interface FindEntryVM {
   readonly key: string;
@@ -40,19 +40,31 @@ const CATEGORY_ORDER: readonly FindCategory[] = [
   'permanent',
   'relic',
   'lore',
+  'foundation',
 ];
 
 const OLD_DROVER_SLOTS = 25;
 
-export function buildFindsEntries(log: DiscoveryLog, oldDroverRevealedCount = 0): FindEntryVM[] {
+const FOUNDATION_THRESHOLDS = [1, 3, 7, 12, 20, 30, 50, 75] as const;
+
+export function buildFindsEntries(
+  log: DiscoveryLog,
+  oldDroverRevealedCount = 0,
+  fieldNotesLifetime = 0,
+): FindEntryVM[] {
   const out: FindEntryVM[] = [];
   for (const cat of CATEGORY_ORDER) {
-    out.push(...collectCategory(cat, log, oldDroverRevealedCount));
+    out.push(...collectCategory(cat, log, oldDroverRevealedCount, fieldNotesLifetime));
   }
   return out;
 }
 
-function collectCategory(category: FindCategory, log: DiscoveryLog, oldDroverRevealedCount: number): FindEntryVM[] {
+function collectCategory(
+  category: FindCategory,
+  log: DiscoveryLog,
+  oldDroverRevealedCount: number,
+  fieldNotesLifetime: number,
+): FindEntryVM[] {
   switch (category) {
     case 'weapon':
       return Object.values(WEAPON_DEFS).map((w) =>
@@ -79,6 +91,8 @@ function collectCategory(category: FindCategory, log: DiscoveryLog, oldDroverRev
       );
     case 'lore':
       return buildOldDroverEntries(oldDroverRevealedCount);
+    case 'foundation':
+      return buildFoundationEntries(fieldNotesLifetime);
   }
 }
 
@@ -107,6 +121,33 @@ function buildOldDroverEntries(oldDroverRevealedCount: number): FindEntryVM[] {
       descKey: i18nKey,
       acquired: revealed,
       acquireCount: revealed ? 1 : 0,
+      firstAcquiredAt: null,
+    };
+  });
+}
+
+/**
+ * Field Notes v2 (DESIGN_IDEAS §11) — Haggis Wildlife Foundation lore arc.
+ *
+ * Emits 8 flat `FindEntryVM` foundation entries. Each entry unlocks once
+ * `fieldNotesLifetime` reaches the corresponding threshold in
+ * `FOUNDATION_THRESHOLDS`. The nameKey and descKey both point at the same
+ * i18n leaf — the expanded panel shows the pompous faux-naturalist text as
+ * both title and body (same pattern as the Old Drover arc).
+ */
+function buildFoundationEntries(fieldNotesLifetime: number): FindEntryVM[] {
+  return FOUNDATION_THRESHOLDS.map((threshold, i) => {
+    const slot = i + 1;
+    const padded = String(slot).padStart(2, '0');
+    const i18nKey = `ui.almanac.foundation.${padded}`;
+    const acquired = fieldNotesLifetime >= threshold;
+    return {
+      key: `foundation_${padded}`,
+      category: 'foundation' as const,
+      nameKey: i18nKey,
+      descKey: i18nKey,
+      acquired,
+      acquireCount: acquired ? 1 : 0,
       firstAcquiredAt: null,
     };
   });

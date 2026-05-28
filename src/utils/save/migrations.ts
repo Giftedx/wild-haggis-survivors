@@ -431,6 +431,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     beithirCuresLifetime: coerceInteger(candidate.beithirCuresLifetime, 0),
     clootieWagersLifetime: coerceInteger(candidate.clootieWagersLifetime, 0),
     cairnBlessingsLifetime: coerceInteger(candidate.cairnBlessingsLifetime, 0),
+    fieldNotesLifetime: coerceInteger(candidate.fieldNotesLifetime, 0),
     runHistory,
     seenEnemies: coerceStringArray(candidate.seenEnemies),
     firstTimeEventsFired: coerceStringArray(candidate.firstTimeEventsFired),

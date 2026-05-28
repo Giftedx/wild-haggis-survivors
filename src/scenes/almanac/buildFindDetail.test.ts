@@ -67,5 +67,6 @@ describe('categoryLabelKeyFor', () => {
     expect(categoryLabelKeyFor('passive')).toBe('ui.almanac.find_cat_passive');
     expect(categoryLabelKeyFor('permanent')).toBe('ui.almanac.find_cat_permanent');
     expect(categoryLabelKeyFor('relic')).toBe('ui.almanac.find_cat_relic');
+    expect(categoryLabelKeyFor('foundation')).toBe('ui.almanac.find_cat_foundation');
   });
 });

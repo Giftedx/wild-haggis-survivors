@@ -51,6 +51,7 @@ export const DEFAULT_SAVE: SaveData = {
   seenRunes: [],
   lemmingsSeenForVariant: [],
   livingWorldUnlocks: { unlockedCompanions: ['sheepdog'], selectedCompanion: 'sheepdog' },
+  fieldNotesLifetime: 0,
   settings: { ...DEFAULT_SETTINGS },
 };
 
