@@ -13,9 +13,11 @@ function buildMocks(overrides: {
   dailyChallenge?: unknown;
   routes?: import('../../data/routes').RoutePick[];
   ironmoor?: boolean;
+  sharedRunSetup?: import('../../utils/sharedRunUrl').SharedRunSetup | null;
 } = {}) {
   const saveManager = {
     recordRunToHistory: vi.fn(),
+    recordFriendChallengeAttempt: vi.fn(),
     update: vi.fn((fn: (cur: { dailyChallenge?: unknown }) => unknown) =>
       fn({ dailyChallenge: overrides.dailyChallenge }),
     ),
@@ -39,6 +41,7 @@ function buildMocks(overrides: {
     isDailyRun: () => overrides.isDaily ?? false,
     getRoutePicks: () => overrides.routes ?? [],
     isIronmoor: () => overrides.ironmoor ?? false,
+    getActiveSharedRunSetup: () => overrides.sharedRunSetup ?? null,
     // Jun 15 2027 — guaranteed off-season for every registered seasonal
     // event window (Hogmanay, Burns, Imbolc, Beltane, Lammas, Samhain,
     // St Andrew's, Bracken-turn). Picking an "always-no-event" anchor
@@ -330,6 +333,74 @@ describe('RunHistoryRecorder', () => {
       expect(result.dailyChallenge.attempts).toBe(1);
       expect(result.dailyChallenge.completedVictory).toBe(false);
       expect(result.dailyChallenge.bestTimeSec).toBe(60);
+    });
+  });
+
+  describe('W27 friend challenge attempt recording', () => {
+    const baseSummary = {
+      timeSurvivedSec: 490,
+      enemiesKilled: 200,
+      bestCombo: 30,
+      victory: false,
+    };
+
+    it('records an attempt when the run came from a challenge URL', () => {
+      const { hooks, saveManager } = buildMocks({
+        sharedRunSetup: {
+          seed: 1,
+          variantKey: 'moor_runner',
+          curseKey: 'heavy_legs',
+          challenge: { outcome: 'death', timeSurvivedSec: 480 },
+        },
+      });
+      const expectedNow = new Date(2027, 5, 15, 12, 0, 0, 0).getTime();
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 0 } as never);
+
+      // ID: `${seed.toString(16)}-${variantKey}-${curseKey ?? 'clean'}-${targetTimeSec}`
+      expect(saveManager.recordFriendChallengeAttempt).toHaveBeenCalledWith(
+        '1-moor_runner-heavy_legs-480',
+        { timeSurvivedSec: 490, outcome: 'death', ts: expectedNow },
+      );
+    });
+
+    it('records outcome as "victory" when the run was a victory', () => {
+      const { hooks, saveManager } = buildMocks({
+        sharedRunSetup: {
+          seed: 0xdeadbeef >>> 0,
+          variantKey: 'classic',
+          curseKey: null,
+          challenge: { outcome: 'victory', timeSurvivedSec: 300 },
+        },
+      });
+      new RunHistoryRecorder(hooks).record(
+        { ...baseSummary, timeSurvivedSec: 310, victory: true } as never,
+        { goldEarned: 0 } as never,
+      );
+      const call = saveManager.recordFriendChallengeAttempt.mock.calls[0];
+      expect(call[1].outcome).toBe('victory');
+      expect(call[1].timeSurvivedSec).toBe(310);
+      // ID uses 'clean' for null curseKey
+      expect(call[0]).toBe('deadbeef-classic-clean-300');
+    });
+
+    it('does NOT record an attempt when sharedRunSetup has no challenge', () => {
+      const { hooks, saveManager } = buildMocks({
+        sharedRunSetup: {
+          seed: 1,
+          variantKey: 'classic',
+          curseKey: null,
+          challenge: null,
+        },
+      });
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 0 } as never);
+      expect(saveManager.recordFriendChallengeAttempt).not.toHaveBeenCalled();
+    });
+
+    it('does NOT record an attempt for non-challenge runs (hook absent)', () => {
+      const { hooks, saveManager } = buildMocks();
+      // default buildMocks has getActiveSharedRunSetup returning null
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 0 } as never);
+      expect(saveManager.recordFriendChallengeAttempt).not.toHaveBeenCalled();
     });
   });
 });
