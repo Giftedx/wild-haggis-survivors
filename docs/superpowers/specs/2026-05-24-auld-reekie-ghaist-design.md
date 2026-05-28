@@ -1,7 +1,7 @@
 # Auld Reekie Ghaist — Boss Design Spec
 
 **Date**: 2026-05-24  
-**Status**: Approved — implementation planned  
+**Status**: Shipped 2026-05-25  
 **Slot**: 18:30 (1110 s) — fills gap between Nuckelavee (17:00) and Hunter General (20:00)  
 **Family**: Urban  
 **Post-bell**: No — regular time-gated boss
