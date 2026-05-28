@@ -15,7 +15,7 @@
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
 - **Tests:** Vitest suite via `npm test` (exact file/case counts change as coverage grows).
 - **Weapons:** 15 base families (14 with paired-passive evolutions; `bagpipes` utility-only). `EVOLUTION_RECIPES.length = 14`. `BURNS_EVOLUTION_THRESHOLD = 10` (frozen — the Pibroch Hammer carve-out at WLW Phase 2 means the recipe count drifts above the achievement gate by design; see `src/core/BalanceConfig.ts` rationale block).
-- **Biomes:** 13 (`bog`, `loch`, `pine`, `heather`, `coastal`, `haar`, `frost`, `cairngorm`, `glen_coe`, `clyde_shipyard`, `black_bog`, `ben_nevis`, `glasgow_close`). **Hazards:** 13 (`peat_pit`, `falling_slate`, `burn_water`, `loose_scree`, `tidal_wrack`, `slick_cobble`, `rime_patch`, `wind_shear`, `highland_mist`, `molten_slag`, `ink_pool`, `summit_gust`, `buckfast_pool`). **Passives:** 16.
+- **Biomes:** 25 (full roster — see `src/data/biomes.ts` `BiomeId` union). **Hazards:** 25 (one per biome through B12 — see `src/data/hazards.ts` `HazardKey`). **Passives:** see `src/data/upgrades.ts`.
 - **TODO/FIXME markers in production:** zero.
 - **Production `as any` count:** zero (residual hits are doc-comment self-references).
 
