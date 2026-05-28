@@ -16,6 +16,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_TWIN_STONE_CANVAS_SIZE = 56;
 
@@ -35,10 +36,13 @@ const SPIRAL_GROOVE = 0x3a3028;
 
 // ── Stone A (tall — the primary boss) ────────────────────────────────
 
-export function drawBossTwinStoneA(g: Phaser.GameObjects.Graphics): void {
+export function drawBossTwinStoneA(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_TWIN_STONE_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // Ground shadow
   g.fillStyle(VOID_DARK, 0.45);
@@ -104,7 +108,7 @@ export function drawBossTwinStoneA(g: Phaser.GameObjects.Graphics): void {
 
   // Crack line — age mark
   g.lineStyle(1, STONE_DEEP, 0.55);
-  g.strokeLineShape(new Phaser.Geom.Line(cx + 3, cy - 2, cx + 5, cy + 12));
+  g.lineBetween(cx + 3, cy - 2, cx + 5, cy + 12);
 }
 
 // ── Stone B (shorter, broader — the companion / shadow stone) ────────

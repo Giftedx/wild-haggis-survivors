@@ -14,14 +14,17 @@
  * sea-green base, bile-yellow maw lining, cold amber eye.
  */
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_STOOR_WORM_CANVAS_SIZE = 100;
 
-export function bakeBossStoorWorm(scene: Phaser.Scene): void {
-  const g = scene.add.graphics();
+export function drawBossStoorWorm(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_STOOR_WORM_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // ── Ground shadow ────────────────────────────────────────────────────
   g.fillStyle(0x000000, 0.50);
@@ -118,6 +121,12 @@ export function bakeBossStoorWorm(scene: Phaser.Scene): void {
   g.fillStyle(0x44aa66, 0.22);
   g.fillEllipse(cx - 2, cy - 2, 70, 60);
 
+}
+
+export function bakeBossStoorWorm(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  const s = BOSS_STOOR_WORM_CANVAS_SIZE;
+  drawBossStoorWorm(g);
   g.generateTexture('boss_stoor_worm', s, s);
   g.destroy();
 }

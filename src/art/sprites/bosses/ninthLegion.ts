@@ -13,14 +13,17 @@
  * Also bakes `spectre_legionary` — the wave-spawn rank-and-file soldier.
  */
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_NINTH_LEGION_CANVAS_SIZE = 80;
 
-export function bakeBossNinthLegion(scene: Phaser.Scene): void {
-  const g = scene.add.graphics();
+export function drawBossNinthLegion(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_NINTH_LEGION_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // ── Ghost mist base ──────────────────────────────────────────────────
   g.fillStyle(0x8899bb, 0.15);
@@ -136,6 +139,12 @@ export function bakeBossNinthLegion(scene: Phaser.Scene): void {
   g.fillStyle(0x9aaabb, 0.20);
   g.fillEllipse(cx + 4, cy - 4, 60, 60);
 
+}
+
+export function bakeBossNinthLegion(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  const s = BOSS_NINTH_LEGION_CANVAS_SIZE;
+  drawBossNinthLegion(g);
   g.generateTexture('boss_ninth_legion', s, s);
   g.destroy();
 }
