@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-22
 **Initiative:** Open candidate, lead-dev pick. Extends shipped Ancestral Echo (single-spot 30s ghost) into a persistent cross-run map fixture. Layers a hidden second-voice secret (the haggis's late grandfather, Gran's husband) into the same surface.
-**Status:** Draft — implementation immediately after.
+**Status:** Shipped 2026-05-22.
 **Word count:** ~2,800.
 **Prerequisite:** Ancestral Echo shipped 2026-04-18 (`src/scenes/game/ancestralEcho.ts` + `ancestralEcho.test.ts`); meta save schema v9 at `src/core/SaveManager.ts:306` with `ancestralEchoesTouched` counter and `hasSeenAncestralEchoTip` one-shot.
 

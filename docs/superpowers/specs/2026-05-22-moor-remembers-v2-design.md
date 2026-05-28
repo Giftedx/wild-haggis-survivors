@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-22
 **Initiative:** V2 of The Moor Remembers (V1 shipped same day, [`2026-05-22-the-moor-remembers-design.md`](2026-05-22-the-moor-remembers-design.md)). Promotes the per-run cairn-touch count into a stakes event — touch seven cairns by 14:00 and the Cailleach answers.
-**Status:** Draft — implementation immediately after.
+**Status:** Shipped 2026-05-22.
 **Word count target:** ~1,800.
 **Prerequisite:** Moor Remembers V1 shipped (`src/scenes/game/CairnOfEchoesScheduler.ts`, `src/utils/save/fallenCairns.ts`, save schema v10 with `fallenCairns` + `oldDroverRevealedCount`).
 
