@@ -9,7 +9,7 @@ test.describe('MenuScene DOM focus mirror', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     await canvas.click({ position: { x: 8, y: 8 } });

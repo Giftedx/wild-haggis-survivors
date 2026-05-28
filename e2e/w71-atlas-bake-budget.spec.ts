@@ -57,7 +57,7 @@ test.describe('W71 atlas bake budget (chromium-only)', () => {
       }
     });
 
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('canvas[role="application"]')).toBeVisible({ timeout: 60_000 });
 
     expect(

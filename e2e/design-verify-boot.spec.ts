@@ -31,7 +31,7 @@ test.describe('DESIGN.md boot splash capture', () => {
     }, CURRENT_SAVE_VERSION);
 
     // Navigate — this kicks Phaser boot + BootScene.create.
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
 

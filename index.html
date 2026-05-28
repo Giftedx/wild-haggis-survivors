@@ -7,9 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#1a1a2e" />
     <title>Wild Haggis Survivors</title>
-    <link rel="icon" type="image/png" href="/pwa-192x192.png" />
-    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- Leading-slash hrefs are not rebased by Vite's base; use root-relative
+         to the project root so the build rewrites them to /wild/. The manifest
+         link is injected by vite-plugin-pwa (base-correct), so it is not hand-rolled here. -->
+    <link rel="icon" type="image/png" href="./pwa-192x192.png" />
+    <link rel="apple-touch-icon" href="./pwa-192x192.png" />
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       html, body {

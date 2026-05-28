@@ -16,7 +16,7 @@ test.describe('SpriteExportScene', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.goto('/?export=sprites');
+    await page.goto('./?export=sprites');
     await expect(page.locator('canvas')).toBeVisible({ timeout: 20_000 });
 
     const download = await page.waitForEvent('download', { timeout: 30_000 });

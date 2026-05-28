@@ -59,7 +59,7 @@ test.describe('W82 shared-run URL', () => {
       } catch { /* ignore */ }
     }, CURRENT_SAVE_VERSION);
 
-    const sharedRunUrl = `/?run=${encodeSeedCode(SEED_FOR_TEST)}&v=classic&c=heavy_legs`;
+    const sharedRunUrl = `./?run=${encodeSeedCode(SEED_FOR_TEST)}&v=classic&c=heavy_legs`;
 
     await page.goto(sharedRunUrl);
 
@@ -123,7 +123,7 @@ test.describe('W82 shared-run URL', () => {
     // heavy_legs. The recipient's GameScene reads the parsed
     // `pendingSharedRunMeta.challenge` once during create() to drive
     // the "↗ Shared run · ... · 12:34 to beat" toast.
-    const challengeUrl = `/?run=${encodeSeedCode(SEED_FOR_TEST)}&v=classic&c=heavy_legs&t=754&o=v`;
+    const challengeUrl = `./?run=${encodeSeedCode(SEED_FOR_TEST)}&v=classic&c=heavy_legs&t=754&o=v`;
     await page.goto(challengeUrl);
 
     const canvas = page.locator('canvas[role="application"]');

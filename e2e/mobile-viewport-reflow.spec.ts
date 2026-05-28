@@ -60,7 +60,7 @@ test.describe('W95 mobile viewport reflow', () => {
         } catch { /* ignore */ }
       }, { ver: CURRENT_SAVE_VERSION });
 
-      await page.goto('/');
+      await page.goto('./');
       const canvas = page.locator('canvas[role="application"]');
       await expect(canvas).toBeVisible({ timeout: 60_000 });
 

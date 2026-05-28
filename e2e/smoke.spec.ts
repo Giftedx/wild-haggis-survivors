@@ -15,7 +15,7 @@ test.describe('production build smoke', () => {
       }
     });
 
-    await page.goto('/');
+    await page.goto('./');
     await expect(page).toHaveTitle(/Wild Haggis Survivors/i);
     // main.ts sets role + aria-label in `callbacks.postBoot` — stricter than any stray canvas.
     const canvas = page.locator('canvas[role="application"]');

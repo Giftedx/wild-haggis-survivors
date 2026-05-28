@@ -104,7 +104,7 @@ async function seedFullProgress(page: PageT): Promise<void> {
 }
 
 async function bootCanvas(page: PageT): Promise<void> {
-  await page.goto('/');
+  await page.goto('./');
   const canvas = page.locator('canvas[role="application"]');
   await expect(canvas).toBeVisible({ timeout: 60_000 });
   await canvas.click({ position: { x: 8, y: 8 } });
@@ -203,7 +203,7 @@ test.describe('UI design audit — full screenshot sweep', () => {
         }));
       } catch { /* ignore */ }
     }, CURRENT_META_VERSION);
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     const start = Date.now();
@@ -231,7 +231,7 @@ test.describe('UI design audit — full screenshot sweep', () => {
         localStorage.removeItem('whs_game_settings');
       } catch { /* ignore */ }
     });
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     // Wait past boot dawn paint (~2.8s) so splash is mounted.

@@ -98,7 +98,7 @@ test.describe('H1 Gran\'s Croft — M1 scene smoke', () => {
       }
     }, META_SAVE_VERSION);
 
-    await page.goto('/');
+    await page.goto('./');
     await dismissCanvasChrome(page);
 
     // (1) + (2) — launch Croft and time the transition.
@@ -243,7 +243,7 @@ test.describe('H1 Gran\'s Croft — M1 scene smoke', () => {
       }
     }, META_SAVE_VERSION);
 
-    await page.goto('/');
+    await page.goto('./');
     await dismissCanvasChrome(page);
 
     const enteredGame = await croftStartRunToGame(page);
@@ -290,7 +290,7 @@ test.describe('H1 Gran\'s Croft — M1 scene smoke', () => {
       }
     }, META_SAVE_VERSION, LEGACY_SAVE_SCHEMA_VERSION);
 
-    await page.goto('/');
+    await page.goto('./');
     await dismissCanvasChrome(page);
 
     const enteredGame = await croftStartRunToGame(page);

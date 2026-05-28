@@ -22,6 +22,12 @@ const vitestNoWebStorage =
     : {};
 
 export default defineConfig({
+  // Canonical home is https://ha.ggis.xyz/wild — the build is mounted under
+  // the ha-ggis-hub Cloudflare Pages project at the `/wild/` sub-path, so every
+  // emitted asset/manifest/SW URL must be `/wild/`-rooted. There is no longer a
+  // root-served standalone deployment. Dev server + Playwright preview also run
+  // under this base (see server.open and playwright.config baseURL).
+  base: '/wild/',
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
@@ -38,7 +44,8 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
+    // Open straight to the base path — root 404s now that base is /wild/.
+    open: '/wild/',
   },
   build: {
     target: 'ES2020',
@@ -87,7 +94,13 @@ export default defineConfig({
           '**/SpriteExportScene-*.js',
         ],
       },
+      // SW scope + manifest must stay inside the /wild/ sub-path so the hub
+      // (served at the same origin root) keeps its own scope. vite base feeds
+      // the SW registration scope; id/scope/start_url are pinned explicitly.
       manifest: {
+        id: '/wild/',
+        scope: '/wild/',
+        start_url: '/wild/',
         name: 'Wild Haggis Survivors',
         short_name: 'Haggis',
         description: 'A Vampire Survivors-style browser game with Scottish flair',

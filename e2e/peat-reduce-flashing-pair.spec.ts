@@ -32,7 +32,7 @@ test.describe('PEAT prep: reduceFlashing OFF/ON boot pair', () => {
   for (const reduceFlashing of [false, true]) {
     test(`boots with reduceFlashing=${reduceFlashing}`, async ({ page }) => {
       await seedSettings(page, reduceFlashing);
-      await page.goto('/');
+      await page.goto('./');
       const canvas = page.locator('canvas[role="application"]');
       await expect(canvas).toBeVisible({ timeout: 60_000 });
       const rf = await page.evaluate(() => {

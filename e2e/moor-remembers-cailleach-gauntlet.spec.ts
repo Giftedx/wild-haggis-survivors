@@ -79,7 +79,7 @@ test.describe('moor-remembers V2 — Cailleach Gauntlet', () => {
       } catch { /* ignore */ }
     }, { ver: META_SAVE_VERSION, baseSavedAt: BASE_SAVED_AT });
 
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     await canvas.click({ position: { x: 8, y: 8 } });

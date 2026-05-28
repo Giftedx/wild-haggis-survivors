@@ -118,4 +118,4 @@ This is a solo-dev project. The conventions, voice, and tone matter as much as t
 
 ## License & deploy
 
-Live build at [wild-haggis-survivors.pages.dev](https://wild-haggis-survivors.pages.dev) (Cloudflare Pages, manual `wrangler` deploys — no GitHub remote integration).
+Canonical home: **[ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)**. The game is built with Vite `base: '/wild/'` and mounted under the [`ha-ggis-hub`](../ha-ggis-hub) Cloudflare Pages project at the `/wild/` sub-path (the hub owns the domain; WHS is copied into the hub's `dist/wild/` at deploy time). There is no separate root-served standalone deployment — dev server and Playwright preview also run under the `/wild/` base. See the hub repo's `docs/DEPLOYMENT.md` for the combined build + `wrangler pages deploy` flow.

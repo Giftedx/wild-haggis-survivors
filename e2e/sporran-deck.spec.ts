@@ -24,7 +24,7 @@ test.describe('sporran deck pre-run picker (DESIGN_IDEAS §1)', () => {
       } catch { /* ignore */ }
     }, SAVE_VER);
 
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     await canvas.click({ position: { x: 8, y: 8 } });

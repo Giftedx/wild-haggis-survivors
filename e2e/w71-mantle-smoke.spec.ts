@@ -35,7 +35,7 @@ test.describe('W71 mantle smoke', () => {
       (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
     }, { ver: CURRENT_SAVE_VERSION });
 
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     await canvas.click({ position: { x: 8, y: 8 } });

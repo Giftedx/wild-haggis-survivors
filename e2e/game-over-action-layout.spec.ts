@@ -38,7 +38,7 @@ test.describe('GameOver action/link layout', () => {
       } catch { /* ignore */ }
     });
 
-    await page.goto('/');
+    await page.goto('./');
     await expect(page.locator('canvas[role="application"]')).toBeVisible({ timeout: 60_000 });
 
     const ready = await page.evaluate(async () => {

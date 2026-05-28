@@ -50,7 +50,7 @@ test.describe('Wee Tales — run-end prose epitaph', () => {
       } catch { /* ignore */ }
     });
 
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     await canvas.click({ position: { x: 8, y: 8 } });
@@ -158,7 +158,7 @@ test.describe('Wee Tales — run-end prose epitaph', () => {
         }));
       } catch { /* ignore */ }
     });
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     await canvas.click({ position: { x: 8, y: 8 } });
@@ -265,7 +265,7 @@ test.describe('Wee Tales — run-end prose epitaph', () => {
         }));
       } catch { /* ignore */ }
     });
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     await canvas.click({ position: { x: 8, y: 8 } });

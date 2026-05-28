@@ -32,7 +32,7 @@ test.describe('?sporran=1 URL auto-route (DESIGN_IDEAS §1)', () => {
       } catch { /* ignore */ }
     }, SAVE_VER);
 
-    await page.goto('/?sporran=1');
+    await page.goto('./?sporran=1');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
 

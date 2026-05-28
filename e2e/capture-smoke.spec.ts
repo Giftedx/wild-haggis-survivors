@@ -38,7 +38,7 @@ test.describe('W27 capture: F9 + F10 keybinds', () => {
       } catch { /* ignore */ }
     }, CURRENT_SAVE_VERSION);
 
-    await page.goto('/');
+    await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     // User gesture to unblock audio and focus the canvas.

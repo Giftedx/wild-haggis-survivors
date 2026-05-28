@@ -38,7 +38,7 @@ async function bootAndClear(page: Parameters<Parameters<typeof test>[1]>[0]) {
     } catch { /* ignore */ }
   }, CURRENT_SAVE_VERSION);
 
-  await page.goto('/');
+  await page.goto('./');
   const canvas = page.locator('canvas[role="application"]');
   await expect(canvas).toBeVisible({ timeout: 60_000 });
   await canvas.click({ position: { x: 8, y: 8 } });

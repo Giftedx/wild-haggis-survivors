@@ -48,7 +48,10 @@ export default defineConfig({
   workers: 1,
   timeout: 90_000,
   use: {
-    baseURL: 'http://127.0.0.1:4180',
+    // App is served under the /wild/ base (matches production ha.ggis.xyz/wild).
+    // Specs navigate with relative paths ('./', './?run=…') that resolve against
+    // this — an absolute '/' would drop the sub-path.
+    baseURL: 'http://127.0.0.1:4180/wild/',
   },
   projects: [
     {

@@ -146,7 +146,7 @@ async function seedFullProgress(page: PageT): Promise<void> {
   }, { metaVer: CURRENT_META_VERSION, gameplayVer: CURRENT_GAMEPLAY_VERSION });
 }
 
-async function bootCanvas(page: PageT, url = '/'): Promise<void> {
+async function bootCanvas(page: PageT, url = './'): Promise<void> {
   await page.goto(url);
   const canvas = page.locator('canvas[role="application"]');
   await expect(canvas).toBeVisible({ timeout: 60_000 });

@@ -57,7 +57,7 @@ test.describe('save and resume', () => {
     }, CURRENT_SAVE_VERSION);
 
     // Phase 1: boot + start a run.
-    await page.goto('/');
+    await page.goto('./');
 
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
