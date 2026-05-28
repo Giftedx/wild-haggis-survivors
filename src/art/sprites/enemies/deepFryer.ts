@@ -20,6 +20,9 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
+
+export const DEEP_FRYER_CANVAS_SIZE = 48;
 
 const STEEL_OUTLINE = 0x0a0a0c;
 const STEEL_BASE = 0x484c52;
@@ -54,11 +57,13 @@ const STEAM_OUTER = 0xd8d8e0;
 const STEAM_INNER = 0xfafaff;
 const WARNING_GLOW = 0xff8420;
 
-export function bakeDeepFryer(scene: Phaser.Scene): void {
-  const s = 48;
-  const g = scene.add.graphics();
+export function drawDeepFryerBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = DEEP_FRYER_CANVAS_SIZE;
   const cx = s / 2;
-  const cy = s / 2 + 2;
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Warning halo — TWO RINGS so the threat zone reads from the
   // moor. Outer is wide and faint; inner is tight and stronger. ──
@@ -285,6 +290,12 @@ export function bakeDeepFryer(scene: Phaser.Scene): void {
     g.fillCircle(cx + dx, cy + dy, Math.max(0.8, r - 1.0));
   }
 
+}
+
+export function bakeDeepFryer(scene: Phaser.Scene): void {
+  const s = DEEP_FRYER_CANVAS_SIZE;
+  const g = scene.add.graphics();
+  drawDeepFryerBody(g);
   g.generateTexture('deep_fryer', s, s);
   g.destroy();
 }
