@@ -110,6 +110,7 @@ import '../animation/frameDrawers/enemies/midgieSwarmFrames';
 import '../animation/frameDrawers/enemies/nestFrames';
 import '../animation/frameDrawers/enemies/touristGhostFrames';
 import '../animation/frameDrawers/enemies/spectreLegionaryFrames';
+import '../animation/frameDrawers/enemies/berserkerFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
