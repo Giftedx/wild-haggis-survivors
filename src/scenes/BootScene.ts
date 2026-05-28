@@ -98,6 +98,10 @@ import '../animation/frameDrawers/enemies/nessieFrames';
 import '../animation/frameDrawers/enemies/nuckelaveeFrames';
 import '../animation/frameDrawers/enemies/blackDouglasFrames';
 import '../animation/frameDrawers/enemies/earlBeardieFrames';
+import '../animation/frameDrawers/enemies/eachUisgeFrames';
+import '../animation/frameDrawers/enemies/cailleachBossFrames';
+import '../animation/frameDrawers/enemies/stormCailleachFrames';
+import '../animation/frameDrawers/enemies/wickerHaggisFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.

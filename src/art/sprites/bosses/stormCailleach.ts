@@ -16,6 +16,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_STORM_CAILLEACH_CANVAS_SIZE = 72;
 
@@ -36,10 +37,13 @@ const CRYSTAL_GLOW    = 0xa8dcff;
 const CRYSTAL_RING    = 0x70b8f0;
 const ICE_ACCENT      = 0x90ccec;
 
-export function drawBossStormCailleach(g: Phaser.GameObjects.Graphics): void {
+export function drawBossStormCailleach(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_STORM_CAILLEACH_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2 + 4;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
 
   // ── Ground shadow (wide — the storm spreads) ──────────────────────
   g.fillStyle(VOID_DARK, 0.50);

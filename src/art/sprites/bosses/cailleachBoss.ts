@@ -28,6 +28,7 @@
  *  - Staff: ironwood with bone antler atop.
  */
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_CAILLEACH_CANVAS_SIZE = 80;
 
@@ -54,10 +55,13 @@ const RIM_ICE = 0xb9d6f0;
 const RIM_HI = 0xe8f5ff;
 const SMOKE_HEM = 0x1a202a;
 
-export function drawBossCailleach(g: Phaser.GameObjects.Graphics): void {
+export function drawBossCailleach(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_CAILLEACH_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2 + 6;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 6 + (frame.breathY ?? 0);
 
   // ── Cold halo (rendered first; she carries the chill of the peak) ──
   g.fillStyle(RIM_ICE, 0.16);

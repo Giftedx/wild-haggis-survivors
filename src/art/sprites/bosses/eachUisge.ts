@@ -15,6 +15,7 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_EACH_UISGE_CANVAS_SIZE = 80;
 
@@ -39,10 +40,13 @@ const TEETH_DULL = 0xc8c4b0;
 const NOSTRIL = 0x1a1014;
 const WATER_DROP = 0xa8d8f0;
 
-export function drawBossEachUisge(g: Phaser.GameObjects.Graphics): void {
+export function drawBossEachUisge(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
   const s = BOSS_EACH_UISGE_CANVAS_SIZE;
-  const cx = s / 2;
-  const cy = s / 2 + 4;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
 
   // ── Loch shimmer aura (rendered first, behind body) ─────────────────
   // Tells the Fey nature without screaming it — soft cold glow lifts
