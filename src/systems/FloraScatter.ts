@@ -285,6 +285,16 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_rowan_charm',
     'deco_milestone',
   ],
+  // B12 — Jacobite Moor (Culloden): clan stone, waymarker on the battlefield
+  // trail, cairn for the fallen, rowan charm (ward on open moor), milestone
+  // (the field has been marked for centuries — no glory, no blame).
+  jacobite_moor: [
+    'deco_pictish_stone',
+    'deco_waymarker_post',
+    'deco_milestone',
+    'deco_rowan_charm',
+    'deco_cairn',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -567,6 +577,16 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_heather', 0.72],
     ['deco_wind_grass', 0.88],
     ['deco_rock_2', 1.0],
+  ],
+  // B12 — Jacobite Moor: sombre open moor. Heather dominant, wind grass on
+  // the exposed ridge, bracken in hollows, grouse feather (common moorland
+  // bird), rock base fill (the moor's bones show through).
+  jacobite_moor: [
+    ['deco_heather', 0.30],
+    ['deco_wind_grass', 0.55],
+    ['deco_bracken', 0.72],
+    ['deco_grouse_feather', 0.88],
+    ['deco_rock', 1.0],
   ],
 };
 

@@ -143,4 +143,10 @@ export const biomes = {
     loreSnippet: "Beltane Fire Festival, May Eve. Tha May Queen an tha Green Man ascend.",
     lore: "Calton Hill rises frae Edinburgh's East End, volcanic an abrupt. In 1988 tha Beltane Fire Society revived tha auld Gaelic festival o Bealltainn — tha simmer-fire threshold — wi a torchlit procession o twa thoosand fowk, fire-jugglers, tha May Queen in white, tha Green Man in leaves an reid yird, an tha winter's daith enacted in ceremony at tha hilltop. Tha revival wis controversial at first; it is noo ane o Edinburgh's maist distinctive events. Tha Beltane fires were originally lit on hilltops across Scotland sae each community could cairry tha livin flame hame. Calton Hill is tha city's version o that act — fire brocht intae stane an street an made visible frae tha Waverley below.",
   },
+  jacobite_moor: {
+    name: 'Jacobite Moor',
+    entry: 'Culloden grund. Daunder careful — tha muir hauds awthin it ever saw.',
+    loreSnippet: 'Culloden Muir, 16 Aprile 1746. Tha last pitched battle on British soil, an tha heather unchanged.',
+    lore: 'Culloden Muir lies sooth-east o Inverness. On 16 Aprile 1746, tha last pitched battle on British soil endit in unner an oor; twa thoosand men died, maist in tha final rout across open muirlan. Government an Jacobite forces alike included Scots. Tha muir hasnae moved. Tha National Trust merks staund bi tha mass graves — clan stanes, nae blame, nae glory. Heather an rough grazin still. Tha haggis disnae tak sides. Tha muir disnae either — it keeps awthin equally, an gies naethin back easy.',
+  },
 } as const;

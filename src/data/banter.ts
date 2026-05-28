@@ -1725,6 +1725,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.calton_hill.c',
         'ui.banter.biome_change.calton_hill.d',
       ],
+      // Jacobite Moor (Culloden): grave register, moor-witness. No sides taken.
+      // Acknowledges human cost on both sides; no romanticism; no politics.
+      // Per CULTURAL_SENSITIVITIES_RESEARCH.md §2.3.
+      jacobite_moor: [
+        'ui.banter.biome_change.jacobite_moor.a',
+        'ui.banter.biome_change.jacobite_moor.b',
+        'ui.banter.biome_change.jacobite_moor.c',
+        'ui.banter.biome_change.jacobite_moor.d',
+      ],
     },
   },
   {
@@ -1950,6 +1959,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.moor_moment.calton_hill.b',
         'ui.banter.moor_moment.calton_hill.c',
         'ui.banter.moor_moment.calton_hill.d',
+      ],
+      jacobite_moor: [
+        'ui.banter.moor_moment.jacobite_moor.a',
+        'ui.banter.moor_moment.jacobite_moor.b',
+        'ui.banter.moor_moment.jacobite_moor.c',
+        'ui.banter.moor_moment.jacobite_moor.d',
       ],
     },
   },

@@ -9,7 +9,7 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney' | 'corryvreckan' | 'shetland_voe' | 'skye_fairy_pool' | 'hebridean_shore' | 'calton_hill';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost' | 'cairngorm' | 'glen_coe' | 'clyde_shipyard' | 'black_bog' | 'ben_nevis' | 'glasgow_close' | 'fingals_cave' | 'callanish' | 'trossachs' | 'edinburgh_old_town' | 'cairngorm_woods' | 'orkney' | 'corryvreckan' | 'shetland_voe' | 'skye_fairy_pool' | 'hebridean_shore' | 'calton_hill' | 'jacobite_moor';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
@@ -34,7 +34,8 @@ export type BiomeModifierKind =
   | 'shetlandVoe'
   | 'fairyPoolGlow'
   | 'hebrideanTide'
-  | 'caltonFlame';
+  | 'caltonFlame'
+  | 'jacobiteMoor';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -720,9 +721,47 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // no sea-spray; smoke rather than mist.
     ambientHaarDensity: 0.18,
   },
+  // B12 — Jacobite Moor (Culloden). Sombre grey-purple moorland southeast of
+  // Inverness. Culloden Moor, 16 April 1746 — last pitched battle on British
+  // soil. Both government and Jacobite forces included Scots; the field holds
+  // neither blame nor glory, only heather and rain and the weight of what
+  // happened. `jacobiteMoor` modifier: -10% speed (the heavy moorland slows
+  // the haggis; grief is not a surface you sprint across), +15% knockback (the
+  // battlefield echo — a blow struck here rings further; the moor remembers
+  // violence and amplifies it). Musket volleys rain from the ridge.
+  // Cultural note: all copy per `CULTURAL_SENSITIVITIES_RESEARCH.md` §2.3 —
+  // grave register, moor-witness, no romanticisation, no partisan framing.
+  jacobite_moor: {
+    id: 'jacobite_moor',
+    nameKey: 'biomes.jacobite_moor.name',
+    tint: 0x3a2a4a,
+    entryToastKey: 'biomes.jacobite_moor.entry',
+    loreSnippetKey: 'biomes.jacobite_moor.loreSnippet',
+    loreKey: 'biomes.jacobite_moor.lore',
+    toastColor: '#7a5a8a',
+    spawnWeightMods: {
+      ghost: 2.0,
+      gale_wraith: 1.6,
+      haar_wraith: 1.4,
+      berserker: 1.3,
+      redcap: 1.0,
+      sheep: 0.2,
+      tourist: 0.1,
+      chef: 0.05,
+      highland_cow: 0.2,
+      eagle: 0.7,
+    },
+    modifier: 'jacobiteMoor',
+    // Below glen_coe (0.2) — Culloden is heavier/quieter than the glen.
+    // The moor after the battle holds more silence than the valley does.
+    moodTimbre: 0.18,
+    // Moorland drizzle and cold haar off the Moray Firth. Culloden field is
+    // often grey and misty; the haar is not theatrical, just present.
+    ambientHaarDensity: 0.35,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool', 'hebridean_shore', 'calton_hill'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost', 'cairngorm', 'glen_coe', 'clyde_shipyard', 'black_bog', 'ben_nevis', 'glasgow_close', 'fingals_cave', 'callanish', 'trossachs', 'edinburgh_old_town', 'cairngorm_woods', 'orkney', 'corryvreckan', 'shetland_voe', 'skye_fairy_pool', 'hebridean_shore', 'calton_hill', 'jacobite_moor'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

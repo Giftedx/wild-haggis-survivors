@@ -1713,6 +1713,12 @@ export const ui = {
       caption_home: 'Ye stood at the crown of the hill and the fire remembered ye.',
       toast_home: 'Hilltop hearth — +{heal} HP, Edinburgh below.',
     },
+    battle_echo: {
+      caption: 'The moor gives back. A fragment from the ground — unclaimed for a long time, yours now.',
+      toast: 'Battle echo — +{xp} XP',
+      caption_home: 'The battle echo is stronger here. The moor feels the weight of its own history.',
+      toast_home: 'Culloden echo — +{xp} XP from the ground',
+    },
     boon_at_ceiling: 'XP bar\'s chokker — have +{gold}g instead, ya legend.',
   },
   /** Run-start identity handoff (variant + intent); shown as an early toast in GameScene. */
@@ -3201,6 +3207,12 @@ export const ui = {
         c: 'Beltane. The year turns here. The haggis turns with it.',
         d: "Edinburgh's burning hill. The haggis has seen worse. Not many things, but a few.",
       },
+      jacobite_moor: {
+        a: 'The heather here is unchanged. The moor does not mark whose side was whose.',
+        b: 'Culloden. Under an hour, two thousand lives. The ground absorbed both.',
+        c: 'Rain on the moor. It rained on the day. The heather was the same colour then too.',
+        d: 'The clan stones name the fallen without blame. The moor learned that from the hill.',
+      },
     },
     moor_moment: {
       a: 'The moor noticed ye. That\'s rare.',
@@ -3413,6 +3425,12 @@ export const ui = {
         b: 'The May fire turned generous. Catch it.',
         c: 'Torch-lit fortune — Calton Hill noticed ye.',
         d: 'Fire gave. The year turned in yer favour.',
+      },
+      jacobite_moor: {
+        a: 'The moor returned something old. These things wait a long time.',
+        b: 'From the ground — unclaimed. The moor has kept it long enough.',
+        c: 'The battlefield gives back slowly. This is what it gave today.',
+        d: 'Still here. Still counting. The moor never stopped.',
       },
     },
     // ── Cairn Stacking (DESIGN_IDEAS §1). Hearth, pilgrim-warm:
@@ -5328,6 +5346,7 @@ export const ui = {
       biome_skye_fairy_pool: 'The pool held the shape at {time}. Then the fey had it, and the fey give nothing back.',
       biome_hebridean_shore: '{time} on the Hebridean shore. The wrack-line keeps its own counting. The moor kens what the tide took.',
       biome_calton_hill: 'The fire had it at {time}. Beltane does not mourn — it renews.',
+      biome_jacobite_moor: 'The moor has held harder losses than this. It holds this one too. At {time}, quietly.',
     },
     victory: {
       // Generic victory fallbacks (1-tag).
@@ -5388,6 +5407,7 @@ export const ui = {
       biome_skye_fairy_pool: 'Left the pools at {time}. The water was clear. The fey waved nothing off — but they did not follow.',
       biome_hebridean_shore: 'Left the Hebridean shore at {time}. The grey seal lifted a head. The Atlantic carried on.',
       biome_calton_hill: 'Came down from Calton Hill at {time}. The torches were still burning. The year had turned.',
+      biome_jacobite_moor: 'Still standing on Culloden Moor at {time}. The ground noticed. Said nothing. That counts.',
     },
     // v2 — variant-voiced lines. Voice registers per
     // `docs/VOICE_CARD.md` §"Variant-scoped voices".

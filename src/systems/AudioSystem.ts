@@ -282,6 +282,8 @@ export class AudioSystem {
       // B10 Hebridean Shore — kelp wash; B11 Calton Hill — torch-fire crack.
       kelp_strand: { f0: 350, f1: 180, type: 'sine', dur: 0.22, vol: 0.07 },        // tidal kelp wash
       fire_pillar: { f0: 1600, f1: 400, type: 'sawtooth', dur: 0.14, vol: 0.10 },   // torch-fire crack
+      // B12 Jacobite Moor — musket ball impact: sharp percussive crack, brief.
+      musket_volley: { f0: 900, f1: 150, type: 'square', dur: 0.10, vol: 0.11 },    // musket crack
     };
     const p = presets[hazardKey];
     osc.type = p.type;

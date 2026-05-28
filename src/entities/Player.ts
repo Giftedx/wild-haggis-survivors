@@ -1635,7 +1635,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'shetlandVoe'
       | 'fairyPoolGlow'
       | 'hebrideanTide'
-      | 'caltonFlame',
+      | 'caltonFlame'
+      | 'jacobiteMoor',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1803,6 +1804,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // celebratory — no knockback bonus; it pushes forward, not away.
         this.biomeXpMul = 1.15;
         this.biomeSpeedMul = 1.08;
+        break;
+      case 'jacobiteMoor':
+        // Culloden Moor — the heavy moorland slows the haggis (-10% speed;
+        // grief is not a surface you sprint across). The battlefield echo
+        // amplifies every impact (+15% knockback): a blow struck here rings
+        // further — the moor remembers violence. Both effects without XP
+        // bonus: this ground is not generous, only resonant.
+        this.biomeSpeedMul = 0.90;
+        this.biomeKnockbackBonus = 1.15;
         break;
     }
     // biomeDriftMul is baked in recalcStats (not read at use-time), so we

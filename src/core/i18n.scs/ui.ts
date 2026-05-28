@@ -942,6 +942,12 @@ export const ui = {
       caption_home: 'Ye stuid at tha croun o tha hill an tha fire remembered ye.',
       toast_home: 'Hilltop hearth — +{heal} HP, Edinburgh below.',
     },
+    battle_echo: {
+      caption: 'Tha muir gies back. A fragment frae tha grund — unclaimed a lang time, yours noo.',
+      toast: 'Battle echo — +{xp} XP',
+      caption_home: 'Tha battle echo is stranger here. Tha muir feels tha wecht o its ain history.',
+      toast_home: 'Culloden echo — +{xp} XP frae tha grund',
+    },
     boon_at_ceiling: 'XP bar\'s chokker — hae +{gold}g insteid, ya legend.',
   },
   run: {
@@ -2593,6 +2599,12 @@ export const ui = {
         c: 'Beltane. Tha year turns here. Tha haggis turns wi it.',
         d: "Edinburgh's burnin hill. Tha haggis haes seen waur. No mony things, but a few.",
       },
+      jacobite_moor: {
+        a: 'Tha heather here is unchanged. Tha muir disnae merk wha side wis wha.',
+        b: 'Culloden. Unner an oor, twa thoosand lives. Tha grund absorbed baith.',
+        c: 'Rain on tha muir. It rained on tha day. Tha heather wis tha same colour than tae.',
+        d: 'Tha clan stanes name tha fallen wi\'oot blame. Tha muir learned that frae tha hill.',
+      },
     },
     moor_moment: {
       a: 'Tha moor noticed ye. That\'s rare.',
@@ -2804,6 +2816,12 @@ export const ui = {
         b: 'Tha May fire turned generous. Catch it.',
         c: 'Torch-lit fortune — Calton Hill noticed ye.',
         d: 'Fire gied. Tha year turned in yer favour.',
+      },
+      jacobite_moor: {
+        a: 'Tha muir returned somethin auld. These things wait a lang time.',
+        b: 'Frae tha grund — unclaimed. Tha muir haes kept it lang enough.',
+        c: 'Tha battlefield gies back slowly. This is whit it gied tha day.',
+        d: 'Still here. Still countin. Tha muir nivver stopped.',
       },
     },
     // ── Cairn Stacking (DESIGN_IDEAS §1). SCS overlay for cairn_moment.
@@ -4432,6 +4450,7 @@ export const ui = {
       biome_skye_fairy_pool: 'Tha pool held tha shape at {time}. Than tha fey had it, an tha fey gie naethin back.',
       biome_hebridean_shore: '{time} on tha Hebridean shore. Tha wrack-line keeps its ain countin. Tha moor kens whit tha tide taen.',
       biome_calton_hill: 'Tha fire haed it at {time}. Beltane disnae mourn — it renews.',
+      biome_jacobite_moor: 'Tha muir haes held hairder losses nor this. It hauds this ane tae. At {time}, quaetly.',
     },
     victory: {
       fallback_a: 'Walked hame at {time}. Tha kettle wis oan.',
@@ -4479,6 +4498,7 @@ export const ui = {
       biome_skye_fairy_pool: 'Left tha pools at {time}. Tha watter wis clear. Tha fey waved naethin aff — but they didnae follae.',
       biome_hebridean_shore: 'Left tha Hebridean shore at {time}. Tha grey seal lifted a heid. Tha Atlantic cairried on.',
       biome_calton_hill: 'Cam doon frae Calton Hill at {time}. Tha torches were still burnin. Tha year haed turned.',
+      biome_jacobite_moor: 'Still staunin on Culloden Muir at {time}. Tha grund noticed. Said naethin. That counts.',
     },
     variant: {
       cailleach: {

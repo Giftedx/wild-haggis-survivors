@@ -79,7 +79,9 @@ export type HazardKey =
   // Hebridean Shore — kelp ribbon left by the tide; slick underfoot.
   | 'kelp_strand'
   // Calton Hill — Beltane fire-pillar; a torch-stand left from the procession.
-  | 'fire_pillar';
+  | 'fire_pillar'
+  // Jacobite Moor — musket ball volley from the ridge.
+  | 'musket_volley';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -384,6 +386,21 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 7000,
     spawnIntervalMs: 8000,
   },
+  // Jacobite Moor — musket ball volley from the ridge. Brief, deadly, small
+  // impact zone (10 px hitbox — the ball is narrow). Damage (9) matches
+  // summit_gust and stone_ring: decisive, not drawn-out. Short lifetime
+  // (3500 ms) — the volley passes; the next one is already on the way.
+  // Pairs with jacobiteMoor's -10% speed: the ground slows the haggis while
+  // the volleys punish lingering in any one position.
+  musket_volley: {
+    key: 'musket_volley',
+    texture: 'hazard_musket_volley',
+    biome: 'jacobite_moor',
+    damage: 9,
+    hitboxRadius: 10,
+    lifetimeMs: 4200,
+    spawnIntervalMs: 9000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -412,4 +429,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'fairy_mist',
   'kelp_strand',
   'fire_pillar',
+  'musket_volley',
 ];

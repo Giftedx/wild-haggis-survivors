@@ -100,6 +100,8 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   hebridean_shore: 0x2a8878,
   // B11 — Calton Hill: Beltane ember-orange, torchlight on Edinburgh's crown.
   calton_hill: 0xc84820,
+  // B12 — Jacobite Moor: sombre grey-purple, mourning-heather at dusk.
+  jacobite_moor: 0x5a3a6a,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [
@@ -378,6 +380,16 @@ export const MOOR_MOMENTS: readonly MoorMomentDef[] = [
     homeBiome: 'calton_hill',
     captionKeyHome: 'ui.moor_moment.calton_embers.caption_home',
     toastKeyHome: 'ui.moor_moment.calton_embers.toast_home',
+  },
+  // B12 — Jacobite Moor: the battlefield echo — XP from the weight of history.
+  {
+    id: 'battle_echo',
+    captionKey: 'ui.moor_moment.battle_echo.caption',
+    toastKey: 'ui.moor_moment.battle_echo.toast',
+    reward: { kind: 'xp', amount: 34 },
+    homeBiome: 'jacobite_moor',
+    captionKeyHome: 'ui.moor_moment.battle_echo.caption_home',
+    toastKeyHome: 'ui.moor_moment.battle_echo.toast_home',
   },
 ];
 

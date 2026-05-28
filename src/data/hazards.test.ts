@@ -6,8 +6,8 @@ import { HAZARDS, HAZARD_KEYS } from './hazards';
 // ---------------------------------------------------------------------------
 
 describe('HAZARD_KEYS', () => {
-  it('contains 24 entries', () => {
-    expect(HAZARD_KEYS).toHaveLength(24);
+  it('contains 25 entries', () => {
+    expect(HAZARD_KEYS).toHaveLength(25);
   });
 
   it('has no duplicates', () => {
@@ -106,5 +106,10 @@ describe('hazard spot checks', () => {
 
   it('fire_pillar biome is calton_hill', () => {
     expect(HAZARDS.fire_pillar.biome).toBe('calton_hill');
+  });
+
+  it('musket_volley biome is jacobite_moor with damage 9', () => {
+    expect(HAZARDS.musket_volley.biome).toBe('jacobite_moor');
+    expect(HAZARDS.musket_volley.damage).toBe(9);
   });
 });

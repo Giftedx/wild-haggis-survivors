@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all twenty-four biomes with required fields (B11 added calton_hill)', () => {
-    expect(BIOME_IDS.length).toBe(24);
+  it('defines all twenty-five biomes with required fields (B12 added jacobite_moor)', () => {
+    expect(BIOME_IDS.length).toBe(25);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -93,6 +93,15 @@ describe('biomes data', () => {
     expect(BIOMES.calton_hill.modifier).toBe('caltonFlame');
     expect(BIOMES.calton_hill.nameKey).toBe('biomes.calton_hill.name');
     expect(BIOMES.calton_hill.tint).toBe(0x7a1a00);
+  });
+
+  it('jacobite_moor biome is registered (B12)', () => {
+    expect(BIOME_IDS).toContain('jacobite_moor');
+    expect(BIOMES.jacobite_moor.modifier).toBe('jacobiteMoor');
+    expect(BIOMES.jacobite_moor.nameKey).toBe('biomes.jacobite_moor.name');
+    expect(BIOMES.jacobite_moor.tint).toBe(0x3a2a4a);
+    // Below glen_coe (0.2) — Culloden is heavier/quieter.
+    expect(BIOMES.jacobite_moor.moodTimbre).toBeLessThan(BIOMES.glen_coe.moodTimbre);
   });
 
   it('spawn weight multipliers are all positive', () => {
