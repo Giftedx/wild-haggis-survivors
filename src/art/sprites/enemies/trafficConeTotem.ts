@@ -11,11 +11,24 @@
  */
 
 import * as Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
-  const s = 44;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 4;
+export const TRAFFIC_CONE_TOTEM_CANVAS_SIZE = 44;
+
+/**
+ * Draw the bound-cone totem body into `g` at the per-frame offset.
+ *
+ * `frame.breathY` bobs the whole stack (idle strain / dying topple);
+ * `frame.bodyX` shifts it sideways (hurt flinch / topple lean). No legs —
+ * a stack of cones has no gait, so leftLegY/rightLegY are unused.
+ */
+export function drawTrafficConeTotemBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = TRAFFIC_CONE_TOTEM_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
 
   // ── Faint orange menace glow behind the whole totem. Kept as an
   // oval so it supports the silhouette instead of becoming the sprite.
@@ -182,7 +195,12 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   g.fillCircle(cx + 3, cy - 18, 1);
   g.fillStyle(0xffeeaa, 0.45);
   g.fillCircle(cx - 3, cy - 17.5, 0.8);
+}
 
+export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
+  const s = TRAFFIC_CONE_TOTEM_CANVAS_SIZE;
+  const g = scene.add.graphics();
+  drawTrafficConeTotemBody(g);
   g.generateTexture('traffic_cone_totem', s, s);
   g.destroy();
 }
