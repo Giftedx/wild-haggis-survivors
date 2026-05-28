@@ -1080,6 +1080,9 @@ export const ui = {
   culloden: {
     memorial_toast: 'Sixteenth April. The field keeps its own count. Walk well.',
   },
+  highlandGames: {
+    blessing_toast: 'Highland Games. Strong moor, strong haggis. +20 max HP.',
+  },
   /**
    * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
    * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
@@ -5228,6 +5231,26 @@ export const ui = {
         j: 'Tar-barrels and torchlight. The auld yule burning, formalised.',
         k: 'Eighteen-eighty-one they made it formal. Older than that in the bone.',
         l: 'The galley sinks burning. The strike lands the harder for it.',
+      },
+      // 2026-05-28 — Highland Games (Aug 25 – Sep 7). Hearth-warm
+      // athletic register. Cowal Gathering + Braemar. The haggis
+      // watches from behind a thistle tussock — very quietly not
+      // volunteering for the caber toss. Cultural warmth without
+      // national-chest-thumping; strength + skill + community.
+      // SCOTTISH_RESEARCH_DEEP §22.3.
+      highland_games: {
+        a: 'Highland Games. The caber goes up. The caber comes doon. The moor approves.',
+        b: 'Braemar — the Royal Family in the stand, the haggis in the heather. Everybody\'s watching something.',
+        c: 'Hammer throw. Stone put. Sheaf toss. The moor has always appreciated a well-thrown heavy object.',
+        d: 'The pipes competing in lines. Twelve bands at Cowal. The moor rings wi\' it.',
+        e: 'A haggis at the Highland Games is not a competitor. A haggis at the Highland Games is a spectator. With cover.',
+        f: 'Tossing the caber — the correct form is twelve o\'clock, straight ahead. Nobody\'s watching the haggis. Good.',
+        g: 'Highland dancing. The sword crossed below; the feet never touching it. Centuries of practice in forty seconds.',
+        h: 'The stone put record is over sixty feet. The haggis has never been asked.',
+        i: 'Queen Victoria watched the Braemar Games every year she spent at Balmoral. The moor saw her watching.',
+        j: 'The strongest people on the moor are here today. The haggis is not entering the hammer throw.',
+        k: 'Fifty nations at Cowal. The diaspora comes home in feats of strength.',
+        l: 'Games day. Walk stronger; the moor expects it of ye.',
       },
       // 2026-05-24 — Culloden anniversary (Apr 13-18) closes the
       // seasonal calendar. Grave register throughout — no hearth

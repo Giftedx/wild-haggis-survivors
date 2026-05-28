@@ -45,6 +45,7 @@ export type AmbientWeatherMode =
   | 'grouse_feather_drift'
   | 'tartan_thread_drift'
   | 'simmer_dim_gloam'
+  | 'highland_games_sun'
   | null;
 
 /** Depth slot for ambient weather — behind every gameplay sprite. */
@@ -126,6 +127,14 @@ export function pickWeatherMode(eventKey: string | null): AmbientWeatherMode {
       // Visually distinct from aurora (fast, saturated ribbon) by the
       // near-stillness and warm-lilac palette.
       return 'simmer_dim_gloam';
+    case 'highland_games':
+      // Highland Games (Aug 25 – Sep 7) — soft golden sun-motes drifting
+      // slowly downward, catching the late-summer showground light. Warm
+      // gold palette reads as "bright clear day" — distinct from harvest
+      // drift (amber-cream, faster horizontal) and from sun_shaft (tall
+      // vertical cones). Hearth warmth without spectacle; the moor is
+      // busy but not ablaze.
+      return 'highland_games_sun';
     default:
       return null;
   }
@@ -190,6 +199,11 @@ const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
   // is a quality of light, not a particle storm. Each mote lives 6-9 s
   // so even at this cadence the overlay reads as continuous shimmer.
   simmer_dim_gloam: { spawnPeriodMs: 4000, textureKey: 'fx_simmer_dim_gloam' },
+  // Highland Games sun-motes. Mid-sparse cadence (2200 ms) — the bright
+  // August showground has a quality of light without particle noise.
+  // Warm gold motes drift gently downward: late-summer afternoon light
+  // through pipe-smoke over the caber pitch.
+  highland_games_sun: { spawnPeriodMs: 2200, textureKey: 'fx_highland_games_sun' },
 };
 
 export class AmbientWeatherSystem {
@@ -350,6 +364,9 @@ export class AmbientWeatherSystem {
         return;
       case 'simmer_dim_gloam':
         this.spawnSimmerDimGloam();
+        return;
+      case 'highland_games_sun':
+        this.spawnHighlandGamesSun();
         return;
       default:
         return;
@@ -999,6 +1016,49 @@ export class AmbientWeatherSystem {
         targets: img,
         alpha: 0,
         duration: lifetimeMs * 0.35,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Highland Games sun-motes — Highland Games (Aug 25 – Sep 7).
+   *
+   * Warm gold motes drift slowly downward from above the viewport —
+   * the late-summer showground light through pipe-smoke over the caber
+   * pitch. Low alpha so the moor stays readable; gentle downward settle
+   * with a small lateral sway sells "still August afternoon."
+   */
+  private spawnHighlandGamesSun(): void {
+    const v = this.getViewport();
+    const x = v.x + Math.random() * v.w;
+    const startY = v.y - 6; // drop in from just above
+    const img = this.addImage(x, startY, 'fx_highland_games_sun');
+    if (!img) return;
+    img.setAlpha(0);
+    img.setScale(0.9 + Math.random() * 0.5); // 0.9..1.4
+    const peakAlpha = 0.28 + Math.random() * 0.16; // 0.28..0.44
+    const lifetimeMs = 4500 + Math.random() * 2000; // 4.5-6.5s
+    const sway = (Math.random() - 0.5) * 30; // gentle lateral drift
+    const fall = v.h * 0.55 + Math.random() * v.h * 0.3;
+    this.scene.tweens.add({
+      targets: img,
+      x: img.x + sway,
+      y: startY + fall,
+      duration: lifetimeMs,
+      ease: 'Sine.easeIn',
+    });
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.22,
+    });
+    this.scheduleFade(lifetimeMs * 0.72, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.28,
         onComplete: () => img.destroy(),
       });
     });

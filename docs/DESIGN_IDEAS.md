@@ -312,6 +312,8 @@ Date-gated content that activates when the real-world date hits. Transforms the 
 - ~~**Culloden anniversary (16 April)**~~ — ✅ shipped (`SeasonalEventManager.ts` key `culloden`). Memorial toast only — no buff, no fanfare, no Jacobite spectre spawn (respectful scope). Ambient: drizzle overlay. Per Soul Charter cultural sensitivity guidance. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
 - ~~**Stonehaven Fireballs (31 Dec)**~~ — ✅ shipped as hogmanay ambient weather mode (`AmbientWeatherSystem.ts` `stonehaven_fireballs`). Swinging fireball particles fire every 2500 ms during the hogmanay window. Not a separate event — hogmanay owns the date, fireballs are its overlay.
 
+- ~~**Highland Games (Aug 25 – Sep 7)**~~ — ✅ shipped 2026-05-28 (`SeasonalEventManager.ts` key `highland_games`). Window covers Cowal Highland Gathering (late August) + Braemar Gathering (early September). Run-start blessing: +20 max HP (first slot to touch `Player.addMaxHp`) + +16 HP heal — the pre-Games morning porridge. Ambient: `highland_games_sun` gold mote drift (warm August showground light through pipe-smoke). 12-leaf seasonal_event banter pool: caber, hammer throw, stone put, sheaf toss, Highland dancing, pipe-band competitions. The haggis watches from behind a thistle tussock, very quietly not volunteering for the caber toss. Hearth tone — athletic warmth without national-chest-thumping. EN + SCS parity. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.3 — Braemar + Tailteann roots.*)
+
 **Scoping rule.** Each seasonal event should be 3–7 days long in real-world calendar and NEVER FOMO-lock content — unlocks available year-round, but the *celebration* is the seasonal window.
 
 ---

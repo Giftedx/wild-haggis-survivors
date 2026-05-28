@@ -608,6 +608,9 @@ export const ui = {
   upHellyAa: {
     blessing_toast: 'Up Helly Aa. Galley afire. +18 HP, tha haggis sweengs hairder.',
   },
+  highlandGames: {
+    blessing_toast: 'Highland Gemmes. Strang muir, strang haggis. +20 max HP.',
+  },
   cuSith: {
     bay: {
       first: 'A Cu Sith hools across tha muir.',
@@ -4362,6 +4365,23 @@ export const ui = {
         j: 'Tar-barrels an torchlicht. Tha auld yule burnin, made formal.',
         k: 'Echteen-echty-yin they made it formal. Aulder nor that in tha bane.',
         l: 'Tha galley sinks burnin. Tha strike lands tha hairder fer it.',
+      },
+      // SCS overlay of EN highland_games leaves (2026-05-28). Hearth-warm
+      // athletic register. Caber, haimmer, stane pit, Highland dancing.
+      // The haggis as enthusiastic but non-participating spectator.
+      highland_games: {
+        a: 'Highland Gemmes. Tha cabar gaes up. Tha cabar comes doon. Tha muir approves.',
+        b: 'Braemar — tha Royal Faimily in tha stand, tha haggis in tha heather. Awbody\'s watching something.',
+        c: 'Haimmer throw. Stane pit. Sheaf toss. Tha muir has ayeweys appreciated a weel-thrawn heavy object.',
+        d: 'Tha pipes compeetin in lines. Twal bands at Cowal. Tha muir rings wi it.',
+        e: 'A haggis at tha Highland Gemmes is no a competitor. A haggis at tha Highland Gemmes is a spectator. Wi cover.',
+        f: 'Tossing tha cabar — tha correct form is twal o\'clock, straight aheid. Naebody\'s watchin tha haggis. Guid.',
+        g: 'Highland dancing. Tha sword crossed below; tha feet niver touching it. Centuries o practice in forty seconds.',
+        h: 'Tha stane pit record is ower saxty feet. Tha haggis has niver been asked.',
+        i: 'Queen Victoria watched tha Braemar Gemmes every year she spent at Balmoral. Tha muir saw her watching.',
+        j: 'Tha strongest folk on tha muir are here tha day. Tha haggis is no entering tha haimmer throw.',
+        k: 'Fifty nations at Cowal. Tha diaspora comes hame in feats o strength.',
+        l: 'Gemmes day. Wauk stauncher; tha muir expects it o ye.',
       },
       // SCS overlay of EN culloden leaves (2026-05-24). Grave register
       // throughout. No hearth warmth, no comedic distance, no anti-

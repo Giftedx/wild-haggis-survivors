@@ -84,4 +84,10 @@ export const seasonalEvent = {
     badge_suffix: 'Up Helly Aa',
     ceremony_banner: '🔥 Up Helly Aa is live — the guizers march, the galley burns.',
   },
+  highland_games: {
+    name: 'Highland Games',
+    description: 'Aug 25 – Sep 7 — caber, hammer, stone put. The moor holds its games.',
+    badge_suffix: 'Highland Games',
+    ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 Highland Games live — walk stronger today.',
+  },
 } as const;

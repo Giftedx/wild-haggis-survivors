@@ -36,6 +36,7 @@ import {
   bakeFxGrouseFeather,
   bakeFxTartanThread,
   bakeFxSimmerDimGloam,
+  bakeFxHighlandGamesSun,
 } from './weather';
 import { bakeWeaponFlourishes } from './weaponFlourishes';
 import { bakeAtmosphereLayers } from './atmosphereLayers';
@@ -72,6 +73,7 @@ export function bakeFx(scene: Phaser.Scene): void {
   bakeFxGrouseFeather(scene);
   bakeFxTartanThread(scene);
   bakeFxSimmerDimGloam(scene);
+  bakeFxHighlandGamesSun(scene);
   bakeWeaponFlourishes(scene);
   bakeAtmosphereLayers(scene);
   bakeEliteTelegraphs(scene);

@@ -68,6 +68,7 @@ export function seasonalRunStartCeremony(
     case 'beltane':
     case 'samhain':
     case 'st_andrews':
+    case 'highland_games':
       // Lightweight data-only events — banner + badge + banter fire
       // off the generic seasonal_event pool; no dedicated stinger
       // this ship. Adding a bespoke audio motif later is a pure

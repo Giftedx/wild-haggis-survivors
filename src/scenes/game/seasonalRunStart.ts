@@ -17,6 +17,7 @@ import { applyTartanDayBlessing } from '../../systems/tartanDayBlessing';
 import { applySimmerDimBlessing } from '../../systems/simmerDimBlessing';
 import { applyUpHellyAaBlessing } from '../../systems/upHellyAaBlessing';
 import { applyCullodenMemorial } from '../../systems/cullodenMemorial';
+import { applyHighlandGamesBlessing } from '../../systems/highlandGamesBlessing';
 import type { RNG } from '../../utils/rng';
 
 const SEASONAL_TOAST_DELAY_MS = 1500;
@@ -38,6 +39,8 @@ export interface SeasonalRunStartPlan {
   readonly extraPickupRadius: number;
   readonly extraCritDamageMultiplier: number;
   readonly extraDamageMultiplier: number;
+  /** Additive max-HP bonus applied via Player.addMaxHp. First used by highland_games. */
+  readonly extraMaxHp: number;
 }
 
 export interface SeasonalRunStartDeps {
@@ -57,6 +60,7 @@ export interface SeasonalRunStartPostSpawnDeps {
   readonly addPickupRadius: (amount: number) => void;
   readonly addCritDamageMultiplier: (amount: number) => void;
   readonly addDamageMultiplier: (amount: number) => void;
+  readonly addMaxHp: (amount: number) => void;
   readonly showToastAfter: (delayMs: number, key: string, color: string) => void;
 }
 
@@ -76,6 +80,7 @@ function inertPlan(seasonalEventKey: string | null = null): SeasonalRunStartPlan
     extraPickupRadius: 0,
     extraCritDamageMultiplier: 0,
     extraDamageMultiplier: 0,
+    extraMaxHp: 0,
   };
 }
 
@@ -109,6 +114,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -125,6 +131,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -141,6 +148,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -157,6 +165,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -173,6 +182,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -189,6 +199,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -205,6 +216,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -221,6 +233,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -237,6 +250,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -253,6 +267,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -269,6 +284,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: tartanDayResult.extraPickupRadius,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -285,6 +301,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: simmerDimResult.extraCritDamageMultiplier,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
   }
 
@@ -301,6 +318,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: upHellyAaResult.extraDamageMultiplier,
+      extraMaxHp: 0,
     };
   }
 
@@ -318,6 +336,24 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
+    };
+  }
+
+  const highlandGamesResult = applyHighlandGamesBlessing(seasonalEventKey, deps.runModifiers);
+  if (highlandGamesResult.applied) {
+    return {
+      seasonalEventKey,
+      toast: toast('ui.highlandGames.blessing_toast', '#d4a820'),
+      extraStartingHpHeal: highlandGamesResult.extraStartingHpHeal,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
+      extraMaxHp: highlandGamesResult.extraMaxHp,
     };
   }
 
@@ -351,6 +387,9 @@ export function applySeasonalRunStartPostSpawn(
   }
   if (plan.extraDamageMultiplier > 0) {
     deps.addDamageMultiplier(plan.extraDamageMultiplier);
+  }
+  if (plan.extraMaxHp > 0) {
+    deps.addMaxHp(plan.extraMaxHp);
   }
   if (plan.toast) {
     deps.showToastAfter(plan.toast.delayMs, plan.toast.key, plan.toast.color);

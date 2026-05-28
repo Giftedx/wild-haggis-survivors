@@ -737,3 +737,40 @@ export function bakeFxSimmerDimGloam(scene: Phaser.Scene): void {
   gs.generateTexture('fx_simmer_dim_gloam', size, size);
   gs.destroy();
 }
+
+/**
+ * `fx_highland_games_sun` — Highland Games (Aug 25 – Sep 7) ambient particle.
+ *
+ * A soft golden sun-mote: the bright late-summer light over the showground,
+ * the kind that catches pipe-smoke and bunting. Tonal register: Hearth-warm
+ * (athletic warmth, community pride). Visually distinct from simmer-dim
+ * (cool lilac, still) by the warm gold palette and the active-drift motion
+ * the parent system applies.
+ *
+ * 7×7 — small, barely-there, like caught light in field grass.
+ */
+export function bakeFxHighlandGamesSun(scene: Phaser.Scene): void {
+  const size = 7;
+  const cx = size / 2;
+  const cy = size / 2;
+  const gs = scene.add.graphics();
+
+  // Warm outer halo — summer moor sunlight on dry grass.
+  gs.fillStyle(0xe8a820, 0.12);
+  gs.fillCircle(cx, cy, 3.2);
+
+  // Inner glow — clear athletic-day gold.
+  gs.fillStyle(0xf5c840, 0.28);
+  gs.fillCircle(cx, cy, 2.0);
+
+  // Core sun-mote — warm ivory with a gold tinge.
+  gs.fillStyle(0xfff0b0, 0.65);
+  gs.fillCircle(cx, cy, 1.2);
+
+  // Bright peak — the catch-light of an August afternoon.
+  gs.fillStyle(0xfffff0, 0.90);
+  gs.fillCircle(cx - 0.2, cy - 0.2, 0.5);
+
+  gs.generateTexture('fx_highland_games_sun', size, size);
+  gs.destroy();
+}

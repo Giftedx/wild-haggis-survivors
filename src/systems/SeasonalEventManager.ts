@@ -250,6 +250,23 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.up_helly_aa.description',
     dateWindow: { startMonth: 2, startDay: 9, endMonth: 2, endDay: 15 },
   },
+  // Highland Games season — covers the Cowal Highland Gathering (last
+  // weekend of August, world's largest Highland Games) and the Braemar
+  // Gathering (first Saturday of September, Royal Family in attendance
+  // since 1848). Window Aug 25 – Sep 7 (14 days) brackets both events
+  // while sitting cleanly between Glorious Twelfth (Aug 11–13) and the
+  // Bracken-turn (Nov 4–26). Cultural framing: strength + skill +
+  // competition. Caber toss, hammer throw, stone put, sheaf toss,
+  // Highland dancing, pipe-band competitions. The haggis spectates from
+  // behind a thistle tussock, very quietly not volunteering. Hearth
+  // tone — athletic warmth without national-chest-thumping.
+  // SCOTTISH_RESEARCH_DEEP §22.3 (Braemar + Tailteann roots).
+  highland_games: {
+    key: 'highland_games',
+    nameKey: 'seasonalEvent.highland_games.name',
+    descriptionKey: 'seasonalEvent.highland_games.description',
+    dateWindow: { startMonth: 8, startDay: 25, endMonth: 9, endDay: 7 },
+  },
 };
 
 function monthDay(now: Date): { m: number; d: number } {

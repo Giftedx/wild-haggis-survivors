@@ -83,4 +83,10 @@ export const seasonalEvent = {
     badge_suffix: 'Up Helly Aa',
     ceremony_banner: '🔥 Up Helly Aa is live — tha guizers mairch, tha galley burns.',
   },
+  highland_games: {
+    name: 'Highland Gemmes',
+    description: 'Aug 25 – Sep 7 — cabar, haimmer, stane pit. Tha moor hauds its gemmes.',
+    badge_suffix: 'Highland Gemmes',
+    ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 Highland Gemmes live — wauk the stauncher the day.',
+  },
 } as const;

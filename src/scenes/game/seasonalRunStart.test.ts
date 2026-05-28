@@ -19,6 +19,7 @@ function inertPlan(): SeasonalRunStartPlan {
     extraPickupRadius: 0,
     extraCritDamageMultiplier: 0,
     extraDamageMultiplier: 0,
+    extraMaxHp: 0,
   };
 }
 
@@ -244,6 +245,37 @@ describe('buildSeasonalRunStartPlan', () => {
       },
     });
   });
+
+  it('applies the Highland Games max-HP bonus + physique heal', () => {
+    const modifiers = defaultModifiers();
+    const plan = buildSeasonalRunStartPlan({
+      resumeRun: false,
+      disableSeasonalEvents: false,
+      // Sep 1, 2027 — Braemar Gathering week.
+      now: new Date(2027, 8, 1),
+      runRng: { pick: vi.fn() } as unknown as RNG,
+      runModifiers: modifiers,
+    });
+
+    expect(modifiers).toEqual(defaultModifiers());
+    expect(plan).toMatchObject({
+      seasonalEventKey: 'highland_games',
+      extraStartingHpHeal: 16,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
+      extraMaxHp: 20,
+      toast: {
+        key: 'ui.highlandGames.blessing_toast',
+        color: '#d4a820',
+        delayMs: 1500,
+      },
+    });
+  });
 });
 
 describe('applySeasonalRunStartPostSpawn', () => {
@@ -260,6 +292,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -271,6 +304,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      addMaxHp: (amount) => log.push(`maxHp:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -294,6 +328,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -305,6 +340,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      addMaxHp: (amount) => log.push(`maxHp:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -328,6 +364,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -339,6 +376,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      addMaxHp: (amount) => log.push(`maxHp:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -362,6 +400,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraPickupRadius: 20,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -373,6 +412,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      addMaxHp: (amount) => log.push(`maxHp:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -396,6 +436,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
       extraDamageMultiplier: 0.18,
+      extraMaxHp: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -407,6 +448,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      addMaxHp: (amount) => log.push(`maxHp:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -430,6 +472,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0.25,
       extraDamageMultiplier: 0,
+      extraMaxHp: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -441,6 +484,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      addMaxHp: (amount) => log.push(`maxHp:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -448,6 +492,42 @@ describe('applySeasonalRunStartPostSpawn', () => {
       'heal:12',
       'critDmg:0.25',
       'toast:1500:ui.simmerDim.blessing_toast:#9080c0',
+    ]);
+  });
+
+  it('applies max-HP bonus on a highland_games plan', () => {
+    const log: string[] = [];
+    const plan: SeasonalRunStartPlan = {
+      seasonalEventKey: 'highland_games',
+      toast: { key: 'ui.highlandGames.blessing_toast', color: '#d4a820', delayMs: 1500 },
+      extraStartingHpHeal: 16,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
+      extraMaxHp: 20,
+    };
+
+    applySeasonalRunStartPostSpawn(plan, {
+      heal: (amount) => log.push(`heal:${amount}`),
+      addXpMultiplier: (amount) => log.push(`xp:${amount}`),
+      addCritChance: (amount) => log.push(`crit:${amount}`),
+      addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      addMaxHp: (amount) => log.push(`maxHp:${amount}`),
+      showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
+    });
+
+    expect(log).toEqual([
+      'heal:16',
+      'maxHp:20',
+      'toast:1500:ui.highlandGames.blessing_toast:#d4a820',
     ]);
   });
 
@@ -461,6 +541,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addPickupRadius: vi.fn(),
       addCritDamageMultiplier: vi.fn(),
       addDamageMultiplier: vi.fn(),
+      addMaxHp: vi.fn(),
       showToastAfter: vi.fn(),
     };
 
@@ -474,6 +555,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
     expect(calls.addPickupRadius).not.toHaveBeenCalled();
     expect(calls.addCritDamageMultiplier).not.toHaveBeenCalled();
     expect(calls.addDamageMultiplier).not.toHaveBeenCalled();
+    expect(calls.addMaxHp).not.toHaveBeenCalled();
     expect(calls.showToastAfter).not.toHaveBeenCalled();
   });
 });

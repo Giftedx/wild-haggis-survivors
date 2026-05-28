@@ -127,6 +127,7 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     { id: 'fx_bracken_leaf', key: 'fx_bracken_leaf' },
     { id: 'fx_bannockburn_dust', key: 'fx_bannockburn_dust' },
     { id: 'fx_grouse_feather', key: 'fx_grouse_feather' },
+    { id: 'fx_highland_games_sun', key: 'fx_highland_games_sun' },
     { id: 'fx_weapon_thistle_bloom', key: 'fx_weapon_thistle_bloom' },
     { id: 'fx_weapon_thistle_storm_bloom', key: 'fx_weapon_thistle_storm_bloom' },
     { id: 'fx_weapon_caber_splinter', key: 'fx_weapon_caber_splinter' },
