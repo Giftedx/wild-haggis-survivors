@@ -3,6 +3,11 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EN_STRINGS } from './i18n/enStrings';
+import { ACTION_KEYS } from './actions';
+import { ELITE_AFFIXES } from '../data/eliteAffixes';
+import { PERMANENT_UPGRADES } from '../data/permanentUpgrades';
+import { STANCE_ORDER } from '../entities/stanceToggle';
+import { COMPANION_KEYS_IN_ORDER } from '../entities/companions/companionTypes';
 
 /**
  * Code→locale key-existence fence.
@@ -70,4 +75,50 @@ describe('i18n code→locale key existence', () => {
       .join('\n');
     expect(missing.size, `Unresolved i18n keys (render raw to the player):\n${report}`).toBe(0);
   });
+});
+
+/**
+ * Dynamic key families — `t(`prefix.${id}`)` callers the literal scan above
+ * can't see. Each roster (data-derived where possible) must have every
+ * member's templated key(s) present, or that member renders its raw key.
+ * This is the dynamic sibling of the 2026-05-29 `ui.captions.*` fix: adding
+ * a roster entry without its i18n leaf is the drift this guards.
+ */
+describe('i18n dynamic key families resolve', () => {
+  const families: ReadonlyArray<{ name: string; keys: readonly string[] }> = [
+    {
+      name: 'inputRebind action labels (ui.inputRebind.action.*)',
+      keys: ACTION_KEYS.map((a) => `ui.inputRebind.action.${a}`),
+    },
+    {
+      name: 'elite affix name + blurb (ui.elite_affix.*)',
+      keys: Object.keys(ELITE_AFFIXES).flatMap((id) => [
+        `ui.elite_affix.${id}.name`,
+        `ui.elite_affix.${id}.blurb`,
+      ]),
+    },
+    {
+      name: 'permanent upgrade flavour (permanentUpgrade.*.flavour)',
+      keys: PERMANENT_UPGRADES.map((u) => `permanentUpgrade.${u.key}.flavour`),
+    },
+    {
+      name: 'HUD stance labels (ui.hud.stance.*)',
+      keys: STANCE_ORDER.map((s) => `ui.hud.stance.${s}`),
+    },
+    {
+      name: 'HUD companion labels (ui.hud.companion.*)',
+      keys: COMPANION_KEYS_IN_ORDER.map((k) => `ui.hud.companion.${k}`),
+    },
+    {
+      name: 'sporran card kinds (sporran.kind.*)',
+      keys: ['curse', 'boon', 'quirk'].map((k) => `sporran.kind.${k}`),
+    },
+  ];
+
+  for (const fam of families) {
+    it(`${fam.name}`, () => {
+      const missing = fam.keys.filter((k) => !resolves(k));
+      expect(missing, `unresolved: ${missing.join(', ')}`).toEqual([]);
+    });
+  }
 });
