@@ -18,6 +18,7 @@ import {
   shouldConsiderBurnsPiperAccent,
   shouldSpawnBurnsPlatter,
 } from './burnsNightEffects';
+import { SEASONAL_EVENTS } from '../SeasonalEventManager';
 
 function d(y: number, m: number, day: number): Date {
   return new Date(y, m - 1, day, 12, 0, 0, 0);
@@ -39,10 +40,12 @@ describe('E1 T9 seasonalRunStartCeremony', () => {
     expect(seasonalRunStartCeremony(d(2027, 2, 1), false)?.eventKey).toBe('burns_night');
   });
 
-  it('returns null outside the event window', () => {
+  it('returns null outside every event window', () => {
     expect(seasonalRunStartCeremony(d(2027, 7, 4), false)).toBeNull();
     expect(seasonalRunStartCeremony(d(2027, 1, 17), false)).toBeNull();
-    expect(seasonalRunStartCeremony(d(2027, 2, 2), false)).toBeNull();
+    // March is event-free. (Feb 2 used to read null here only because imbolc
+    // was unhandled — it's imbolc's first day and now has a ceremony.)
+    expect(seasonalRunStartCeremony(d(2027, 3, 15), false)).toBeNull();
   });
 
   it('returns null when seasonal events are disabled even inside window', () => {
@@ -80,6 +83,35 @@ describe('E1 T9 seasonalRunStartCeremony', () => {
     expect(ceremony?.stingerId).toBeNull();
     expect(ceremony?.bannerKey).toBe('seasonalEvent.st_andrews.ceremony_banner');
   });
+});
+
+describe('seasonalRunStartCeremony covers every active seasonal event', () => {
+  // Every seasonal event should announce itself at run-start with the
+  // seasonal-flavoured Gran ceremony — EXCEPT culloden, which is a
+  // memorial (DESIGN: "memorial toast only — no buff, no fanfare"); its
+  // run-start surface is the grave memorial toast, not a Gran ceremony.
+  // This guard catches the next event added to SEASONAL_EVENTS without a
+  // matching ceremony branch (the gap that left 8 events on the generic
+  // run_start banter through 2026-05-29).
+  const NO_CEREMONY = new Set(['culloden']);
+
+  for (const [key, def] of Object.entries(SEASONAL_EVENTS)) {
+    const inWindow = d(2027, def.dateWindow.startMonth, def.dateWindow.startDay);
+    if (NO_CEREMONY.has(key)) {
+      it(`${key} is deliberately ceremony-less (memorial)`, () => {
+        expect(seasonalRunStartCeremony(inWindow, false)).toBeNull();
+      });
+    } else {
+      it(`${key} produces a seasonal run-start ceremony`, () => {
+        const ceremony = seasonalRunStartCeremony(inWindow, false);
+        expect(ceremony, `${key} should produce a ceremony`).not.toBeNull();
+        expect(ceremony?.eventKey).toBe(key);
+        expect(ceremony?.banterContext).toBe('gran_commentary');
+        expect(ceremony?.banterTag).toBe('seasonal_event');
+        expect(ceremony?.bannerKey).toBe(`seasonalEvent.${key}.ceremony_banner`);
+      });
+    }
+  }
 });
 
 describe('E1 T10 shouldSpawnBurnsPlatter', () => {

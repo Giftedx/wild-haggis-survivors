@@ -69,10 +69,22 @@ export function seasonalRunStartCeremony(
     case 'samhain':
     case 'st_andrews':
     case 'highland_games':
+    case 'imbolc':
+    case 'lammas':
+    case 'bracken_turn':
+    case 'bannockburn':
+    case 'glorious_twelfth':
+    case 'tartan_day':
+    case 'simmer_dim':
+    case 'up_helly_aa':
       // Lightweight data-only events — banner + badge + banter fire
       // off the generic seasonal_event pool; no dedicated stinger
       // this ship. Adding a bespoke audio motif later is a pure
       // switch-branch + AudioSystem method (no call-site churn).
+      // NOTE: every celebratory event in SEASONAL_EVENTS must be listed
+      // here (or in a bespoke branch above) or it silently falls through
+      // to the generic `run_start` banter with no seasonal flavour — the
+      // `burnsNightEffects.test.ts` coverage guard catches a missing one.
       return {
         eventKey,
         stingerId: null,
@@ -80,6 +92,12 @@ export function seasonalRunStartCeremony(
         banterTag: 'seasonal_event',
         bannerKey: `seasonalEvent.${eventKey}.ceremony_banner`,
       };
+    case 'culloden':
+      // Deliberately ceremony-less: Culloden is a memorial ("no buff, no
+      // fanfare"). Its run-start surface is the grave memorial toast
+      // (applyCullodenMemorial in seasonalRunStart.ts), not a Gran
+      // ceremony. Falls through to null so no seasonal Gran banter fires.
+      return null;
     default:
       return null;
   }
