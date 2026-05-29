@@ -168,7 +168,7 @@ export function launchActIntermission(
   // A11y caption — surfaces the fork moment for audio-off / deaf play.
   hooks.caption(
     'act_intermission_open',
-    t('ui.captions.act_intermission_open'),
+    t('captions.act_intermission_open'),
     COLORS_CSS.TOAST_GOLD,
     3000,
   );

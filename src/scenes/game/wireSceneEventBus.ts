@@ -44,7 +44,7 @@ export function wireSceneEventBus(hooks: SceneEventBusHooks): () => void {
     hooks.getJuice().showToast(t('ui.game.boss_enraged'), COLORS_CSS.DANGER_RED);
     audio.playBossEnrage();
     // A1 M4 — parity caption.
-    hooks.caption?.('boss_enrage', t('ui.captions.boss_enrage'), COLORS_CSS.DANGER_RED, 3500);
+    hooks.caption?.('boss_enrage', t('captions.boss_enrage'), COLORS_CSS.DANGER_RED, 3500);
   });
   const unsubCodexFirstCull = globalEventBus.on('CODEX_FIRST_CULL', (p) => {
     const name = getEnemyDisplayName(p.enemyKey);
@@ -69,7 +69,7 @@ export function wireSceneEventBus(hooks: SceneEventBusHooks): () => void {
     hooks.getJuice()?.showToast(t(`ui.cuSith.bay.${key}`), '#88e8ff');
     hooks.caption?.(
       `cu_sith_bay_${key}`,
-      t(`ui.captions.cu_sith_bay_${key}`),
+      t(`captions.cu_sith_bay_${key}`),
       '#88e8ff',
       2500,
     );

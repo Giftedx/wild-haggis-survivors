@@ -51,13 +51,13 @@ export function wireXpSystemListeners(inputs: WireXpSystemListenersInputs): void
     // their celebration; other variants fall through to the generic
     // pool silently (missing sub-pool == no special handling).
     getBanter()?.request('level_up', { tag: getActiveVariantKey() });
-    caption('level_up', t('ui.captions.level_up'), '#ffdd66', 3500);
+    caption('level_up', t('captions.level_up'), '#ffdd66', 3500);
   });
 
   // Post-cap echo cards — same UI as a level-up but without the
   // ceremony (no heal, no aura, no milestone pulse).
   xpSystem.events.on('echoReady', () => {
     getLevelUpFlow().handleEcho();
-    caption('echo_ready', t('ui.captions.echo_ready'), '#c8a8e8', 3500);
+    caption('echo_ready', t('captions.echo_ready'), '#c8a8e8', 3500);
   });
 }

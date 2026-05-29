@@ -98,7 +98,7 @@ export function installRunStartupHud(
     onPullStart: () => {
       scene.juice.showToast(t('ui.game.nicnevin_wild_hunt'), COLORS_CSS.DANGER_RED);
       audio.playBossEnrage();
-      scene.caption('nicnevin_wild_hunt', t('ui.captions.nicnevin_wild_hunt'), COLORS_CSS.DANGER_RED, 2500);
+      scene.caption('nicnevin_wild_hunt', t('captions.nicnevin_wild_hunt'), COLORS_CSS.DANGER_RED, 2500);
     },
   });
   scene.edgeIndicators = new EdgeIndicators(scene);

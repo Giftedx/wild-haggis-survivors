@@ -213,7 +213,7 @@ export class RunLifecycle {
     // scheduleRealTime auto-cancels on scene reset (TimeManager.reset).
     timeManager.scheduleRealTime(500, () => juice.victorySparkleRain());
     juice.showToast(t('ui.gameOver.victory_title'), COLORS_CSS.WHISKY_GOLD);
-    this.hooks.caption('victory', t('ui.captions.victory_chorus'), '#ffe08a');
+    this.hooks.caption('victory', t('captions.victory_chorus'), '#ffe08a');
     juice.showToast(t('ui.gameOver.keep_going_offer'), COLORS_CSS.TOAST_GOLD);
     // Taxman Grudge Ledger (DESIGN_IDEAS §1) — judge how the player
     // finished elites and bosses through the run, fire a verdict-keyed
@@ -429,7 +429,7 @@ export class RunLifecycle {
 
       juice.flashRed(400);
       tryCameraShake(this.hooks.getCamera(), 500, 0.02, this.hooks.getSettingsManager());
-      this.hooks.caption('death', t('ui.captions.death_fall'), '#cc8866');
+      this.hooks.caption('death', t('captions.death_fall'), '#cc8866');
       // B1 Phase 2 Task 12 — Cause-tagged death reflection (pool priority
       // 75). Classify here so the tag reaches the banter pool at the same
       // tick as the toast surface — the tracker snapshot is frozen from
