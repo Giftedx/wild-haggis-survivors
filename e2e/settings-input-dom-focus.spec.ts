@@ -76,18 +76,21 @@ test.describe('SettingsInputScene DOM focus mirror', () => {
     await expect(layer).toBeAttached({ timeout: 5_000 });
 
     const buttons = layer.locator('button[type="button"]');
-    // 6 actions × 2 keyboard slots = 12; dash + pause add 2 gamepad
-    // slots each = 4; plus terminal Reset + Back = 18 total.
-    await expect(buttons).toHaveCount(18);
+    // 10 ACTION_KEYS × 2 keyboard chips (primary + secondary, the secondary
+    // chip renders even when unbound) = 20; dash + pause each add 2 gamepad
+    // chips = 4; plus terminal Reset + Back = 2 → 26 total. Bump this when
+    // ACTION_KEYS grows — the 2026-05 active-skill keys (stanceToggle /
+    // shintyParry / whiskyBreath / driftMastery) added the most recent +8.
+    await expect(buttons).toHaveCount(26);
 
     const ids = await Promise.all(
-      Array.from({ length: 18 }, (_, i) => buttons.nth(i).getAttribute('data-focus-id')),
+      Array.from({ length: 26 }, (_, i) => buttons.nth(i).getAttribute('data-focus-id')),
     );
     expect(ids[0]).toBe('settings-input-moveUp-primary-keyboard');
     expect(ids[ids.length - 2]).toBe('settings-input-reset');
     expect(ids[ids.length - 1]).toBe('settings-input-back');
 
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0; i < 26; i++) {
       const ariaLabel = await buttons.nth(i).getAttribute('aria-label');
       const text = await buttons.nth(i).textContent();
       const effective = (ariaLabel ?? text ?? '').trim();
@@ -112,11 +115,15 @@ test.describe('SettingsInputScene DOM focus mirror', () => {
       } | undefined;
       return scene?.children?.list
         ?.map((child) => (typeof child.text === 'string' ? child.text : ''))
-        .find((text) => text.includes('Q stance')) ?? '';
+        .find((text) => text.includes('Drift Mastery')) ?? '';
     });
-    expect(visibleHint).toContain('E parry');
-    expect(visibleHint).toContain('F Whisky Breath');
-    expect(visibleHint).toContain('G Drift Mastery');
+    // ui.inputRebind.skill_hint points players at the active-skill rows + the
+    // dash-strike gesture. Substrings below hold in both EN and Scots copy
+    // (src/core/i18n/ui.ts + i18n.scs/ui.ts).
+    expect(visibleHint).toContain('Stance');
+    expect(visibleHint).toContain('parry');
+    expect(visibleHint).toContain('Whisky Breath');
+    expect(visibleHint).toContain('Drift Mastery');
     expect(visibleHint).toContain('dash-strikes');
 
     // Activate the first slot via DOM click — this should enter capture
@@ -142,7 +149,7 @@ test.describe('SettingsInputScene DOM focus mirror', () => {
     // canvas first so Phaser's keyboard plugin receives the keydown.
     await canvas.focus();
     await page.keyboard.press('Escape');
-    await expect(buttons).toHaveCount(18, { timeout: 5_000 });
+    await expect(buttons).toHaveCount(26, { timeout: 5_000 });
     const restoredFirstLabel = (await buttons.first().getAttribute('aria-label')) ?? '';
     expect(restoredFirstLabel).toBe('Move up — primary keyboard — Up');
 
