@@ -10,6 +10,8 @@ export const ui = {
       uncommon: 'UNCOMMON',
       rare: 'RARE',
       legendary: 'LEGENDARY',
+      rune: 'RUNE',
+      mythic: 'MYTHIC',
     },
   },
   menu: {

@@ -113,6 +113,14 @@ describe('i18n dynamic key families resolve', () => {
       name: 'sporran card kinds (sporran.kind.*)',
       keys: ['curse', 'boon', 'quirk'].map((k) => `sporran.kind.${k}`),
     },
+    {
+      name: 'upgrade card rarity labels (ui.common.rarity.*)',
+      // Full Rarity union from data/upgrades.ts — every card rarity needs a
+      // pill + screen-reader label, or the card renders its raw key.
+      keys: ['common', 'uncommon', 'rare', 'legendary', 'rune', 'mythic'].map(
+        (r) => `ui.common.rarity.${r}`,
+      ),
+    },
   ];
 
   for (const fam of families) {
