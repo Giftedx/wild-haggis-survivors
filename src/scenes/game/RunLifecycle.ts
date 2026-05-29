@@ -343,6 +343,19 @@ export class RunLifecycle {
     this.uninstallPostBellKeyHandler();
   }
 
+  /**
+   * Test/debug seam — enter post-bell directly, anchoring the bell at the
+   * current game time, without driving the full victory ceremony. Lets e2e
+   * exercise post-bell content (Taxman's Retinue waves, post-bell boss
+   * cadence) deterministically. Idempotent; no-op once already post-bell.
+   */
+  forcePostBell(): void {
+    if (this.postBell) return;
+    this.postBell = true;
+    this.bellTimeSec = this.hooks.getSpawnSystem().getGameTimeSec();
+    this.postBellOfferActive = false;
+  }
+
   private installPostBellKeyHandler(): void {
     if (this.postBellKeyHandler) return;
     this.postBellKeyHandler = (e: KeyboardEvent) => {

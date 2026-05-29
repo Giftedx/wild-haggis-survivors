@@ -103,6 +103,11 @@ export class SpawnSystem {
    * Reset on resetRunState.
    */
   private postBellRetinueLastSpawnSec: number = -1;
+  /** Count of retinue waves fired this run — only `tickPostBellRetinue`
+   *  increments it, so it is a generic-spawn-immune signal that the
+   *  post-bell retinue actually fired (consumed by e2e + future stats).
+   *  Reset on resetRunState. */
+  private postBellRetinueWavesSpawned: number = 0;
   /** One-shot: run reached `RUN_WIN_TIME_SEC` — timeline bursts off, finale boss queued. */
   private runWinFinaleStarted: boolean = false;
   /** 0–1 — rises on kills, decays over time; nudges elite spawn chance. */
@@ -375,6 +380,7 @@ export class SpawnSystem {
     this.spawnsPausedUntilGameSec = 0;
     this.postBellBossLastSpawnSec = -1;
     this.postBellRetinueLastSpawnSec = -1;
+    this.postBellRetinueWavesSpawned = 0;
     this.events.removeAllListeners();
 
     if (this.activeBossVfx) {
@@ -543,6 +549,7 @@ export class SpawnSystem {
     );
     if (!sched.due) return;
     this.postBellRetinueLastSpawnSec = this.gameTimeSec;
+    this.postBellRetinueWavesSpawned++;
 
     const waveSize = pb.retinueWaveSize;
     const wraithCount = Math.ceil(waveSize / 2);
@@ -1064,6 +1071,8 @@ export class SpawnSystem {
     return false;
   }
   getGameTimeSec(): number { return this.gameTimeSec; }
+  /** Test/stats hook — count of Taxman's-Retinue waves fired this run. */
+  getPostBellRetinueWavesSpawned(): number { return this.postBellRetinueWavesSpawned; }
   getSpawnTimerSec(): number { return this.spawnTimer; }
   getSpawnIntervalSec(): number { return this.spawnInterval; }
   getBurstSize(): number { return this.burstSize; }
