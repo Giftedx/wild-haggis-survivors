@@ -44,7 +44,15 @@ export default defineConfig({
   testDir: 'e2e',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // Retry once everywhere — including local. This repo has no git remote, so
+  // the CI workflow never fires; the local `npm run test:e2e` (via ci:all) is
+  // the only gate that actually runs. The suite carries known transient races
+  // (headless keyboard vs Phaser's per-frame key poll; cross-engine WebGL
+  // boot timing) that single-shot `retries: 0` turned into hard-red on a busy
+  // dev box, so the gate read perpetually broken and stopped being trusted.
+  // Playwright still flags a retried pass as "flaky" (visible, non-blocking),
+  // and a genuine regression fails all attempts — so this hides nothing.
+  retries: 1,
   workers: 1,
   timeout: 90_000,
   use: {
