@@ -16,7 +16,12 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Cross-engine e2e (chromium + firefox + webkit desktop + chromium mobile)
+    # runs serially (playwright workers: 1) and is the dominant cost — the
+    # firefox+webkit projects alone are ~25-30 min. 20 was sized for the old
+    # chromium-only gate; 60 gives headroom so the job fails on real errors,
+    # not a timeout.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -32,10 +37,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          # `-all` marks the full engine set (chromium + firefox + webkit).
+          # Bump distinguishes it from the old chromium-only cache so the
+          # extra engines actually get cached rather than re-downloaded.
+          key: playwright-all-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright browsers (all engines)
+        # playwright.config.ts defines firefox-desktop + webkit-desktop
+        # projects (cross-engine sanity) alongside chromium; `npm run
+        # test:e2e` (via ci:all) runs them all, so CI must install all three
+        # or those projects fail to launch and the e2e gate is meaningless.
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - name: Lint, unit tests, build, and E2E
         run: npm run ci:all
