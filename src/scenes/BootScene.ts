@@ -17,6 +17,7 @@ import { loadSave } from '../utils/save';
 import { parseSharedRunUrl } from '../utils/sharedRunUrl';
 import { isSporranAutoRoute } from '../utils/sporranAutoRoute';
 import {
+  bakeEagerEnemyAtlas,
   bakeEnemyAtlas,
   bakeNonVariantAccessoryAtlas,
   ensureAllVariantAtlases,
@@ -187,8 +188,13 @@ export class BootScene extends Phaser.Scene {
          classic-only fallback above keeps boot functional in the meantime. */
     }
 
+    // ADR-0005 enemy-bake descope (2026-05-29): boot bakes only the early-
+    // appearing roster enemies (~opening minutes). Later enemies + every boss
+    // bake lazily at spawn via `ensureEnemyAtlas` (Enemy.spawn chokepoint), so
+    // the W71 animated-enemy roster can keep growing without inflating boot.
+    // The `?export` branch below force-bakes the rest for a complete PNG.
     const enemyBakeStart = performance.now();
-    const enemyCount = bakeEnemyAtlas(this);
+    const enemyCount = bakeEagerEnemyAtlas(this);
     console.info(
       `[BootScene] Enemy atlas bake: +${enemyCount} keys, ${(performance.now() - enemyBakeStart).toFixed(1)} ms`,
     );
@@ -199,9 +205,12 @@ export class BootScene extends Phaser.Scene {
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {
       const exportStart = performance.now();
       const exportReports = ensureAllVariantAtlases(this);
+      // Lazy enemies aren't baked at boot anymore (descope) — force the full
+      // enemy roster so the composite PNG isn't missing bosses/late enemies.
+      const exportEnemyCount = bakeEnemyAtlas(this);
       const exportTotal = exportReports.reduce(
         (a, r) => a + r.bakedHaggis + r.bakedAccessories + r.bakedMantle,
-        0,
+        exportEnemyCount,
       );
       console.info(
         `[BootScene] Sprite-export warmup: +${exportTotal} keys, ${(performance.now() - exportStart).toFixed(1)} ms`,

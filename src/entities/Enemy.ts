@@ -95,6 +95,7 @@ import { audio } from '../systems/AudioSystem';
 import { AnimationController } from '../animation/AnimationController';
 import type { AnimationSignals } from '../animation/animationStates';
 import { isEnemyAnimated } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
+import { ensureEnemyAtlas } from '../scenes/boot/variantAtlasBaker';
 import { pickInitialOrbitAngle, pickSpawnerMinionAngle } from './enemyAngleSeed';
 
 // Mini HP bar above enemies: dark backing + red/gold fill. Colours used
@@ -435,6 +436,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Animation controller — only for enemies with authored frame drawers.
     // Non-animated enemies keep static texture + bobPhase wobble.
     if (isEnemyAnimated(config.key)) {
+      // Lazy-bake guarantee (ADR-0005 enemy-bake descope): enemies outside
+      // the eager boot set (later roster + bosses + summoned minions) bake
+      // here on first spawn, before the controller's first `setTexture`, so
+      // the sprite never renders the `__MISSING` magenta. Idempotent — a
+      // re-spawn of an already-baked enemy is a cheap per-key cache check.
+      ensureEnemyAtlas(this.scene, config.key);
       this.animController = new AnimationController({
         sprite: this,
         subject: config.key,

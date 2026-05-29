@@ -34,8 +34,14 @@ import type { AnimationState } from '../../animation/animationStates';
 import { ACCESSORY_REGISTRY } from '../../entities/haggisComposition/accessoryRegistry';
 import { drawMantleTier } from '../../art/sprites/haggisMantle';
 import { applyOutline } from '../../art/outlinePostProcess';
-import { getAllAnimatedEnemyDrawers } from '../../animation/frameDrawers/enemies/enemyFrameRegistry';
+import {
+  getAllAnimatedEnemyDrawers,
+  getAllAnimatedEnemyKeys,
+  getEnemyFrameDrawer,
+} from '../../animation/frameDrawers/enemies/enemyFrameRegistry';
+import type { EnemyFrameDrawer } from '../../animation/frameDrawers/enemies/enemyFrameTypes';
 import { selectKeysNeedingBake } from './variantAtlasKeys';
+import { selectEagerEnemyKeys } from './enemyAtlasEager';
 
 export interface BakeReport {
   readonly variantKey: VariantKey;
@@ -209,33 +215,73 @@ export function ensureAllVariantAtlases(scene: Phaser.Scene): BakeReport[] {
 }
 
 /**
- * Bake every registered animated enemy's atlas (every state × frame).
- * Not variant-scoped — enemies look the same across player variants —
- * so this runs once per session from BootScene. Idempotent: keys
- * already in cache are skipped (matches the variant family's idempotency
- * contract so the helper is uniformly safe to recall).
+ * Idempotent: bake one animated enemy's full atlas (every state × frame).
+ * Skips keys already in cache. Returns the number of textures generated.
+ * The shared inner loop behind boot, eager, and lazy enemy bakes.
  */
-export function bakeEnemyAtlas(scene: Phaser.Scene): number {
-  const drawers = getAllAnimatedEnemyDrawers();
+function bakeEnemyDrawerAtlas(scene: Phaser.Scene, drawer: EnemyFrameDrawer): number {
+  const size = drawer.canvasSize;
   let baked = 0;
-  for (const drawer of drawers) {
-    const size = drawer.canvasSize;
-    for (const state of ALL_ANIMATION_STATES) {
-      const frameCount = getFrameCountForState(state);
-      for (let frame = 0; frame < frameCount; frame++) {
-        const key = `${drawer.enemyKey}_${state}_${frame}`;
-        if (scene.textures.exists(key)) continue;
-        const g = scene.add.graphics();
-        const bodyFrame = drawer.authoredStates.has(state)
-          ? drawer.getFrame(state, frame)
-          : drawer.getFrame('idle', 0);
-        drawer.draw(g, bodyFrame);
-        g.generateTexture(key, size, size);
-        g.destroy();
-        applyOutline(scene, key, size, size);
-        baked++;
-      }
+  for (const state of ALL_ANIMATION_STATES) {
+    const frameCount = getFrameCountForState(state);
+    for (let frame = 0; frame < frameCount; frame++) {
+      const key = `${drawer.enemyKey}_${state}_${frame}`;
+      if (scene.textures.exists(key)) continue;
+      const g = scene.add.graphics();
+      const bodyFrame = drawer.authoredStates.has(state)
+        ? drawer.getFrame(state, frame)
+        : drawer.getFrame('idle', 0);
+      drawer.draw(g, bodyFrame);
+      g.generateTexture(key, size, size);
+      g.destroy();
+      applyOutline(scene, key, size, size);
+      baked++;
     }
   }
   return baked;
+}
+
+/**
+ * Bake EVERY registered animated enemy's atlas. Reserved for the `?export`
+ * sprite tool, which composites the full atlas into one PNG and so needs
+ * the cache fully warm. Production boot uses `bakeEagerEnemyAtlas` instead
+ * (ADR-0005 enemy-bake descope, 2026-05-29) and lazy `ensureEnemyAtlas` at
+ * spawn. Idempotent — keys already in cache are skipped.
+ */
+export function bakeEnemyAtlas(scene: Phaser.Scene): number {
+  let baked = 0;
+  for (const drawer of getAllAnimatedEnemyDrawers()) {
+    baked += bakeEnemyDrawerAtlas(scene, drawer);
+  }
+  return baked;
+}
+
+/**
+ * Boot cold-path enemy bake: only the early-appearing roster enemies
+ * (`selectEagerEnemyKeys` — `appearsAt` within the eager window). Later
+ * enemies and every boss defer to `ensureEnemyAtlas` at spawn, keeping the
+ * boot bake under the W71 budget as the animated roster grows. Idempotent.
+ */
+export function bakeEagerEnemyAtlas(scene: Phaser.Scene): number {
+  const eager = new Set(selectEagerEnemyKeys(getAllAnimatedEnemyKeys()));
+  let baked = 0;
+  for (const drawer of getAllAnimatedEnemyDrawers()) {
+    if (!eager.has(drawer.enemyKey)) continue;
+    baked += bakeEnemyDrawerAtlas(scene, drawer);
+  }
+  return baked;
+}
+
+/**
+ * Idempotent lazy bake for one enemy, called at spawn (`Enemy.spawn`)
+ * before the AnimationController's first `setTexture`. No-op when the enemy
+ * isn't animated (no registered drawer) or its atlas is already warm. This
+ * is the descope's correctness guarantee: any enemy not eager-baked at boot
+ * is baked here the first time it spawns, so a sprite never renders the
+ * `__MISSING` magenta texture.
+ */
+export function ensureEnemyAtlas(scene: Phaser.Scene, enemyKey: string): number {
+  const drawer = getEnemyFrameDrawer(enemyKey);
+  if (!drawer) return 0;
+  return bakeEnemyDrawerAtlas(scene, drawer);
 }

@@ -121,6 +121,16 @@ test.describe('Black Douglas boss — spawn and kill', () => {
         .some((e) => e.active && e.getEnemyKey?.() === 'black_douglas') ?? false;
     }, undefined, { timeout: 8_000 });
 
+    // Descope canary (ADR-0005 enemy-bake, 2026-05-29): black_douglas is a
+    // post-bell boss, never in the eager boot set, so its atlas must have been
+    // lazy-baked at spawn via `ensureEnemyAtlas` (Enemy.spawn chokepoint). A
+    // missing idle frame here means the lazy path regressed → magenta boss.
+    const atlasBaked = await page.evaluate(() => {
+      const g = (window as unknown as { game?: { textures: { exists(k: string): boolean } } }).game;
+      return g?.textures.exists('black_douglas_idle_0') ?? false;
+    });
+    expect(atlasBaked, 'black_douglas atlas must be lazy-baked on spawn').toBe(true);
+
     await healPlayer();
 
     const bossKilled = await page.evaluate(() => {

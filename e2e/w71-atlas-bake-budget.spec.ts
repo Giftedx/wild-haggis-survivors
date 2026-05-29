@@ -23,12 +23,21 @@ import { expect, test } from './fixtures';
 const BAKE_LOG_PATTERN = /^\[BootScene\] (Non-variant accessory|Variant atlas|Enemy atlas)( bake)?[^:]*: \+\d+ keys, ([0-9]+(?:\.[0-9]+)?) ms$/;
 const ENEMY_LOG_PATTERN = /^\[BootScene\] Enemy atlas bake: \+\d+ keys, ([0-9]+(?:\.[0-9]+)?) ms$/;
 
-// Calibrated 2026-05-11 to the lazy-bake-descoped floor on local headless
-// Chromium: total ~251ms (down from ~430ms pre-descope), enemy ~197ms.
-// Budgets carry CI/host headroom (~1.6× for total, ~1.5× for enemy) while
-// still catching a large accidental frame-count or animated-enemy roster
-// expansion. Tightening further requires also descoping the enemy bake
-// (separate slice; see ADR-0005 addendum 2026-05-11).
+// Recalibrated 2026-05-29 after the enemy-bake descope (ADR-0005 addendum —
+// the "separate slice" the 2026-05-11 calibration promised once the animated
+// roster grew). BootScene now eager-bakes ONLY early-roster enemies
+// (`bakeEagerEnemyAtlas` — `appearsAt` within the opening minutes): ~16 ms /
+// 57 keys. Later enemies + every boss lazy-bake at spawn via
+// `ensureEnemyAtlas` (Enemy.spawn chokepoint). Boot total fell from ~400 ms
+// (1026 eager keys, over budget) to ~70 ms loaded / ~45 ms clean.
+//
+// Budgets stay deliberately generous: this suite is the LOCAL-ONLY gate (no
+// git remote → CI never fires) and runs on a possibly-busy dev box, so tight
+// perf thresholds would flake. They guard against (a) a descope revert —
+// flipping boot back to the full `bakeEnemyAtlas` pushes enemy bake to
+// ~333 ms, tripping the 300 cap — and (b) gross accessory/variant/eager-set
+// bloat. The lazy path's render correctness is guarded by the
+// `black_douglas_idle_0` canary in `e2e/black-douglas-boss.spec.ts`.
 const TOTAL_BAKE_BUDGET_MS = 400;
 const ENEMY_BAKE_BUDGET_MS = 300;
 const MIN_EXPECTED_LOG_LINES = 3; // accessory + variant(default) + enemy. Saved-variant log is optional.
