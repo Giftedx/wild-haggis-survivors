@@ -34,7 +34,7 @@ Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Pha
 - `npm run build` — Type-check with `tsc --noEmit` then build with Vite to `dist/`
 - `npm run preview` — Serve the production build locally (Playwright E2E uses `vite preview` on port 4180 via `playwright.config.ts`)
 - `npm run test:e2e` — Playwright smoke against the production build (run `npm run build` first, or rely on an existing `dist/`)
-- `npm run ci` — Lint + Vitest + build (no E2E)
+- `npm run ci` — Lint + Vitest + build + bundle budget + flash budget + LOC report (no E2E)
 - `npm run ci:all` — Full gate: `ci` then E2E (matches `.github/workflows/ci.yml` after `playwright install`)
 
 **E2E harness** — `e2e/fixtures.ts` (Playwright `test.extend`) runs a context-level `addInitScript` before every navigation: `FORCE_CANVAS` for headless WebGL stability, splash flags in `whs_game_settings`, and **`AUTO_BATTLE = false`**. Per-spec `page.addInitScript` hooks run **after** that; specs that need auto-picks / soak throughput (e.g. marathon, grudge ledger, `ui-audit` `seedFullProgress`) set `AUTO_BATTLE = true` locally. See `CONTRIBUTING.md` (Playwright row).

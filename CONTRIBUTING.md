@@ -30,7 +30,7 @@ These run on every commit via `npm run ci`. If your change breaks one, fix the r
 | **Flash budget** | [`scripts/check-flash-budget.mjs`](scripts/check-flash-budget.mjs) | All flash methods route through `motionScale` + `reduceFlashing` caps |
 | **Playwright e2e** | `npm run test:e2e` (after `npm run build`) | ~50 `e2e/*.spec.ts` files (~218 enumerated cases across chromium / firefox / webkit + mobile — `npx playwright test --list`). `e2e/fixtures.ts` forces `AUTO_BATTLE` off before each navigation; specs that need auto-picks / soak throughput set `AUTO_BATTLE = true` in their own `page.addInitScript` (runs after the fixture hook). |
 
-`npm run ci` runs lint + vitest + build. `npm run ci:all` adds e2e. Use `ci:all` before declaring UI-touching work done.
+`npm run ci` runs lint + Vitest + build + bundle budget + flash budget + LOC report. `npm run ci:all` adds Playwright E2E. Use `ci:all` before declaring UI-touching work done.
 
 ---
 

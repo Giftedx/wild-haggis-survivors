@@ -23,7 +23,7 @@ npm run dev          # Vite dev server on :3000, opens browser
 | `npm run build` | `tsc --noEmit` → Vite build → `dist/` |
 | `npm run preview` | Serves `dist/` locally; Playwright E2E uses this on :4180 |
 | `npm run test:e2e` | Playwright against the production build |
-| `npm run ci` | Lint + Vitest + build (no E2E) |
+| `npm run ci` | Lint + Vitest + build + bundle budget + flash budget + LOC report (no E2E) |
 | `npm run ci:all` | Full local gate matching CI: `ci` then E2E |
 
 Before declaring anything fixed/done, run at least `npm test` and `npm run build`. For UI-touching work prefer `npm run ci:all` after `npx playwright install chromium`.
@@ -75,8 +75,8 @@ For deeper detail read [`CLAUDE.md`](CLAUDE.md) (architecture quick map + Phaser
     ├── superpowers/specs/            Design specs (date-prefixed)
     ├── superpowers/plans/            Implementation plans (date-prefixed)
     ├── status/                       Domain-grouped trackers (a11y, cultural, engine)
-    ├── dispatch/                     Per-session dispatch sets (date-subdirs)
-    ├── top-10-tasks/                 2026-04-26 top-10 batch (reconciled)
+    ├── archive/dispatch/             Historical per-session dispatch sets (date-subdirs)
+    ├── archive/top-10-tasks/         Historical 2026-04-26 top-10 batch (reconciled)
     ├── prompts/                      Live reusable prompts (currently 1)
     └── archive/                      Historical / superseded docs (verdict, multi-model audit reports, stale prompts)
 ```

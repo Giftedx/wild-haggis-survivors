@@ -155,7 +155,7 @@ Player-facing changes should match the project's voice and visual direction. The
 | [archive/2026-04-26-multi-model-audit/](archive/2026-04-26-multi-model-audit/) | Historical 2026-04-26 multi-model audit reports + reconciled backlog (basis for top-10 dispatch) — archived 2026-05-09 |
 | [prompts/orchestrator-backlog-drain.md](prompts/orchestrator-backlog-drain.md) | Live reusable orchestrator brief (the only prompts file still in active use) |
 | [archive/prompts/](archive/prompts/) | 4 historical session prompts (particle budget, polish onboarding, perf balance, visual art review) — archived 2026-05-09 |
-| [top-10-tasks/](archive/top-10-tasks/) | 2026-04-26 morning top-10 dispatch — all 10 charters reconciled to `master` (tip `89ca11a`). Includes `00-INDEX.md`, `01..10` charters, `Execution_Log.md`, and `blocked/` human-gated stubs. The next-session dispatch lives at `dispatch/2026-04-26/`. |
+| [top-10-tasks/](archive/top-10-tasks/) | 2026-04-26 morning top-10 dispatch — all 10 charters reconciled to `master` (tip `89ca11a`). Includes `00-INDEX.md`, `01..10` charters, `Execution_Log.md`, and `blocked/` human-gated stubs. The historical 2026-04-26 dispatch now lives at `archive/dispatch/2026-04-26/`; future active dispatches should follow the per-session-subdir pattern and be archive-classified when complete. |
 
 ---
 
@@ -165,7 +165,7 @@ Player-facing changes should match the project's voice and visual direction. The
 - **ADR files** are numbered `NNNN-kebab-case-title.md`. DRAFT ADRs get a `.draft.md` suffix until accepted. See [adr/README.md](adr/README.md).
 - **Status trackers** — see [DOC_CONVENTIONS.md §"Status trackers"](DOC_CONVENTIONS.md#status-trackers) for the placement rule. Trackers cited from code/tests by absolute path live at `docs/<NAME>.md`; ones cited only from other docs may live under `docs/status/<domain>/`.
 - **`status/cultural/CULTURAL_REVIEW_STATUS.json`** is read by `src/data/culturalReviewStatus.test.ts` via a hardcoded relative path — moving or renaming requires a code change.
-- **One `Execution_Log.md` per dispatch session.** The active dispatch log is at `dispatch/2026-04-26/Execution_Log.md`. The 2026-04-26 morning batch's log lives at `top-10-tasks/Execution_Log.md`. Future dispatches should follow the per-session-subdir pattern under `dispatch/`.
+- **One `Execution_Log.md` per dispatch session.** Historical dispatch logs currently live under `archive/dispatch/2026-04-26/Execution_Log.md`; the 2026-04-26 morning batch log lives under `archive/top-10-tasks/Execution_Log.md`. Future dispatches should follow the per-session-subdir pattern under `dispatch/`.
 - **Design canon stays at root** because CLAUDE.md cites those paths as primary references and they're evergreen, not per-domain status.
 
 ---
