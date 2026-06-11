@@ -1,8 +1,34 @@
+<div align="center">
+
+<img src="./assets/banner.png" alt="Wild Haggis Survivors — the wee haggis over the title, from the game&#39;s own main menu" width="100%" />
+
 # Wild Haggis Survivors
 
-A handcrafted, Highland-at-dusk, Scots-tinted bullet-heaven. You play a wild haggis with one famously uneven set of legs — every input drifts a few degrees clockwise — fending off Scottish-themed waves across a 3000 × 3000 moor.
+**A handcrafted, Highland-at-dusk, Scots-tinted bullet-heaven.**
+You play a wild haggis with one famously uneven set of legs — every input drifts a few degrees clockwise — fending off Scottish-themed waves across a 3000 × 3000 moor.
 
-Built with **Phaser 4** + **TypeScript** + **Vite**. Every sprite is drawn in code at boot — there are no external image assets.
+![Phaser 4](https://img.shields.io/badge/Phaser-4-9070b0?style=flat)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)
+![Sprites drawn in code](https://img.shields.io/badge/sprites-drawn_in_code-ffc840?style=flat)
+![English + Scots](https://img.shields.io/badge/locale-English_%2B_Scots-c42828?style=flat)
+
+🎮 **Play it: [ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)** — or walk in through [the bothy](https://ha.ggis.xyz)
+
+</div>
+
+Built with **Phaser 4** + **TypeScript** + **Vite**. Every sprite is drawn in code at boot — there are no external image assets. 28 playable haggis variants, 29 weapon families with evolutions, 25 biomes with their own hazards, seeded deterministic replays, a procedural Highland music engine, and a Scots translation with CI parity fences.
+
+## A wee look
+
+| | |
+|:---:|:---:|
+| ![Main menu — the glen stirs](./assets/screens/main-menu.png) | ![Variant loadout — crooked legs, straight ambition](./assets/screens/loadout.png) |
+| *The glen stirs — yir first run awaits.* | *28 variants, one heart. "Crooked legs, straight ambition."* |
+| ![Run start — MON THEN!](./assets/screens/run-start.png) | ![Mid-run on the moor](./assets/screens/gameplay.png) |
+| *MON THEN!* | *The moor, mid-run — banter, drift ring, minimap and all.* |
+
+*(Screens come from the project's own [DESIGN.md verification harness](e2e/design-verify.spec.ts) — real pixels, not mock-ups.)*
 
 > **New here?** Start with [`docs/INDEX.md`](docs/INDEX.md). Then read [`docs/PRD.md`](docs/PRD.md) for the live snapshot and [`AGENTS.md`](AGENTS.md) (or [`CLAUDE.md`](CLAUDE.md)) for the AI/contributor working agreement.
 
@@ -118,4 +144,4 @@ This is a solo-dev project. The conventions, voice, and tone matter as much as t
 
 ## License & deploy
 
-Canonical home: **[ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)**. The game is built with Vite `base: '/wild/'` and mounted under the [`ha-ggis-hub`](../ha-ggis-hub) Cloudflare Pages project at the `/wild/` sub-path (the hub owns the domain; WHS is copied into the hub's `dist/wild/` at deploy time). There is no separate root-served standalone deployment — dev server and Playwright preview also run under the `/wild/` base. See the hub repo's `docs/DEPLOYMENT.md` for the combined build + `wrangler pages deploy` flow.
+Canonical home: **[ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)**. The game is built with Vite `base: '/wild/'` and mounted under the [`ha-ggis-hub`](https://github.com/Giftedx/ha-ggis-hub) Cloudflare Pages project at the `/wild/` sub-path (the hub owns the domain; WHS is copied into the hub's `dist/wild/` at deploy time). There is no separate root-served standalone deployment — dev server and Playwright preview also run under the `/wild/` base. See the hub repo's `docs/DEPLOYMENT.md` for the combined build + `wrangler pages deploy` flow.

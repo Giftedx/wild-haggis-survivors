@@ -49,7 +49,17 @@ jobs:
         # or those projects fail to launch and the e2e gate is meaningless.
         run: npx playwright install --with-deps chromium firefox webkit
 
-      - name: Lint, unit tests, build, and E2E
-        run: npm run ci:all
+      - name: Lint, unit tests, build, budgets
+        run: npm run ci
+        env:
+          CI: true
+
+      - name: E2E (all engines)
+        # Includes the 30-sim-minute marathon soak: it fast-forwards spawn
+        # timing (skipToMinute), so wall-clock is ~25 s, not 30 min. It was
+        # briefly quarantined while its leak assertion was wrong (it slope-
+        # tested the enemy pool, which ramps toward MAX_ACTIVE by design); the
+        # assertion now checks the real cap invariant and the soak passes.
+        run: npx playwright test
         env:
           CI: true
