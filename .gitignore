@@ -74,3 +74,9 @@ cloudflare/node_modules/
 .claude/purpose-audit.md
 
 .claude/settings.local.json
+
+# Machine-local AI tooling state
+.claude/
+.serena/
+.ralph/
+.ralphrc
