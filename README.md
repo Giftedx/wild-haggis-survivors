@@ -13,6 +13,8 @@ You play a wild haggis with one famously uneven set of legs — every input drif
 ![Sprites drawn in code](https://img.shields.io/badge/sprites-drawn_in_code-ffc840?style=flat)
 ![English + Scots](https://img.shields.io/badge/locale-English_%2B_Scots-c42828?style=flat)
 
+🎮 **Play it: [wild-haggis-survivors.pages.dev](https://wild-haggis-survivors.pages.dev/)** — or walk in through [the bothy](https://ha.ggis.xyz)
+
 </div>
 
 Built with **Phaser 4** + **TypeScript** + **Vite**. Every sprite is drawn in code at boot — there are no external image assets. 28 playable haggis variants, 29 weapon families with evolutions, 25 biomes with their own hazards, seeded deterministic replays, a procedural Highland music engine, and a Scots translation with CI parity fences.

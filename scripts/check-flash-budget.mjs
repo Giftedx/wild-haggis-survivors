@@ -219,7 +219,8 @@ async function checkAllowlistEntries() {
   const failures = [];
   for (const [rel, meta] of FLASH_OVERLAY_ALLOWLIST.entries()) {
     if (meta.kind !== 'flash') continue;
-    const full = join(ROOT, rel.replace(/\//g, '\\'));
+    // join() handles '/' on every platform; hardcoding '\\' broke Linux CI.
+    const full = join(ROOT, rel);
     let src;
     try {
       src = await readFile(full, 'utf8');
