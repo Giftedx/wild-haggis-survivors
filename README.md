@@ -13,7 +13,7 @@ You play a wild haggis with one famously uneven set of legs — every input drif
 ![Sprites drawn in code](https://img.shields.io/badge/sprites-drawn_in_code-ffc840?style=flat)
 ![English + Scots](https://img.shields.io/badge/locale-English_%2B_Scots-c42828?style=flat)
 
-🎮 **Play it: [wild-haggis-survivors.pages.dev](https://wild-haggis-survivors.pages.dev/)** — or walk in through [the bothy](https://ha.ggis.xyz)
+🎮 **Play it: [ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)** — or walk in through [the bothy](https://ha.ggis.xyz)
 
 </div>
 
@@ -144,4 +144,4 @@ This is a solo-dev project. The conventions, voice, and tone matter as much as t
 
 ## License & deploy
 
-Canonical home: **[ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)**. The game is built with Vite `base: '/wild/'` and mounted under the [`ha-ggis-hub`](../ha-ggis-hub) Cloudflare Pages project at the `/wild/` sub-path (the hub owns the domain; WHS is copied into the hub's `dist/wild/` at deploy time). There is no separate root-served standalone deployment — dev server and Playwright preview also run under the `/wild/` base. See the hub repo's `docs/DEPLOYMENT.md` for the combined build + `wrangler pages deploy` flow.
+Canonical home: **[ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)**. The game is built with Vite `base: '/wild/'` and mounted under the [`ha-ggis-hub`](https://github.com/Giftedx/ha-ggis-hub) Cloudflare Pages project at the `/wild/` sub-path (the hub owns the domain; WHS is copied into the hub's `dist/wild/` at deploy time). There is no separate root-served standalone deployment — dev server and Playwright preview also run under the `/wild/` base. See the hub repo's `docs/DEPLOYMENT.md` for the combined build + `wrangler pages deploy` flow.
