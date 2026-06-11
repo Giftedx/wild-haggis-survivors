@@ -1,7 +1,5 @@
 <div align="center">
 
-<img src="./assets/banner.svg" alt="Wild Haggis Survivors — a Highland-at-dusk bullet heaven" width="100%" />
-
 # Wild Haggis Survivors
 
 **A handcrafted, Highland-at-dusk, Scots-tinted bullet-heaven.**
