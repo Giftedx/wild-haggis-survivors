@@ -1,0 +1,117 @@
+# T427 — alt path for T409 (linux VR baselines).
+#
+# Purpose: regenerate Playwright visual-regression baselines on linux on demand
+# and upload them as a downloadable artifact, so the user can pull them locally
+# and commit alongside the existing -win32 PNGs. This avoids the local Docker /
+# WSL2 dependency that blocked T409 on the dispatch host (`wsl.exe --import-in-place`
+# error 0x800705aa). Manual trigger only — running on every push would litter
+# every merge with an unused artifact.
+#
+# Follow-up steps the user takes after this workflow finishes (T409 closure):
+#   1. Open the workflow run on GitHub and download the `vr-baselines-linux`
+#      artifact (zip).
+#   2. Unzip its contents into `e2e/visual-regression.spec.ts-snapshots/`
+#      (the zip preserves filenames like `main-menu-1-4x-chromium-desktop-linux.png`,
+#      sibling to the existing `-win32.png` files).
+#   3. `git status --short` — confirm only new `*-linux.png` files appear; no
+#      `*-win32.png` should be modified.
+#   4. Stage explicitly:
+#         git add e2e/visual-regression.spec.ts-snapshots/*-linux.png
+#      Never `git add -A` (CLAUDE.md hygiene rule).
+#   5. Drop the `process.platform === 'win32'` gate in
+#      `e2e/visual-regression.spec.ts` (the two `compareDiff` constants around
+#      lines 135 and 200) so the diff comparison runs on linux runners too.
+#   6. Run all three engines locally on the host to confirm green:
+#         npx playwright test visual-regression \
+#           --project=chromium-desktop \
+#           --project=firefox-desktop \
+#           --project=webkit-desktop
+#   7. Run host gates: `npm run lint && npm test && npm run build`.
+#   8. Commit the gate-drop + the new baselines together (or as two commits;
+#      conventional-commits format either way).
+
+name: Regenerate VR Baselines (linux)
+
+on:
+  workflow_dispatch:
+    inputs:
+      engines:
+        description: >-
+          Comma-separated playwright project names to regenerate. Default
+          covers all three desktop engines. Single-engine runs are supported
+          for targeted fixes (e.g. just `firefox-desktop`).
+        required: false
+        default: 'chromium-desktop,firefox-desktop,webkit-desktop'
+
+permissions:
+  contents: read
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers (chromium + firefox + webkit)
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Regenerate visual-regression baselines
+        shell: bash
+        run: |
+          set -euo pipefail
+          IFS=',' read -ra ENGINES <<< "${{ inputs.engines }}"
+          PROJECTS=()
+          for e in "${ENGINES[@]}"; do
+            # Trim whitespace so users can pass "a, b, c" too.
+            trimmed="$(echo "$e" | xargs)"
+            if [ -n "$trimmed" ]; then
+              PROJECTS+=("--project=$trimmed")
+            fi
+          done
+          echo "Regenerating snapshots for projects: ${PROJECTS[*]}"
+          npx playwright test visual-regression --update-snapshots "${PROJECTS[@]}"
+
+      - name: Sanity check — confirm linux PNGs were generated
+        shell: bash
+        run: |
+          set -euo pipefail
+          SNAP_DIR="e2e/visual-regression.spec.ts-snapshots"
+          if [ ! -d "$SNAP_DIR" ]; then
+            echo "Snapshot directory missing: $SNAP_DIR" >&2
+            exit 1
+          fi
+          MATCHES=$(ls "$SNAP_DIR" | grep -E '\-(chromium|firefox|webkit)-desktop-linux\.png$' || true)
+          if [ -z "$MATCHES" ]; then
+            echo "No linux VR baseline PNGs were generated under $SNAP_DIR" >&2
+            echo "Listing for diagnosis:" >&2
+            ls "$SNAP_DIR" >&2 || true
+            exit 1
+          fi
+          echo "Generated linux baselines:"
+          echo "$MATCHES"
+
+      - name: Upload baselines as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vr-baselines-linux
+          path: e2e/visual-regression.spec.ts-snapshots/*-linux.png
+          retention-days: 14
+          if-no-files-found: error

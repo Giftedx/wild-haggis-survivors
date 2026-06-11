@@ -1,0 +1,153 @@
+export const variant = {
+  classic: {
+    name: 'Classic Haggis',
+    flavor: 'Tha baseline beast. Crooked legs, straicht ambition.',
+    lore: 'Tha baseline beast, afore records began. Whit tha moor wis afore it wis named. Gran says ivvery haggis comes hame tae this yin in tha end.',
+  },
+  moor_runner: {
+    name: 'Moor Runner',
+    flavor: 'Lean an wind-cut, biggit tae skim tha heather.',
+    lore: 'Lean as a winter stoat. Skin ticht tae tha frame; ivvery ounce wedded tae speed. Tha moor maks runners o them it cannae haud.',
+  },
+  iron_belly: {
+    name: 'Iron Belly',
+    flavor: 'Heavy, thrawn — an haird tae stap wance it stairts rowin.',
+    lore: 'Slow-steppin kin o tha bog, thick-ribbed an granite-sided. Gordon tha Chef\'s tried, on three occasions, tae pit a knife through yin. Tha knife lost.',
+  },
+  glen_forager: {
+    name: 'Glen Forager',
+    flavor: 'A scavenger o glens an glitterin spoils.',
+    lore: 'Tracks tha glen bi whit it leaves behind. Ivvery thistle-seed, ivvery coin lost tae tha heather. Gran keeps yin in tha kitchen fer tha gleanins.',
+  },
+  surefoot: {
+    name: 'Surefit',
+    flavor: 'Tha drift still whispers, aye, but it nae langer decides.',
+    lore: 'Tha drift still whispers in tha crookit legs. Tha surefoot\'s learnt tae listen wi\'oot obeyin. Tha hill pays it nae mind; it pays tha hill tha same.',
+  },
+  pipe_breath: {
+    name: 'Pipe Braith',
+    flavor: 'Wheesht — tha moor exhales through this wan.',
+    lore: 'Born tae tha drone. Its heart keeps time tae a ceòl mòr nae ither craitur hears. Tha pipes are an echo; this haggis is tha braith ahint them.',
+  },
+  laird: {
+    name: 'Tha Laird',
+    flavor: 'Wears tha tartan proper. Lordly swagger, heavier swing.',
+    lore: 'Wears tha Royal Stewart wi\'oot permission an wi\'oot apology. Tenants boo; rents nivver rise. Tha kilt is pinned straicht; tha swing is heavier.',
+  },
+  wee_ghostie: {
+    name: 'Wee Ghostie',
+    flavor: 'Pale an thin — here an no here. Hits haird, breks easy.',
+    lore: 'Pale at tha edges, thin as a thocht. Here an then no. Tha Cailleach keeps yin in her shawl, or sae it\'s said; tha wee ghostie disnae mind bein kept.',
+  },
+  glaswegian: {
+    name: 'Weegie',
+    flavor: 'Toon-hardened. Big swing, paper skin. Pure mental, so he is.',
+    lore: 'Fae tha city whaur tha rain\'s horizontal. Skin like rice paper, swing like a hemmer. Aye, mental — but tha moor\'s learnt respect.',
+  },
+  cailleach: {
+    name: 'The Cailleach',
+    flavor: 'Auld as tha moor itsel. Moves slow, hoards tha glen\'s secrets. Aye, she\'s been here langer than ye.',
+    lore: 'She\'s aulder than tha moor. Tha stanes mind her. Whan tha first frost comes doon fae tha glen, it comes acause she\'s askit it tae.',
+  },
+  anticlockwise: {
+    name: 'Widdershins Haggis',
+    flavor: 'Tha ither subspecies, fae tha glens whaur tha hills lean left. Drift turns tha wrang way — or tha richt way, dependin wha ye ask.',
+    lore: 'Tha ither subspecies, fae tha glens whaur tha hills lean widdershins. Tha drift mirrors. Tha clock in tha kirk at Glen Lyon rins tha richt way; ivvery haggis born there rins tha ither.',
+  },
+  doric_quinie: {
+    name: 'Doric Quinie',
+    flavor: 'Nor\'-east fisher-faimly wee beastie. Granite constitution, quick een, a heid fer tha haar. Fit like, min?',
+    lore: 'Fae tha nor\'-east, whaur tha land draps tae tha sea an tha sea disnae forgive. Granite constitution, an een fer tha haar rowin aff Aiberdeen. Fit like, min?',
+  },
+  peerie_shetlander: {
+    name: 'Peerie Shetlander',
+    flavor: 'Fae tha northern isles — Norn-tinged, peerie, sea-fittit. Tha voe minds ye, du. Tha wind\'s aw ready up.',
+    lore: 'Fae tha northern isles, whaur Norn is still whispered in bairns\' names. Peerie — wee — but wind-tempered. Tha voe minds ye; du\'ll mind it back.',
+  },
+  burns_wee_beastie: {
+    name: 'Burns\'s Wee Beastie',
+    flavor: 'Wee, sleekit, cow\'rin, tim\'rous beastie — stepped oot tha bard\'s poem. Wee-er nor tha moor, fiercer nor it looks.',
+    lore: '"Wee, sleekit, cow\'rin, tim\'rous beastie, O whit a panic\'s in thy breastie" — Burns spoke o mice, but tha wild haggis listened. Wee-er than tha moor; braver than it should be.',
+  },
+  witch_hare: {
+    name: 'Witch\'s Hare',
+    flavor: 'Isobel\'s wirds, rinner o tha muirs. Sma siller, quick stap, quicker turn. Auld een that see ower tha loch.',
+    lore: '"I sall gae intill ane haire" — Isobel Gowdie o Auldearn, 1662. Tha covine\'s confession set tae verse: tha wee siller-pelt hare is tha witch whan tha witch is a hare. Five trials survived earn tha hare-form fer keeps.',
+  },
+  selkie: {
+    name: 'Selkie',
+    flavor: 'Twa forms, ane tide. Dash slips tha pelt on or aff. Tha seal swims throu tha muir.',
+    lore: 'O tha seal-folk o tha Hebrides — them as slip tha pelt tae walk ashore, an slip back whan tha tide minds them. Tha dash is tha seam.',
+  },
+  morningside: {
+    name: 'Morningside Haggis',
+    flavor: 'Composure. Propriety. A pearl brooch an a studied disdain fur tha rough business o survival.',
+    lore: 'Fae Edinburgh\'s finest pairt, whaur tha stane is grey-gowd an tha curtains are aye straicht. Combat stats are precisely unchanged fae classic — tha Morningside Haggis considers statistics rather vulgar tae discuss. Fit it brings is bearin. Ane manages.',
+  },
+  hebridean: {
+    name: 'Hebridean Haggis',
+    flavor: 'Fae tha machair\'s edge — sand, sea-pink, saut. Tha Minch disnae stop it. Naethin made o watter daes.',
+    lore: 'Tha Outer Hebrides breed a particular kind o patience — tha kind that watches tha Atlantic come in for ten thousand year an never wance backs awa fae tha stac. Burn watter an tidal wrack are auld acquaintances, no threats. Tha machair hauds tha memory o ivvery shore crossin.',
+  },
+  iron_brew: {
+    name: 'Iron Brew Haggis',
+    flavor: 'Gets harder wi ivvery dunt. Aye, it\'s tha orange ane.',
+    lore: 'Scotland\'s ither national drink — impossibly orange, medically inadvisable, beloved wi nae apology. Ivvery dunt, ivvery wallop, ivvery blaw tha muir lands jist tempers tha steel a wee bit further. By tha end o a run, whit wis fragile is iron. Tha bru daes somethin tae ye — naebody\'s entirely sure whit.',
+  },
+  grans_best: {
+    name: 'Gran\'s Best',
+    flavor: 'Nearly deid an fiercer for it. Gran\'s watchin. She approves.',
+    lore: 'Gran\'s Best isnae her finest hour. It\'s her finest threat. Tha auld haggis wi tha bad hip an tha sharper tongue — lower tha HP, tha harder she swings. "Ye dinnae need twa workin legs tae skelp somethin," she haes been heard tae say. Tha skirl o her patience runnin oot cairries further than ony pipes.',
+  },
+  the_pict: {
+    name: 'The Pict',
+    flavor: 'Aye, afore tha Romans. Woad an stane an muir. Nae gowd — glories are carvit, no bocht.',
+    lore: 'They left thair marks in stane, no in buiks. Tha knotwork is thair leid; tha beast-columns thair vaunt. Nae crown, nae chronicle — anely tha muir an whit they cut intae its bedrock. They nivver needit tha shop. They still dinnae.',
+  },
+  jacobite: {
+    name: 'Tha Jacobite',
+    flavor: 'For tha Cause. Fleet on tha muir, licht in tha haun. Flora\'s plaid hides ye — briefly, brawly, as it aye did.',
+    lore: 'Bonnie Prince Charlie crossed tha muir in a borrowed plaid. Flora MacDonald walked aside him, an tha redcoats looked past. Ivvery saxty seconds tha plaid draps; ivvery saxty seconds it lifts again. Tha Jacobite disnae survive acause it\'s strang. It survives acause it\'s brief, an bricht, an awa afore ye ken.',
+  },
+  tam_o_shanter: {
+    name: 'Tam o\' Shanter',
+    flavor: 'Fleet as Meg, brave as whusky. Tha bard writ him; tha muir rins him noo. Weel duin, Cutty-sark — but dinnae cry it oot.',
+    lore: '"Kings may be blest, but Tam wis glorious, O\'er a\' tha ills o\' life victorious!" Burns writ tha ride; this haggis rides it ilka run. Fleet, reckless, hauf a dram past wise. Tha bonnet tilts left. Tha drift tilts waur. Tha muir atween here an tha Brig o\' Doon is tha anely question.',
+  },
+  engineer: {
+    name: 'Tha Engineer',
+    flavor: 'Built tha cairn afore tha run. Watt measured. Telford bridged. This haggis shoots twice.',
+    lore: 'Scotland gied tha warld tha steam engine, tha telephone, an tha adhesive stamp. This haggis studied unner a\' three traditions. It stacks wan cairn-turret per run — nae mair, nae less — an yon stane fires faithfully til tha last enemy faws. Tha haggis is slower for tha tools it cairries. Tha turret disnae care.',
+  },
+  tufted: {
+    name: 'Tufted Haggis',
+    flavor: 'Nivver alane on tha muir. Tha wee pup follows — an it bites.',
+    lore: 'Some haggis come tufted fae birth — tha tuft-merk draws a pup tae thair side afore tha first run is duin. Tha pup is sma. Tha teeth are no. Whaur tha haggis finds difficulty, tha pup finds an angle. Twa on tha muir. Tha muir kens it.',
+  },
+  summary: {
+    speed: '{sign}{pct}% speed',
+    hp: '{sign}{val} HP',
+    armor: '{sign}{val} armor',
+    pickup: '{sign}{val} pickup',
+    xp: '{sign}{pct}% XP',
+    dmg: '{sign}{pct}% dmg',
+    drift: '{sign}{pct}% drift',
+    cdr: '{sign}{pct}% CDR',
+    crit: '{sign}{pct}% crit',
+    size: '{sign}{pct}% size',
+    drift_flip: 'Drift gangs widdershins',
+    baseline: 'Baseline stats',
+  },
+  unlock: {
+    survive: 'Survive',
+    best_kills: 'Best culls',
+    total_gold: 'Gold banked',
+    victories: 'Wins',
+    cursed_victories: 'Cursed wins',
+    runs_without_healing: 'Nae-heal runs',
+    runs_in_coastal_only: 'Sea-way runs',
+    runs_with_all_evolutions: 'Fu\'-evo wins',
+    burns_night_full_evo: 'Fu\'-evo Burns Nicht wins',
+    ready: 'Ye earned this wan',
+  },
+} as const;

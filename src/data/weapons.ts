@@ -1,0 +1,1110 @@
+/**
+ * All weapon definitions for Wild Haggis Survivors.
+ *
+ * Behavior types:
+ *  - 'projectile': Fires at nearest enemy (Thistle Shot)
+ *  - 'piercing':   Fires through multiple enemies (Caber Toss)
+ *  - 'bouncing':   Bounces off world edges (Jobby Hurler)
+ *  - 'aoe_pulse':  Damages all enemies in radius around player (Bagpipe Blast)
+ *  - 'trail':      Drops damage zones behind the player (Scotch Mist)
+ *  - 'arc_sweep':  Damages enemies in a frontal arc (Nessie's Tentacle)
+ *  - 'aura_pulse': Persistent radial pulses (damage + slow) around the player
+ */
+
+export type WeaponBehavior =
+  | 'projectile'
+  | 'piercing'
+  | 'bouncing'
+  | 'aoe_pulse'
+  | 'trail'
+  | 'arc_sweep'
+  | 'aura_pulse'
+  | 'lob_puddle';
+
+/** All valid weapon keys — single source of truth. */
+export type WeaponKey =
+  | 'thistle_shot'
+  | 'bagpipe_blast'
+  | 'caber_toss'
+  | 'scotch_mist'
+  | 'haggis_hurler'
+  | 'nessie_tentacle'
+  | 'claymore'
+  | 'bagpipes'
+  | 'shinty_stick'
+  | 'sgian_dubh'
+  | 'stag_antler'
+  | 'waulking_mallet'
+  | 'pibroch_hammer'
+  | 'dirk_dance'
+  | 'grannies_curse'
+  | 'wallace_sword'
+  | 'practice_chanter'
+  | 'whisky_lob'
+  | 'bagpipe_drone'
+  | 'coastal_storm'
+  | 'clootie_rag'
+  | 'cullen_skink_ladle'
+  | 'steam_engine'
+  | 'bodhran'
+  | 'beltane_drum'
+  // DESIGN_IDEAS §5 — Selkie Song. The selkie sheds her pelt and sings.
+  // Aura-pulse that charms the nearest enemy in range — charmed enemies
+  // walk toward other enemies instead of the player for 3 s. Summon family.
+  | 'selkie_song'
+  | 'selkie_chorus'
+  // DESIGN_IDEAS §5 — Clàrsach (Celtic Harp). Scotland's pre-bagpipe
+  // national instrument. Fires melodic arc sweeps; Pibroch Crescendo
+  // alignment already applies via dealDamageToEnemy. Pairs with Wire
+  // Strings passive at lv5 → Clàrsach Eternal (triple chord + freeze).
+  | 'clarsach'
+  | 'clarsach_eternal'
+  // DESIGN_IDEAS §5 — Hagstone Sling. Holed river stone; second enemy
+  // hit (through the hole) takes +40% bonus damage. Pairs with Rowan
+  // Amulet passive at lv5 → Rowan Hail (triple-spread hagstones).
+  | 'hagstone_sling'
+  | 'rowan_hail'
+  // DESIGN_IDEAS §5 — Port-à-Beul (Mouth Music Chant). Gaelic vocal-
+  // percussion tradition weaponised — aura_pulse that slows enemies;
+  // on pibroch-aligned beats the slow bites much harder. Pairs with
+  // Highland Trump passive at lv5 → Canntaireachd (doubled radius,
+  // aligned beat halts enemies cold).
+  | 'port_a_beul'
+  | 'canntaireachd'
+  // Flying Porridge Pot (lob_puddle slow+damage zone; Brose Cannon evolution).
+  | 'porridge_pot'
+  | 'brose_cannon'
+  // Deep-Fried Mars Bar (slow heavy piercing projectile; grease-splat on kill).
+  | 'deep_fried_mars_bar';
+
+export interface WeaponDef {
+  key: WeaponKey;
+  /** i18n dot-path — resolved with `t(nameKey)` at render time. */
+  nameKey: string;
+  /** i18n dot-path — resolved with `t(descriptionKey)` at render time. */
+  descriptionKey: string;
+  behavior: WeaponBehavior;
+  cooldownMs: number;
+  damage: number;
+  /** Projectile-based weapons only */
+  projectileSpeed: number;
+  projectileCount: number;
+  pierce: number;
+  range: number;
+  /** AoE weapons: radius of effect */
+  aoeRadius: number;
+  /** Arc sweep: degrees of arc (centered on facing direction) */
+  arcDegrees: number;
+  /** Knockback force (pixels) applied to hit enemies */
+  knockback: number;
+  /** Scaling per level (applied multiplicatively) */
+  levelScaling: {
+    damage: number;       // multiplier per level
+    cooldown: number;     // multiplier per level (< 1 = faster)
+    countAt: number[];    // levels at which projectileCount increases
+    pierce: number;       // added per level (piercing only)
+    radius: number;       // multiplier per level (AoE only)
+  };
+}
+
+export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
+  thistle_shot: {
+    key: 'thistle_shot',
+    nameKey: 'weapon.thistle_shot.name',
+    descriptionKey: 'weapon.thistle_shot.description',
+    behavior: 'projectile',
+    cooldownMs: 1200,
+    damage: 5,
+    projectileSpeed: 350,
+    projectileCount: 1,
+    pierce: 0,
+    range: 500,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.25,
+      cooldown: 0.88,
+      countAt: [3, 5],
+      pierce: 0,
+      radius: 1,
+    },
+  },
+
+  bagpipe_blast: {
+    key: 'bagpipe_blast',
+    nameKey: 'weapon.bagpipe_blast.name',
+    descriptionKey: 'weapon.bagpipe_blast.description',
+    behavior: 'aoe_pulse',
+    // Rebalanced: was cooldown 3000 / damage 8 — too weak early because the
+    // 3s gap left gaps in dense swarms. Now fires 20% faster with +25% base damage.
+    cooldownMs: 2400,
+    damage: 10,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 120,
+    arcDegrees: 360,
+    knockback: 150,
+    levelScaling: {
+      damage: 1.3,
+      cooldown: 0.85,
+      countAt: [],
+      pierce: 0,
+      radius: 1.15,
+    },
+  },
+
+  caber_toss: {
+    key: 'caber_toss',
+    nameKey: 'weapon.caber_toss.name',
+    descriptionKey: 'weapon.caber_toss.description',
+    behavior: 'piercing',
+    cooldownMs: 2500,
+    damage: 15,
+    projectileSpeed: 250,
+    projectileCount: 1,
+    pierce: 2,
+    range: 600,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.3,
+      cooldown: 0.9,
+      countAt: [4],
+      pierce: 1,
+      radius: 1,
+    },
+  },
+
+  scotch_mist: {
+    key: 'scotch_mist',
+    nameKey: 'weapon.scotch_mist.name',
+    descriptionKey: 'weapon.scotch_mist.description',
+    behavior: 'trail',
+    // Rebalanced: was damage 3 / cooldown 800 / radius scaling 1.2. Trail DPS
+    // was ~2.5× peer weapons at L5 because zones overlap at high fire rates.
+    // Damage + cooldown + radius scaling all dialed back.
+    cooldownMs: 1000,
+    damage: 2,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 40,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.2,
+      cooldown: 0.9,
+      countAt: [],
+      pierce: 0,
+      radius: 1.12,
+    },
+  },
+
+  haggis_hurler: {
+    key: 'haggis_hurler',
+    nameKey: 'weapon.haggis_hurler.name',
+    descriptionKey: 'weapon.haggis_hurler.description',
+    behavior: 'bouncing',
+    cooldownMs: 2000,
+    damage: 10,
+    projectileSpeed: 300,
+    projectileCount: 1,
+    pierce: 0,
+    range: 1500,   // Long range — bounces keep it alive
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.2,
+      cooldown: 0.88,
+      countAt: [3, 5],
+      pierce: 0,
+      radius: 1,
+    },
+  },
+
+  nessie_tentacle: {
+    key: 'nessie_tentacle',
+    nameKey: 'weapon.nessie_tentacle.name',
+    descriptionKey: 'weapon.nessie_tentacle.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 2200,
+    damage: 12,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 100,
+    arcDegrees: 90,
+    knockback: 50,
+    levelScaling: {
+      damage: 1.25,
+      cooldown: 0.85,
+      countAt: [],
+      pierce: 0,
+      radius: 1.15,
+    },
+  },
+
+  claymore: {
+    key: 'claymore',
+    nameKey: 'weapon.claymore.name',
+    descriptionKey: 'weapon.claymore.description',
+    behavior: 'arc_sweep',
+    // Rebalanced: was cooldown 3400 / damage 28 — effective DPS ~8.2 made it
+    // uncompetitive vs bagpipe blast (~50 eDPS). Now fires 24% faster with
+    // +21% base damage, bringing eDPS to ~13.1 baseline. Still the slowest
+    // weapon, but the hits justify the wait.
+    cooldownMs: 2600,
+    damage: 34,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 145,
+    arcDegrees: 168,
+    knockback: 95,
+    levelScaling: {
+      damage: 1.32,
+      cooldown: 0.86,
+      countAt: [],
+      pierce: 0,
+      radius: 1.15,
+    },
+  },
+
+  bagpipes: {
+    key: 'bagpipes',
+    nameKey: 'weapon.bagpipes.name',
+    descriptionKey: 'weapon.bagpipes.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 1900,
+    damage: 7,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 108,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.86,
+      countAt: [],
+      pierce: 0,
+      radius: 1.14,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Bagpipe Drone. The low sustained drone pipes
+  // (bass + baritone chanters) beneath the melody — not the piob mòr
+  // but the constant harmonic foundation that slows the air around it.
+  // Mechanically: a continuous slow-aura with a short tick cooldown
+  // (500ms) and minimal damage. Enemies in range are always slightly
+  // slowed (30%) as long as the haggis fires on schedule. A crowd-
+  // control utility pick that pairs with Reeds for the evolution slot.
+  // No evolution in v1 — the "tuned" form is reserved for later.
+  bagpipe_drone: {
+    key: 'bagpipe_drone',
+    nameKey: 'weapon.bagpipe_drone.name',
+    descriptionKey: 'weapon.bagpipe_drone.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 500,
+    damage: 2,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 80,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Coastal Storm. The west coast doesn't warn you —
+  // the haar lifts, the sky turns pewter, and then the whole horizon
+  // cracks. A screen-clearing AoE ult: long cooldown (22 s), very wide
+  // radius (680 px ≈ full screen), punishing knockback. Pure force — no
+  // freeze, no puddle, just the storm sweeping the moor clean.
+  // Standalone weapon (no evolution, no paired passive) like bagpipes.
+  coastal_storm: {
+    key: 'coastal_storm',
+    nameKey: 'weapon.coastal_storm.name',
+    descriptionKey: 'weapon.coastal_storm.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 22000,
+    damage: 42,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 680,
+    arcDegrees: 360,
+    knockback: 220,
+    levelScaling: {
+      damage: 1.30,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.06,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Clootie Rag. The blood-stained cloth tied to a
+  // clootie well as a supplication — the wound stays open so the land
+  // can take the sickness. A wounding aura that pulses damage against
+  // every enemy in range on a short cooldown. No freeze — the rag
+  // doesn't slow, it bleeds. Completes the bleed synergy family
+  // alongside Dirk Dance and Sgian Dubh. Paired passive: Rowan Thread.
+  clootie_rag: {
+    key: 'clootie_rag',
+    nameKey: 'weapon.clootie_rag.name',
+    descriptionKey: 'weapon.clootie_rag.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 350,
+    damage: 2,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 72,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Cullen Skink Ladle. A pot of smoked haddock
+  // chowder, lobbed at enemies — no damage, pure slowing soup. The
+  // broth splashes on landing and all enemies who wade through it are
+  // slowed to 55% speed for 2.8 s. Comedy food-weapon; sister to
+  // Whisky Lob (lob_puddle that burns) but flipped: slows not burns.
+  // Paired passive: Smoked Haddock (+12 max HP — "the broth that keeps
+  // you alive"). No evolution in v1.
+  cullen_skink_ladle: {
+    key: 'cullen_skink_ladle',
+    nameKey: 'weapon.cullen_skink_ladle.name',
+    descriptionKey: 'weapon.cullen_skink_ladle.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 3500,
+    damage: 1,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 220,
+    aoeRadius: 54,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.0,
+      cooldown: 0.92,
+      countAt: [5],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Steam Engine (James Watt). Victorian industrial
+  // Scotland — the Clyde shipyards, Watt's separate-condenser steam
+  // engine, Boulton & Watt. A pressure-vent AoE blast: a cloud of
+  // scalding steam erupts from the haggis, knocking back everything
+  // in range. Medium cooldown (the boiler needs time to build pressure),
+  // medium radius (the steam disperses fast), significant knockback.
+  // No freeze — this is scalding steam, not cold. Paired passive:
+  // Copper Rivet (+10% attack speed — the rivet holds the mechanism
+  // together, speeds up the cycle).
+  steam_engine: {
+    key: 'steam_engine',
+    nameKey: 'weapon.steam_engine.name',
+    descriptionKey: 'weapon.steam_engine.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 7000,
+    damage: 18,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 165,
+    arcDegrees: 360,
+    knockback: 120,
+    levelScaling: {
+      damage: 1.25,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+
+  // DESIGN_IDEAS §1 + §5 — Shinty Stick. Sister weapon to the
+  // already-shipped Shinty Parry mechanic (camanachd fantasy: defensive
+  // flick + offensive flick, one fantasy across two systems). Bouncing
+  // behaviour for the small wood ball — snappier than Jobby Hurler and
+  // a lighter hit, but zippier projectile + tighter range so it reads
+  // as a quick wrist-snap rather than the haggis-lump heave.
+  shinty_stick: {
+    key: 'shinty_stick',
+    nameKey: 'weapon.shinty_stick.name',
+    descriptionKey: 'weapon.shinty_stick.description',
+    behavior: 'bouncing',
+    cooldownMs: 1700,
+    damage: 8,
+    projectileSpeed: 380,
+    projectileCount: 1,
+    pierce: 0,
+    range: 1200,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [3, 5],
+      pierce: 0,
+      radius: 1,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Sgian Dubh ("black knife"). Traditional Highland
+  // dress dagger, kept tucked in the stocking. Tightest, fastest,
+  // narrowest arc-sweep weapon in the catalogue: a wrist-flick blade
+  // that lives on volume + crit, not weight. Pairs with the Whetstone
+  // passive (+10% crit) at lv5 to evolve into Sgian Geal — the white
+  // knife, the ceremonial twin, every hit a guaranteed crit.
+  sgian_dubh: {
+    key: 'sgian_dubh',
+    nameKey: 'weapon.sgian_dubh.name',
+    descriptionKey: 'weapon.sgian_dubh.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 700,
+    damage: 4,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 70,
+    arcDegrees: 60,
+    knockback: 15,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Stag Antler. The monarch-of-the-glen lowers
+  // his head and gores. Auto-fires a frontal arc on cooldown like a
+  // standard arc_sweep weapon (so it does steady work even when the
+  // player isn't dashing), but the killer trick lives in the
+  // dash-strike fork in `WeaponSystem.update`: every player dash
+  // (gated by a 1.5 s per-weapon cooldown) fires a juicier bonus
+  // arc in the dash direction at 2.5× damage. Sister-fantasy to the
+  // Drift Mastery / Whisky Breath / Stance / Shinty Parry skill
+  // expression layers — the dash IS the weapon's signature beat.
+  // Pairs with Velvet Antler at lv5 for the legendary Monarch's
+  // Charge: same baseline arc but the dash-strike becomes a 360°
+  // antler-sweep at 3.5× damage that briefly stuns hits.
+  stag_antler: {
+    key: 'stag_antler',
+    nameKey: 'weapon.stag_antler.name',
+    descriptionKey: 'weapon.stag_antler.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 1100,
+    damage: 7,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 90,
+    arcDegrees: 80,
+    knockback: 35,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // Wild Living World Initiative — Waulking Mallet. Soft rhythm
+  // weapon. Aura-pulse beat that matches the procedural music
+  // engine's quarter-note clock: on-beat hits land at +30%; off-beat
+  // hits still output baseline damage so muted/blocked audio never
+  // creates zero DPS (see `waulkingRhythm.ts` for the math). The
+  // weapon's identity is "the song hits with you"; ceiling stays
+  // below "rhythm dominates the run" to keep it inclusive.
+  waulking_mallet: {
+    key: 'waulking_mallet',
+    nameKey: 'weapon.waulking_mallet.name',
+    descriptionKey: 'weapon.waulking_mallet.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 2000,
+    damage: 9,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 96,
+    arcDegrees: 360,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+  // DESIGN_IDEAS §5 — Practice Chanter. The starter weapon for the
+  // Pibroch Haggis variant. A chanter is the melody pipe of the
+  // bagpipe — novices practice on it alone before the bag is added.
+  // Mechanically: a fast, weak projectile weapon with short range
+  // (the chanter's breath doesn't carry far), but its tight cooldown
+  // fires reliably and it levels into a fuller tone at high level.
+  // The fantasy is "learning the scale before the lament" — weaker
+  // than Thistle Shot early but grows with the player, with count
+  // scaling at lv3/5 (the three chanter holes opening up).
+  // No evolution (the pibroch's upgrade path is the Waulking Mallet
+  // line, not the chanter); it's a thematic starter, not a build axis.
+  practice_chanter: {
+    key: 'practice_chanter',
+    nameKey: 'weapon.practice_chanter.name',
+    descriptionKey: 'weapon.practice_chanter.description',
+    behavior: 'projectile',
+    cooldownMs: 900,
+    damage: 4,
+    projectileSpeed: 280,
+    projectileCount: 1,
+    pierce: 0,
+    range: 320,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [3, 5],
+      pierce: 0,
+      radius: 1,
+    },
+  },
+
+  // Whisky Lob — throw a hip flask that shatters on impact, leaving
+  // a burning puddle of aged spirit on the ground. Slow cooldown but
+  // the burn zone lingers, punishing enemies that clump or chase.
+  // Zone-denial in the survivors style: plant a puddle, kite through
+  // it. Peated Oak paired passive rounds the damage edges (+10% dmg);
+  // the evolution line is reserved for a future "aged malt" form.
+  whisky_lob: {
+    key: 'whisky_lob',
+    nameKey: 'weapon.whisky_lob.name',
+    descriptionKey: 'weapon.whisky_lob.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 4000,
+    damage: 4,
+    projectileSpeed: 220,
+    projectileCount: 1,
+    pierce: 0,
+    range: 260,
+    aoeRadius: 58,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.28,
+      cooldown: 0.90,
+      countAt: [5],
+      pierce: 0,
+      radius: 1.12,
+    },
+  },
+
+  // Highland Horrors — Dirk Dance. The Highland dirk: longer than
+  // a sgian dubh, shorter than a claymore. A rapid three-beat combo
+  // of slashes — center, left, right — fired at 130ms intervals to
+  // give a true parry-and-riposte feel. Arc is tight and fast, living
+  // on volume rather than weight. Pairs with Gillie's Edge at lv5 →
+  // Dirk Flurry: all three arcs fire simultaneously, rotating through
+  // ±35°, becoming a spinning wall of blade.
+  dirk_dance: {
+    key: 'dirk_dance',
+    nameKey: 'weapon.dirk_dance.name',
+    descriptionKey: 'weapon.dirk_dance.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 950,
+    damage: 9,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 85,
+    arcDegrees: 70,
+    knockback: 28,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.87,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // Highland Horrors — Granny's Curse. The formidable Highland
+  // grandmother lobbing slow, wide-scattering hex bolts across the
+  // moor in all directions. Low damage each, but each pierces and
+  // the spread covers surprising ground. The Widow's Shawl at lv5
+  // weaves the curse into the Banshee Wail: five homing hex-screams
+  // that seek the furthest enemies on the field.
+  grannies_curse: {
+    key: 'grannies_curse',
+    nameKey: 'weapon.grannies_curse.name',
+    descriptionKey: 'weapon.grannies_curse.description',
+    behavior: 'projectile',
+    cooldownMs: 1600,
+    damage: 7,
+    projectileSpeed: 160,
+    projectileCount: 3,
+    pierce: 2,
+    range: 380,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 12,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.88,
+      countAt: [4],
+      pierce: 1,
+      radius: 1,
+    },
+  },
+
+  // Highland Horrors — Wallace Sword. William Wallace's great sword
+  // — wider arc than the claymore, heavier damage, but devastatingly
+  // slow. The weapon of a man who moved mountains with a blade. The
+  // Stirling Medal at lv5 unlocks Freedom Blade: the full 360° sweep
+  // that carries across the moor like the battle-cry at Stirling Bridge.
+  wallace_sword: {
+    key: 'wallace_sword',
+    nameKey: 'weapon.wallace_sword.name',
+    descriptionKey: 'weapon.wallace_sword.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 3400,
+    damage: 50,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 180,
+    arcDegrees: 220,
+    knockback: 140,
+    levelScaling: {
+      damage: 1.30,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.12,
+    },
+  },
+
+  // Wild Living World Phase 2 — Pibroch Hammer (Waulking Mallet
+  // evolution). The waulking song is a *call*; the pibroch (piob
+  // mhor) is the *answer* — a great-pipe lament rolling out across
+  // the moor. Mechanically the evolved form trades the Waulking
+  // Mallet's per-beat sting for a wider, heavier pulse that lands
+  // a full crescendo on every fourth beat. Identity: "the song
+  // already hit; the pibroch is the echo coming back". Behaviour
+  // stays `aura_pulse` so it doesn't need a new branch in WeaponSystem;
+  // the extra crescendo damage rides through `applyPibrochHammerRhythm`
+  // in `src/systems/music/waulkingRhythm.ts`.
+  pibroch_hammer: {
+    key: 'pibroch_hammer',
+    nameKey: 'weapon.pibroch_hammer.name',
+    descriptionKey: 'weapon.pibroch_hammer.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 1700, // ↓ from 2000 — faster downbeats.
+    damage: 14,       // ↑ from 9 — heavier sting per pulse.
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 144,   // ↑ from 96 — pibroch carries further.
+    arcDegrees: 360,
+    knockback: 42,    // ↑ from 30 — every pulse a kick of air.
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Bodhrán. Rapid warm AoE pulse; rhythm weapon with
+  // no freeze (pure percussion). Faster cadence than Steam Engine but
+  // smaller radius — feels like tapping a heartbeat into the moor.
+  bodhran: {
+    key: 'bodhran',
+    nameKey: 'weapon.bodhran.name',
+    descriptionKey: 'weapon.bodhran.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 1200,
+    damage: 8,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 76,
+    arcDegrees: 360,
+    knockback: 55,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.93,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Beltane Drum (Bodhrán evolution). Midsummer
+  // fire-drum — larger amber ring, higher damage, heavier knockback.
+  // The resonance expands when the Drum Hoop teaches the haggis to
+  // lean into the downbeat. VFX: two concentric rings (inner amber /
+  // outer crimson) — the Beltane bonfire shape.
+  beltane_drum: {
+    key: 'beltane_drum',
+    nameKey: 'weapon.beltane_drum.name',
+    descriptionKey: 'weapon.beltane_drum.description',
+    behavior: 'aoe_pulse',
+    cooldownMs: 1000,
+    damage: 18,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 140,
+    arcDegrees: 360,
+    knockback: 85,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Selkie Song. The selkie sheds her pelt and sings.
+  // Aura-pulse control weapon: chip damage to all enemies in range, then
+  // charms the nearest non-boss enemy — they walk toward other enemies
+  // for SELKIE_CHARM_DURATION_MS instead of the player. Summon family.
+  // Paired passive: Seal Pelt (+2 HP regen). Evolves to Selkie Chorus
+  // via Seal Pelt at lv5 — charms up to 3 enemies and fires more often.
+  selkie_song: {
+    key: 'selkie_song',
+    nameKey: 'weapon.selkie_song.name',
+    descriptionKey: 'weapon.selkie_song.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 5000,
+    damage: 3,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 130,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+
+  // Selkie Chorus — Selkie Song evolution. The selkie calls her kin.
+  // Faster pulse, bigger radius, charms up to SELKIE_CHORUS_CHARM_COUNT
+  // enemies simultaneously. The moor goes quiet when the chorus rises.
+  selkie_chorus: {
+    key: 'selkie_chorus',
+    nameKey: 'weapon.selkie_chorus.name',
+    descriptionKey: 'weapon.selkie_chorus.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 3800,
+    damage: 6,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 180,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+  // DESIGN_IDEAS §5 — Clàrsach (Celtic Harp). Arc sweep in amber-gold.
+  // Pibroch Crescendo bonus applies automatically via dealDamageToEnemy.
+  // Pairs with Wire Strings passive → Clàrsach Eternal (triple chord).
+  clarsach: {
+    key: 'clarsach',
+    nameKey: 'weapon.clarsach.name',
+    descriptionKey: 'weapon.clarsach.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 1700,
+    damage: 11,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 175,
+    arcDegrees: 65,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+  // Clàrsach Eternal — triple chord arc, each hit applies a 150 ms freeze-slow.
+  clarsach_eternal: {
+    key: 'clarsach_eternal',
+    nameKey: 'weapon.clarsach_eternal.name',
+    descriptionKey: 'weapon.clarsach_eternal.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 1500,
+    damage: 18,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 195,
+    arcDegrees: 55,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.25,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
+    },
+  },
+  // Hagstone Sling — holed river stone, piercing. Second enemy hit through
+  // the hole takes +40% bonus damage (see WeaponSystem.onProjectileHitEnemy).
+  hagstone_sling: {
+    key: 'hagstone_sling',
+    nameKey: 'weapon.hagstone_sling.name',
+    descriptionKey: 'weapon.hagstone_sling.description',
+    behavior: 'piercing',
+    cooldownMs: 1900,
+    damage: 13,
+    projectileSpeed: 230,
+    projectileCount: 1,
+    pierce: 1,
+    range: 620,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 25,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.90,
+      countAt: [3],
+      pierce: 0,
+      radius: 1.0,
+    },
+  },
+  // Rowan Hail — evolved hagstone; three stones fan at −15°/0°/+15°.
+  rowan_hail: {
+    key: 'rowan_hail',
+    nameKey: 'weapon.rowan_hail.name',
+    descriptionKey: 'weapon.rowan_hail.description',
+    behavior: 'piercing',
+    cooldownMs: 1700,
+    damage: 20,
+    projectileSpeed: 270,
+    projectileCount: 3,
+    pierce: 1,
+    range: 680,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.0,
+    },
+  },
+  // Port-à-Beul — Gaelic mouth-music aura. Slows enemies; on a
+  // pibroch-aligned beat the slow bites ~60% instead of 35%.
+  port_a_beul: {
+    key: 'port_a_beul',
+    nameKey: 'weapon.port_a_beul.name',
+    descriptionKey: 'weapon.port_a_beul.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 900,
+    damage: 5,
+    projectileSpeed: 0,
+    projectileCount: 1,
+    pierce: 0,
+    range: 95,
+    aoeRadius: 95,
+    arcDegrees: 0,
+    knockback: 8,
+    levelScaling: {
+      damage: 1.18,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.05,
+    },
+  },
+  // Canntaireachd — evolved mouth music; doubled radius, and on the
+  // aligned beat the chant halts enemies to near-standstill.
+  canntaireachd: {
+    key: 'canntaireachd',
+    nameKey: 'weapon.canntaireachd.name',
+    descriptionKey: 'weapon.canntaireachd.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 750,
+    damage: 9,
+    projectileSpeed: 0,
+    projectileCount: 1,
+    pierce: 0,
+    range: 185,
+    aoeRadius: 185,
+    arcDegrees: 0,
+    knockback: 12,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.06,
+    },
+  },
+  porridge_pot: {
+    key: 'porridge_pot',
+    nameKey: 'weapon.porridge_pot.name',
+    descriptionKey: 'weapon.porridge_pot.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 3200,
+    damage: 2,
+    projectileSpeed: 0,
+    projectileCount: 1,
+    pierce: 0,
+    range: 145,
+    aoeRadius: 52,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.92,
+      countAt: [],
+      pierce: 0,
+      radius: 1.06,
+    },
+  },
+  brose_cannon: {
+    key: 'brose_cannon',
+    nameKey: 'weapon.brose_cannon.name',
+    descriptionKey: 'weapon.brose_cannon.description',
+    behavior: 'lob_puddle',
+    cooldownMs: 2000,
+    damage: 3,
+    projectileSpeed: 0,
+    projectileCount: 3,
+    pierce: 0,
+    range: 160,
+    aoeRadius: 42,
+    arcDegrees: 0,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.05,
+    },
+  },
+  deep_fried_mars_bar: {
+    key: 'deep_fried_mars_bar',
+    nameKey: 'weapon.deep_fried_mars_bar.name',
+    descriptionKey: 'weapon.deep_fried_mars_bar.description',
+    behavior: 'piercing',
+    cooldownMs: 3800,
+    damage: 26,
+    projectileSpeed: 130,
+    projectileCount: 1,
+    pierce: 2,
+    range: 260,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 0,
+    },
+  },
+};
+
+/**
+ * DESIGN_IDEAS §5 — bonus dash-strike cooldown per stag-family weapon.
+ * Stag Antler ships at 1500 ms; the evolved Monarch's Charge is
+ * marginally snappier (1300 ms) to reward the king-stag fantasy.
+ * Lives outside `WeaponDef` because no other weapon needs this knob;
+ * adding a `dashStrikeCooldownMs` field to `WeaponDef` would force
+ * every weapon entry to think about a mechanic only one weapon uses.
+ */
+export const STAG_ANTLER_DASH_STRIKE_COOLDOWN_MS = 1500;
+
+// DESIGN_IDEAS §5 — Bodhrán. The Celtic frame drum at the heart of every
+// trad session. Its deep pulse resonates outward — a wide, rhythmic AoE
+// burst that shakes enemies loose before weapons close. Pairs with Drum Hoop
+// (expanded resonance ring = +10% AoE) to evolve into the Beltane Drum:
+// the midsummer fire-drum that clears the whole field on every fourth beat.
+// Distinct from Steam Engine (industrial knockback ult, 7s CD) and Bagpipe
+// Blast (freeze burst) — the bodhran is rapid, warm, and persistent.
+export const BODHRAN_VFX_COLOR = 0xc87840;   // warm amber — drum skin + beltane fire
+export const MONARCH_CHARGE_DASH_STRIKE_COOLDOWN_MS = 1300;
+/** Damage multiplier the dash-strike applies on top of the weapon's
+ *  rolled effective-damage. Base form gores; the evolution charges. */
+export const STAG_ANTLER_DASH_STRIKE_DAMAGE_MUL = 2.5;
+export const MONARCH_CHARGE_DASH_STRIKE_DAMAGE_MUL = 3.5;
+/** Monarch's Charge stuns the hits with a brief freeze — the king-
+ *  stag's antler sweep is heavy enough to staggered the wounded. */
+export const MONARCH_CHARGE_DASH_STRIKE_FREEZE_MS = 600;
+export const MONARCH_CHARGE_DASH_STRIKE_FREEZE_FRACTION = 0.4;
+
+/** Selkie Song — duration a charmed enemy walks toward other enemies (ms). */
+export const SELKIE_CHARM_DURATION_MS = 3000;
+/** Selkie Chorus evolution — max enemies charmed per pulse. */
+export const SELKIE_CHORUS_CHARM_COUNT = 3;

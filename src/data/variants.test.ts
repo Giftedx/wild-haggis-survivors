@@ -1,0 +1,138 @@
+import { describe, expect, it } from 'vitest';
+import {
+  VARIANTS,
+  VARIANT_KEYS,
+  getVariantByKey,
+  isVariantKey,
+  formatVariantModifierSummary,
+  formatVariantUnlockText,
+  formatRunVariantLabel,
+  coerceVariantKeys,
+  meetsVariantUnlockCondition,
+  isVariantUnlocked,
+  type VariantKey,
+} from './variants';
+import { t } from '../core/i18n';
+
+describe('variants', () => {
+  it('has at least 6 variants', () => {
+    expect(VARIANTS.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('VARIANT_KEYS matches VARIANTS array keys', () => {
+    expect(VARIANT_KEYS).toEqual(VARIANTS.map((v) => v.key));
+  });
+
+  it('every variant has valid i18n name and flavor keys', () => {
+    for (const variant of VARIANTS) {
+      const name = t(variant.nameKey);
+      const flavor = t(variant.flavorKey);
+      expect(name, `${variant.key} nameKey not resolved`).not.toBe(variant.nameKey);
+      expect(flavor, `${variant.key} flavorKey not resolved`).not.toBe(variant.flavorKey);
+      expect(name.length).toBeGreaterThan(0);
+      expect(flavor.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('every variant key is unique', () => {
+    const keys = new Set(VARIANTS.map((v) => v.key));
+    expect(keys.size).toBe(VARIANTS.length);
+  });
+
+  it('every variant has a unique textureKey', () => {
+    const textures = new Set(VARIANTS.map((v) => v.textureKey));
+    expect(textures.size).toBe(VARIANTS.length);
+  });
+
+  it('getVariantByKey returns correct variants', () => {
+    for (const key of VARIANT_KEYS) {
+      const v = getVariantByKey(key);
+      expect(v.key).toBe(key);
+    }
+  });
+
+  it('getVariantByKey falls back to classic for unknown keys', () => {
+    const v = getVariantByKey('nonexistent' as VariantKey);
+    expect(v.key).toBe('classic');
+  });
+
+  it('isVariantKey validates correctly', () => {
+    expect(isVariantKey('classic')).toBe(true);
+    expect(isVariantKey('pipe_breath')).toBe(true);
+    expect(isVariantKey('bogus')).toBe(false);
+    expect(isVariantKey(42)).toBe(false);
+  });
+
+  it('classic variant has no unlock condition (type: default)', () => {
+    const classic = getVariantByKey('classic');
+    expect(classic.unlock.type).toBe('default');
+  });
+
+  it('all non-default variants have positive unlock requirements', () => {
+    for (const variant of VARIANTS) {
+      if (variant.unlock.type !== 'default') {
+        const req = (variant.unlock as any).required;
+        expect(req, `${variant.key} has non-positive unlock requirement`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('formatVariantModifierSummary returns baseline copy when modifiers are empty', () => {
+    expect(formatVariantModifierSummary(getVariantByKey('classic'))).toBe(t('variant.summary.baseline'));
+  });
+
+  it('formatVariantModifierSummary joins modifier lines when present', () => {
+    const summary = formatVariantModifierSummary(getVariantByKey('moor_runner'));
+    expect(summary).not.toBe(t('variant.summary.baseline'));
+    expect(summary.length).toBeGreaterThan(0);
+    expect(summary).toContain('  |  ');
+  });
+
+  it('coerceVariantKeys returns empty for non-arrays', () => {
+    expect(coerceVariantKeys(null)).toEqual([]);
+    expect(coerceVariantKeys('classic')).toEqual([]);
+    expect(coerceVariantKeys({})).toEqual([]);
+  });
+
+  it('coerceVariantKeys keeps known keys in VARIANT_KEYS order', () => {
+    expect(coerceVariantKeys(['pipe_breath', 'bogus', 'classic', 12])).toEqual(['classic', 'pipe_breath']);
+  });
+
+  it('meetsVariantUnlockCondition follows each unlock type', () => {
+    const classic = getVariantByKey('classic');
+    const moor = getVariantByKey('moor_runner');
+    const zero = { bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 0 };
+    expect(meetsVariantUnlockCondition(classic, zero)).toBe(true);
+    expect(meetsVariantUnlockCondition(moor, { ...zero, bestTime: 599 })).toBe(false);
+    expect(meetsVariantUnlockCondition(moor, { ...zero, bestTime: 600 })).toBe(true);
+  });
+
+  it('isVariantUnlocked short-circuits when key is listed in unlockedVariants', () => {
+    const moor = getVariantByKey('moor_runner');
+    const low = { bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 0 };
+    expect(isVariantUnlocked(moor, low)).toBe(false);
+    expect(isVariantUnlocked(moor, { ...low, unlockedVariants: ['moor_runner'] })).toBe(true);
+  });
+
+  it('formatRunVariantLabel appends modifier summary only when modifiers exist', () => {
+    expect(formatRunVariantLabel(getVariantByKey('classic'))).toBe(t('variant.classic.name'));
+    const moor = getVariantByKey('moor_runner');
+    const label = formatRunVariantLabel(moor);
+    expect(label.startsWith(t('variant.moor_runner.name'))).toBe(true);
+    expect(label).toContain('  |  ');
+  });
+
+  it('formatVariantUnlockText returns ready copy when already unlocked', () => {
+    const ready = t('variant.unlock.ready');
+    const z = { bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 0 };
+    expect(formatVariantUnlockText(getVariantByKey('classic'), z)).toBe(ready);
+    expect(formatVariantUnlockText(getVariantByKey('moor_runner'), { ...z, bestTime: 600 })).toBe(ready);
+  });
+
+  it('formatVariantUnlockText shows progress label when still locked', () => {
+    const moor = getVariantByKey('moor_runner');
+    const s = formatVariantUnlockText(moor, { bestTime: 120, bestKills: 0, totalGoldEarned: 0, victories: 0 });
+    expect(s).not.toBe(t('variant.unlock.ready'));
+    expect(s).toMatch(/:\s*.+\s*\/\s*.+/);
+  });
+});

@@ -1,0 +1,294 @@
+import { describe, expect, it, vi } from 'vitest';
+import { ReplayRecorder, REPLAY_RECORDER_FRAME_CAP } from './ReplayRecorder';
+import { BALANCE } from '../core/BalanceConfig';
+import { captureComposedStats } from './composedStatsSnapshot';
+import type { ComposedPlayerStats } from '../core/StatComposer';
+
+const META = { build: 'test', seed: 42, variantKey: 'classic' };
+
+const sampleStats: ComposedPlayerStats = {
+  ...BALANCE.player,
+  speed: 200,
+  maxHp: 100,
+  driftDegrees: 10,
+  pickupRadius: 100,
+  damagePctBonus: 0,
+  hpRegen: 0,
+  critBonus: 0,
+  cooldownReduction: 0,
+  xpGainBonus: 0,
+  armorBonus: 0,
+  dashCooldownReduction: 0,
+};
+
+describe('ReplayRecorder v1 defaults', () => {
+  it('starts with zero frames; finalize returns empty blob', () => {
+    const r = new ReplayRecorder(META);
+    expect(r.getFrameCount()).toBe(0);
+    const blob = r.finalize();
+    expect(blob.version).toBe(1);
+    expect(blob.frameCount).toBe(0);
+    expect(blob.frames).toEqual([]);
+    expect(blob.build).toBe(META.build);
+    expect(blob.seed).toBe(META.seed);
+    expect(blob.variantKey).toBe(META.variantKey);
+  });
+
+  it('records 3 frames in order', () => {
+    const r = new ReplayRecorder(META);
+    r.pushFrame({ dtMs: 16, dx: 1, dy: 0, dash: false, menu: false });
+    r.pushFrame({ dtMs: 16, dx: 0, dy: 0, dash: true, menu: false });
+    r.pushFrame({ dtMs: 16, dx: 0, dy: -1, dash: false, menu: true });
+    expect(r.getFrameCount()).toBe(3);
+
+    const blob = r.finalize();
+    expect(blob.version).toBe(1);
+    expect(blob.frameCount).toBe(3);
+    expect(blob.frames[0].dx).toBe(1);
+    expect(blob.frames[1].dash).toBe(true);
+    expect(blob.frames[2].menu).toBe(true);
+  });
+
+  it('clamps on push (dtMs > 100, |dir| > 1)', () => {
+    const r = new ReplayRecorder(META);
+    r.pushFrame({ dtMs: 400, dx: 3, dy: 4, dash: false, menu: false });
+    const blob = r.finalize();
+    expect(blob.frames[0].dtMs).toBe(100);
+    const len = Math.hypot(blob.frames[0].dx, blob.frames[0].dy);
+    expect(len).toBeLessThanOrEqual(1 + 1e-6);
+  });
+
+  it('reset() clears frames but preserves metadata', () => {
+    const r = new ReplayRecorder(META);
+    r.pushFrame({ dtMs: 16, dx: 1, dy: 0, dash: false, menu: false });
+    r.reset();
+    expect(r.getFrameCount()).toBe(0);
+    const blob = r.finalize();
+    expect(blob.seed).toBe(META.seed);
+  });
+
+  it('finalize() returns an independent snapshot', () => {
+    const r = new ReplayRecorder(META);
+    r.pushFrame({ dtMs: 16, dx: 1, dy: 0, dash: false, menu: false });
+    const snapshot = r.finalize();
+    r.pushFrame({ dtMs: 16, dx: 0, dy: 1, dash: false, menu: false });
+    expect(snapshot.frameCount).toBe(1);
+    expect(snapshot.frames).toHaveLength(1);
+  });
+});
+
+describe('ReplayRecorder v2 upgrade path', () => {
+  it('finalize returns v1 when no curse / stats / routes present', () => {
+    const r = new ReplayRecorder(META);
+    r.pushFrame({ dtMs: 16, dx: 0, dy: 0, dash: false, menu: false });
+    const blob = r.finalize();
+    expect(blob.version).toBe(1);
+  });
+
+  it('finalize returns v2 when curseKey is set at construction', () => {
+    const r = new ReplayRecorder({ ...META, curseKey: 'heavy_legs' });
+    const blob = r.finalize();
+    expect(blob.version).toBe(2);
+    expect(
+      (blob as { curseKey?: string }).curseKey,
+    ).toBe('heavy_legs');
+  });
+
+  it('finalize returns v2 when composedStats snapshot is set', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      composedStats: captureComposedStats(sampleStats),
+    });
+    const blob = r.finalize();
+    expect(blob.version).toBe(2);
+  });
+
+  it('pushRoute captured — finalize returns v2 with route history', () => {
+    const r = new ReplayRecorder(META);
+    r.pushRoute({
+      slot: 'A',
+      routeKey: 'up_the_brae',
+      atGameTimeSec: 305,
+      defaultedBySetting: false,
+    });
+    const blob = r.finalize();
+    expect(blob.version).toBe(2);
+    const v2 = blob as { routes?: Array<{ routeKey: string }> };
+    expect(v2.routes?.length).toBe(1);
+    expect(v2.routes?.[0].routeKey).toBe('up_the_brae');
+  });
+
+  it('pushRoute copies pick fields — later mutation of the input is ignored', () => {
+    const r = new ReplayRecorder(META);
+    const pick = {
+      slot: 'A' as const,
+      routeKey: 'up_the_brae' as const,
+      atGameTimeSec: 305,
+      defaultedBySetting: false,
+    };
+    r.pushRoute(pick);
+    (pick as { atGameTimeSec: number }).atGameTimeSec = 9999;
+    const blob = r.finalize();
+    const v2 = blob as { routes?: Array<{ atGameTimeSec: number }> };
+    expect(v2.routes?.[0].atGameTimeSec).toBe(305);
+  });
+
+  it('reset clears frames + routes; construction meta still pins v2', () => {
+    const r = new ReplayRecorder({ ...META, curseKey: 'heavy_legs' });
+    r.pushFrame({ dtMs: 16, dx: 0, dy: 0, dash: false, menu: false });
+    r.pushRoute({
+      slot: 'A',
+      routeKey: 'up_the_brae',
+      atGameTimeSec: 305,
+      defaultedBySetting: false,
+    });
+    r.reset();
+    const blob = r.finalize();
+    expect(blob.version).toBe(2); // curseKey meta preserved → still v2
+    expect(blob.frameCount).toBe(0);
+    expect((blob as { routes?: unknown[] }).routes).toBeUndefined();
+  });
+});
+
+describe('ReplayRecorder v3 upgrade (M1 nodeOutcomes)', () => {
+  it('stays v1 with no node outcomes + no v2 triggers', () => {
+    const r = new ReplayRecorder(META);
+    expect(r.finalize().version).toBe(1);
+  });
+
+  it('upgrades to v3 when a node outcome is pushed', () => {
+    const r = new ReplayRecorder(META);
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    const blob = r.finalize();
+    expect(blob.version).toBe(3);
+  });
+
+  it('v3 blob carries every captured outcome in order', () => {
+    const r = new ReplayRecorder(META);
+    r.pushNodeOutcome({ nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 60 });
+    r.pushNodeOutcome({
+      nodeKey: 'a2_shrine_fairy_ring',
+      chosenRewardKey: 'buff_luck',
+      visitedAtGameTimeSec: 420,
+    });
+    const blob = r.finalize() as { nodeOutcomes?: unknown[] };
+    expect(blob.nodeOutcomes).toEqual([
+      { nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 60 },
+      { nodeKey: 'a2_shrine_fairy_ring', chosenRewardKey: 'buff_luck', visitedAtGameTimeSec: 420 },
+    ]);
+  });
+
+  it('v3 also carries v2-tier meta (curseKey + routes) when present', () => {
+    const r = new ReplayRecorder({ ...META, curseKey: 'heavy_legs' });
+    r.pushRoute({ slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305, defaultedBySetting: false });
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    const blob = r.finalize() as { curseKey?: string; routes?: unknown[]; nodeOutcomes?: unknown[] };
+    expect(blob.curseKey).toBe('heavy_legs');
+    expect(blob.routes).toHaveLength(1);
+    expect(blob.nodeOutcomes).toHaveLength(1);
+  });
+
+  it('reset clears node outcomes; fresh finalize drops back to v1', () => {
+    const r = new ReplayRecorder(META);
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    r.reset();
+    expect(r.finalize().version).toBe(1);
+  });
+});
+
+describe('ReplayRecorder S1 Phase 2 (sporranPicks)', () => {
+  it('stays v1 with empty / absent sporranPicks', () => {
+    expect(new ReplayRecorder(META).finalize().version).toBe(1);
+    expect(new ReplayRecorder({ ...META, sporranPicks: [] }).finalize().version).toBe(1);
+  });
+
+  it('upgrades to v3 when at least one sporranPick is set', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      sporranPicks: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+    });
+    const blob = r.finalize();
+    expect(blob.version).toBe(3);
+    expect((blob as { sporranPicks?: string[] }).sporranPicks).toEqual([
+      'boon_silver',
+      'boon_coal',
+      'curse_heavy_legs',
+    ]);
+  });
+
+  it('drops empty / non-string ids at construction', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      sporranPicks: [
+        'boon_silver',
+        '',
+        null as unknown as string,
+        42 as unknown as string,
+        'curse_heavy_legs',
+      ],
+    });
+    const blob = r.finalize();
+    expect((blob as { sporranPicks?: string[] }).sporranPicks).toEqual([
+      'boon_silver',
+      'curse_heavy_legs',
+    ]);
+  });
+
+  it('co-exists with curseKey + nodeOutcomes — single v3 blob carries all three', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      curseKey: 'heavy_legs',
+      sporranPicks: ['boon_whisky'],
+    });
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    const blob = r.finalize() as {
+      version: number;
+      curseKey?: string;
+      sporranPicks?: string[];
+      nodeOutcomes?: unknown[];
+    };
+    expect(blob.version).toBe(3);
+    expect(blob.curseKey).toBe('heavy_legs');
+    expect(blob.sporranPicks).toEqual(['boon_whisky']);
+    expect(blob.nodeOutcomes).toHaveLength(1);
+  });
+
+  it('finalize emits independent copies — mutating the returned blob does not leak', () => {
+    const r = new ReplayRecorder({ ...META, sporranPicks: ['boon_silver'] });
+    const a = r.finalize() as { sporranPicks?: string[] };
+    a.sporranPicks!.push('boon_coal');
+    const b = r.finalize() as { sporranPicks?: string[] };
+    expect(b.sporranPicks).toEqual(['boon_silver']);
+  });
+});
+
+describe('ReplayRecorder T308 frame cap', () => {
+  const SAMPLE_FRAME = { dx: 0, dy: 0, dtMs: 16, dash: false, menu: false } as const;
+
+  it('caps recorded frames at REPLAY_RECORDER_FRAME_CAP and warns once', () => {
+    const r = new ReplayRecorder(META);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // Push two frames past the cap to confirm the second one also no-ops
+    // and the warning fires only once.
+    for (let i = 0; i < REPLAY_RECORDER_FRAME_CAP + 2; i++) {
+      r.pushFrame({ ...SAMPLE_FRAME });
+    }
+    expect(r.getFrameCount()).toBe(REPLAY_RECORDER_FRAME_CAP);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain('frame cap reached');
+    warn.mockRestore();
+  });
+
+  it('reset() lets a recorder accept frames again after the cap', () => {
+    const r = new ReplayRecorder(META);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (let i = 0; i < REPLAY_RECORDER_FRAME_CAP + 5; i++) {
+      r.pushFrame({ ...SAMPLE_FRAME });
+    }
+    expect(r.getFrameCount()).toBe(REPLAY_RECORDER_FRAME_CAP);
+    r.reset();
+    r.pushFrame({ ...SAMPLE_FRAME });
+    expect(r.getFrameCount()).toBe(1);
+    vi.restoreAllMocks();
+  });
+});

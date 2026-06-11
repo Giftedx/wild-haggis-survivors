@@ -1,0 +1,1445 @@
+import * as Phaser from 'phaser';
+import { COLORS, COLORS_CSS } from '../config';
+import { BALANCE } from '../core/BalanceConfig';
+import { getSettingsManager } from '../core/SettingsManager';
+import { getCameraViewport } from './cameraViewport';
+import { t } from '../core/i18n';
+import type { CurseKey } from '../data/curses';
+import { formatHudCurseChipLine } from './formatHudCurseChip';
+import { resolveWeaponIconKey } from './hudWeaponIcon';
+import { weaponPulseState } from './hudWeaponPulse';
+import { formatClockTime } from '../utils/formatClockTime';
+import { formatSpeedrunTime } from '../utils/formatSpeedrunTime';
+import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
+import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
+import { audio } from '../systems/AudioSystem';
+import {
+  targetHpBarColor,
+  packRgbColor,
+  isLowHpPulseActive,
+  hpLowPulseAlpha,
+  HP_LOW_PULSE_PHASE_STEP,
+} from './hudHpBarColor';
+import { resolveWaveLabel } from './hudWaveLabel';
+import { shouldTriggerXpLevelUpFlash } from './hudXpFlashGate';
+import {
+  dashLabelColor,
+  dashPulseScale,
+  dashPulseAlpha,
+  DASH_PULSE_PHASE_STEP,
+} from './hudDashStyle';
+import { bossHpBarStyle } from './hudBossBar';
+import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
+import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
+import { clamp01 } from '../utils/math';
+import { textStyle } from './typography';
+import type { HudWidgetContext } from './hud/hudWidget';
+import { buildHpBar } from './hud/hpBar';
+import { buildGripPips } from './hud/gripPips';
+import { buildWhiskyBar } from './hud/whiskyBar';
+import { buildStanceChip } from './hud/stanceChip';
+import { buildCompanionChip } from './hud/companionChip';
+import { buildSelkieFormChip } from './hud/selkieFormChip';
+import {
+  applyPibrochBeatChipState,
+  buildPibrochBeatChip,
+  type PibrochBeatChipRefs,
+} from './hud/pibrochBeatChip';
+import type { Stance } from '../entities/stanceToggle';
+import type { SelkieForm } from '../entities/selkieForm';
+import {
+  buildBeithirRaceBar,
+  BEITHIR_RACE_BAR_PIXEL_WIDTH,
+} from './hud/beithirRaceBar';
+import {
+  buildParryChip,
+  PARRY_CHIP_PIXEL_WIDTH,
+} from './hud/parryChip';
+import {
+  buildMoodPortrait,
+  applyMoodPortraitState,
+  resolveMood,
+  WINCE_DURATION_MS,
+  type MoodPortraitRefs,
+  type MoodState,
+} from './hud/moodPortrait';
+import { buildLevelGold } from './hud/levelGold';
+import { buildTimerStack } from './hud/timerStack';
+import { buildStatusChips } from './hud/statusChips';
+import { buildKillReadout } from './hud/killReadout';
+import { buildXpBar } from './hud/xpBar';
+import { buildPauseButton } from './hud/pauseButton';
+import { buildShieldDash } from './hud/shieldDash';
+import { buildDpsReadout } from './hud/dpsReadout';
+import { buildBossBar } from './hud/bossBar';
+
+/**
+ * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
+ * All elements use setScrollFactor(0) individually — NOT in a container —
+ * to avoid Phaser's input/scroll bug with container children.
+ */
+export class HUD {
+  private scene: Phaser.Scene;
+  private elements: Phaser.GameObjects.GameObject[] = [];
+
+  private hpBarBg!: Phaser.GameObjects.Rectangle;
+  private hpBarFill!: Phaser.GameObjects.Rectangle;
+  private hpText!: Phaser.GameObjects.Text;
+
+  private xpBarBg!: Phaser.GameObjects.Rectangle;
+  /** Top edge shadow on the XP bar — must move with `refreshResponsiveLayout` (was stuck at initial Y). */
+  private xpBarTopLine!: Phaser.GameObjects.Rectangle;
+  private xpBarFill!: Phaser.GameObjects.Rectangle;
+  private xpBarHighlight!: Phaser.GameObjects.Rectangle;
+
+  private levelText!: Phaser.GameObjects.Text;
+  /** Mid-run gold balance (earned − spent). Sits below the level readout. */
+  private goldText!: Phaser.GameObjects.Text;
+  private prevGold = -1;
+  private timerText!: Phaser.GameObjects.Text;
+  private objectiveText!: Phaser.GameObjects.Text;
+  /** Shown when the run has an active curse (trade reminder). */
+  private curseChipText!: Phaser.GameObjects.Text;
+  /** Cache active curse key so chip text updates only when the run curse changes. */
+  private prevCurseChipSig: string = '';
+  /** W2 Moor Road — small "Act 2/3" chip shown once the player has cleared an act. */
+  private actChipText!: Phaser.GameObjects.Text;
+  private prevAct: 1 | 2 | 3 = 1;
+  /** W66 Ironmoor — small "IRONMOOR" chip shown when single-life mode is active. */
+  private ironmoorChipText!: Phaser.GameObjects.Text;
+  private dailyChipText!: Phaser.GameObjects.Text;
+  /** T1 replay — persistent "REPLAY" chip shown during best-effort playback. */
+  private replayChipText!: Phaser.GameObjects.Text;
+  private killText!: Phaser.GameObjects.Text;
+  private pauseText!: Phaser.GameObjects.Text;
+
+  /** Drift Mastery pip widget (DESIGN_IDEAS §1). Three small dots
+   *  anchored below the HP bar; each fills (warm-cyan) when a Grip
+   *  pip is banked, sits dim-empty otherwise. The whole strip pulses
+   *  briefly while a burst is active. Hidden until first bank so a
+   *  fresh run doesn't surface the mechanic before it's been earned. */
+  private gripPipDots: Phaser.GameObjects.Arc[] = [];
+  private gripPipsVisible = false;
+  private prevGripPips = -1;
+  private prevGripBurstActive = false;
+
+  /** Whisky Breath stack readout (DESIGN_IDEAS §1). A small horizontal
+   *  amber bar that fills as kills bank stacks; switches to a glowing
+   *  ready-state at the fire threshold. Sits below the grip pips on
+   *  the right side of the HP bar. Hidden until first stack banked
+   *  (matches the grip pip widget's "earn before you see it" rule). */
+  private whiskyBarBg!: Phaser.GameObjects.Rectangle;
+  private whiskyBarFill!: Phaser.GameObjects.Rectangle;
+  private whiskyBarVisible = false;
+  private prevWhiskyStacks = -1;
+  private prevWhiskyReady = false;
+
+  /** Stance Toggle chip (DESIGN_IDEAS §1). Small text pill stacked
+   *  beneath the whisky bar; shows the active stance label. Always
+   *  visible — stance is the player's current posture and matters
+   *  every frame, so unlike grip / whisky widgets it doesn't gate on
+   *  "earn before you see it". A loose-default chip on a fresh run
+   *  also doubles as discoverability. */
+  private stanceChipBg!: Phaser.GameObjects.Rectangle;
+  private stanceChipText!: Phaser.GameObjects.Text;
+  private prevStance: Stance | null = null;
+
+  /** Shinty Parry chip widget refs — bg, cooldown sweep fill, label. */
+  private parryChipBg!: Phaser.GameObjects.Rectangle;
+  private parryChipCooldownFill!: Phaser.GameObjects.Rectangle;
+  private parryChipText!: Phaser.GameObjects.Text;
+  /** Cached parry visual state ('ready' / 'active' / 'cooldown') so
+   *  per-frame setText / setFillStyle calls only fire on transition. */
+  private prevParryState: 'ready' | 'active' | 'cooldown' | null = null;
+
+  /** Whistle-Call companion chip (Wild Living World Initiative). Hidden
+   *  by default; surfaces once a companion is active for the run. */
+  private companionChipBg!: Phaser.GameObjects.Rectangle;
+  private companionChipText!: Phaser.GameObjects.Text;
+  private prevCompanionLabel: string | null = null;
+
+  /** Selkie Dual-Form chip — visible only while the Selkie variant
+   *  is the active run. Two forms toggled by dash. */
+  private selkieFormChipBg!: Phaser.GameObjects.Rectangle;
+  private selkieFormChipText!: Phaser.GameObjects.Text;
+
+  // Wild Living World Phase 2 — Pibroch beat indicator. Refs bundled
+  // so the apply helper can update the whole chip atomically.
+  private pibrochBeatChip!: PibrochBeatChipRefs;
+  private prevSelkieForm: SelkieForm | null = null;
+
+  /** Mood Portrait — tiny haggis face that reacts to HP state (DESIGN_IDEAS §7). */
+  private moodPortraitRefs!: MoodPortraitRefs;
+  private prevMoodState: MoodState | null = null;
+  private moodWinceMs = 0;
+  /** Cached HP from last frame to detect damage events for wince trigger. */
+  private prevFrameHp = -1;
+
+  /** Race the Beithir HUD bar refs — top-centre live-tension widget;
+   *  hidden by default, appears only while a sting is running. */
+  private beithirRaceBarBg!: Phaser.GameObjects.Rectangle;
+  private beithirRaceBarFill!: Phaser.GameObjects.Rectangle;
+  private beithirRaceBarText!: Phaser.GameObjects.Text;
+  /** Cached visibility so setVisible / setText only fire on edge. */
+  private prevBeithirStung: boolean | null = null;
+
+  /** HP bar width — shrinks on narrow viewports so the centered timer
+   *  doesn't overlap the HP fill. Mutable so `refreshResponsiveLayout`
+   *  can rebalance against the live viewport (was a fixed 260 which
+   *  obscured the timer at width 390 — audit 09g). */
+  private HP_BAR_W = 260;
+  private readonly HP_BAR_H = 20;
+  private readonly XP_BAR_H = 14;
+  private readonly DEPTH = 50;
+
+  // Pause button callback
+  private onPause: (() => void) | null = null;
+
+  // Weapon icon slots — each slot has a background, a sprite icon for the
+  // weapon, a small level pip label, and a cooldown fill overlay.
+  private weaponSlots: {
+    bg: Phaser.GameObjects.Rectangle;
+    icon: Phaser.GameObjects.Image;
+    label: Phaser.GameObjects.Text;
+    cdFill: Phaser.GameObjects.Rectangle;
+  }[] = [];
+
+  // Boss HP bar
+  private bossBarBg!: Phaser.GameObjects.Rectangle;
+  private bossBarFill!: Phaser.GameObjects.Rectangle;
+  private bossBarHighlight!: Phaser.GameObjects.Rectangle;
+  private bossBarShadow!: Phaser.GameObjects.Rectangle;
+  private bossBarGlow!: Phaser.GameObjects.Rectangle;
+  private bossNameText!: Phaser.GameObjects.Text;
+  private bossBarVisible: boolean = false;
+  private bossHpFraction = 1;
+
+  // Passive items display — Image when the ucard texture exists, Text
+  // fallback for any passive without a baked icon.
+  private passiveSlots: Phaser.GameObjects.GameObject[] = [];
+  private lastPassiveCount: number = 0;
+  private lastPassiveKeys = new Set<string>();
+
+  // Shield + dash row (sprites for shield / pips — no emoji or font glyphs)
+  private shieldIcon!: Phaser.GameObjects.Image;
+  private dashPrefixText!: Phaser.GameObjects.Text;
+  private dashSuffixText!: Phaser.GameObjects.Text;
+  private dashPipImages: Phaser.GameObjects.Image[] = [];
+  private readonly dashPipPool = 4;
+  private dashHudAnchorX = 0;
+  private dashHudAnchorY = 0;
+
+  // DPS tracking
+  private dpsText!: Phaser.GameObjects.Text;
+  private damageLog: number[] = [];
+  private damageWindow: number = 0;
+  /** Last value written to the DPS line — for pause-menu stats. */
+  private lastDisplayedDps: number = 0;
+
+  // Smooth HP bar color lerping — avoids hard snaps between thresholds
+  private displayHpR: number = 0x44;
+  private displayHpG: number = 0xcc;
+  private displayHpB: number = 0x44;
+
+  // Low-HP pulse state (for the fill's alpha/scale wobble)
+  private lowHpPulse: number = 0;
+  // Kill count cap warning — track previous state to pulse on transition
+  private wasOverCap: boolean = false;
+  // XP bar level-up flash — track previous fraction to detect the reset
+  private prevXpFraction: number = 0;
+  // Dash-ready pulse phase — drives a subtle scale/alpha wobble on the dash
+  // pips when a charge is available, so the player can glance at the HUD
+  // under combat pressure and see "yes, dash is ready" at a single tick.
+  private dashReadyPulse: number = 0;
+  // Per-frame setText caching — only call setText when value changes
+  private prevMins = -1;
+  private prevSecs = -1;
+  private prevKills = -1;
+  private prevEnemyCount = -1;
+  private prevLevel = -1;
+  private layoutWidth = 0;
+  private layoutHeight = 0;
+  private layoutX = 0;
+  private layoutY = 0;
+  private layoutZoom = 1;
+  private topSafePad = 12;
+  private readonly uiScale: number;
+  private readonly highContrastUi: boolean;
+  private readonly speedrunTimerVisible: boolean;
+  /** Cached stroke for weapon slot bgs when high-contrast mode is active. */
+  private hcSlotStroke: number | null = null;
+  /**
+   * High-contrast palette — populated once in build() when highContrastUi is on,
+   * then referenced every frame in update() so dynamic color changes (wave ladder,
+   * low-HP pulse, enemy cap warning) still respect the user's contrast preference.
+   */
+  private hcPalette: {
+    text: string;
+    textLowHp: string;
+    timer: string;
+    kill: string;
+    killWarn: string;
+    boss: string;
+    objective: string;
+    dps: string;
+    curse: string;
+  } | null = null;
+
+  private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
+    return getCameraViewport(this.scene);
+  }
+
+  constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+    const settings = getSettingsManager().load();
+    this.uiScale = settings.uiScale;
+    this.highContrastUi = settings.highContrastUi;
+    this.speedrunTimerVisible = settings.speedrunTimerVisible === true;
+    this.build();
+  }
+
+  private addEl<T extends Phaser.GameObjects.GameObject>(el: T): T {
+    this.elements.push(el);
+    return el;
+  }
+
+  private removeEl(el: Phaser.GameObjects.GameObject): void {
+    const idx = this.elements.indexOf(el);
+    if (idx !== -1) this.elements.splice(idx, 1);
+  }
+
+  private build(): void {
+    const ctx: HudWidgetContext = {
+      scene: this.scene,
+      viewport: this.getUiViewport(),
+      depth: this.DEPTH,
+      uiScale: this.uiScale,
+      hpBarW: this.HP_BAR_W,
+      hpBarH: this.HP_BAR_H,
+      xpBarH: this.XP_BAR_H,
+      addEl: this.addEl.bind(this),
+    };
+
+    // HP bar
+    const hpRefs = buildHpBar(ctx);
+    this.hpBarBg = hpRefs.bg;
+    this.hpBarFill = hpRefs.fill;
+    this.hpText = hpRefs.text;
+
+    // Drift Mastery pip strip — anchored to the right end of the HP bar.
+    this.gripPipDots = buildGripPips(ctx);
+
+    // Whisky Breath stack bar — sits just below the HP bar.
+    const whiskyRefs = buildWhiskyBar(ctx);
+    this.whiskyBarBg = whiskyRefs.bg;
+    this.whiskyBarFill = whiskyRefs.fill;
+
+    // Stance Toggle chip — sits just below the whisky bar.
+    const stanceRefs = buildStanceChip(ctx);
+    this.stanceChipBg = stanceRefs.bg;
+    this.stanceChipText = stanceRefs.text;
+
+    // Shinty Parry chip — sits below the stance chip. Bottom of the
+    // four-widget skill column (HP / whisky / stance / parry).
+    const parryRefs = buildParryChip(ctx);
+    this.parryChipBg = parryRefs.bg;
+    this.parryChipCooldownFill = parryRefs.cooldownFill;
+    this.parryChipText = parryRefs.text;
+
+    // Whistle-Call companion chip — hidden until a companion is
+    // active. Sits below the parry chip in the left skill column.
+    const companionRefs = buildCompanionChip(ctx);
+    this.companionChipBg = companionRefs.bg;
+    this.companionChipText = companionRefs.text;
+
+    // Selkie Dual-Form chip — hidden until the Selkie variant is the
+    // active run. Sits below the companion chip in the column.
+    const selkieRefs = buildSelkieFormChip(ctx);
+    this.selkieFormChipBg = selkieRefs.bg;
+    this.selkieFormChipText = selkieRefs.text;
+
+    // Wild Living World Phase 2 — Pibroch beat indicator. Sits at the
+    // bottom of the skill column; hidden by default + auto-shown when
+    // the player holds a Waulking Mallet or Pibroch Hammer (via the
+    // `setPibrochBeatState` accessor below).
+    this.pibrochBeatChip = buildPibrochBeatChip(ctx);
+
+    // Mood Portrait — tiny haggis face below the full skill-widget
+    // column, always visible. Expression tracks HP fraction + damage
+    // events. Purely cosmetic; no gameplay impact (DESIGN_IDEAS §7).
+    this.moodPortraitRefs = buildMoodPortrait(ctx);
+
+    // Race the Beithir bar — top-centre live-tension widget; hidden
+    // by default, appears only while a Beithir sting is running. Lives
+    // *outside* the bottom-left skill-widget column on purpose: the
+    // race is an event, not a passive state, and dramatic top-centre
+    // placement signals "drop everything, this is now the loop's main
+    // frame".
+    const beithirRaceRefs = buildBeithirRaceBar(ctx);
+    this.beithirRaceBarBg = beithirRaceRefs.bg;
+    this.beithirRaceBarFill = beithirRaceRefs.fill;
+    this.beithirRaceBarText = beithirRaceRefs.text;
+
+    // Level + gold balance (whisky-gold tint, hidden until first setText fires).
+    const levelGoldRefs = buildLevelGold(ctx);
+    this.levelText = levelGoldRefs.level;
+    this.goldText = levelGoldRefs.gold;
+
+    // Centered top stack: timer + objective + curse chip.
+    const timerRefs = buildTimerStack(ctx);
+    this.timerText = timerRefs.timer;
+    this.objectiveText = timerRefs.objective;
+    this.curseChipText = timerRefs.curseChip;
+
+    // W2 act chip + W66 ironmoor chip + P2.12 daily chip + T1 replay chip
+    // — all hidden until their setter fires; replay anchors above XP bar.
+    const chipRefs = buildStatusChips(ctx);
+    this.actChipText = chipRefs.act;
+    this.ironmoorChipText = chipRefs.ironmoor;
+    this.dailyChipText = chipRefs.daily;
+    this.replayChipText = chipRefs.replay;
+
+    // Right-anchored kill readout (constrained to clear the centered timer).
+    this.killText = buildKillReadout(ctx);
+
+    // XP bar — full-width track at the bottom edge, layered for depth.
+    const xpRefs = buildXpBar(ctx);
+    this.xpBarBg = xpRefs.bg;
+    this.xpBarTopLine = xpRefs.topLine;
+    this.xpBarFill = xpRefs.fill;
+    this.xpBarHighlight = xpRefs.highlight;
+
+    // Pause button — top-right, ≥44pt hit area for touch.
+    this.pauseText = buildPauseButton(ctx);
+    this.pauseText.on('pointerdown', () => {
+      if (this.onPause) this.onPause();
+    });
+    this.pauseText.on('pointerover', () => {
+      this.pauseText.setColor('#e8d4a0');
+    });
+    this.pauseText.on('pointerout', () => {
+      this.pauseText.setColor('#666666');
+    });
+
+    // Shield icon + dash row right of HP bar — all start hidden.
+    const sdRefs = buildShieldDash(ctx, { dashPipPool: this.dashPipPool });
+    this.shieldIcon = sdRefs.shield;
+    this.dashPrefixText = sdRefs.dashPrefix;
+    this.dashSuffixText = sdRefs.dashSuffix;
+    this.dashPipImages = sdRefs.dashPips;
+
+    // DPS counter (dev/observability — hidden unless ?devDps=1).
+    this.dpsText = buildDpsReadout(ctx);
+
+    // Boss HP bar — layered glow / bg / shadow / fill / highlight + name.
+    const bossRefs = buildBossBar(ctx);
+    this.bossBarGlow = bossRefs.glow;
+    this.bossBarBg = bossRefs.bg;
+    this.bossBarShadow = bossRefs.shadow;
+    this.bossBarFill = bossRefs.fill;
+    this.bossBarHighlight = bossRefs.highlight;
+    this.bossNameText = bossRefs.name;
+    if (this.uiScale !== 1) {
+      const scaleTargets: Phaser.GameObjects.GameObject[] = [
+        this.hpText,
+        this.levelText,
+        this.goldText,
+        this.timerText,
+        this.objectiveText,
+        this.curseChipText,
+        this.killText,
+        this.pauseText,
+        this.shieldIcon,
+        this.dashPrefixText,
+        this.dashSuffixText,
+        this.dpsText,
+        this.bossNameText,
+        this.actChipText,
+        this.ironmoorChipText,
+        this.dailyChipText,
+      ];
+      for (const target of scaleTargets) {
+        (target as unknown as { setScale?: (x: number, y?: number) => void }).setScale?.(this.uiScale);
+      }
+    }
+    if (this.highContrastUi) {
+      // High-contrast palette — recolors every HUD text surface + bar backgrounds
+      // so the entire HUD shifts together, not just the objective/dps line.
+      // Respects the Soul Charter's "accessibility is part of kindness" principle.
+      // Stored as an instance field so update() can re-apply these colors every
+      // frame without losing them to wave-ladder / low-HP / cap-warning logic.
+      this.hcPalette = {
+        text: '#f0f6ff',     // general white-on-dark for numeric / label text
+        textLowHp: '#ffd0d6', // HP text when low — lifted from the default #ffcccc
+        timer: '#fff4d0',    // warmer timer to stand out against the wave ladder
+        kill: '#e0e8ff',     // kill / enemy readout when under cap
+        killWarn: '#ff9a9a', // kill readout when enemy cap warn triggers
+        boss: '#ff9595',     // boss name — lifted from the default dim red
+        objective: '#e6efff',
+        dps: '#d9e4ff',
+        curse: '#f5e0f8',
+      };
+      this.hpBarBg.setFillStyle(0x080b12, 0.95);
+      this.xpBarBg.setFillStyle(0x121820, 0.94);
+      this.objectiveText.setColor(this.hcPalette.objective);
+      this.curseChipText.setColor(this.hcPalette.curse);
+      this.dpsText.setColor(this.hcPalette.dps);
+      this.hpText.setColor(this.hcPalette.text);
+      this.levelText.setColor(this.hcPalette.text);
+      this.goldText.setColor(this.hcPalette.text);
+      this.timerText.setColor(this.hcPalette.timer);
+      this.killText.setColor(this.hcPalette.kill);
+      this.pauseText.setColor(this.hcPalette.text);
+      this.bossNameText.setColor(this.hcPalette.boss);
+      // Cache slot stroke for weapon slot construction (applied in updateWeaponSlots)
+      this.hcSlotStroke = 0x8fb4ff;
+    }
+    this.refreshResponsiveLayout();
+  }
+
+  private refreshResponsiveLayout(): void {
+    const { x, y, width, height, zoom } = this.getUiViewport();
+    // Skip full layout recalc when viewport hasn't changed
+    if (x === this.layoutX && y === this.layoutY &&
+        width === this.layoutWidth && height === this.layoutHeight &&
+        zoom === this.layoutZoom) {
+      return;
+    }
+    this.layoutX = x;
+    this.layoutY = y;
+    this.layoutWidth = width;
+    this.layoutHeight = height;
+    this.layoutZoom = zoom;
+
+    const padPx = Math.max(8, (12 * this.uiScale) / Math.max(0.001, zoom));
+    const bottomPad = Math.max(2, 4 / Math.max(0.001, zoom));
+    this.topSafePad = padPx;
+    // Cap HP bar to ~38% of viewport width so the centered timer stays
+    // clear of the bar fill on narrow viewports (mobile + windowed).
+    // Floor at 140 keeps the bar usable; ceiling at 260 preserves the
+    // desktop look unchanged.
+    this.HP_BAR_W = Math.round(Math.max(140, Math.min(260, width * 0.38)));
+    const padX = Math.max(x + 8, Math.min(x + 12 * this.uiScale, x + Math.max(8, width - this.HP_BAR_W - 8)));
+    // Resize HP bar bg + fill to match the new HP_BAR_W. Phaser
+    // Rectangles let you assign `.width` / `.height` directly; using the
+    // raw fields stays compatible with the HUD test mocks (which don't
+    // implement setSize).
+    this.hpBarBg.width = this.HP_BAR_W;
+    this.hpBarBg.height = this.HP_BAR_H;
+    if (this.hpBarFill.width > this.HP_BAR_W) this.hpBarFill.width = this.HP_BAR_W;
+    this.hpBarFill.height = this.HP_BAR_H;
+    const padY = y + this.topSafePad;
+    const xpY = y + height - this.XP_BAR_H - bottomPad;
+
+    this.hpBarBg.setPosition(padX, padY);
+    this.hpBarFill.setPosition(padX, padY);
+    this.hpText.setPosition(padX + this.HP_BAR_W / 2, padY + this.HP_BAR_H / 2);
+    this.levelText.setPosition(padX, padY + 28 * this.uiScale);
+    this.goldText.setPosition(padX, padY + 50 * this.uiScale);
+    const hpGap = Math.round(10 * this.uiScale);
+    this.shieldIcon.setPosition(padX + this.HP_BAR_W + hpGap, padY + this.HP_BAR_H / 2);
+    this.shieldIcon.setScale(this.uiScale * 0.92);
+    this.dashHudAnchorX = padX + this.HP_BAR_W + hpGap;
+    this.dashHudAnchorY = padY + this.HP_BAR_H / 2 + 18 * this.uiScale;
+
+    this.xpBarBg.setPosition(x, xpY);
+    this.xpBarBg.width = width;
+    this.xpBarTopLine.setPosition(x, xpY);
+    this.xpBarTopLine.width = width;
+    this.xpBarFill.setPosition(x, xpY);
+    this.xpBarHighlight.setPosition(x, xpY);
+
+    const topY = y + this.topSafePad;
+    this.timerText.setPosition(x + width / 2, topY);
+    this.objectiveText.setPosition(x + width / 2, topY + 30 * this.uiScale);
+    this.curseChipText.setPosition(x + width / 2, topY + 50 * this.uiScale);
+    this.actChipText.setPosition(x + width / 2, topY + 66 * this.uiScale);
+    this.ironmoorChipText.setPosition(x + width / 2, topY + 82 * this.uiScale);
+    // P2.12 — daily chip sits ABOVE the timer at the top edge so it
+    // never collides with countdown / banter overlays that occupy the
+    // upper third. Right-anchored so it pairs with the Kills readout.
+    this.dailyChipText.setPosition(x + width - 12, topY + 64 * this.uiScale);
+    this.killText.setPosition(x + width - 12, topY);
+    this.pauseText.setPosition(x + width - 12, topY + 28 * this.uiScale);
+    this.dpsText.setPosition(x + 12, y + height - ((24 * this.uiScale) + this.XP_BAR_H + bottomPad));
+
+    const bossBarW = width * 0.55;
+    // Clear the top-center chip stack (objective + curse + act + ironmoor).
+    // Ironmoor sits lowest at topY + 82*uiScale; add ~30px for chip height
+    // and gap so the bar never kisses the ironmoor/act label even at uiScale 1.4.
+    const chipStackBottom = this.topSafePad + 82 * this.uiScale + 30;
+    const bossBarY = Math.max(y + 44, Math.min(y + chipStackBottom, y + Math.max(44, height - 80)));
+    const bossBarLeft = x + width / 2 - bossBarW / 2;
+    this.bossBarBg.setPosition(x + width / 2, bossBarY);
+    this.bossBarBg.width = bossBarW;
+    this.bossBarGlow.setPosition(x + width / 2, bossBarY);
+    this.bossBarGlow.width = bossBarW + 12;
+    this.bossBarShadow.setPosition(x + width / 2, bossBarY - 9);
+    this.bossBarShadow.width = bossBarW;
+    this.bossBarFill.setPosition(bossBarLeft, bossBarY);
+    this.bossBarFill.width = bossBarW * Math.max(0, this.bossHpFraction);
+    this.bossBarHighlight.setPosition(bossBarLeft, bossBarY - 8);
+    this.bossBarHighlight.width = bossBarW * Math.max(0, this.bossHpFraction);
+    this.bossNameText.setPosition(x + width / 2, bossBarY - 14);
+  }
+
+  update(
+    hp: number, maxHp: number,
+    level: number,
+    xpFraction: number,
+    gameTimeSec: number,
+    killCount: number,
+    enemyCount: number,
+    dashCharges?: number,
+    maxDashCharges?: number,
+    dashCooldownFrac?: number,
+    weapons?: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
+    passives?: string[],
+    /** When reusing a pre-sized weapons buffer, only the first N entries are read. */
+    weaponSlotCount?: number,
+    /** Active run curse, or null/omit if none — same source as pause overlay (`formatHudCurseChipLine`). */
+    activeCurseKey?: CurseKey | null,
+  ): void {
+    this.refreshResponsiveLayout();
+    const hpDisplay = Math.max(0, Math.round(hp));
+    const maxDisplay = Math.max(1, Math.round(maxHp));
+    const hpFrac = clamp01(hpDisplay / maxDisplay);
+    this.hpBarFill.width = this.HP_BAR_W * hpFrac;
+    this.hpText.setText(`${hpDisplay}/${maxDisplay}`);
+
+    // Dynamic HP bar color: green > yellow > orange > red — smooth lerp
+    const targetColor = targetHpBarColor(hpFrac);
+    const lerpSpeed = 0.08; // ~300ms to resolve at 60fps
+    this.displayHpR += (targetColor.r - this.displayHpR) * lerpSpeed;
+    this.displayHpG += (targetColor.g - this.displayHpG) * lerpSpeed;
+    this.displayHpB += (targetColor.b - this.displayHpB) * lerpSpeed;
+    this.hpBarFill.setFillStyle(packRgbColor({
+      r: this.displayHpR, g: this.displayHpG, b: this.displayHpB,
+    }));
+
+    // Low-HP urgency pulse — below 30% the fill softly pulses alpha and the
+    // HP text color shifts to match. High-contrast palette has its own
+    // low/normal text colors so the HP readout stays readable at all times.
+    if (isLowHpPulseActive(hpFrac)) {
+      this.lowHpPulse += HP_LOW_PULSE_PHASE_STEP;
+      this.hpBarFill.setAlpha(hpLowPulseAlpha(this.lowHpPulse));
+      this.hpText.setColor(this.hcPalette?.textLowHp ?? '#ffcccc');
+    } else {
+      this.hpBarFill.setAlpha(1);
+      this.hpText.setColor(this.hcPalette?.text ?? COLORS_CSS.WHITE);
+      this.lowHpPulse = 0;
+    }
+
+    // Mood Portrait — wince when HP drops this frame, otherwise derive
+    // expression from HP fraction. Decrement wince timer by raw delta
+    // (delta is unavailable here; we approximate with a fixed tick).
+    // The wince check is HP-drop based so it fires without exposing
+    // Player.hurtEdgeThisFrame, which is already consumed by JuiceSystem.
+    if (this.prevFrameHp >= 0 && hp < this.prevFrameHp) {
+      this.moodWinceMs = WINCE_DURATION_MS;
+    }
+    if (this.moodWinceMs > 0) this.moodWinceMs -= 16; // ~1 frame at 60fps
+    const mood = resolveMood(hpFrac, this.moodWinceMs);
+    this.prevMoodState = applyMoodPortraitState(this.moodPortraitRefs, { mood }, this.prevMoodState);
+    this.prevFrameHp = hp;
+
+    if (level !== this.prevLevel) {
+      this.prevLevel = level;
+      this.levelText.setText(t('ui.hud.level_fmt', { level }));
+    }
+
+    const mins = Math.floor(gameTimeSec / 60);
+    const secs = Math.floor(gameTimeSec % 60);
+    // Wave difficulty indicator — resolved from BALANCE.hud so tuning stays
+    // single-sourced with the wave timeline, not drifting inside UI code.
+    const { label: wave, color: waveColor } = resolveWaveLabel(gameTimeSec);
+    // Speedrun timer mode renders every frame (centisecond precision);
+    // default timer renders once per second like before. Setting is read
+    // fresh at HUD construction in create(); toggling mid-run takes effect
+    // on next scene start.
+    if (this.speedrunTimerVisible) {
+      this.timerText.setText(formatSpeedrunTime(gameTimeSec));
+    }
+    if (mins !== this.prevMins || secs !== this.prevSecs) {
+      this.prevMins = mins;
+      this.prevSecs = secs;
+      const remaining = Math.max(0, BALANCE.run.RUN_WIN_TIME_SEC - gameTimeSec);
+      const goalText =
+        remaining > 0
+          ? t('ui.hud.goal_countdown', { time: formatClockTime(remaining) })
+          : t('ui.hud.goal_finale');
+      if (!this.speedrunTimerVisible) {
+        this.timerText.setText(formatClockTime(gameTimeSec));
+      }
+      this.objectiveText.setText(t('ui.hud.wave_objective', { wave, goal: goalText }));
+    }
+    // In high-contrast mode the timer keeps its warm palette color so the
+    // HUD stays readable; the wave difficulty is still conveyed through the
+    // objective-line text (e.g. "Wave III — Goal 2:15"). Otherwise tint the
+    // timer with the ladder color for visual feedback on difficulty ramps.
+    this.timerText.setColor(this.hcPalette?.timer ?? waveColor);
+    this.objectiveText.setColor(this.hcPalette?.objective ?? '#9fb0cf');
+
+    const sig = activeCurseKey ?? '';
+    if (sig !== this.prevCurseChipSig) {
+      this.prevCurseChipSig = sig;
+      const line = formatHudCurseChipLine(activeCurseKey ?? null);
+      if (line) {
+        this.curseChipText.setText(line);
+        this.curseChipText.setVisible(true);
+      } else {
+        this.curseChipText.setVisible(false);
+      }
+    }
+
+    const overCap = enemyCount >= BALANCE.hud.ENEMY_WARN_THRESHOLD;
+    // Only update kill/enemy text when values change
+    if (killCount !== this.prevKills || enemyCount !== this.prevEnemyCount) {
+      this.prevKills = killCount;
+      this.prevEnemyCount = enemyCount;
+      const enemyWarning = overCap ? t('ui.hud.enemies_capped_suffix') : '';
+      const enemyColor = overCap
+        ? (this.hcPalette?.killWarn ?? COLORS_CSS.DANGER_RED)
+        : (this.hcPalette?.kill ?? COLORS_CSS.WHITE);
+      // P1.8 — below 600 px the long "Kills: X  Enemies: Y" string wrapped
+      // to two lines and bled into the dash row at y=44. Switch to a
+      // compact " K:X · E:Y " single-line format on mobile so the row
+      // stays clear of the dash readout.
+      const isMobileWidth = this.layoutWidth < 600;
+      const labelKey = isMobileWidth ? 'ui.hud.kills_enemies_compact' : 'ui.hud.kills_enemies';
+      this.killText.setText(
+        t(labelKey, { kills: killCount, count: enemyCount, suffix: enemyWarning })
+      );
+      this.killText.setColor(enemyColor);
+    }
+
+    // Pulse on cap transition — draws attention once, not every frame
+    if (overCap && !this.wasOverCap) {
+      this.scene.tweens.add({
+        targets: this.killText, scaleX: this.uiScale * 1.15, scaleY: this.uiScale * 1.15,
+        duration: 120, ...TWEEN_ONE_SHOT_PULSE,
+      });
+    }
+    this.wasOverCap = overCap;
+    if (
+      dashCharges !== undefined
+      && maxDashCharges !== undefined
+      && maxDashCharges > 0
+    ) {
+      const clampedCharges = Phaser.Math.Clamp(Math.floor(dashCharges), 0, maxDashCharges);
+      const cooldownPct = dashCooldownFrac !== undefined
+        ? Math.round(clamp01(dashCooldownFrac) * 100)
+        : 0;
+      const dashReady = clampedCharges > 0;
+      const suffix = dashReady ? t('ui.hud.dash_ready') : t('ui.hud.dash_cooldown_pct', { pct: cooldownPct });
+      const ay = this.dashHudAnchorY;
+
+      // Animated "ready" glow — scale and alpha wobble on the full pips when
+      // a charge is available. Drives on raw frame phase so the pulse runs
+      // even when the game is timeScaled down (hit freeze, slow-mo), giving
+      // the player a consistent "dash is there" signal.
+      if (dashReady) {
+        this.dashReadyPulse += DASH_PULSE_PHASE_STEP;
+      } else {
+        this.dashReadyPulse = 0;
+      }
+      const readyPulseScale = dashPulseScale(dashReady, this.dashReadyPulse);
+      const readyPulseAlpha = dashPulseAlpha(dashReady, this.dashReadyPulse);
+
+      this.dashPrefixText.setVisible(true);
+      this.dashPrefixText.setText(t('ui.hud.dash_label'));
+      this.dashPrefixText.setPosition(this.dashHudAnchorX, ay);
+      // Prefix color follows the state: gold + bright when ready,
+      // dim-grey-gold when on cooldown.
+      this.dashPrefixText.setColor(dashLabelColor(dashReady, this.highContrastUi));
+      // Pips rendered at a slightly larger stride so they breathe under
+      // the bumped dash font.
+      const pipStride = 14 * this.uiScale;
+      let x = this.dashPrefixText.x + this.dashPrefixText.width + 4 * this.uiScale;
+      const fullKey = 'hud_dash_pip_full';
+      const emptyKey = 'hud_dash_pip_empty';
+      for (let i = 0; i < this.dashPipPool; i++) {
+        const pip = this.dashPipImages[i];
+        if (i < maxDashCharges) {
+          pip.setVisible(true);
+          const isFull = i < clampedCharges;
+          pip.setTexture(isFull ? fullKey : emptyKey);
+          // Only the full pips pulse — empties stay static.
+          pip.setScale(this.uiScale * (isFull ? readyPulseScale : 1));
+          pip.setAlpha(isFull ? readyPulseAlpha : 0.65);
+          pip.setPosition(x + pipStride / 2, ay);
+          x += pipStride;
+        } else {
+          pip.setVisible(false);
+        }
+      }
+      this.dashSuffixText.setVisible(true);
+      this.dashSuffixText.setText(` ${suffix}`);
+      this.dashSuffixText.setPosition(x + 2 * this.uiScale, ay);
+      this.dashSuffixText.setColor(dashLabelColor(dashReady, this.highContrastUi));
+    } else {
+      this.dashPrefixText.setVisible(false);
+      this.dashSuffixText.setVisible(false);
+      for (const pip of this.dashPipImages) pip.setVisible(false);
+    }
+
+    const xpFillWidth = this.layoutWidth * xpFraction;
+    this.xpBarFill.width = xpFillWidth;
+    this.xpBarHighlight.width = xpFillWidth;
+
+    // XP bar level-up flash — brighter, wider pulse when the bar resets
+    if (shouldTriggerXpLevelUpFlash(this.prevXpFraction, xpFraction)) {
+      // Primary bright flash across the bar
+      const flash = this.addEl(this.scene.add.rectangle(
+        this.xpBarBg.x, this.xpBarBg.y,
+        this.layoutWidth, this.XP_BAR_H, 0xffee88, 0.9
+      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
+      this.scene.tweens.add({
+        targets: flash, alpha: 0, duration: 400,
+        onComplete: () => { this.removeEl(flash); flash.destroy(); },
+      });
+      const glow = this.addEl(this.scene.add.rectangle(
+        this.xpBarBg.x, this.xpBarBg.y - 4,
+        this.layoutWidth, this.XP_BAR_H + 8, 0xffdd44, 0.4
+      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2));
+      this.scene.tweens.add({
+        targets: glow, alpha: 0, scaleY: 1.5, duration: 500,
+        onComplete: () => { this.removeEl(glow); glow.destroy(); },
+      });
+    }
+    this.prevXpFraction = xpFraction;
+
+    // Update weapon slots
+    if (weapons) {
+      const wCount = weaponSlotCount ?? weapons.length;
+      this.updateWeaponSlots(weapons, wCount);
+    }
+
+    // Update passive items display
+    if (passives && (passives.length !== this.lastPassiveCount || passives.some(k => !this.lastPassiveKeys.has(k)))) {
+      this.updatePassiveSlots(passives);
+    }
+  }
+
+  /** Show/update boss HP bar. Pass null to hide. */
+  updateBossBar(boss: { name: string; hpFraction: number } | null): void {
+    this.refreshResponsiveLayout();
+    if (!boss) {
+      if (this.bossBarVisible) {
+        this.bossBarBg.setVisible(false);
+        this.bossBarFill.setVisible(false);
+        this.bossBarHighlight.setVisible(false);
+        this.bossBarShadow.setVisible(false);
+        this.bossBarGlow.setVisible(false);
+        this.bossNameText.setVisible(false);
+        this.bossBarVisible = false;
+      }
+      return;
+    }
+
+    if (!this.bossBarVisible) {
+      this.bossBarBg.setVisible(true);
+      this.bossBarFill.setVisible(true);
+      this.bossBarHighlight.setVisible(true);
+      this.bossBarShadow.setVisible(true);
+      this.bossBarGlow.setVisible(true);
+      this.bossNameText.setVisible(true);
+      this.bossBarVisible = true;
+    }
+
+    this.bossHpFraction = Math.max(0, boss.hpFraction);
+    const barW = this.layoutWidth * 0.55;
+    const fillW = barW * this.bossHpFraction;
+    this.bossBarFill.width = fillW;
+    this.bossBarHighlight.width = fillW;
+    this.bossNameText.setText(boss.name);
+
+    // Colour shift based on HP — see hudBossBar for the three tiers.
+    const bossStyle = bossHpBarStyle(this.bossHpFraction, this.scene.time.now);
+    this.bossBarGlow.setFillStyle(bossStyle.glowColor, bossStyle.glowAlpha);
+    this.bossBarFill.setFillStyle(bossStyle.fillColor);
+    this.bossBarHighlight.setFillStyle(bossStyle.highlightColor);
+  }
+
+  private updateWeaponSlots(
+    weapons: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
+    weaponCount: number
+  ): void {
+    const uiS = this.uiScale;
+    const startX = this.layoutX + Math.round(12 * uiS);
+    const y = this.layoutY + this.topSafePad + Math.round(46 * uiS);
+    const size = Math.round(40 * uiS);
+    const gap = Math.round(6 * uiS);
+
+    // Only rebuild if count changed
+    if (this.weaponSlots.length !== weaponCount) {
+      for (const slot of this.weaponSlots) {
+        for (const obj of [slot.bg, slot.icon, slot.label, slot.cdFill]) {
+          const idx = this.elements.indexOf(obj);
+          if (idx !== -1) this.elements.splice(idx, 1);
+          obj.destroy();
+        }
+      }
+      this.weaponSlots = [];
+
+      const normalSlotStroke = this.hcSlotStroke ?? 0x666666;
+      for (let i = 0; i < weaponCount; i++) {
+        const w = weapons[i];
+        const x = startX + i * (size + gap);
+        const bg = this.addEl(this.scene.add.rectangle(x, y, size, size, COLORS.BG_DARK, 0.85)
+          .setOrigin(0, 0).setStrokeStyle(2, normalSlotStroke)
+          .setScrollFactor(0).setDepth(this.DEPTH));
+        const cdBarH = Math.max(2, Math.round(4 * uiS));
+        const cdFill = this.addEl(this.scene.add.rectangle(x, y + size - cdBarH, size, cdBarH, COLORS.SCOTTISH_BLUE, 0.85)
+          .setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2)) as Phaser.GameObjects.Rectangle;
+        // Weapon icon — real sprite instead of cryptic "TS1" abbreviation.
+        // Each weapon has a pre-rendered `wicon_{key}` or `wicon_{evolutionKey}`
+        // texture from BootScene. Pick the evolved one if it exists, else the
+        // base, else the thistle_shot fallback.
+        const initialKey = resolveWeaponIconKey(w, (k) => this.scene.textures.exists(k));
+        const icon = this.addEl(this.scene.add.image(x + size / 2, y + size / 2, initialKey)
+          .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(0.8 * uiS)) as Phaser.GameObjects.Image;
+        // Small level pip in bottom-right corner (replaces the old full-cell text)
+        const label = this.addEl(this.scene.add.text(x + size - 2, y + 2, '',
+          textStyle('small', { color: COLORS_CSS.WHITE }),
+        ).setOrigin(1, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
+        label.setScale(uiS);
+        this.weaponSlots.push({ bg, icon, label, cdFill });
+      }
+    }
+
+    // Update icon texture, level pip, evolved indicator, and cooldown fill
+    for (let i = 0; i < weaponCount; i++) {
+      const w = weapons[i];
+      if (i < this.weaponSlots.length) {
+        const slot = this.weaponSlots[i];
+        // Evolved weapons use their evolution icon (wicon_{evolutionKey});
+        // fall back to base icon if the evolution texture doesn't exist.
+        const desiredKey = resolveWeaponIconKey(w, (k) => this.scene.textures.exists(k));
+        if (slot.icon.texture.key !== desiredKey) {
+          slot.icon.setTexture(desiredKey);
+        }
+        slot.label.setText(w.evolved ? '★' : `${w.level}`);
+        const slotStyle = resolveHudWeaponSlotStyle(w.evolved, this.hcSlotStroke);
+        slot.label.setColor(slotStyle.labelColor);
+        slot.bg.setStrokeStyle(2, slotStyle.strokeColor);
+
+        // Cooldown bar: fills left-to-right along the bottom edge.
+        const cdFrac = w.cooldownFrac ?? 1;
+        slot.cdFill.width = size * cdFrac;
+        const isReady = cdFrac >= 1;
+        const cdStyle = resolveHudCooldownBarStyle(isReady);
+        slot.cdFill.setFillStyle(cdStyle.fillColor, cdStyle.alpha);
+
+        // Ready-state pulse: icon breathes gently when ready, dims when cooling.
+        // Phase advance is ms-based — animation speed is frame-rate-independent.
+        // Compose pulse.scale on top of the uiScale-adjusted base (0.8 × uiS).
+        const pulse = weaponPulseState(this.scene.time.now, i, isReady);
+        slot.icon.setScale(0.8 * uiS * pulse.scale);
+        slot.icon.setAlpha(pulse.alpha);
+      }
+    }
+  }
+
+  private updatePassiveSlots(passives: string[]): void {
+    // Identify newly added passives before destroying old slots
+    const newKeys = passives.filter(k => !this.lastPassiveKeys.has(k));
+
+    // Clear old
+    for (const slot of this.passiveSlots) {
+      const idx = this.elements.indexOf(slot);
+      if (idx !== -1) this.elements.splice(idx, 1);
+      slot.destroy();
+    }
+    this.passiveSlots = [];
+    this.lastPassiveCount = passives.length;
+
+    // Bottom-left placement — above DPS line and XP bar, so the top-left
+    // cluster (HP, level, weapons, shield, dash) has room to breathe.
+    const startX = this.layoutX + Math.round(12 * this.uiScale);
+    const y = this.layoutY + this.layoutHeight - (54 * this.uiScale) - this.XP_BAR_H;
+    const slotStride = Math.round(42 * this.uiScale);
+    const slotCenterOffset = Math.round(16 * this.uiScale);
+
+    // Icons are 32px baked textures; scale to match the old pill footprint
+    // (~26px at uiScale 1.0) so the bottom-left cluster keeps its breathing room.
+    const iconScale = this.uiScale * 0.82;
+    let playedSfx = false;
+    passives.forEach((key, i) => {
+      const x = startX + i * slotStride;
+      const iconKey = `ucard_${key}`;
+      const hasIcon = this.scene.textures.exists(iconKey);
+
+      let slot: Phaser.GameObjects.Image | Phaser.GameObjects.Text;
+      let flashW: number;
+      let flashH: number;
+      if (hasIcon) {
+        // Preferred path — pre-rendered passive icon (mirrors weapon slot icons).
+        const icon = this.addEl(this.scene.add.image(x + slotCenterOffset, y, iconKey)
+          .setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1)) as Phaser.GameObjects.Image;
+        icon.setScale(iconScale);
+        slot = icon;
+        flashW = icon.displayWidth + 6;
+        flashH = icon.displayHeight + 6;
+      } else {
+        // Fallback for any passive without a baked icon — old 3-letter pill.
+        const abbrev = resolvePassiveAbbrev(key);
+        const label = this.addEl(this.scene.add.text(x + slotCenterOffset, y, abbrev, {
+          ...textStyle('label', { fontSize: '12px', color: COLORS_CSS.LEGENDARY }),
+          backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1)) as Phaser.GameObjects.Text;
+        slot = label;
+        flashW = label.width + 14;
+        flashH = label.height + 10;
+      }
+      this.passiveSlots.push(slot);
+
+      if (newKeys.includes(key)) {
+        const targetScale = hasIcon ? iconScale : 1;
+        (slot as Phaser.GameObjects.Image | Phaser.GameObjects.Text).setScale(0);
+        this.scene.tweens.add({
+          targets: slot, scale: targetScale, duration: 250, ease: 'Back.easeOut',
+        });
+
+        // Gold flash rect behind the slot — size matches the rendered element.
+        const flash = this.scene.add.rectangle(
+          (slot as Phaser.GameObjects.Image | Phaser.GameObjects.Text).x,
+          (slot as Phaser.GameObjects.Image | Phaser.GameObjects.Text).y,
+          flashW, flashH,
+          0xffdd44, 0.6,
+        ).setScrollFactor(0).setDepth(this.DEPTH);
+        this.scene.tweens.add({
+          targets: flash, alpha: 0, duration: 400,
+          onComplete: () => flash.destroy(),
+        });
+
+        // Bell SFX — once per updatePassiveSlots call, not once per pill
+        if (!playedSfx) {
+          audio.playStoneGrant();
+          playedSfx = true;
+        }
+      }
+    });
+
+    this.lastPassiveKeys = new Set(passives);
+  }
+
+  /** Update shield indicator */
+  updateShield(hasShield: boolean): void {
+    this.shieldIcon.setVisible(hasShield);
+  }
+
+  /**
+   * Drift Mastery pip widget update. Caller passes the live state
+   * read from `Player.getDriftMasteryState()`; this writes the three
+   * dots' fill colour + visibility and pulses the strip on a fresh
+   * burst-fired edge.
+   *
+   * Stays hidden until the player banks the first pip — keeps the
+   * mechanic discoverable without spamming a fresh run with empty
+   * widgets. Once visible, it remains so for the rest of the run.
+   * Caching `prevGripPips` / `prevGripBurstActive` avoids per-frame
+   * setFillStyle / tween calls on the steady state (cheapest path
+   * is no-op on every frame the player isn't actively interacting
+   * with the mechanic).
+   */
+  setGripPips(pips: number, burstActive: boolean): void {
+    const safePips = Math.max(0, Math.min(3, Math.floor(pips)));
+    if (!this.gripPipsVisible && safePips > 0) {
+      this.gripPipsVisible = true;
+      for (const dot of this.gripPipDots) dot.setVisible(true);
+    }
+    if (safePips !== this.prevGripPips) {
+      this.prevGripPips = safePips;
+      // Filled = warm-cyan (0x6ad4ff, matches first-bank caption tint
+      // #a8d4f0); empty = dim slate (0x2a3344, sits on the HUD's dark
+      // chrome without competing with the HP bar).
+      for (let i = 0; i < this.gripPipDots.length; i++) {
+        this.gripPipDots[i]!.setFillStyle(i < safePips ? 0x6ad4ff : 0x2a3344, 1);
+      }
+    }
+    // Pulse the strip on burst-fired edge — a single short scale-up +
+    // fade-back tween confirms the spend without lingering. Detect
+    // the edge as `burstActive && !prevBurstActive` so a burst that
+    // straddles multiple frames doesn't restart the tween every tick.
+    if (burstActive && !this.prevGripBurstActive) {
+      for (const dot of this.gripPipDots) {
+        this.scene.tweens.add({
+          targets: dot,
+          scale: 1.6,
+          duration: 120,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      }
+    }
+    this.prevGripBurstActive = burstActive;
+  }
+
+  /**
+   * Whisky Breath stack-bar update. Caller passes the live state
+   * read from `Player.getWhiskyBreathState()` plus a `ready` flag
+   * (true when stacks >= BREATH_STACKS_REQUIRED, computed via
+   * `isBreathReady` on the helper). Bar fill scales linearly with
+   * stacks / STACKS_MAX; ready-state pulses the bar a fraction
+   * brighter to signal "press W now." Hidden until the first stack
+   * banks (matches the grip pip widget's "earn before you see it"
+   * rule); sticky-visible thereafter.
+   *
+   * `prevWhiskyStacks` / `prevWhiskyReady` skip the resize / fill
+   * calls on every frame the player isn't actively interacting with
+   * the mechanic — steady-state cost is one boolean compare per
+   * HUD update tick.
+   */
+  setWhiskyStacks(stacks: number, stacksMax: number, ready: boolean): void {
+    const safeStacks = Math.max(0, Math.min(stacksMax, Math.floor(stacks)));
+    if (!this.whiskyBarVisible && safeStacks > 0) {
+      this.whiskyBarVisible = true;
+      this.whiskyBarBg.setVisible(true);
+      this.whiskyBarFill.setVisible(true);
+    }
+    if (safeStacks !== this.prevWhiskyStacks) {
+      this.prevWhiskyStacks = safeStacks;
+      const denom = Math.max(1, stacksMax);
+      const w = this.whiskyBarBg.width * (safeStacks / denom);
+      this.whiskyBarFill.width = w;
+    }
+    if (ready !== this.prevWhiskyReady) {
+      this.prevWhiskyReady = ready;
+      // Ready-state lifts the fill colour to a brighter cream-amber
+      // and pulses a subtle scale-y bump on the rising edge so the
+      // player notices "yer breath\'s ready" without a noisy banner.
+      this.whiskyBarFill.setFillStyle(ready ? 0xfff0c8 : 0xd4a040, 1);
+      if (ready) {
+        this.scene.tweens.add({
+          targets: this.whiskyBarFill,
+          scaleY: 2,
+          duration: 140,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      }
+    }
+  }
+
+  /**
+   * Stance Toggle chip update (DESIGN_IDEAS §1). Caller passes the
+   * live `Player.getStance()` plus the localised label string. Hidden
+   * until the player cycles for the first time (matches grip / whisky
+   * "earn before you see it" rule); sticky-visible thereafter.
+   *
+   * The chip's fill colour shifts per stance — neutral slate for
+   * loose, cool blue for braced, warm amber for reeling — so the
+   * posture reads at a glance without requiring text scan.
+   *
+   * `prevStance` skips the setText / setFillStyle calls on every
+   * frame the player isn't cycling — steady-state cost is one
+   * equality compare.
+   */
+  setStance(stance: Stance, label: string): void {
+    if (stance === this.prevStance) return;
+    const isFirstCall = this.prevStance === null;
+    this.prevStance = stance;
+    this.stanceChipText.setText(label);
+    // Neutral slate / cool blue / warm amber. Matches the audio /
+    // banter mood the three stances voice — loose is steady, braced
+    // is held, reeling is hot.
+    const fill = stance === 'braced' ? 0x3a4a66
+      : stance === 'reeling' ? 0x6a3a20
+      : 0x2a3344;
+    const stroke = stance === 'braced' ? 0x6a8aa6
+      : stance === 'reeling' ? 0xa8704a
+      : 0x4a5566;
+    this.stanceChipBg.setFillStyle(fill, 0.85);
+    this.stanceChipBg.setStrokeStyle(1, stroke, 0.7);
+    // Brief one-shot pulse on cycle so the chip's colour change
+    // reads as a deliberate posture shift rather than a passive
+    // tint update. Skip on the very first call (HUD construction)
+    // so a fresh run doesn't pulse the chip just for existing.
+    if (!isFirstCall) {
+      this.scene.tweens.add({
+        targets: [this.stanceChipBg, this.stanceChipText],
+        scale: 1.15,
+        duration: 110,
+        yoyo: true,
+        ease: 'Sine.easeOut',
+      });
+    }
+  }
+
+  /**
+   * Shinty Parry chip readout — three states (ready / active / cooldown)
+   * derived from `Player.isShintyParryActive` + `isShintyParryReady` +
+   * `shintyParryCooldownFraction`. Always visible (matches stance chip
+   * "current player capability" pattern).
+   *
+   * `prevParryState` skips the setText / setFillStyle calls on every
+   * frame the visual state isn't transitioning. The cooldown sweep
+   * fill width is updated every frame during cooldown only — fraction
+   * is continuous so a per-frame width-write is unavoidable there.
+   */
+  /**
+   * Whistle-Call companion chip update. `label` is the localised
+   * companion name (`t('ui.hud.companion.<key>')`) or null when no
+   * companion is active. Chip hides on null and fades back on
+   * non-null. The `prevCompanionLabel` cache skips the setText path
+   * on steady-state frames.
+   */
+  /**
+   * Selkie Dual-Form chip update. `form` is `null` when the run is
+   * NOT the Selkie variant; the chip stays hidden in that case.
+   * Otherwise a localised form name is shown. Tint shifts between
+   * forms so the active body is unambiguous.
+   */
+  setSelkieForm(form: SelkieForm | null, label: string): void {
+    if (form === this.prevSelkieForm) return;
+    const visible = form !== null;
+    this.selkieFormChipBg.setVisible(visible);
+    this.selkieFormChipText.setVisible(visible);
+    this.prevSelkieForm = form;
+    if (!visible) return;
+    this.selkieFormChipText.setText(label);
+    // Wet-stone (haggis) → kelp (seal) palette toggle.
+    const fill = form === 'seal' ? 0x14322c : 0x1f3340;
+    const stroke = form === 'seal' ? 0x6ec4a6 : 0x4a8a7c;
+    this.selkieFormChipBg.setFillStyle(fill, 0.9);
+    this.selkieFormChipBg.setStrokeStyle(1, stroke, 0.85);
+    this.scene.tweens.add({
+      targets: [this.selkieFormChipBg, this.selkieFormChipText],
+      scale: 1.18,
+      duration: 110,
+      yoyo: true,
+      ease: 'Sine.easeOut',
+    });
+  }
+
+  setCompanion(label: string | null): void {
+    if (label === this.prevCompanionLabel) return;
+    this.prevCompanionLabel = label;
+    const visible = label !== null;
+    this.companionChipBg.setVisible(visible);
+    this.companionChipText.setVisible(visible);
+    if (visible) {
+      this.companionChipText.setText(label as string);
+      // Soft scale pulse so the chip's appearance signals "new ally"
+      // without stealing focus from the run.
+      this.scene.tweens.add({
+        targets: [this.companionChipBg, this.companionChipText],
+        scale: { from: 0.6, to: 1 },
+        duration: 180,
+        ease: 'Sine.easeOut',
+      });
+    }
+  }
+
+  /**
+   * Wild Living World Phase 2 — push beat indicator state into the
+   * Pibroch chip. Caller decides:
+   *   - `visible`: whether the player holds a rhythm weapon at all.
+   *   - `reducedMode`: respect the `reduceFlashing` setting (no pulse,
+   *     just a static "BEAT" label).
+   *   - `beatIndex`: the music engine's current quarter-note index
+   *     (>= 0 when audio is playing).
+   *   - `aligned`: whether the current frame is inside the on-beat
+   *     window. Drives the brightness of lit pips.
+   *
+   * Delegates to the pure presenter `applyPibrochBeatChipState` so the
+   * helper has unit-test coverage independent of Phaser.
+   */
+  setPibrochBeatState(state: {
+    visible: boolean;
+    reducedMode: boolean;
+    beatIndex: number;
+    aligned: boolean;
+  }): void {
+    applyPibrochBeatChipState(this.pibrochBeatChip, state);
+  }
+
+  setShintyParry(active: boolean, ready: boolean, cooldownFraction: number, label: string): void {
+    const visualState: 'ready' | 'active' | 'cooldown' = active
+      ? 'active'
+      : ready
+        ? 'ready'
+        : 'cooldown';
+    if (visualState !== this.prevParryState) {
+      this.prevParryState = visualState;
+      this.parryChipText.setText(label);
+      // Per-state palette. Active uses a bright cyan flash to signal
+      // "the window is open — commit"; cooldown dims so the chip
+      // visually recedes; ready is the neutral slate that matches
+      // the rest of the chrome.
+      if (visualState === 'active') {
+        this.parryChipBg.setFillStyle(0x2a4a66, 0.95);
+        this.parryChipBg.setStrokeStyle(1, 0x9fcad9, 0.95);
+        this.parryChipText.setColor('#e0f0ff');
+        this.parryChipCooldownFill.setVisible(false);
+        // One-shot pulse on the open edge — same gesture as stance
+        // cycle's pulse but tuned shorter (the window itself is short).
+        this.scene.tweens.add({
+          targets: [this.parryChipBg, this.parryChipText],
+          scale: 1.18,
+          duration: 90,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      } else if (visualState === 'cooldown') {
+        this.parryChipBg.setFillStyle(0x1a2030, 0.7);
+        this.parryChipBg.setStrokeStyle(1, 0x3a4050, 0.5);
+        this.parryChipText.setColor('#5a6878');
+        this.parryChipCooldownFill.setVisible(true);
+      } else {
+        // ready
+        this.parryChipBg.setFillStyle(0x2a3344, 0.85);
+        this.parryChipBg.setStrokeStyle(1, 0x4a5566, 0.6);
+        this.parryChipText.setColor('#9fcad9');
+        this.parryChipCooldownFill.setVisible(false);
+      }
+    }
+    if (visualState === 'cooldown') {
+      // Sweep grows from 0 → full width as the cooldown elapses.
+      // Caller gives `cooldownFraction` already in [0..1], 1 = ready.
+      const f = Math.max(0, Math.min(1, cooldownFraction));
+      this.parryChipCooldownFill.width = Math.round(f * PARRY_CHIP_PIXEL_WIDTH);
+    }
+  }
+
+  /**
+   * Race the Beithir bar (DESIGN_IDEAS §1) — top-centre live-tension
+   * widget. Visibility flips on the stung edge so setVisible / setText
+   * fire once per race, not every frame; only the fill width updates
+   * continuously while the timer drains. Cure / expire collapse to
+   * `stung=false` and the widget hides.
+   */
+  setBeithirRace(stung: boolean, fraction: number, label: string): void {
+    if (stung !== this.prevBeithirStung) {
+      this.prevBeithirStung = stung;
+      this.beithirRaceBarBg.setVisible(stung);
+      this.beithirRaceBarFill.setVisible(stung);
+      this.beithirRaceBarText.setVisible(stung);
+      if (stung) {
+        this.beithirRaceBarText.setText(label);
+        // One-shot scale pulse on onset so the widget *appears* with a
+        // beat — tells the player something just changed even if their
+        // attention was elsewhere on screen.
+        this.scene.tweens.add({
+          targets: [this.beithirRaceBarBg, this.beithirRaceBarFill, this.beithirRaceBarText],
+          scale: 1.1,
+          duration: 110,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      }
+    }
+    if (stung) {
+      const f = Math.max(0, Math.min(1, fraction));
+      this.beithirRaceBarFill.width = Math.round(f * BEITHIR_RACE_BAR_PIXEL_WIDTH);
+    }
+  }
+
+  /**
+   * Mid-run gold balance chip. Caches the last written value so the
+   * setText / setVisible calls only fire on change — matches the rest
+   * of the HUD's prev-value caching pattern.
+   */
+  setGold(balance: number): void {
+    const safe = Math.max(0, Math.floor(balance));
+    if (safe === this.prevGold) return;
+    this.prevGold = safe;
+    this.goldText.setText(t('ui.hud.gold_chip', { gold: String(safe) }));
+    this.goldText.setVisible(true);
+  }
+
+  /**
+   * W2 Moor Road: update the act chip. Hidden for act 1 (run start —
+   * before any picker has resolved) and shown as "Act 2" / "Act 3"
+   * once the player has cleared the gordon / tour_bus gate.
+   * No-op when the act hasn't changed.
+   */
+  /**
+   * W66 Ironmoor: show/hide the single-life chip. Called once at run
+   * start from GameScene after settings are read.
+   */
+  setIronmoor(active: boolean): void {
+    if (!active) {
+      this.ironmoorChipText.setVisible(false);
+      return;
+    }
+    this.ironmoorChipText.setText(t('ui.hud.ironmoor_chip'));
+    this.ironmoorChipText.setVisible(true);
+  }
+
+  /**
+   * P2.12 — DAILY chip. Called once at run-start from GameScene when
+   * `runIsDaily` is true; persistent for the whole run as a reminder
+   * the player is on the daily attempt (parity with the menu badge).
+   */
+  setDaily(active: boolean, seedCode?: string): void {
+    if (!active) {
+      this.dailyChipText.setVisible(false);
+      return;
+    }
+    this.dailyChipText.setText(t('ui.hud.daily_chip', { seed: seedCode ?? '' }));
+    this.dailyChipText.setVisible(true);
+  }
+
+  /**
+   * T1 replay — toggles the persistent REPLAY chip in the HUD's top-left.
+   * Shown for the whole playback run so the player doesn't forget which
+   * mode they're in (the watching-toast is transient).
+   */
+  setReplayMode(active: boolean): void {
+    if (!active) {
+      this.replayChipText.setVisible(false);
+      return;
+    }
+    this.replayChipText.setText(t('ui.replay.hud_chip'));
+    this.replayChipText.setVisible(true);
+  }
+
+  setAct(currentAct: 1 | 2 | 3): void {
+    if (currentAct === this.prevAct) return;
+    this.prevAct = currentAct;
+    if (currentAct === 1) {
+      this.actChipText.setVisible(false);
+      return;
+    }
+    this.actChipText.setText(t('ui.hud.act_chip', { act: currentAct }));
+    this.actChipText.setVisible(true);
+  }
+
+  /** Log damage dealt for DPS tracking */
+  logDamage(amount: number): void {
+    this.damageLog.push(amount);
+  }
+
+  /** Update DPS display — call each frame with delta */
+  updateDPS(delta: number): void {
+    this.damageWindow += delta;
+    // Calculate DPS every second
+    if (this.damageWindow >= 1000) {
+      const totalDmg = this.damageLog.reduce((a, b) => a + b, 0);
+      const dps = Math.round(totalDmg / (this.damageWindow / 1000));
+      this.lastDisplayedDps = dps;
+      this.dpsText.setText(t('ui.hud.dps_line', { dps }));
+      this.damageLog = [];
+      this.damageWindow = 0;
+    }
+  }
+
+  /** Rolling 1s DPS shown bottom-left — 0 until the first full window elapses. */
+  getLastDisplayedDps(): number {
+    return this.lastDisplayedDps;
+  }
+
+  setOnPause(callback: () => void): void {
+    this.onPause = callback;
+  }
+
+  destroy(): void {
+    for (const el of this.elements) {
+      this.scene.tweens.killTweensOf(el);
+      el.destroy();
+    }
+    this.elements = [];
+  }
+}

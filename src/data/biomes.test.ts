@@ -1,0 +1,181 @@
+import { describe, it, expect } from 'vitest';
+import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
+import { createRNG } from '../utils/rng';
+
+describe('biomes data', () => {
+  it('defines all twenty-five biomes with required fields (B12 added jacobite_moor)', () => {
+    expect(BIOME_IDS.length).toBe(25);
+    for (const id of BIOME_IDS) {
+      const def = BIOMES[id];
+      expect(def.id).toBe(id);
+      expect(def.nameKey).toMatch(/^biomes\./);
+      expect(def.entryToastKey).toMatch(/^biomes\./);
+      expect(def.toastColor).toMatch(/^#/);
+      expect(typeof def.tint).toBe('number');
+      expect(def.moodTimbre).toBeGreaterThanOrEqual(0);
+      expect(def.moodTimbre).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('coastal biome is registered (B5 Phase 1a)', () => {
+    expect(BIOME_IDS).toContain('coastal');
+    const coastal = BIOMES.coastal;
+    expect(coastal.modifier).toBe('coastalTide');
+    expect(coastal.nameKey).toBe('biomes.coastal.name');
+  });
+
+  it('haar biome is registered (B5 Phase 1b)', () => {
+    expect(BIOME_IDS).toContain('haar');
+    const haar = BIOMES.haar;
+    expect(haar.modifier).toBe('haarConcealment');
+    expect(haar.nameKey).toBe('biomes.haar.name');
+    // Charter §4.3 / Risk 7: capped at 0.7 not 1.0 for silhouette-first
+    // readability. Test fence locks the cap.
+    expect(haar.ambientHaarDensity).toBe(0.7);
+  });
+
+  it('frost biome is registered (B5 Phase 2)', () => {
+    expect(BIOME_IDS).toContain('frost');
+    const frost = BIOMES.frost;
+    expect(frost.modifier).toBe('frostBite');
+    expect(frost.nameKey).toBe('biomes.frost.name');
+    // Charter §4.4 — Cairngorms in winter is the lowest moodTimbre
+    // (most grounded/grave). Lock the floor so a balance edit
+    // cannot brighten it without a design pass.
+    expect(frost.moodTimbre).toBeLessThan(BIOMES.bog.moodTimbre);
+  });
+
+  it('edinburgh_old_town biome is registered (B8)', () => {
+    expect(BIOME_IDS).toContain('edinburgh_old_town');
+    expect(BIOMES.edinburgh_old_town.modifier).toBe('edinburghSmoke');
+    expect(BIOMES.edinburgh_old_town.nameKey).toBe('biomes.edinburgh_old_town.name');
+  });
+
+  it('cairngorm_woods biome is registered (B8)', () => {
+    expect(BIOME_IDS).toContain('cairngorm_woods');
+    expect(BIOMES.cairngorm_woods.modifier).toBe('cairngormWood');
+    expect(BIOMES.cairngorm_woods.nameKey).toBe('biomes.cairngorm_woods.name');
+  });
+
+  it('orkney biome is registered (B8)', () => {
+    expect(BIOME_IDS).toContain('orkney');
+    expect(BIOMES.orkney.modifier).toBe('orkneyWind');
+    expect(BIOMES.orkney.nameKey).toBe('biomes.orkney.name');
+  });
+
+  it('corryvreckan biome is registered (B9)', () => {
+    expect(BIOME_IDS).toContain('corryvreckan');
+    expect(BIOMES.corryvreckan.modifier).toBe('corryVreckan');
+    expect(BIOMES.corryvreckan.nameKey).toBe('biomes.corryvreckan.name');
+  });
+
+  it('shetland_voe biome is registered (B9)', () => {
+    expect(BIOME_IDS).toContain('shetland_voe');
+    expect(BIOMES.shetland_voe.modifier).toBe('shetlandVoe');
+    expect(BIOMES.shetland_voe.nameKey).toBe('biomes.shetland_voe.name');
+  });
+
+  it('skye_fairy_pool biome is registered (B9)', () => {
+    expect(BIOME_IDS).toContain('skye_fairy_pool');
+    expect(BIOMES.skye_fairy_pool.modifier).toBe('fairyPoolGlow');
+    expect(BIOMES.skye_fairy_pool.nameKey).toBe('biomes.skye_fairy_pool.name');
+  });
+
+  it('hebridean_shore biome is registered (B10)', () => {
+    expect(BIOME_IDS).toContain('hebridean_shore');
+    expect(BIOMES.hebridean_shore.modifier).toBe('hebrideanTide');
+    expect(BIOMES.hebridean_shore.nameKey).toBe('biomes.hebridean_shore.name');
+    expect(BIOMES.hebridean_shore.tint).toBe(0x1a4860);
+  });
+
+  it('calton_hill biome is registered (B11)', () => {
+    expect(BIOME_IDS).toContain('calton_hill');
+    expect(BIOMES.calton_hill.modifier).toBe('caltonFlame');
+    expect(BIOMES.calton_hill.nameKey).toBe('biomes.calton_hill.name');
+    expect(BIOMES.calton_hill.tint).toBe(0x7a1a00);
+  });
+
+  it('jacobite_moor biome is registered (B12)', () => {
+    expect(BIOME_IDS).toContain('jacobite_moor');
+    expect(BIOMES.jacobite_moor.modifier).toBe('jacobiteMoor');
+    expect(BIOMES.jacobite_moor.nameKey).toBe('biomes.jacobite_moor.name');
+    expect(BIOMES.jacobite_moor.tint).toBe(0x3a2a4a);
+    // Below glen_coe (0.2) — Culloden is heavier/quieter.
+    expect(BIOMES.jacobite_moor.moodTimbre).toBeLessThan(BIOMES.glen_coe.moodTimbre);
+  });
+
+  it('spawn weight multipliers are all positive', () => {
+    for (const id of BIOME_IDS) {
+      for (const [, mul] of Object.entries(BIOMES[id].spawnWeightMods)) {
+        expect(mul).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('ambientHaarDensity sits in [0, 1] for every biome', () => {
+    for (const id of BIOME_IDS) {
+      const density = BIOMES[id].ambientHaarDensity;
+      expect(density).toBeGreaterThanOrEqual(0);
+      expect(density).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('haar carries highest ambient density; ordering haar > coastal > loch > bog > 0; pine and heather stay dry', () => {
+    // Haar is signature Scottish sea/water mist. The dedicated 'haar'
+    // biome is the densest (0.7 — capped per Risk 7). Coastal sits
+    // next (sea-spray haar rolling inland), then loch, then bog. Pine
+    // and heather stay dry. Locking the ordering prevents a balance
+    // edit from sneaking haar back into dry biomes without a design
+    // review.
+    expect(BIOMES.haar.ambientHaarDensity).toBeGreaterThan(BIOMES.coastal.ambientHaarDensity);
+    expect(BIOMES.coastal.ambientHaarDensity).toBeGreaterThan(BIOMES.loch.ambientHaarDensity);
+    expect(BIOMES.loch.ambientHaarDensity).toBeGreaterThan(BIOMES.bog.ambientHaarDensity);
+    expect(BIOMES.bog.ambientHaarDensity).toBeGreaterThan(0);
+    expect(BIOMES.pine.ambientHaarDensity).toBe(0);
+    expect(BIOMES.heather.ambientHaarDensity).toBe(0);
+  });
+});
+
+describe('pickBiomeAssignment', () => {
+  it('produces the requested count', () => {
+    const ids = pickBiomeAssignment(createRNG(42), 6);
+    expect(ids.length).toBe(6);
+  });
+
+  it('guarantees at least 3 unique biomes when seedCount >= 3', () => {
+    const ids = pickBiomeAssignment(createRNG(1), 5);
+    const unique = new Set(ids);
+    expect(unique.size).toBeGreaterThanOrEqual(3);
+  });
+
+  it('is deterministic per seed', () => {
+    const a = pickBiomeAssignment(createRNG(12345), 5);
+    const b = pickBiomeAssignment(createRNG(12345), 5);
+    expect(a).toEqual(b);
+  });
+
+  it('only emits valid biome ids', () => {
+    const ids = pickBiomeAssignment(createRNG(7), 6);
+    for (const id of ids) {
+      expect(BIOME_IDS).toContain(id);
+    }
+  });
+
+  // Charter §6 Risk 6 — "dead biome" guard. A biome registered in
+  // BIOMES but never selected by Voronoi seeding leaves any rune
+  // depending on it permanently ungrounded. Sweep enough seeds that
+  // the probability of missing any biome is ~0; assert every BiomeId
+  // appears at least once. Deterministic because each RNG seed is
+  // fixed.
+  it('every biome appears at least once across 200 deterministic seeds', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const ids = pickBiomeAssignment(createRNG(seed), 6);
+      for (const id of ids) seen.add(id);
+      if (seen.size === BIOME_IDS.length) break;
+    }
+    for (const id of BIOME_IDS) {
+      expect(seen, `biome '${id}' never appeared in 200-seed sweep — dead biome`).toContain(id);
+    }
+  });
+});

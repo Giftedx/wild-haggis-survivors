@@ -1,0 +1,33 @@
+/**
+ * Pickup sprites — collectibles that drop from enemies or sit in the
+ * world: XP gems, health orbs, treasure chests, and the rare
+ * reliquary relic altar.
+ */
+
+import * as Phaser from 'phaser';
+
+import { bakeXpGem } from './xpGem';
+import { bakeChest } from './chest';
+import { bakeHealthOrb } from './healthOrb';
+import { bakeReliquary } from './reliquary';
+import { bakeBurnsPlatter } from './burnsPlatter';
+import { bakePickupVariants } from './variants';
+import { bakePolaroid } from './polaroid';
+import { bakeCairnStone } from './cairnStone';
+import { bakeCairnOfEchoes } from './cairnOfEchoes';
+import { bakeClootieTree } from './clootieTree';
+import { bakeFieldNote } from './fieldNote';
+
+export function bakePickups(scene: Phaser.Scene): void {
+  bakeXpGem(scene);
+  bakeChest(scene);
+  bakeHealthOrb(scene);
+  bakeReliquary(scene);
+  bakeBurnsPlatter(scene);
+  bakePickupVariants(scene);
+  bakePolaroid(scene);
+  bakeCairnStone(scene);
+  bakeCairnOfEchoes(scene);
+  bakeClootieTree(scene);
+  bakeFieldNote(scene);
+}

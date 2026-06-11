@@ -1,0 +1,603 @@
+/** One segment of the spawn director — active while `gameTimeSec >= timeSec` until a later segment wins. */
+export type WaveTimelineEntry = {
+  timeSec: number;
+  intervalSec: number;
+  burstSize: number;
+  enemyKeys: readonly string[];
+};
+
+/**
+ * Edinburgh-themed enemy keys gated until B5 Phase 3 ships
+ * (cultural consultation required — see CULTURAL_SENSITIVITIES_RESEARCH.md §2.7
+ * and docs/superpowers/specs/2026-04-28-five-missing-biomes-design.md).
+ * Open-world spawn pool only — `edinburgh_rune` is grounded via `glasgow_close`.
+ * Act 3 Moor Road node banks intentionally retain these as designed encounter
+ * content; only the open-world cumulative spawn pool is gated here.
+ */
+const BIOME_URBAN_READY = false;
+const URBAN_GATED_ENEMY_KEYS: ReadonlySet<string> = new Set(['edinburgh_ghost_guide']);
+
+function buildWaveTimeline(): WaveTimelineEntry[] {
+  const milestones: { t: number; add: string }[] = [
+    { t: 0, add: 'tourist' },
+    { t: 90, add: 'chef' },
+    { t: 180, add: 'midge' },
+    { t: 240, add: 'sheep' },
+    { t: 300, add: 'kelpie' },
+    { t: 360, add: 'highland_cow' },
+    { t: 390, add: 'kelpie_foal' },
+    { t: 420, add: 'eagle' },
+    { t: 450, add: 'midgie_swarm' },
+    { t: 480, add: 'piper' },
+    { t: 500, add: 'seelie_piper' },
+    { t: 520, add: 'unseelie_fiddler' },
+    { t: 530, add: 'redcap' },
+    { t: 540, add: 'ghost' },
+    { t: 570, add: 'barghest' },
+    { t: 600, add: 'haggis_hunter' },
+    { t: 630, add: 'blue_man_of_minch' },
+    { t: 645, add: 'ceilidh_caller' },
+    { t: 660, add: 'nest' },
+    { t: 660, add: 'beithir' },          // 11:00 — Argyll viper, opens
+                                          // the Race the Beithir mechanic
+                                          // (DESIGN_IDEAS §1; SCOTTISH_RESEARCH §1.2).
+    { t: 690, add: 'tome_wraith' },
+    { t: 720, add: 'buckfast_ned' },
+    { t: 720, add: 'cu_sith' },         // 12:00 — Three-Bay Warning fey hound
+                                          // (DESIGN_IDEAS §1; SCOTTISH_RESEARCH §1.2).
+    { t: 750, add: 'haar_wraith' },
+    { t: 765, add: 'dean_apparition' },
+    { t: 780, add: 'angry_scotsman' },
+    { t: 810, add: 'edinburgh_ghost_guide' },
+    { t: 825, add: 'gale_wraith' },
+    { t: 840, add: 'berserker' },
+    { t: 870, add: 'traffic_cone_totem' },
+    { t: 900, add: 'deep_fryer' },
+    { t: 930, add: 'ledger_wraith' },
+    { t: 1050, add: 'auditor_priest' },
+    { t: 1080, add: 'bodach_glas' },     // 18:00 — Cairngorm grey old
+                                          // man, frost-biome signature
+                                          // silhouette enemy. B5 Phase 2
+                                          // follow-up. SCOTTISH_RESEARCH
+                                          // §1.2 / charter §4.4.
+  ];
+  const gated = milestones.filter(
+    (m) => BIOME_URBAN_READY || !URBAN_GATED_ENEMY_KEYS.has(m.add),
+  );
+  const keys: string[] = [];
+  return gated.map(({ t, add }) => {
+    keys.push(add);
+    return {
+      timeSec: t,
+      intervalSec: Math.max(0.3, 1.5 - t * 0.002),
+      burstSize: Math.min(15, Math.floor(2 + Math.log2(1 + t / 30))),
+      enemyKeys: [...keys],
+    };
+  });
+}
+
+/** Data-driven wave / spawn director — tune without editing SpawnSystem. */
+export const WAVE_TIMELINE: readonly WaveTimelineEntry[] = buildWaveTimeline();
+
+export function getActiveWaveTimelineEntry(gameTimeSec: number): WaveTimelineEntry {
+  let active = WAVE_TIMELINE[0];
+  for (const e of WAVE_TIMELINE) {
+    if (gameTimeSec >= e.timeSec) active = e;
+  }
+  return active;
+}
+
+export const BALANCE = {
+  /** Run cap — finale clears mobs and spawns `FINAL_BOSS_KEY` (see SpawnSystem). */
+  run: {
+    /** Seconds from run start until timeline spawns stop and the final boss sequence runs. */
+    RUN_WIN_TIME_SEC: 900,
+    /** Must match a `BOSSES[].key` in `data/enemies.ts` (defeat → victory). */
+    FINAL_BOSS_KEY: 'taxman',
+  },
+  /** Camera-relative tuning — off-screen enemies throttle physics / AI. */
+  spatial: {
+    /** Pixels beyond `cameras.main.worldView` where bodies disable and AI is skipped. */
+    cullMarginPx: 200,
+  },
+  xp: {
+    gemPoolMax: 500,
+    gemPrewarm: 50,
+    criticalHpMagnetThreshold: 0.15,
+    criticalHpMagnetMultiplier: 3,
+    collectDistancePx: 20,
+  },
+  weapons: {
+    projectilePoolMax: 350,
+    projectilePrewarm: 30,
+    trailEveryNFrames: 3,
+    minEffectiveCooldownMs: 50,
+    /**
+     * Max flying projectiles per weapon key (readability + pool pressure).
+     * Evolved bursts respect the same cap — extra shots are skipped quietly.
+     */
+    maxSimultaneousProjectilesPerWeapon: 26,
+  },
+  director: {
+    /** Kill-pressure adds this much to elite spawn chance (clamped in SpawnSystem). */
+    killPressureEliteBonusMax: 0.065,
+    /** Added to pressure accumulator per non-boss kill (decays every frame). */
+    killPressurePerKill: 0.038,
+    /** Exponential decay per second — ~10s half-life at 60fps-scale deltas. */
+    killPressureDecayPerSec: 0.11,
+  },
+  player: {
+    dashCooldownMs: 1600,
+    dashSpeed: 760,
+    dashDurationMs: 180,
+    postDashGraceMs: 80,
+    dashAfterImageCount: 5,
+    netSlowAmount: 80,
+    shieldCooldownMs: 20000,
+    baseHitboxRadius: 20,
+    /**
+     * One-time per run: crossing from above → at/below this HP fraction grants
+     * `moorMercyLuckBonus` to level-up card weights (stacking with sporran / meta).
+     */
+    moorMercyHpFrac: 0.28,
+    moorMercyLuckBonus: 12,
+  },
+  enemy: {
+    rangedStandoffPx: 200,
+    orbitRadiusPx: 180,
+    phaseToggleMs: 2000,
+    spawnerWarmupMs: 500,
+    spawnerIntervalMs: 4000,
+    hazardTtlMs: 10000,
+    diveDespawnMarginPx: 300,
+    rangedCooldownMs: 3000,
+    /** Elites start spawning this many seconds into the run. */
+    ELITE_UNLOCK_SEC: 120,
+    /** Per-spawn chance that a non-hazard, non-swarm enemy upgrades to elite. */
+    ELITE_SPAWN_CHANCE: 0.10,
+    /**
+     * Gold elite kill chain — second gold elite within this many *game* seconds
+     * of the previous gold elite pays `eliteChainGoldSecond`; third pays
+     * `eliteChainGoldTriple` and resets the chain.
+     */
+    eliteChainWindowSec: 45,
+    eliteChainGoldSecond: 12,
+    eliteChainGoldTriple: 28,
+  },
+  juice: {
+    impactRingPoolSize: 80,
+    trailDotPoolSize: 60,
+    burstDotPoolSize: 50,
+    burstRingPoolSize: 15,
+    bossParticlePoolSize: 35,
+    bossRingPoolSize: 5,
+  },
+  bossWarning: {
+    spawnDelayMs: 1500,
+    fadeOutDelayMs: 1200,
+    fadeOutDurationMs: 400,
+  },
+  hud: {
+    /**
+     * Wave difficulty ladder displayed under the timer. Single source of
+     * truth — HUD reads from this, so tuning the wave arc stays consistent
+     * between the WAVE_TIMELINE (gameplay) and what the player sees.
+     */
+    WAVE_DIFFICULTY_MARKS: [
+      { minSec: 0,    label: 'I',   color: '#88cc88' },
+      { minSec: 180,  label: 'II',  color: '#cccc44' },
+      { minSec: 420,  label: 'III', color: '#dd8844' },
+      { minSec: 720,  label: 'IV',  color: '#dd4444' },
+      { minSec: 1200, label: 'V',   color: '#ff2222' },
+    ] as const,
+    /** Enemy count threshold above which the HUD flashes the "MAX" warning. */
+    ENEMY_WARN_THRESHOLD: 350,
+  },
+} as const;
+
+/**
+ * Weapon evolution synergy — max-level base weapon + required passive.
+ * `evolvedWeapon` is the evolution id used by WeaponSystem / HUD (e.g. thistle_storm).
+ * Offered from treasure chests (not the random level-up pool).
+ */
+export type EvolutionRecipeDef = {
+  baseWeapon: string;
+  requiredPassive: string;
+  evolvedWeapon: string;
+  /** Dot-path key for `i18n.t()` — e.g. `evolution.thistle_storm.name`. */
+  nameKey: string;
+  descriptionKey: string;
+};
+
+export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
+  {
+    baseWeapon: 'thistle_shot',
+    requiredPassive: 'sporran',
+    evolvedWeapon: 'thistle_storm',
+    nameKey: 'evolution.thistle_storm.name',
+    descriptionKey: 'evolution.thistle_storm.description',
+  },
+  {
+    baseWeapon: 'bagpipe_blast',
+    requiredPassive: 'whisky_flask',
+    evolvedWeapon: 'highland_fling',
+    nameKey: 'evolution.highland_fling.name',
+    descriptionKey: 'evolution.highland_fling.description',
+  },
+  {
+    baseWeapon: 'caber_toss',
+    requiredPassive: 'kilt',
+    evolvedWeapon: 'highland_games',
+    nameKey: 'evolution.highland_games.name',
+    descriptionKey: 'evolution.highland_games.description',
+  },
+  {
+    baseWeapon: 'scotch_mist',
+    requiredPassive: 'tam_o_shanter',
+    evolvedWeapon: 'the_haar',
+    nameKey: 'evolution.the_haar.name',
+    descriptionKey: 'evolution.the_haar.description',
+  },
+  {
+    baseWeapon: 'haggis_hurler',
+    requiredPassive: 'irn_bru',
+    evolvedWeapon: 'haggis_cannon',
+    nameKey: 'evolution.haggis_cannon.name',
+    descriptionKey: 'evolution.haggis_cannon.description',
+  },
+  {
+    baseWeapon: 'nessie_tentacle',
+    requiredPassive: 'loch_water',
+    evolvedWeapon: 'nessie_unleashed',
+    nameKey: 'evolution.nessie_unleashed.name',
+    descriptionKey: 'evolution.nessie_unleashed.description',
+  },
+  {
+    baseWeapon: 'claymore',
+    requiredPassive: 'tartan_sash',
+    evolvedWeapon: 'william_blade',
+    nameKey: 'evolution.william_blade.name',
+    descriptionKey: 'evolution.william_blade.description',
+  },
+  {
+    // DESIGN_IDEAS §1 + §5 — Shinty Stick + Shinty Ball → Shinty Caman.
+    // The wee wood ball + the curved ash caman = camanachd, the ancient
+    // Highland game. The evolved form rapid-fires bouncing balls in all
+    // directions (ash blur). Sister-fantasy to the already-shipped
+    // Shinty Parry mechanic — defence + offence under one banner.
+    baseWeapon: 'shinty_stick',
+    requiredPassive: 'shinty_ball',
+    evolvedWeapon: 'shinty_caman',
+    nameKey: 'evolution.shinty_caman.name',
+    descriptionKey: 'evolution.shinty_caman.description',
+  },
+  {
+    // DESIGN_IDEAS §5 — Sgian Dubh + Whetstone → Sgian Geal. The "black
+    // knife" tucked in the stocking + the sharpening stone in the
+    // pocket = Sgian Geal, the "white knife" — the ceremonial twin of
+    // the dirk-set. Mechanically the evolved form trades base damage
+    // for a guaranteed crit on every hit; the Whetstone has put such
+    // an edge on the blade that nothing it touches can be glanced.
+    baseWeapon: 'sgian_dubh',
+    requiredPassive: 'whetstone',
+    evolvedWeapon: 'sgian_geal',
+    nameKey: 'evolution.sgian_geal.name',
+    descriptionKey: 'evolution.sgian_geal.description',
+  },
+  {
+    // DESIGN_IDEAS §5 — Stag Antler + Velvet Antler → Monarch's Charge.
+    // The lowered-head goring + the stored summer energy of velvet =
+    // the moment after the rut, the king-stag turning his full crown
+    // through the herd. Mechanically the evolved form keeps the
+    // baseline arc but the dash-strike becomes a 360° antler-sweep at
+    // 3.5× damage that briefly stuns the wounded — the kind of beat
+    // that tells a player "this is yours, you earned the throne".
+    baseWeapon: 'stag_antler',
+    requiredPassive: 'velvet_antler',
+    evolvedWeapon: 'monarch_charge',
+    nameKey: 'evolution.monarch_charge.name',
+    descriptionKey: 'evolution.monarch_charge.description',
+  },
+  {
+    // Wild Living World Phase 2 — Waulking Mallet + Tuning Fork →
+    // Pibroch Hammer. The Tuning Fork's pre-strike test-note grants
+    // the mallet a wider, heavier sweep that lands a crescendo on
+    // every fourth beat. Identity: "the song hits with you, and the
+    // pipes answer." Burns's threshold stays at 10 (decoupled in
+    // `BURNS_EVOLUTION_THRESHOLD`) — this is the 11th evolution but
+    // not Burns-relevant.
+    baseWeapon: 'waulking_mallet',
+    requiredPassive: 'tuning_fork',
+    evolvedWeapon: 'pibroch_hammer',
+    nameKey: 'evolution.pibroch_hammer.name',
+    descriptionKey: 'evolution.pibroch_hammer.description',
+  },
+  {
+    // DESIGN_IDEAS §5 — Bodhrán + Drum Hoop → Beltane Drum. The willow
+    // hoop teaches the drum to reach further; midsummer fire amplifies
+    // the beat. Mechanically: wider radius, more damage, two concentric
+    // rings (inner amber / outer crimson) on each pulse.
+    baseWeapon: 'bodhran',
+    requiredPassive: 'drum_hoop',
+    evolvedWeapon: 'beltane_drum',
+    nameKey: 'evolution.beltane_drum.name',
+    descriptionKey: 'evolution.beltane_drum.description',
+  },
+  {
+    // DESIGN_IDEAS §5 — Selkie Song + Seal Pelt → Selkie Chorus.
+    // The shed pelt teaches the song to carry further; the selkie calls
+    // her kin. The chorus charms up to 3 enemies per pulse (vs 1 for the
+    // base song), wider radius, more chip damage. The moor goes quiet
+    // when the chorus rises — enemies face each other, not the haggis.
+    baseWeapon: 'selkie_song',
+    requiredPassive: 'seal_pelt',
+    evolvedWeapon: 'selkie_chorus',
+    nameKey: 'evolution.selkie_chorus.name',
+    descriptionKey: 'evolution.selkie_chorus.description',
+  },
+  // Highland Horrors — three new weapon family evolutions.
+  {
+    // Dirk Dance + Gillie's Edge → Dirk Flurry. The gamekeeper's
+    // agile footwork teaches the dirk three simultaneous arcs: center,
+    // left-flank, right-flank — a spinning wall of blade that covers
+    // the full forward half-circle at once.
+    baseWeapon: 'dirk_dance',
+    requiredPassive: 'gillies_edge',
+    evolvedWeapon: 'dirk_flurry',
+    nameKey: 'evolution.dirk_flurry.name',
+    descriptionKey: 'evolution.dirk_flurry.description',
+  },
+  {
+    // Granny's Curse + Widow's Shawl → Banshee Wail. The grief of a
+    // Highland widow wrapped in wool calls five homing wail-bolts that
+    // seek the furthest living thing on the moor, each one carrying her
+    // curse to the uttermost edge.
+    baseWeapon: 'grannies_curse',
+    requiredPassive: 'widows_shawl',
+    evolvedWeapon: 'banshee_wail',
+    nameKey: 'evolution.banshee_wail.name',
+    descriptionKey: 'evolution.banshee_wail.description',
+  },
+  {
+    // Wallace Sword + Stirling Medal → Freedom Blade. The full
+    // 360° sweep of the battle-cry at Stirling Bridge — every enemy
+    // on the field feels the swing, and two expanding shockwaves
+    // roll out behind it across the moor.
+    baseWeapon: 'wallace_sword',
+    requiredPassive: 'stirling_medal',
+    evolvedWeapon: 'freedom_blade',
+    nameKey: 'evolution.freedom_blade.name',
+    descriptionKey: 'evolution.freedom_blade.description',
+  },
+  {
+    // Clàrsach + Wire Strings → Clàrsach Eternal. The ancient harp
+    // at full resonance: three simultaneous chord arcs (−18° / 0° /
+    // +18°) each applying a 150 ms freeze-slow. The wire strings
+    // taut with centuries of Gaelic music, finally loosened.
+    baseWeapon: 'clarsach',
+    requiredPassive: 'wire_strings',
+    evolvedWeapon: 'clarsach_eternal',
+    nameKey: 'evolution.clarsach_eternal.name',
+    descriptionKey: 'evolution.clarsach_eternal.description',
+  },
+  {
+    // Hagstone Sling + Rowan Amulet → Rowan Hail. The protective rowan
+    // charm multiplies the stone into a hail of three; each still finds
+    // the gap and punishes what lies behind. The old women of the glens
+    // knew — rowan never misses what it means to hit.
+    baseWeapon: 'hagstone_sling',
+    requiredPassive: 'rowan_amulet',
+    evolvedWeapon: 'rowan_hail',
+    nameKey: 'evolution.rowan_hail.name',
+    descriptionKey: 'evolution.rowan_hail.description',
+  },
+  {
+    // Port-à-Beul + Highland Trump → Canntaireachd. The vocal-
+    // percussion tradition deepens into the full Gaelic pibroch
+    // instruction system — voice becomes weapon, weapon becomes song.
+    baseWeapon: 'port_a_beul',
+    requiredPassive: 'highland_trump',
+    evolvedWeapon: 'canntaireachd',
+    nameKey: 'evolution.canntaireachd.name',
+    descriptionKey: 'evolution.canntaireachd.description',
+  },
+  {
+    // Flying Porridge Pot + Pinhead Oats → Brose Cannon (three-spread lob,
+    // faster cooldown — the pot becomes a scatter battery).
+    baseWeapon: 'porridge_pot',
+    requiredPassive: 'pinhead_oats',
+    evolvedWeapon: 'brose_cannon',
+    nameKey: 'evolution.brose_cannon.name',
+    descriptionKey: 'evolution.brose_cannon.description',
+  },
+];
+
+/** Max weapon level before an evolution can be offered from a chest. */
+export const EVOLUTION_MIN_WEAPON_LEVEL = 5;
+
+/**
+ * Burns's Wee Beastie unlock threshold.
+ *
+ * Pre-Wild-Living-World-Phase-2 this was derived from
+ * `EVOLUTION_RECIPES.length` so adding a recipe automatically lifted
+ * the gate. Phase 2's Pibroch Hammer (Waulking Mallet → rhythm
+ * evolution) is the 11th recipe but Burns's gate was authored around
+ * "all weapon-family evolutions in a run" — adding a rhythm-coupled
+ * 11th would silently tighten the unlock from 10→11 and break the
+ * existing achievement contract for players already mid-progress.
+ *
+ * Resolution: hard-code the threshold to 10 and let the value drift
+ * intentionally from `EVOLUTION_RECIPES.length`. A vitest guard in
+ * `src/data/weapons.test.ts` keeps the two values reconciled — if a
+ * future recipe is meant to be "Burns-relevant", bump the constant
+ * *and* update the achievement copy explicitly.
+ *
+ * Achievement copy interpolates `{count}` from this value via
+ * `descriptionVars` below; see `i18n/achievement.ts` +
+ * `i18n.scs/achievement.ts` for the placeholder strings.
+ *
+ * Re-exported from `src/utils/save/schema.ts` for existing call-sites.
+ */
+export const BURNS_EVOLUTION_THRESHOLD = 10;
+
+/** Achievement ids persisted on `SaveManager.unlockedAchievements`. */
+export type AchievementId =
+  | 'ach_kills_1000'
+  | 'ach_kills_5000'
+  | 'ach_survive_5m'
+  | 'ach_survive_10m'
+  | 'ach_full_run'
+  | 'ach_defeat_taxman'
+  | 'ach_first_victory'
+  | 'ach_first_evolution'
+  | 'ach_codex_half'
+  | 'ach_codex_loremaster'
+  | 'ach_moor_hearth_30'
+  | 'ach_all_bosses'
+  | 'ach_walk_every_road'
+  | 'ach_ironmoor_victor'
+  | 'ach_full_herd'
+  | 'ach_laird_victor'
+  | 'ach_stone_circle'
+  | 'ach_relic_seeker'
+  | 'ach_echo_touched'
+  | 'ach_ceilidh_commander'
+  | 'ach_past_the_bell'
+  | 'ach_endless_endurance'
+  | 'ach_cursed_victor'
+  | 'ach_combo_100'
+  | 'ach_cailleach_unlock'
+  | 'ach_doric_unlock'
+  | 'ach_peerie_unlock'
+  | 'ach_burns_beastie_unlock'
+  | 'ach_crown_the_cailleach';
+
+export const ACHIEVEMENT_DEFS: Record<
+  AchievementId,
+  {
+    titleKey: string;
+    descriptionKey: string;
+    descriptionVars?: Readonly<Record<string, string | number>>;
+  }
+> = {
+  ach_kills_1000: {
+    titleKey: 'achievement.ach_kills_1000.title',
+    descriptionKey: 'achievement.ach_kills_1000.description',
+  },
+  ach_kills_5000: {
+    titleKey: 'achievement.ach_kills_5000.title',
+    descriptionKey: 'achievement.ach_kills_5000.description',
+  },
+  ach_survive_5m: {
+    titleKey: 'achievement.ach_survive_5m.title',
+    descriptionKey: 'achievement.ach_survive_5m.description',
+  },
+  ach_survive_10m: {
+    titleKey: 'achievement.ach_survive_10m.title',
+    descriptionKey: 'achievement.ach_survive_10m.description',
+  },
+  ach_full_run: {
+    titleKey: 'achievement.ach_full_run.title',
+    descriptionKey: 'achievement.ach_full_run.description',
+  },
+  ach_defeat_taxman: {
+    titleKey: 'achievement.ach_defeat_taxman.title',
+    descriptionKey: 'achievement.ach_defeat_taxman.description',
+  },
+  ach_first_victory: {
+    titleKey: 'achievement.ach_first_victory.title',
+    descriptionKey: 'achievement.ach_first_victory.description',
+  },
+  ach_first_evolution: {
+    titleKey: 'achievement.ach_first_evolution.title',
+    descriptionKey: 'achievement.ach_first_evolution.description',
+  },
+  ach_codex_half: {
+    titleKey: 'achievement.ach_codex_half.title',
+    descriptionKey: 'achievement.ach_codex_half.description',
+  },
+  ach_codex_loremaster: {
+    titleKey: 'achievement.ach_codex_loremaster.title',
+    descriptionKey: 'achievement.ach_codex_loremaster.description',
+  },
+  ach_moor_hearth_30: {
+    titleKey: 'achievement.ach_moor_hearth_30.title',
+    descriptionKey: 'achievement.ach_moor_hearth_30.description',
+  },
+  ach_all_bosses: {
+    titleKey: 'achievement.ach_all_bosses.title',
+    descriptionKey: 'achievement.ach_all_bosses.description',
+  },
+  ach_walk_every_road: {
+    titleKey: 'achievement.ach_walk_every_road.title',
+    descriptionKey: 'achievement.ach_walk_every_road.description',
+  },
+  ach_ironmoor_victor: {
+    titleKey: 'achievement.ach_ironmoor_victor.title',
+    descriptionKey: 'achievement.ach_ironmoor_victor.description',
+  },
+  ach_full_herd: {
+    titleKey: 'achievement.ach_full_herd.title',
+    descriptionKey: 'achievement.ach_full_herd.description',
+  },
+  ach_laird_victor: {
+    titleKey: 'achievement.ach_laird_victor.title',
+    descriptionKey: 'achievement.ach_laird_victor.description',
+  },
+  ach_stone_circle: {
+    titleKey: 'achievement.ach_stone_circle.title',
+    descriptionKey: 'achievement.ach_stone_circle.description',
+  },
+  ach_relic_seeker: {
+    titleKey: 'achievement.ach_relic_seeker.title',
+    descriptionKey: 'achievement.ach_relic_seeker.description',
+  },
+  ach_echo_touched: {
+    titleKey: 'achievement.ach_echo_touched.title',
+    descriptionKey: 'achievement.ach_echo_touched.description',
+  },
+  ach_ceilidh_commander: {
+    titleKey: 'achievement.ach_ceilidh_commander.title',
+    descriptionKey: 'achievement.ach_ceilidh_commander.description',
+  },
+  ach_past_the_bell: {
+    titleKey: 'achievement.ach_past_the_bell.title',
+    descriptionKey: 'achievement.ach_past_the_bell.description',
+  },
+  ach_endless_endurance: {
+    titleKey: 'achievement.ach_endless_endurance.title',
+    descriptionKey: 'achievement.ach_endless_endurance.description',
+  },
+  ach_cursed_victor: {
+    titleKey: 'achievement.ach_cursed_victor.title',
+    descriptionKey: 'achievement.ach_cursed_victor.description',
+  },
+  ach_combo_100: {
+    titleKey: 'achievement.ach_combo_100.title',
+    descriptionKey: 'achievement.ach_combo_100.description',
+  },
+  ach_cailleach_unlock: {
+    titleKey: 'achievement.ach_cailleach_unlock.title',
+    descriptionKey: 'achievement.ach_cailleach_unlock.description',
+  },
+  ach_doric_unlock: {
+    titleKey: 'achievement.ach_doric_unlock.title',
+    descriptionKey: 'achievement.ach_doric_unlock.description',
+  },
+  ach_peerie_unlock: {
+    titleKey: 'achievement.ach_peerie_unlock.title',
+    descriptionKey: 'achievement.ach_peerie_unlock.description',
+  },
+  ach_burns_beastie_unlock: {
+    titleKey: 'achievement.ach_burns_beastie_unlock.title',
+    descriptionKey: 'achievement.ach_burns_beastie_unlock.description',
+    descriptionVars: { count: BURNS_EVOLUTION_THRESHOLD },
+  },
+  // V2 — Cailleach Gauntlet win. Survive 7 cairns + the Cailleach
+  // herself. Drops Stormcrown + unlocks Cailleach's Mantle tartan.
+  ach_crown_the_cailleach: {
+    titleKey: 'achievement.ach_crown_the_cailleach.title',
+    descriptionKey: 'achievement.ach_crown_the_cailleach.description',
+  },
+};
+

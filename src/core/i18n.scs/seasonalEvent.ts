@@ -1,0 +1,92 @@
+export const seasonalEvent = {
+  burns_night: {
+    name: 'Burns Nicht',
+    description: 'Jan 18 – Feb 1 — tha bard\'s week on tha moor.',
+    badge_suffix: 'Burns Nicht',
+    ceremony_banner: '🕯 Burns Nicht is live — tha bard keeps watch.',
+  },
+  hogmanay: {
+    name: 'Hogmanay',
+    description: 'Dec 28 – Jan 3 — kirk bells crack tha year open.',
+    badge_suffix: 'Hogmanay',
+    ceremony_banner: '🔔 Hogmanay is live — a guid new year tae ye.',
+  },
+  samhain: {
+    name: 'Samhain',
+    description: 'Oct 28 – Nov 3 — tha veil\'s thin; mind yer manners.',
+    badge_suffix: 'Samhain',
+    ceremony_banner: '🕯 Samhain is live — tha Cailleach is watchin.',
+  },
+  st_andrews: {
+    name: 'St Andra\'s Day',
+    description: 'Nov 27 – Dec 3 — saltire wather on tha muir.',
+    badge_suffix: 'St Andra\'s Day',
+    ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 St Andra\'s Day is live — haud on fer hame.',
+  },
+  beltane: {
+    name: 'Beltane',
+    description: 'Apr 28 – May 4 — twin fires on tha muir; tha kye run atween.',
+    badge_suffix: 'Beltane',
+    ceremony_banner: '🔥 Beltane is live — pass atween tha twin fires.',
+  },
+  imbolc: {
+    name: 'Imbolc',
+    description: 'Feb 2 – Feb 8 — Brìde steers; the lambin-sky leans warm.',
+    badge_suffix: 'Imbolc',
+    ceremony_banner: '🕯 Imbolc is live — Brìde\'s mantle is on tha byre.',
+  },
+  lammas: {
+    name: 'Lùnastal / Lammas',
+    description: 'Jul 29 – Aug 4 — first shaves cut; loaf-mass at tha cairn.',
+    badge_suffix: 'Lùnastal',
+    ceremony_banner: '🌾 Lùnastal is live — tha loaf is broken on tha muir.',
+  },
+  bracken_turn: {
+    name: 'Bracken-turn',
+    description: 'Nov 4 – Nov 26 — fronds bronze, frost finds tha heather.',
+    badge_suffix: 'Bracken-turn',
+    ceremony_banner: '🍂 Bracken-turn is live — tha muir weirs its copper coat.',
+  },
+  bannockburn: {
+    name: 'Bannockburn',
+    description: 'Jun 22 – Jun 25 — tha field whar Bruce held; "Scots, wha hae".',
+    badge_suffix: 'Bannockburn',
+    ceremony_banner: '⚔ Bannockburn is live — ilka G-press echoes tha anthem.',
+  },
+  glorious_twelfth: {
+    name: 'Tha Glorious Twelfth',
+    description: 'Aug 11 – Aug 13 — grouse season opens; tha muir gangs lood.',
+    badge_suffix: 'Tha Twelfth',
+    ceremony_banner: '🦆 Tha Glorious Twelfth is live — gang tae grund, walk wider.',
+  },
+  culloden: {
+    name: 'Culloden',
+    description: 'Aprile 13 – Aprile 18 — sixtenth April, 1746. Tha muir keeps its ain count.',
+    badge_suffix: 'Culloden',
+    ceremony_banner: '🕯 Culloden is live — tha field keeps its ain count.',
+  },
+  tartan_day: {
+    name: 'Tartan Day',
+    description: 'Aprile 4 – Aprile 8 — diaspora warmth; tha Declaration o Arbroath.',
+    badge_suffix: 'Tartan Day',
+    ceremony_banner: '🧶 Tartan Day is live — tha muir reaches farer.',
+  },
+  simmer_dim: {
+    name: 'Simmer Dim',
+    description: 'Juin 18 – Juin 21 — held twilicht; tha muir niver gangs fully mirk.',
+    badge_suffix: 'Simmer Dim',
+    ceremony_banner: '🌒 Simmer Dim is live — tha gloamin hauds.',
+  },
+  up_helly_aa: {
+    name: 'Up Helly Aa',
+    description: 'Februar 9 – Februar 15 — Shetland torch processions; tha galley burns at tha herbour.',
+    badge_suffix: 'Up Helly Aa',
+    ceremony_banner: '🔥 Up Helly Aa is live — tha guizers mairch, tha galley burns.',
+  },
+  highland_games: {
+    name: 'Highland Gemmes',
+    description: 'Aug 25 – Sep 7 — cabar, haimmer, stane pit. Tha moor hauds its gemmes.',
+    badge_suffix: 'Highland Gemmes',
+    ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 Highland Gemmes live — wauk the stauncher the day.',
+  },
+} as const;

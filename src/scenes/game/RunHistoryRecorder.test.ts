@@ -1,0 +1,406 @@
+import { describe, expect, it, vi } from 'vitest';
+import { RunHistoryRecorder, type RunHistoryHooks } from './RunHistoryRecorder';
+import { currentDailyDateKey } from '../../utils/rng';
+
+function buildMocks(overrides: {
+  variantKey?: string;
+  curseKey?: string;
+  bossKills?: number;
+  level?: number;
+  weaponKeys?: string[];
+  isDaily?: boolean;
+  runSeed?: number;
+  dailyChallenge?: unknown;
+  routes?: import('../../data/routes').RoutePick[];
+  ironmoor?: boolean;
+  sharedRunSetup?: import('../../utils/sharedRunUrl').SharedRunSetup | null;
+} = {}) {
+  const saveManager = {
+    recordRunToHistory: vi.fn(),
+    recordFriendChallengeAttempt: vi.fn(),
+    update: vi.fn((fn: (cur: { dailyChallenge?: unknown }) => unknown) =>
+      fn({ dailyChallenge: overrides.dailyChallenge }),
+    ),
+  };
+
+  const hooks: RunHistoryHooks = {
+    getSaveManager: () => saveManager as never,
+    getXPSystem: () =>
+      ({
+        getLevel: () => overrides.level ?? 7,
+      }) as never,
+    getWeaponSystem: () =>
+      ({
+        getWeapons: () =>
+          (overrides.weaponKeys ?? ['thistle_shot', 'claymore']).map((k) => ({ config: { key: k } })),
+      }) as never,
+    getActiveVariant: () => ({ key: overrides.variantKey ?? 'classic' }) as never,
+    getActiveCurseKey: () => (overrides.curseKey ?? null) as never,
+    getBossKillCount: () => overrides.bossKills ?? 3,
+    getRunRng: () => ({ seed: overrides.runSeed ?? 42 }) as never,
+    isDailyRun: () => overrides.isDaily ?? false,
+    getRoutePicks: () => overrides.routes ?? [],
+    isIronmoor: () => overrides.ironmoor ?? false,
+    getActiveSharedRunSetup: () => overrides.sharedRunSetup ?? null,
+    // Jun 15 2027 — guaranteed off-season for every registered seasonal
+    // event window (Hogmanay, Burns, Imbolc, Beltane, Lammas, Samhain,
+    // St Andrew's, Bracken-turn). Picking an "always-no-event" anchor
+    // keeps these tests stable against future cohort additions —
+    // previously the timestamp 1700000000000 (Nov 14 2023) silently
+    // landed inside the Bracken-turn window when that event landed
+    // 2026-04-29. Fixed-day anchor avoids the recurring footgun.
+    now: () => new Date(2027, 5, 15, 12, 0, 0, 0).getTime(),
+  };
+
+  return { hooks, saveManager };
+}
+
+describe('RunHistoryRecorder', () => {
+  describe('buildContext', () => {
+    it('includes level, boss kills, variant, weapon keys, runSeed, healing flag, biomesVisited, and evolvedWeaponCount', () => {
+      const { hooks } = buildMocks();
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect(ctx).toEqual({
+        runSeed: 42,
+        level: 7,
+        bossKills: 3,
+        variantKey: 'classic',
+        weaponKeys: ['thistle_shot', 'claymore'],
+        // V2 T1 — default true (hook absent = "assume player used healing").
+        enteredHealingCircle: true,
+        // V2 T2 — default empty (hook absent = "no biomes recorded").
+        biomesVisited: [],
+        // V2 T3 — default 0 (hook absent = "no evolutions tracked").
+        evolvedWeaponCount: 0,
+      });
+    });
+
+    it('V2 T3 — propagates evolvedWeaponCount when hook returns it', () => {
+      const { hooks } = buildMocks();
+      const withHook = { ...hooks, getEvolvedWeaponCount: () => 5 };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.evolvedWeaponCount).toBe(5);
+    });
+
+    it('V2 T1 — propagates enteredHealingCircle=false when hook returns false (Doric no-heal path)', () => {
+      const { hooks } = buildMocks();
+      const withHook = { ...hooks, getEnteredHealingCircle: () => false };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.enteredHealingCircle).toBe(false);
+    });
+
+    it('V2 T1 — propagates enteredHealingCircle=true when hook returns true', () => {
+      const { hooks } = buildMocks();
+      const withHook = { ...hooks, getEnteredHealingCircle: () => true };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.enteredHealingCircle).toBe(true);
+    });
+
+    it('V2 T2 — biomesVisited empty when hook is absent', () => {
+      const { hooks } = buildMocks();
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect(ctx.biomesVisited).toEqual([]);
+    });
+
+    it('V2 T2 — biomesVisited snapshot matches hook output', () => {
+      const { hooks } = buildMocks();
+      const biomes = ['loch', 'pine'];
+      const withHook = { ...hooks, getBiomesVisited: () => biomes };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.biomesVisited).toEqual(['loch', 'pine']);
+      // Snapshot — mutating the source must not poison the context.
+      expect(ctx.biomesVisited).not.toBe(biomes);
+    });
+
+    it('includes curseKey only when present', () => {
+      const { hooks } = buildMocks({ curseKey: 'thin_hide' });
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect(ctx.curseKey).toBe('thin_hide');
+    });
+
+    it('omits curseKey key when null (not just undefined)', () => {
+      const { hooks } = buildMocks();
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect('curseKey' in ctx).toBe(false);
+    });
+
+    it('includes routes when pickerHistory has entries', () => {
+      const routes: import('../../data/routes').RoutePick[] = [
+        { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305, defaultedBySetting: false },
+        { slot: 'B', routeKey: 'buckie_pitstop', atGameTimeSec: 610, defaultedBySetting: false },
+      ];
+      const { hooks } = buildMocks({ routes });
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect(ctx.routes).toEqual(routes);
+      // Snapshot — mutating the source must not poison the context.
+      expect(ctx.routes).not.toBe(routes);
+    });
+
+    it('omits routes when pickerHistory is empty', () => {
+      const { hooks } = buildMocks();
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect('routes' in ctx).toBe(false);
+    });
+
+    it('includes replay blob when getReplayBlob hook returns one', () => {
+      const { hooks } = buildMocks();
+      const replay = {
+        version: 1 as const,
+        build: 'test',
+        seed: 42,
+        variantKey: 'classic',
+        frameCount: 0,
+        frames: [],
+      };
+      const withReplay = { ...hooks, getReplayBlob: () => replay };
+      const ctx = new RunHistoryRecorder(withReplay).buildContext();
+      expect(ctx.replay).toBe(replay);
+    });
+
+    it('omits replay when getReplayBlob hook absent or returns null', () => {
+      const { hooks } = buildMocks();
+      const noHook = new RunHistoryRecorder(hooks).buildContext();
+      expect('replay' in noHook).toBe(false);
+
+      const withNullHook = new RunHistoryRecorder({
+        ...hooks,
+        getReplayBlob: () => null,
+      }).buildContext();
+      expect('replay' in withNullHook).toBe(false);
+    });
+
+    describe('S1 Phase 2 — sporranPicks', () => {
+      it('omits sporranPicks when hook is absent', () => {
+        const { hooks } = buildMocks();
+        const ctx = new RunHistoryRecorder(hooks).buildContext();
+        expect('sporranPicks' in ctx).toBe(false);
+      });
+
+      it('omits sporranPicks when hook returns empty array', () => {
+        const { hooks } = buildMocks();
+        const ctx = new RunHistoryRecorder({
+          ...hooks,
+          getSporranPicks: () => [],
+        }).buildContext();
+        expect('sporranPicks' in ctx).toBe(false);
+      });
+
+      it('snapshots sporranPicks when hook returns non-empty array', () => {
+        const { hooks } = buildMocks();
+        const picks = ['boon_silver', 'boon_coal', 'curse_heavy_legs'];
+        const ctx = new RunHistoryRecorder({
+          ...hooks,
+          getSporranPicks: () => picks,
+        }).buildContext();
+        expect(ctx.sporranPicks).toEqual(picks);
+        // Snapshot — mutating the source must not poison the context.
+        expect(ctx.sporranPicks).not.toBe(picks);
+      });
+    });
+  });
+
+  describe('record', () => {
+    const baseSummary = {
+      timeSurvivedSec: 900,
+      enemiesKilled: 450,
+      bestCombo: 55,
+      victory: false,
+    };
+
+    it('writes a run history entry with all captured fields', () => {
+      const { hooks, saveManager } = buildMocks();
+      const r = new RunHistoryRecorder(hooks);
+      r.record(baseSummary as never, { goldEarned: 120 } as never);
+      const expectedNow = new Date(2027, 5, 15, 12, 0, 0, 0).getTime();
+      expect(saveManager.recordRunToHistory).toHaveBeenCalledWith({
+        timestamp: expectedNow,
+        timeSurvivedSec: 900,
+        enemiesKilled: 450,
+        level: 7,
+        bossKills: 3,
+        goldEarned: 120,
+        bestCombo: 55,
+        variantKey: 'classic',
+        isVictory: false,
+        weaponKeys: ['thistle_shot', 'claymore'],
+        runSeed: 42,
+        isDaily: false,
+      });
+    });
+
+    it('coerces missing bestCombo to 0 and missing victory to false', () => {
+      const { hooks, saveManager } = buildMocks();
+      new RunHistoryRecorder(hooks).record(
+        { timeSurvivedSec: 10, enemiesKilled: 2 } as never,
+        { goldEarned: 0 } as never,
+      );
+      const call = saveManager.recordRunToHistory.mock.calls[0][0];
+      expect(call.bestCombo).toBe(0);
+      expect(call.isVictory).toBe(false);
+    });
+
+    it('does NOT touch daily record for non-daily runs', () => {
+      const { hooks, saveManager } = buildMocks({ isDaily: false });
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 1 } as never);
+      expect(saveManager.update).not.toHaveBeenCalled();
+    });
+
+    it('stamps `seasonalEvent` when the run ends inside Burns Night', () => {
+      // Jan 25 2027 12:00 local — mid-Burns-Night.
+      const burnsNightLocal = new Date(2027, 0, 25, 12, 0, 0, 0).getTime();
+      const { hooks, saveManager } = buildMocks();
+      (hooks as { now: () => number }).now = () => burnsNightLocal;
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 1 } as never);
+      const call = saveManager.recordRunToHistory.mock.calls[0][0];
+      expect(call.seasonalEvent).toBe('burns_night');
+    });
+
+    it('omits `seasonalEvent` when the run ends outside every event window', () => {
+      // July 4 2027 — no WHS event active.
+      const offSeasonLocal = new Date(2027, 6, 4, 12, 0, 0, 0).getTime();
+      const { hooks, saveManager } = buildMocks();
+      (hooks as { now: () => number }).now = () => offSeasonLocal;
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 1 } as never);
+      const call = saveManager.recordRunToHistory.mock.calls[0][0];
+      expect(call.seasonalEvent).toBeUndefined();
+    });
+  });
+
+  describe('daily challenge record', () => {
+    it('starts a fresh record when no prior exists', () => {
+      const { hooks, saveManager } = buildMocks({ isDaily: true });
+      new RunHistoryRecorder(hooks).record(
+        { timeSurvivedSec: 300, enemiesKilled: 120, victory: false } as never,
+        { goldEarned: 0 } as never,
+      );
+      const [reducer] = saveManager.update.mock.calls[0];
+      const result = reducer({}) as { dailyChallenge: Record<string, unknown> };
+      expect(result.dailyChallenge).toEqual({
+        dateKey: currentDailyDateKey(),
+        bestTimeSec: 300,
+        bestEnemiesKilled: 120,
+        attempts: 1,
+        completedVictory: false,
+      });
+    });
+
+    it('merges with today-keyed prior record (max time/kills, attempts++)', () => {
+      const todayKey = currentDailyDateKey();
+      const prior = {
+        dateKey: todayKey,
+        bestTimeSec: 400,
+        bestEnemiesKilled: 50,
+        attempts: 2,
+        completedVictory: false,
+      };
+      const { hooks, saveManager } = buildMocks({
+        isDaily: true,
+        dailyChallenge: prior,
+      });
+      new RunHistoryRecorder(hooks).record(
+        { timeSurvivedSec: 300, enemiesKilled: 80, victory: true } as never,
+        { goldEarned: 0 } as never,
+      );
+      const [reducer] = saveManager.update.mock.calls[0];
+      const result = reducer({ dailyChallenge: prior }) as { dailyChallenge: Record<string, unknown> };
+      expect(result.dailyChallenge).toEqual({
+        dateKey: todayKey,
+        bestTimeSec: 400, // max(400, 300)
+        bestEnemiesKilled: 80, // max(50, 80)
+        attempts: 3,
+        completedVictory: true,
+      });
+    });
+
+    it('resets when prior record is from a past date', () => {
+      const { hooks, saveManager } = buildMocks({
+        isDaily: true,
+        dailyChallenge: {
+          dateKey: '1999-01-01',
+          bestTimeSec: 9999,
+          bestEnemiesKilled: 9999,
+          attempts: 99,
+          completedVictory: true,
+        },
+      });
+      new RunHistoryRecorder(hooks).record(
+        { timeSurvivedSec: 60, enemiesKilled: 10, victory: false } as never,
+        { goldEarned: 0 } as never,
+      );
+      const [reducer] = saveManager.update.mock.calls[0];
+      const result = reducer({}) as { dailyChallenge: Record<string, unknown> };
+      expect(result.dailyChallenge.dateKey).toBe(currentDailyDateKey());
+      expect(result.dailyChallenge.attempts).toBe(1);
+      expect(result.dailyChallenge.completedVictory).toBe(false);
+      expect(result.dailyChallenge.bestTimeSec).toBe(60);
+    });
+  });
+
+  describe('W27 friend challenge attempt recording', () => {
+    const baseSummary = {
+      timeSurvivedSec: 490,
+      enemiesKilled: 200,
+      bestCombo: 30,
+      victory: false,
+    };
+
+    it('records an attempt when the run came from a challenge URL', () => {
+      const { hooks, saveManager } = buildMocks({
+        sharedRunSetup: {
+          seed: 1,
+          variantKey: 'moor_runner',
+          curseKey: 'heavy_legs',
+          challenge: { outcome: 'death', timeSurvivedSec: 480 },
+        },
+      });
+      const expectedNow = new Date(2027, 5, 15, 12, 0, 0, 0).getTime();
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 0 } as never);
+
+      // ID: `${seed.toString(16)}-${variantKey}-${curseKey ?? 'clean'}-${targetTimeSec}`
+      expect(saveManager.recordFriendChallengeAttempt).toHaveBeenCalledWith(
+        '1-moor_runner-heavy_legs-480',
+        { timeSurvivedSec: 490, outcome: 'death', ts: expectedNow },
+      );
+    });
+
+    it('records outcome as "victory" when the run was a victory', () => {
+      const { hooks, saveManager } = buildMocks({
+        sharedRunSetup: {
+          seed: 0xdeadbeef >>> 0,
+          variantKey: 'classic',
+          curseKey: null,
+          challenge: { outcome: 'victory', timeSurvivedSec: 300 },
+        },
+      });
+      new RunHistoryRecorder(hooks).record(
+        { ...baseSummary, timeSurvivedSec: 310, victory: true } as never,
+        { goldEarned: 0 } as never,
+      );
+      const call = saveManager.recordFriendChallengeAttempt.mock.calls[0];
+      expect(call[1].outcome).toBe('victory');
+      expect(call[1].timeSurvivedSec).toBe(310);
+      // ID uses 'clean' for null curseKey
+      expect(call[0]).toBe('deadbeef-classic-clean-300');
+    });
+
+    it('does NOT record an attempt when sharedRunSetup has no challenge', () => {
+      const { hooks, saveManager } = buildMocks({
+        sharedRunSetup: {
+          seed: 1,
+          variantKey: 'classic',
+          curseKey: null,
+          challenge: null,
+        },
+      });
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 0 } as never);
+      expect(saveManager.recordFriendChallengeAttempt).not.toHaveBeenCalled();
+    });
+
+    it('does NOT record an attempt for non-challenge runs (hook absent)', () => {
+      const { hooks, saveManager } = buildMocks();
+      // default buildMocks has getActiveSharedRunSetup returning null
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 0 } as never);
+      expect(saveManager.recordFriendChallengeAttempt).not.toHaveBeenCalled();
+    });
+  });
+});

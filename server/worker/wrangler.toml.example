@@ -1,0 +1,43 @@
+# Cloudflare Workers config — cloud-save backend (P3 spike).
+#
+# Copy to `wrangler.toml` and fill in the placeholders to deploy.
+# Do NOT commit the live `wrangler.toml` — credentials and IDs vary
+# per environment and the template intentionally has no `account_id`
+# or real `database_id`. See ADR `docs/adr/0006-cloud-save-backend.md`.
+#
+# Local-dev (no D1 binding): `wrangler dev` falls back to in-memory
+# storage (see `src/index.ts` `pickStorage`). Data resets on Worker
+# restart — fine for local round-trip checks, NOT a long-lived store.
+#
+# What this spike does NOT prove:
+#   - Real D1 throughput / concurrency
+#   - Real magic-link auth flow
+#   - Privacy policy text
+#   - Production deployment process
+
+name = "wild-haggis-cloud-save"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+# When you set this for real, use a Cloudflare account with EU/UK data
+# residency to align with charter constraint C10 (see ADR 0006).
+# account_id = "<your-account-id>"
+
+# D1 binding. The Worker reads `env.DB`. To bootstrap:
+#   1. `wrangler d1 create wild-haggis-saves`
+#   2. Paste the returned `database_id` below.
+#   3. `wrangler d1 execute wild-haggis-saves --file=./schema.sql`
+#      (schema sketched in `src/storage.ts` — D1Storage docstring.)
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "wild-haggis-saves"
+# database_id = "<replace-after-wrangler-d1-create>"
+
+# Vars (non-secret config). Secrets live in `wrangler secret put`.
+# [vars]
+# ENVIRONMENT = "production"
+
+# Cron triggers (post-MVP — see ADR 0006 §Follow-ups, audit log retention).
+# [triggers]
+# crons = ["0 3 * * *"]  # daily 03:00 UTC: prune audit log rows >90d

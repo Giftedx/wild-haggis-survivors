@@ -1,0 +1,295 @@
+/**
+ * Relics — third progression tier (R1).
+ *
+ * Relics sit above weapons/passives: 3-slot cap per run, acquired from
+ * elite/boss/chest drops rather than level-up card draws. Each relic is
+ * a self-contained effect with a long-form flavour line (Dark-Souls-ish
+ * tone, per spec §3).
+ *
+ * M1 scope: pure data + schema. Effect hook functions (applyPerFrame,
+ * onPickup, etc.) are NOT authored here — they land in M3 alongside the
+ * effect wiring. `iconSprite` keys are declared now; the actual Graphics
+ * textures are generated in `BootScene` at M3.
+ *
+ * Source of truth: docs/superpowers/specs/2026-04-23-relics-third-tier-design.md §3.
+ */
+
+export type RelicRarity = 'common' | 'uncommon' | 'rare';
+
+/**
+ * Where a relic prefers to appear. Used by the M2 drop roller to bias
+ * pools (e.g. elite kills favour stat-boost commons, bosses favour
+ * run-defining rares, chests favour uncommons).
+ */
+export type RelicDropSource = 'elite' | 'boss' | 'chest' | 'hidden_node' | 'bargain';
+
+export type RelicKey =
+  // Common (8)
+  | 'sporran_of_holding'
+  | 'oatcake_stash'
+  | 'grans_thimble'
+  | 'lucky_heather_sprig'
+  | 'bronze_clasp'
+  | 'ceilidh_dancers_ribbon'
+  | 'damp_tinder'
+  | 'whisky_dram'
+  // Uncommon (7)
+  | 'cairn_stone'
+  | 'pictish_compass'
+  | 'highland_torque'
+  | 'bodhran_skin'
+  | 'clootie_rag'
+  | 'fishermens_net'
+  | 'midgie_repellent'
+  // Rare (4 — Stormcrown added 2026-05-22 as Cailleach Gauntlet drop)
+  | 'grans_teapot'
+  | 'fingals_horn'
+  | 'stone_of_destiny_shard'
+  | 'stormcrown';
+
+export interface RelicDef {
+  readonly key: RelicKey;
+  readonly rarity: RelicRarity;
+  /** i18n dot-path — resolved with `t(nameKey)` at render time. */
+  readonly nameKey: string;
+  /** i18n dot-path — short one-sentence mechanical description. */
+  readonly effectKey: string;
+  /** i18n dot-path — longer Dark-Souls-ish flavour line. */
+  readonly flavourKey: string;
+  /** Programmatic texture key; generated in BootScene at M3. */
+  readonly iconSprite: string;
+  /** Hex colour used for pickup VFX (thematic Scottish palette). */
+  readonly particleColour: number;
+  /** Drop sources this relic can appear in. Never empty. */
+  readonly dropAffinity: readonly RelicDropSource[];
+  /** True if the relic has a manual activation (e.g. sporran menu). */
+  readonly activate?: boolean;
+  /**
+   * V2 (Cailleach Gauntlet) — when set, this relic ONLY drops from a
+   * kill of this boss key. Excluded from the general drop pool.
+   */
+  readonly restrictedToBossKey?: string;
+}
+
+/**
+ * Drop-pool weights by rarity. Consumed by the M2 drop roller when
+ * a relic drop is triggered (elite kill, boss kill, chest open) to
+ * decide which rarity tier the drop rolls against. Sums to 100.
+ *
+ * Note: these are pool weights, not count ratios. The actual catalogue
+ * split is 8/7/3 = 44/39/17, but the roller is weighted 50/35/15 so
+ * that common drops feel consistently common regardless of catalogue
+ * growth in later waves.
+ */
+export const RARITY_DROP_WEIGHTS: Readonly<Record<RelicRarity, number>> = {
+  common: 50,
+  uncommon: 35,
+  rare: 15,
+};
+
+export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
+  // -------- Common (8) --------
+  sporran_of_holding: {
+    key: 'sporran_of_holding',
+    rarity: 'common',
+    nameKey: 'relics.sporran_of_holding.name',
+    effectKey: 'relics.sporran_of_holding.effect',
+    flavourKey: 'relics.sporran_of_holding.flavour',
+    iconSprite: 'relic_sporran',
+    particleColour: 0xcd7f32, // bronze
+    dropAffinity: ['elite', 'chest'],
+  },
+  oatcake_stash: {
+    key: 'oatcake_stash',
+    rarity: 'common',
+    nameKey: 'relics.oatcake_stash.name',
+    effectKey: 'relics.oatcake_stash.effect',
+    flavourKey: 'relics.oatcake_stash.flavour',
+    iconSprite: 'relic_oatcake',
+    particleColour: 0xd9b380, // toasted oat
+    dropAffinity: ['elite', 'chest'],
+  },
+  grans_thimble: {
+    key: 'grans_thimble',
+    rarity: 'common',
+    nameKey: 'relics.grans_thimble.name',
+    effectKey: 'relics.grans_thimble.effect',
+    flavourKey: 'relics.grans_thimble.flavour',
+    iconSprite: 'relic_thimble',
+    particleColour: 0xc0c0c0, // silver
+    dropAffinity: ['elite'],
+  },
+  lucky_heather_sprig: {
+    key: 'lucky_heather_sprig',
+    rarity: 'common',
+    nameKey: 'relics.lucky_heather_sprig.name',
+    effectKey: 'relics.lucky_heather_sprig.effect',
+    flavourKey: 'relics.lucky_heather_sprig.flavour',
+    iconSprite: 'relic_heather',
+    particleColour: 0xb19cd9, // heather purple
+    dropAffinity: ['hidden_node', 'chest'],
+  },
+  bronze_clasp: {
+    key: 'bronze_clasp',
+    rarity: 'common',
+    nameKey: 'relics.bronze_clasp.name',
+    effectKey: 'relics.bronze_clasp.effect',
+    flavourKey: 'relics.bronze_clasp.flavour',
+    iconSprite: 'relic_clasp',
+    particleColour: 0xcd7f32, // bronze
+    dropAffinity: ['elite'],
+  },
+  ceilidh_dancers_ribbon: {
+    key: 'ceilidh_dancers_ribbon',
+    rarity: 'common',
+    nameKey: 'relics.ceilidh_dancers_ribbon.name',
+    effectKey: 'relics.ceilidh_dancers_ribbon.effect',
+    flavourKey: 'relics.ceilidh_dancers_ribbon.flavour',
+    iconSprite: 'relic_ribbon',
+    particleColour: 0xe06666, // tartan red
+    dropAffinity: ['chest', 'bargain'],
+  },
+  damp_tinder: {
+    key: 'damp_tinder',
+    rarity: 'common',
+    nameKey: 'relics.damp_tinder.name',
+    effectKey: 'relics.damp_tinder.effect',
+    flavourKey: 'relics.damp_tinder.flavour',
+    iconSprite: 'relic_tinder',
+    particleColour: 0x8b4513, // peat brown
+    dropAffinity: ['chest', 'hidden_node'],
+  },
+  whisky_dram: {
+    key: 'whisky_dram',
+    rarity: 'common',
+    nameKey: 'relics.whisky_dram.name',
+    effectKey: 'relics.whisky_dram.effect',
+    flavourKey: 'relics.whisky_dram.flavour',
+    iconSprite: 'relic_whisky',
+    particleColour: 0xd4a017, // whisky amber
+    dropAffinity: ['chest', 'bargain'],
+    activate: true,
+  },
+
+  // -------- Uncommon (7) --------
+  cairn_stone: {
+    key: 'cairn_stone',
+    rarity: 'uncommon',
+    nameKey: 'relics.cairn_stone.name',
+    effectKey: 'relics.cairn_stone.effect',
+    flavourKey: 'relics.cairn_stone.flavour',
+    iconSprite: 'relic_cairn',
+    particleColour: 0x8a8a8a, // weathered stone
+    dropAffinity: ['elite', 'hidden_node'],
+  },
+  pictish_compass: {
+    key: 'pictish_compass',
+    rarity: 'uncommon',
+    nameKey: 'relics.pictish_compass.name',
+    effectKey: 'relics.pictish_compass.effect',
+    flavourKey: 'relics.pictish_compass.flavour',
+    iconSprite: 'relic_compass',
+    particleColour: 0x6b8e23, // moss green
+    dropAffinity: ['chest', 'hidden_node'],
+  },
+  highland_torque: {
+    key: 'highland_torque',
+    rarity: 'uncommon',
+    nameKey: 'relics.highland_torque.name',
+    effectKey: 'relics.highland_torque.effect',
+    flavourKey: 'relics.highland_torque.flavour',
+    iconSprite: 'relic_torque',
+    particleColour: 0xffd700, // gold
+    dropAffinity: ['elite', 'boss'],
+  },
+  bodhran_skin: {
+    key: 'bodhran_skin',
+    rarity: 'uncommon',
+    nameKey: 'relics.bodhran_skin.name',
+    effectKey: 'relics.bodhran_skin.effect',
+    flavourKey: 'relics.bodhran_skin.flavour',
+    iconSprite: 'relic_bodhran',
+    particleColour: 0x8b4513, // drum-skin brown
+    dropAffinity: ['chest', 'bargain'],
+  },
+  clootie_rag: {
+    key: 'clootie_rag',
+    rarity: 'uncommon',
+    nameKey: 'relics.clootie_rag.name',
+    effectKey: 'relics.clootie_rag.effect',
+    flavourKey: 'relics.clootie_rag.flavour',
+    iconSprite: 'relic_clootie',
+    particleColour: 0xa8b5b5, // damp-linen grey
+    dropAffinity: ['hidden_node', 'chest'],
+  },
+  fishermens_net: {
+    key: 'fishermens_net',
+    rarity: 'uncommon',
+    nameKey: 'relics.fishermens_net.name',
+    effectKey: 'relics.fishermens_net.effect',
+    flavourKey: 'relics.fishermens_net.flavour',
+    iconSprite: 'relic_net',
+    particleColour: 0x4a6b7a, // sea slate
+    dropAffinity: ['elite', 'chest'],
+  },
+  midgie_repellent: {
+    key: 'midgie_repellent',
+    rarity: 'uncommon',
+    nameKey: 'relics.midgie_repellent.name',
+    effectKey: 'relics.midgie_repellent.effect',
+    flavourKey: 'relics.midgie_repellent.flavour',
+    iconSprite: 'relic_midgie_repellent',
+    particleColour: 0x6b8e23, // moss green
+    dropAffinity: ['chest', 'bargain'],
+  },
+
+  // -------- Rare (3) --------
+  grans_teapot: {
+    key: 'grans_teapot',
+    rarity: 'rare',
+    nameKey: 'relics.grans_teapot.name',
+    effectKey: 'relics.grans_teapot.effect',
+    flavourKey: 'relics.grans_teapot.flavour',
+    iconSprite: 'relic_teapot',
+    particleColour: 0xf4a261, // hearth ember
+    dropAffinity: ['boss', 'chest'],
+  },
+  fingals_horn: {
+    key: 'fingals_horn',
+    rarity: 'rare',
+    nameKey: 'relics.fingals_horn.name',
+    effectKey: 'relics.fingals_horn.effect',
+    flavourKey: 'relics.fingals_horn.flavour',
+    iconSprite: 'relic_horn',
+    particleColour: 0xe8d8a0, // bone ivory
+    dropAffinity: ['boss'],
+    activate: true,
+  },
+  stone_of_destiny_shard: {
+    key: 'stone_of_destiny_shard',
+    rarity: 'rare',
+    nameKey: 'relics.stone_of_destiny_shard.name',
+    effectKey: 'relics.stone_of_destiny_shard.effect',
+    flavourKey: 'relics.stone_of_destiny_shard.flavour',
+    iconSprite: 'relic_destiny_shard',
+    particleColour: 0xd8c88c, // sandstone
+    dropAffinity: ['boss'],
+  },
+  // V2 (Cailleach Gauntlet) — restricted-drop relic. Only drops from
+  // cailleach_boss; never appears in the general boss pool.
+  // Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md
+  stormcrown: {
+    key: 'stormcrown',
+    rarity: 'rare',
+    nameKey: 'relics.stormcrown.name',
+    effectKey: 'relics.stormcrown.effect',
+    flavourKey: 'relics.stormcrown.flavour',
+    iconSprite: 'relic_stormcrown',
+    particleColour: 0xb9d6f0, // frost-blue
+    dropAffinity: ['boss'],
+    restrictedToBossKey: 'cailleach_boss',
+  },
+};
+
+/** Ordered key list — iteration order matches catalogue authorship order. */
+export const RELIC_KEYS = Object.keys(RELICS) as (keyof typeof RELICS)[];
