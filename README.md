@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./assets/banner.png" alt="Wild Haggis Survivors — the wee haggis over the title, from the game&#39;s own main menu" width="100%" />
+
 # Wild Haggis Survivors
 
 **A handcrafted, Highland-at-dusk, Scots-tinted bullet-heaven.**
