@@ -54,11 +54,12 @@ jobs:
         env:
           CI: true
 
-      - name: E2E (all engines, marathon soak excluded)
-        # The 30-sim-minute marathon soak runs ~12 min per attempt and has
-        # never passed on a GitHub runner (enemy-pool slope trips the leak
-        # threshold there — see nightly.yml, where it now lives as a tracked
-        # signal). Every other spec runs here on every push.
-        run: npx playwright test --grep-invert "Marathon smoke"
+      - name: E2E (all engines)
+        # Includes the 30-sim-minute marathon soak: it fast-forwards spawn
+        # timing (skipToMinute), so wall-clock is ~25 s, not 30 min. It was
+        # briefly quarantined while its leak assertion was wrong (it slope-
+        # tested the enemy pool, which ramps toward MAX_ACTIVE by design); the
+        # assertion now checks the real cap invariant and the soak passes.
+        run: npx playwright test
         env:
           CI: true
