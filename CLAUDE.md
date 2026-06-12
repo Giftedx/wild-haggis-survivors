@@ -63,7 +63,7 @@ If `git status` lists a huge set of files with **no line changes**—often `old 
 
 ### System Architecture (all instantiated by GameScene)
 - **SpawnSystem**: Enemy wave spawning based on game time; manages enemy group and boss spawns.
-- **WeaponSystem**: Manages 29 base weapon families (36 `WeaponKey` entries total; 7 evolved forms also have full `WeaponDef` definitions). 8 `WeaponBehavior` variants: projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse, lob_puddle. Shared projectile pool (max 200). Weapon evolution (lv5 weapon + matching passive = legendary form): 20 of the 29 bases have evolutions via `EVOLUTION_RECIPES`; 9 are pick-only (bagpipes is utility-only). `BURNS_EVOLUTION_THRESHOLD` is derived from `EVOLUTION_RECIPES.length` in `src/core/BalanceConfig.ts` and re-exported from `src/utils/save/schema.ts` for back-compat.
+- **WeaponSystem**: Manages `WEAPON_DEFS` (`src/data/weapons.ts`), currently 36 `WeaponKey` entries guarded by `src/data/weapons.test.ts`: 29 non-evolved base/pick-only defs plus 7 evolved defs. 8 `WeaponBehavior` variants: projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse, lob_puddle. Shared projectile pool size comes from `BALANCE.weapons.projectilePoolMax` (`src/core/BalanceConfig.ts`; 350 at the time of writing). Weapon evolution (lv5 weapon + matching passive = legendary form): 20 paired-passive recipes via `EVOLUTION_RECIPES`; 9 non-evolved defs are pick-only / non-recipe utility weapons (bagpipes remains utility-only). `BURNS_EVOLUTION_THRESHOLD` is hand-pinned at 10, intentionally decoupled from `EVOLUTION_RECIPES.length`, and re-exported from `src/utils/save/schema.ts` for back-compat.
 - **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
 - **Player growth**: Visual/hitbox scaling on level-up via `Player.onLevelUp` and `playerGrowthScale` (no standalone GrowthSystem class).
 - **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails, hit freeze, boss death spectacle, combo counter, toast notifications.
@@ -102,7 +102,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 | Mechanic | File / key | Note |
 |---|---|---|
 | The Drift | `PLAYER.DRIFT_DEGREES` | Constant clockwise rotational input offset; reduced by leveling and upgrades. Core identity. |
-| Weapon Evolution | `EVOLUTION_RECIPES` (`BalanceConfig.ts`) | 10 of 11 weapons paired-passive evolve at chest. `BURNS_EVOLUTION_THRESHOLD` derived from recipe count. |
+| Weapon Evolution | `EVOLUTION_RECIPES` (`BalanceConfig.ts`) | 20 paired-passive recipes are guarded by `src/core/BalanceConfig.evolution.test.ts`; `BURNS_EVOLUTION_THRESHOLD` is hand-pinned at 10, not derived from recipe count. |
 | Soft World Boundaries | gentle push-back near edges | No hard walls. |
 | Persistence (3 stores) | `whs_save` v23 + `whs_meta_save` v9 + `whs_game_settings` v1 | See `src/utils/save/`, `core/SaveManager.ts`, `core/SettingsManager.ts`. Overlap by design — see ADR-0007. |
 | Elite Enemies | `Enemy.markAsElite()` | 10% chance >2min; 2× HP, 1.3× speed, 3× XP. |
