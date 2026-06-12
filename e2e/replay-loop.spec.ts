@@ -39,6 +39,7 @@ test.describe('T1 replay loop', () => {
           hasCompletedTutorial: true,
         }));
         localStorage.setItem('whs_replay_mode', 'record');
+        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
         // Clear any existing main save so we have a predictable
         // run-history after the test run.
         localStorage.removeItem('whs_save');
@@ -85,9 +86,11 @@ test.describe('T1 replay loop', () => {
       if (!gameScene.scene.isActive()) return { err: 'game not active' };
       if (!gameScene.replayRecorder) return { err: 'recorder missing — record mode did not activate' };
 
-      // Let frames accrue.
-      await new Promise((r) => setTimeout(r, 500));
+      // Let a meaningful AUTO_BATTLE slice accrue before forcing run-end.
+      await new Promise((r) => setTimeout(r, 1500));
       const framesBefore = gameScene.replayRecorder.getFrameCount();
+      const directReplay = gameScene.replayRecorder.finalize();
+      const stateHashCount = directReplay.frames.filter((f: { stateHash?: string }) => !!f.stateHash).length;
 
       // Force run-end: drop HP then fire the lifecycle death hook directly
       // (raw `takeDamage` only mutates HP; the death pipeline needs
@@ -121,6 +124,8 @@ test.describe('T1 replay loop', () => {
         replaySeed: last?.replay?.seed,
         replayVariant: last?.replay?.variantKey,
         replayFrameCount: last?.replay?.frameCount,
+        directReplay,
+        stateHashCount,
       };
     });
 
@@ -130,10 +135,52 @@ test.describe('T1 replay loop', () => {
     expect(recordPhase.replaySeed, 'blob should carry the launch seed').toBe(4242);
     expect(recordPhase.replayVariant, 'blob should carry the live variant').toBe('classic');
     expect(recordPhase.replayFrameCount ?? 0).toBeGreaterThan(0);
+    expect(recordPhase.stateHashCount, 'live record should capture state-hash checkpoints').toBeGreaterThan(0);
 
-    // Playback phase — launch with the recorded blob, confirm the
-    // playback driver + chip render, and that blob exhaustion returns
-    // to Chronicle.
+    // Playback phase — first launch the in-memory pre-death blob so the
+    // recorded state hashes compare against the same meaningful gameplay
+    // slice, then use the persisted run-history blob for the save loop
+    // plumbing checks below.
+    const hashPhase = await page.evaluate(async (replay) => {
+      interface GameHandle {
+        scene: {
+          start(k: string, data?: unknown): void;
+          stop(k: string): void;
+          isActive(k: string): boolean;
+          getScene(k: string): unknown;
+        };
+      }
+      const g = (window as unknown as { game?: GameHandle }).game;
+      if (!g) return { err: 'no game' };
+      g.scene.stop('GameOver');
+      g.scene.start('Game', { replay });
+
+      const start = Date.now();
+      while (Date.now() - start < 20_000) {
+        if (g.scene.isActive('Game')) break;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      const gs = g.scene.getScene('Game') as {
+        replayInput: { getFrameCount(): number } | null;
+        replayStateHashMismatches: string[];
+      };
+      const totalFrames = gs.replayInput?.getFrameCount() ?? 0;
+      const exhaustStart = Date.now();
+      while (Date.now() - exhaustStart < 60_000) {
+        if (g.scene.isActive('Chronicle')) break;
+        await new Promise((r) => setTimeout(r, 200));
+      }
+      return {
+        totalFrames,
+        chronicleActiveAfterExhaust: g.scene.isActive('Chronicle'),
+        mismatches: gs.replayStateHashMismatches,
+      };
+    }, recordPhase.directReplay);
+
+    expect(hashPhase.totalFrames ?? 0).toBeGreaterThan(0);
+    expect(hashPhase.chronicleActiveAfterExhaust, 'state-hash replay should exhaust to Chronicle').toBe(true);
+    expect(hashPhase.mismatches, `Replay state hash mismatches:\n${hashPhase.mismatches?.join('\n')}`).toEqual([]);
+
     const playbackPhase = await page.evaluate(async () => {
       interface GameHandle {
         scene: {

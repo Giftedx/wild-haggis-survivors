@@ -157,6 +157,7 @@ import {
   recordReplayFrame,
 } from './game/replayBridgeInstall';
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
+import { captureReplayStateHash, shouldCaptureReplayStateHash } from './game/replayStateHash';
 import { installRunEndShutdown } from './game/runEndShutdown';
 import { resetTransientRunState as resetTransientRunStateImpl } from './game/resetTransientRunState';
 import {
@@ -378,6 +379,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** T1 replay state — install/teardown owned by `game/replayBridgeInstall.ts`. */
   replayRecorder: ReplayRecorder | null = null;
   replayInput: ReplayInput | null = null;
+  replayStateHashMismatches: string[] = [];
   private pendingReplay: ReplayBlobAny | null = null;
   /** v2 route queue — `launchActIntermission` shifts one off per act boundary during playback. */
   private pendingReplayRoutes: RoutePick[] = [];
@@ -730,6 +732,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // but explicit reset keeps the "blank every transient field" contract
     // honest if a future create() pivot reads it earlier.
     this.committedSporranIds = [];
+    this.replayStateHashMismatches = [];
 
     // R1 — clear held Relics + dropped pickups + Fianna spirits before a
     // fresh run. A scene instance can be reused across runs; without this
@@ -1782,10 +1785,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     } finally {
       // T1 replay — capture one frame per tick regardless of pause state.
       // Pump in `replayBridgeInstall.ts`.
+      const replayFrameIndex = this.replayRecorder?.getFrameCount() ?? this.replayInput?.getFrameIndex() ?? -1;
+      const stateHash = shouldCaptureReplayStateHash(replayFrameIndex)
+        ? captureReplayStateHash(this, replayFrameIndex)
+        : undefined;
+      const expectedStateHash = this.replayInput?.getCurrentStateHash();
+      if (expectedStateHash && stateHash !== expectedStateHash) {
+        this.replayStateHashMismatches.push(
+          `frame ${replayFrameIndex}: expected ${expectedStateHash}, got ${stateHash ?? 'missing'}`,
+        );
+      }
       recordReplayFrame({
         recorder: this.replayRecorder,
         snapshot: this.player ? this.player.peekReplayInputFrame() : null,
         dtMs: delta,
+        stateHash,
       });
     }
   }

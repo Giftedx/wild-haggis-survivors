@@ -53,8 +53,9 @@ export type TickFrameHeaderResult =
   /** Gameplay is paused — caller should return without ticking world. */
   | { kind: 'paused' }
   /** Continue with world tick; `scaledDelta` is the time slice to use
-   *  for game-time systems (regen, AI, spawns, projectile TTLs). */
-  | { kind: 'continue'; scaledDelta: number };
+   *  for game-time systems (regen, AI, spawns, projectile TTLs), and
+   *  `frameDelta` is the raw delta for this frame (recorded dt during replay). */
+  | { kind: 'continue'; scaledDelta: number; frameDelta: number };
 
 export interface TickFrameHeaderDeps {
   /** Live ref to the recorded-input driver during replay playback. Null
@@ -97,10 +98,14 @@ export interface TickFrameHeaderDeps {
  */
 export function tickFrameHeader(deps: TickFrameHeaderDeps, delta: number): TickFrameHeaderResult {
   // T1 replay playback — advance the recorded cursor each tick before
-  // Player reads input. Pump in `replayBridgeInstall.ts`.
-  if (tickReplayPlayback({ replayInput: deps.getReplayInput() }).exhausted) {
+  // Player reads input. Pump in `replayBridgeInstall.ts`. Once advanced,
+  // the recorded dt becomes the authoritative simulation delta for this
+  // tick; otherwise playback would only replay inputs, not the game state.
+  const replayTick = tickReplayPlayback({ replayInput: deps.getReplayInput() });
+  if (replayTick.exhausted) {
     return { kind: 'replay-exhausted' };
   }
+  const frameDelta = replayTick.recordedDeltaMs ?? delta;
 
   const pauseMenuEdge = deps.getPlayer().consumePauseMenuEdge();
   if (deps.tryAcceptPostBellOffer?.(pauseMenuEdge)) {
@@ -111,23 +116,23 @@ export function tickFrameHeader(deps: TickFrameHeaderDeps, delta: number): TickF
     deps.togglePause();
   }
 
-  deps.timeManager.update(delta);
+  deps.timeManager.update(frameDelta);
 
   // Raw tickers always advance (UI/run-end domain)
-  deps.updateTickers.tickRaw(delta);
-  deps.getDebugOverlay()?.update(delta);
+  deps.updateTickers.tickRaw(frameDelta);
+  deps.getDebugOverlay()?.update(frameDelta);
   // Captions tick on raw delta so they keep fading during pause / run-end.
-  deps.getCaptionOverlay()?.update(delta);
+  deps.getCaptionOverlay()?.update(frameDelta);
 
   // Scaled tickers freeze whenever gameplay is paused (including HIT_FREEZE which pauses physics
   // without mutating timeScale).
   const scaledDelta = deps.timeManager.isGameplayPaused()
     ? 0
-    : delta * deps.timeManager.getEffectiveTimeScale();
+    : frameDelta * deps.timeManager.getEffectiveTimeScale();
   deps.updateTickers.tickScaled(scaledDelta);
 
   deps.iFrameController.tick(scaledDelta);
-  deps.runEndTickers.tick(delta);
+  deps.runEndTickers.tick(frameDelta);
 
   // M1 F4 — shrine-granted timed buffs. Ticks on scaledDelta so pause
   // / HIT_FREEZE / slow-mo freeze the countdown the same way they
@@ -138,7 +143,7 @@ export function tickFrameHeader(deps: TickFrameHeaderDeps, delta: number): TickF
   // U1 Task 14 — rune condition tick. Evaluate each active rune against
   // a fresh context built from live scene state; transitions fire
   // apply/remove on the shared runeBag which Player / WeaponSystem read.
-  deps.getRuneSystemController().tick(delta);
+  deps.getRuneSystemController().tick(frameDelta);
 
   // M1 F1+F2 — poll pending encounter/elite waves every frame (raw
   // bookkeeping; must tick regardless of the pause early-return below
@@ -155,5 +160,5 @@ export function tickFrameHeader(deps: TickFrameHeaderDeps, delta: number): TickF
     return { kind: 'paused' };
   }
 
-  return { kind: 'continue', scaledDelta };
+  return { kind: 'continue', scaledDelta, frameDelta };
 }

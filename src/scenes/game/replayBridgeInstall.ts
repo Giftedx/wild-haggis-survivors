@@ -235,6 +235,8 @@ export interface RecordReplayFrameInput {
   /** Wall-clock delta from the scene tick, already clamped to [0, 100]
    *  by the caller (matches GameScene's existing clamp). */
   dtMs: number;
+  /** Optional post-tick gameplay state hash for record → replay assertions. */
+  stateHash?: string;
 }
 
 /**
@@ -252,6 +254,7 @@ export function recordReplayFrame(input: RecordReplayFrameInput): void {
     dy: input.snapshot.dy,
     dash: input.snapshot.dash,
     menu: input.snapshot.menu,
+    ...(input.stateHash ? { stateHash: input.stateHash } : {}),
   });
 }
 
@@ -266,6 +269,8 @@ export interface TickReplayPlaybackResult {
    *  proceeds) — false; or (b) the cursor exhausted the blob and the
    *  caller should kick the scene to Chronicle — true. */
   exhausted: boolean;
+  /** Recorded dt for the frame just advanced to; null when playback is off/exhausted. */
+  recordedDeltaMs: number | null;
 }
 
 /**
@@ -278,7 +283,7 @@ export interface TickReplayPlaybackResult {
 export function tickReplayPlayback(
   input: TickReplayPlaybackInput,
 ): TickReplayPlaybackResult {
-  if (!input.replayInput) return { exhausted: false };
+  if (!input.replayInput) return { exhausted: false, recordedDeltaMs: null };
   const next = input.replayInput.advanceFrame();
-  return { exhausted: next === null };
+  return { exhausted: next === null, recordedDeltaMs: next?.dtMs ?? null };
 }

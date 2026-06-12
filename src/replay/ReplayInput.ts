@@ -83,6 +83,11 @@ export class ReplayInput implements IInput {
     return this.currentFrame().dtMs;
   }
 
+  /** Optional gameplay state hash captured after the current frame's record tick. */
+  getCurrentStateHash(): string | undefined {
+    return this.currentFrame().stateHash;
+  }
+
   // ── InputManager shape ───────────────────────────────────────────
 
   /** Direction vector recorded for the current frame. */

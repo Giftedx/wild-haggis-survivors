@@ -33,6 +33,8 @@ export interface ReplayFrame {
   dash: boolean;
   /** Menu-pause edge fired this frame (gamepad Start/Options). */
   menu: boolean;
+  /** Optional post-tick gameplay state hash captured for end-to-end replay checks. */
+  stateHash?: string;
 }
 
 export interface ReplayBlobMeta {
@@ -75,6 +77,7 @@ export function clampReplayFrame(raw: ReplayFrame): ReplayFrame {
     dy,
     dash: toBoolean(raw.dash),
     menu: toBoolean(raw.menu),
+    ...(typeof raw.stateHash === 'string' && raw.stateHash ? { stateHash: raw.stateHash } : {}),
   };
 }
 
@@ -140,6 +143,7 @@ export function parseReplayFrames(parsed: Record<string, unknown>): ReplayFrame[
         dy: f.dy,
         dash: toBoolean(f.dash),
         menu: toBoolean(f.menu),
+        ...(typeof f.stateHash === 'string' ? { stateHash: f.stateHash } : {}),
       }),
     );
   }

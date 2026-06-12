@@ -75,7 +75,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     return;
   }
   if (headerResult.kind === 'paused') return;
-  const { scaledDelta } = headerResult;
+  const { scaledDelta, frameDelta } = headerResult;
 
   tickFrameWorld({
     deathCauseTracker: scene.deathCauseTracker,
@@ -128,7 +128,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     setLastEmittedRunSecond: (v) => { scene.lastEmittedRunSecond = v; },
     reseedBiome: () =>
       scene.biomeController?.reseed(scene, scene.getRunRng(), GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT),
-  }, delta, scaledDelta);
+  }, frameDelta, scaledDelta);
 
   // Wild Living World Initiative — cross-track coordinator. Runs after
   // the gameplay-pause guard (header returned non-paused above) so
@@ -155,7 +155,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
   scene.livingWorldDirector.update(scaledDelta, lwCtx);
 
   tickPresentationFrame({
-    delta,
+    delta: frameDelta,
     player: scene.player,
     spawnSystem: scene.spawnSystem,
     juice: scene.juice,
@@ -185,7 +185,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
   });
 
   updateRunHudFrame({
-    delta,
+    delta: frameDelta,
     hud: scene.hud,
     player: scene.player,
     xpSystem: scene.xpSystem,
