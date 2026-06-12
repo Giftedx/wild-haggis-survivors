@@ -252,6 +252,19 @@ test.describe('Marathon smoke', () => {
     const steadyState = samples.filter((s) => s.minute >= 10);
     const projectileSlope = linearSlope(steadyState.map((s) => s.projectiles));
     const gemSlope = linearSlope(steadyState.map((s) => s.gems));
+    // Gems are burst-shaped, not flat: an elite/wave clear dumps a pile of
+    // gems an instant before a sample lands, then auto-battle hoovers them
+    // back to ~0. CI run 27384629703 (2026-06-12) failed on exactly this:
+    // steady-state gems [0, 2, 0, 0, 23, 4] — one m25 burst drove the OLS
+    // slope to 2.37 against a 1.5 threshold while the pool demonstrably
+    // recycled (next sample: 4). Same failure class the enemy assertion was
+    // moved off slope-testing for (see 5590960 "checks the cap, not a flat
+    // slope"). The honest leak invariant for a fast-recycling pool is that
+    // its steady-state FLOOR stays at baseline: a real leak raises the
+    // median; a kill-burst caught at a sample instant does not.
+    const sortedGems = steadyState.map((s) => s.gems).sort((a, b) => a - b);
+    const medianGems = sortedGems[Math.floor(sortedGems.length / 2)] ?? 0;
+    const GEM_MEDIAN_MAX = 10; // baseline is ~0–4; a leaking pool's median climbs unbounded
     // Enemies are NOT a flat-slope pool: the spawn curve ramps difficulty for
     // the whole run, and with no effective player clearing (auto-battle only)
     // the active count climbs toward ENEMIES.MAX_ACTIVE rather than plateauing
@@ -266,7 +279,7 @@ test.describe('Marathon smoke', () => {
     const medianFps = fpsValues[Math.floor(fpsValues.length / 2)] ?? 0;
     const minFps = fpsValues[0] ?? 0;
 
-    console.log('[marathon] slopes:', { projectileSlope, gemSlope });
+    console.log('[marathon] slopes:', { projectileSlope, gemSlope, medianGems });
     console.log('[marathon] peak enemies:', peakEnemies, '/', ENEMY_MAX_ACTIVE);
     console.log('[marathon] fps median/min:', { medianFps, minFps });
     console.log('[marathon] audio warnings:', audioWarnings);
@@ -278,7 +291,7 @@ test.describe('Marathon smoke', () => {
     expect(medianFps, 'median FPS holds across 30 sim-minutes').toBeGreaterThanOrEqual(FPS_FLOOR);
     expect(peakEnemies, 'enemy pool respects MAX_ACTIVE cap (leak overflows it)').toBeLessThanOrEqual(ENEMY_MAX_ACTIVE);
     expect(projectileSlope, 'projectile pool not trending upward').toBeLessThan(LEAK_SLOPE_THRESHOLD);
-    expect(gemSlope, 'gem pool not trending upward').toBeLessThan(LEAK_SLOPE_THRESHOLD);
+    expect(medianGems, 'gem pool floor stays at baseline (a leak raises the median; a kill-burst does not)').toBeLessThanOrEqual(GEM_MEDIAN_MAX);
     expect(audioWarnings, 'no audio-context warnings during marathon').toEqual([]);
   });
 });
