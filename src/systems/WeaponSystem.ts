@@ -15,6 +15,7 @@ import { musicEngine } from './music/ProceduralMusicEngine';
 import { applyPibrochDamage, isPibrochAligned, PIBROCH_WINDOW_MS } from './music/pibrochAlignment';
 import { applyPibrochHammerRhythm, applyWaulkingRhythm } from './music/waulkingRhythm';
 import { populateEvolvedKeys } from './evolvedWeaponKeys';
+import { pickBouncingLaunchAngle } from './weaponAngleSeed';
 import {
   createDashStrikeState,
   tickDashStrike,
@@ -705,20 +706,25 @@ export class WeaponSystem {
    * Bouncing-projectile dispatch. Two weapons share this path —
    * Jobby Hurler (the lumpy haggis ball) and Shinty Stick (the wee
    * cork-leather camanachd ball). The texture key is the only fork:
-   * everything else (random direction + bouncing physics + run-RNG-
-   * less FloatBetween) is identical.
+   * everything else (seeded-RNG launch angle + bouncing physics) is
+   * identical.
    */
   private fireBouncing(w: ActiveWeapon, px: number, py: number): void {
     const count = this.maxExtraProjectilesThisFrame(w.config.key, w.projectileCount);
     const tex = w.config.key === 'shinty_stick' ? 'shinty_ball' : 'haggis_ball';
     if (count > 0) this.spawnProjectileCastFlourish(px, py, tex);
 
+    // Launch angle draws from the seeded run RNG so the same seed reproduces
+    // bouncing-projectile trajectories byte-for-byte (T1 replay contract) —
+    // the angle decides which enemies the 5s projectile strikes. Matches the
+    // evolved sister `fireRapidBounce`.
+    const rng = this.scene.getRunRng();
     for (let i = 0; i < count; i++) {
       const proj = this.getProjectile(tex);
       if (!proj) continue;
 
       // Fire in a random direction
-      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+      const angle = pickBouncingLaunchAngle(rng);
       const tx = px + Math.cos(angle) * 500;
       const ty = py + Math.sin(angle) * 500;
 

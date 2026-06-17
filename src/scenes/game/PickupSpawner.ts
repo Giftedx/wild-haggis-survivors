@@ -275,6 +275,11 @@ export class PickupSpawner {
       if (collected) return;
       collected = true;
       despawnHandle?.cancel();
+      // Gold reward is intentionally non-seeded. Gold is terminal currency —
+      // it never re-enters the combat sim, so this variance cannot diverge a
+      // replayed fight. PickupSpawner is a deliberate non-seeded zone (scene is
+      // Phaser.Scene, no runRng access); seed this only if shared-seed gold-
+      // total parity is ever required. See replayMathRandomAllowlist.test.ts.
       const goldReward = Phaser.Math.Between(5, 15);
       this.hooks.onCoinCollected(goldReward);
       this.hooks.getJuice().showToast(t('ui.game.golden_collected', { gold: goldReward }), TOAST_COLORS.reward);

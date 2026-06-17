@@ -39,6 +39,7 @@ import {
   pickInitialOrbitAngle,
   pickSpawnerMinionAngle,
 } from '../entities/enemyAngleSeed';
+import { pickBouncingLaunchAngle } from '../systems/weaponAngleSeed';
 import type { FallenCairn } from '../utils/save/fallenCairns';
 import {
   advanceGauntlet,
@@ -153,15 +154,18 @@ describe('replay determinism', () => {
 
   it('enemy gameplay-state angle stream is deterministic under shared seed', () => {
     // Realistic-ish call mix: every spawn pulls an orbit-angle init,
-    // and every fifth tick a spawner emits a midge (interleaved draw).
-    // Asserts the two helpers + RNG plumbing keep byte-equal streams
-    // across same-seed runs; this is the seam the original T1 ship
-    // missed (Enemy.ts:298 + :924 used Math.random until 2026-04-30).
+    // every fifth tick a spawner emits a midge, and every third tick a
+    // bouncing weapon fires (interleaved draws). Asserts the gameplay-
+    // state angle helpers + RNG plumbing keep byte-equal streams across
+    // same-seed runs; these are the seams the original T1 ship missed
+    // (Enemy.ts:298 + :924 and WeaponSystem.fireBouncing used Math.random
+    // / Phaser.Math.FloatBetween).
     const draw = (rng: RNG): number[] => {
       const stream: number[] = [];
       for (let i = 0; i < 60; i++) {
         stream.push(pickInitialOrbitAngle(rng));
         if (i % 5 === 0) stream.push(pickSpawnerMinionAngle(rng));
+        if (i % 3 === 0) stream.push(pickBouncingLaunchAngle(rng));
       }
       return stream;
     };

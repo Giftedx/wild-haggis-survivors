@@ -1,5 +1,5 @@
 /**
- * REVIEW S4 — static allowlist for `Math.random()` outside the seeded
+ * REVIEW S4 — static allowlist for non-seeded RNG outside the seeded
  * `runRng` discipline.
  *
  * ADR-0002 Phase 3 + the rng.ts policy split RNG into two streams:
@@ -11,11 +11,20 @@
  *     cosmetic run-name generation.
  *
  * The carve-out is honour-system in source. This guard makes it
- * **enforced**: every shipped `.ts` file under `src/` that mentions
- * `Math.random` must appear in the allowlist below with a one-line
- * justification. A new file using `Math.random` for state-affecting
+ * **enforced**: every shipped `.ts` file under `src/` that uses a
+ * non-seeded RNG entry point must appear in the allowlist below with a
+ * one-line justification. A new file using one for state-affecting
  * randomness would be silent replay drift — this test forces a
  * conscious choice (allowlist + justification, or wire `runRng`).
+ *
+ * "Non-seeded RNG" is the whole family, not just the literal
+ * `Math.random` token: Phaser's `Math.FloatBetween` / `Math.Between` /
+ * `Math.RND.*` helpers are all `Math.random`-backed (e.g. FloatBetween
+ * is literally `Math.random() * (max - min) + min`). A gameplay-path use
+ * of any of them is the same determinism hole, so the detector matches
+ * the family — otherwise a `Phaser.Math.FloatBetween` on a damage path
+ * slips through unseen (which is exactly how WeaponSystem.fireBouncing's
+ * launch angle escaped this guard).
  *
  * Closes REVIEW.md S4 (2026-05-10).
  */
@@ -78,7 +87,7 @@ const ALLOWLIST: AllowlistEntry[] = [
   },
   {
     path: 'scenes/game/PickupSpawner.ts',
-    reason: 'cosmetic — placement rotation + `rand: Math.random` parameter to seeded helpers (positions are visual; trigger time is gameplay)',
+    reason: 'cosmetic placement (positions visual; trigger time gameplay) + golden-chest gold reward intentionally non-seeded — terminal currency, never re-enters the combat sim, and PickupSpawner has no runRng access (see inline comment at spawnGoldenChest)',
   },
   {
     path: 'scenes/game/FilmGrainOverlay.ts',
@@ -87,6 +96,18 @@ const ALLOWLIST: AllowlistEntry[] = [
   {
     path: 'art/sprites/fx/filmGrain.ts',
     reason: 'cosmetic — texture-bake noise (run once at startup)',
+  },
+  {
+    path: 'ui/UpgradeCards.ts',
+    reason: 'cosmetic — sparkle particle scatter around level-up cards (visual only)',
+  },
+  {
+    path: 'scenes/purchaseBurst.ts',
+    reason: 'cosmetic — shop purchase confirmation particle burst',
+  },
+  {
+    path: 'scenes/game/lemmingsEasterEgg.ts',
+    reason: 'cosmetic — RND.uuid() generates a unique texture-cache key for a fallback rect (asset naming, no gameplay state)',
   },
 
   // ── Cosmetic randomness — audio / music ─────────────────────────────
@@ -142,6 +163,18 @@ const ALLOWLIST: AllowlistEntry[] = [
     path: 'scenes/GameScene.ts',
     reason: 'cosmetic — runName generated outside runRng (per rng.ts policy, inline comment)',
   },
+  {
+    path: 'scenes/MenuScene.ts',
+    reason: 'cosmetic — menu ambient heather dots + drifting enemy sprites (between-run scene)',
+  },
+  {
+    path: 'scenes/game-over/renderGameOverTitleAndSubtitle.ts',
+    reason: 'cosmetic — post-run title/subtitle copy variant pick (run is over, not replay-recorded)',
+  },
+  {
+    path: 'scenes/game/PauseMenu.ts',
+    reason: 'cosmetic — pause-screen quip index (UI flavour text, not gameplay state)',
+  },
 
   // ── Banter / upgrade rng — injectable, defaults to Math.random ──────
   {
@@ -179,6 +212,14 @@ const ALLOWLIST: AllowlistEntry[] = [
   {
     path: 'entities/enemyAngleSeed.ts',
     reason: 'comment-only — declares the never-use-Math.random contract for orbit/spawner angles',
+  },
+  {
+    path: 'systems/weaponAngleSeed.ts',
+    reason: 'comment-only — declares the never-use-Math.random/FloatBetween contract for the bouncing launch angle (helper draws from seeded runRng)',
+  },
+  {
+    path: 'scenes/gameOverPanelTheme.ts',
+    reason: 'comment-only — docstring cites a Phaser.Math.Between(0,3) caller; the helper itself is deterministic given its index args',
   },
   {
     path: 'scenes/game/runeSystemController.ts',
@@ -236,20 +277,35 @@ function listSourceFiles(): string[] {
   return out;
 }
 
-function findFilesUsingMathRandom(): Set<string> {
+/**
+ * Non-seeded RNG entry points that bypass the seeded `runRng` discipline.
+ * All are `Math.random`-backed; the bare-substring grep only ever saw the
+ * first, so the Phaser helpers slipped through. Matching the whole family
+ * forces the same cosmetic-or-seeded decision for every one.
+ */
+const NON_SEEDED_RNG_PATTERNS = [
+  'Math.random',
+  'Phaser.Math.FloatBetween',
+  'Phaser.Math.Between',
+  'Phaser.Math.RND',
+  'Phaser.Math.Angle.Random',
+  'Phaser.Math.RandomXY',
+];
+
+function findFilesUsingNonSeededRng(): Set<string> {
   const hits = new Set<string>();
   for (const rel of listSourceFiles()) {
     const text = readFileSync(`${SRC_ROOT}${sep}${rel.split('/').join(sep)}`, 'utf8');
-    if (text.includes('Math.random')) hits.add(rel);
+    if (NON_SEEDED_RNG_PATTERNS.some((p) => text.includes(p))) hits.add(rel);
   }
   return hits;
 }
 
-describe('REVIEW S4 — Math.random allowlist enforces cosmetic-only carve-out', () => {
-  const hits = findFilesUsingMathRandom();
+describe('REVIEW S4 — non-seeded RNG allowlist enforces cosmetic-only carve-out', () => {
+  const hits = findFilesUsingNonSeededRng();
   const allowedPaths = new Set(ALLOWLIST.map((e) => e.path));
 
-  it('every file using Math.random is on the allowlist with a justification', () => {
+  it('every file using a non-seeded RNG entry point is on the allowlist with a justification', () => {
     const orphans: string[] = [];
     for (const file of hits) {
       if (!allowedPaths.has(file)) orphans.push(file);
@@ -262,13 +318,13 @@ describe('REVIEW S4 — Math.random allowlist enforces cosmetic-only carve-out',
         )
         .join('\n');
       throw new Error(
-        `New Math.random use(s) detected outside the cosmetic-only carve-out:\n${detail}`,
+        `New non-seeded RNG use(s) detected outside the cosmetic-only carve-out:\n${detail}`,
       );
     }
     expect(orphans).toEqual([]);
   });
 
-  it('no allowlist entry is stale (file no longer uses Math.random)', () => {
+  it('no allowlist entry is stale (file no longer uses a non-seeded RNG entry point)', () => {
     const stale = ALLOWLIST.filter((e) => !hits.has(e.path));
     if (stale.length > 0) {
       const detail = stale
