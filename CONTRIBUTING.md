@@ -26,9 +26,9 @@ These run on every commit via `npm run ci`. If your change breaks one, fix the r
 | **i18n parity** | [`src/core/i18n.locale.test.ts`](src/core/i18n.locale.test.ts) | SCS→EN orphan check + EN→SCS scoped to `ui.banter.*` (banter is bilingual-locked) |
 | **Replay determinism** | [`src/replay/replayDeterminism.test.ts`](src/replay/replayDeterminism.test.ts) | T1 contract: state-affecting RNG via `runRng`, fixed-step physics |
 | **Save schema migration** | [`src/utils/save/`](src/utils/save/) `*.test.ts` | Schema bump requires `migrateV{N-1}ToV{N}` step + roundtrip |
-| **Bundle budget** | [`scripts/check-bundle-budget.mjs`](scripts/check-bundle-budget.mjs) | vendor-phaser ≤390 KB gzip / index ≤320 KB / sprite-art ≤240 KB |
+| **Bundle budget** | [`scripts/check-bundle-budget.mjs`](scripts/check-bundle-budget.mjs) | vendor-phaser ≤390 KB gzip / index ≤320 KB / sprite-art ≤280 KB |
 | **Flash budget** | [`scripts/check-flash-budget.mjs`](scripts/check-flash-budget.mjs) | All flash methods route through `motionScale` + `reduceFlashing` caps |
-| **Playwright e2e** | `npm run test:e2e` (after `npm run build`) | ~50 `e2e/*.spec.ts` files (~218 enumerated cases across chromium / firefox / webkit + mobile — `npx playwright test --list`). `e2e/fixtures.ts` forces `AUTO_BATTLE` off before each navigation; specs that need auto-picks / soak throughput set `AUTO_BATTLE = true` in their own `page.addInitScript` (runs after the fixture hook). |
+| **Playwright e2e** | `npm run test:e2e` (after `npm run build`) | 94 `e2e/*.spec.ts` files (~218 enumerated cases across chromium / firefox / webkit + mobile — `npx playwright test --list`). `e2e/fixtures.ts` forces `AUTO_BATTLE` off before each navigation; specs that need auto-picks / soak throughput set `AUTO_BATTLE = true` in their own `page.addInitScript` (runs after the fixture hook). |
 
 `npm run ci` runs lint + Vitest + build + bundle budget + flash budget + LOC report. `npm run ci:all` adds Playwright E2E. Use `ci:all` before declaring UI-touching work done.
 
@@ -44,7 +44,7 @@ Constraints that look arbitrary but are load-bearing. Documented at the site AND
 | i18n parity (banter) | [`i18n.locale.test.ts`](src/core/i18n.locale.test.ts) | EN→SCS scoped to `ui.banter.*`; orphan SCS keys also blocked |
 | Save schema | [`save/schema.ts`](src/utils/save/schema.ts) | `SAVE_SCHEMA_VERSION` bump requires matching migration step; chain runs every load |
 | Hazard immunity | [`isPlayerHazardImmune.ts`](src/systems/isPlayerHazardImmune.ts) | Single shared predicate; both HazardZones + HazardsSystem read it (don't inline the OR-chain) |
-| `BURNS_EVOLUTION_THRESHOLD` | [`BalanceConfig.ts`](src/core/BalanceConfig.ts) | Derived from `EVOLUTION_RECIPES.length`; achievement copy interpolates `{count}` (don't hard-code numbers) |
+| `BURNS_EVOLUTION_THRESHOLD` | [`BalanceConfig.ts`](src/core/BalanceConfig.ts) | Intentionally hard-pinned at `10`, **decoupled** from `EVOLUTION_RECIPES.length` (Burns's gate is authored around "all weapon-family evolutions", not the raw recipe count — a rhythm-coupled 11th recipe must not silently tighten the unlock). [`src/data/weapons.test.ts`](src/data/weapons.test.ts) enforces the decoupling; lifting the gate means bumping the constant *and* the achievement copy explicitly. Achievement copy interpolates `{count}` from the constant |
 
 ---
 

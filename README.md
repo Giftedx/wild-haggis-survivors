@@ -65,7 +65,7 @@ Before declaring anything fixed/done, run at least `npm test` and `npm run build
 - **Data-driven balance:** all weapons, enemies, upgrades, variants, routes, banter, curses, biomes, hazards, relics, runes, and node banks live under `src/data/`. Code consumes them; balance work is data-only.
 - **Persistence:** three independent `localStorage` keys, each owned by one module —
   - `whs_save` (`src/utils/save/*`, schema v23 — combined save: meta + run history + replay blob)
-  - `whs_meta_save` (`src/core/SaveManager.ts`, schema v9 — kills, unlocks, achievements, mid-run resume)
+  - `whs_meta_save` (`src/core/SaveManager.ts`, schema v12 — kills, unlocks, achievements, mid-run resume)
   - `whs_game_settings` (`src/core/SettingsManager.ts`, schema v1 — audio / motion / a11y / keybindings / locale)
 - **Bilingual:** English baseline in `src/core/i18n.ts`; Scots overlay code-split via `src/core/i18n.scs.ts` and lazy-loaded. Two parity fences in CI — see `src/core/i18n.locale.test.ts`.
 - **Replay determinism:** Arcade physics fixed-step (`fps: 60, fixedStep: true`). `ReplayRecorder` + `ReplayInput` cover record + playback. Spawn positions affecting game state route through the seeded `runRng` — see [ADR-0002](docs/adr/0002-deterministic-replay-format.md).
