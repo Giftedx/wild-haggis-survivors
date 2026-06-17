@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('phaser', () => {
   class Body {
@@ -41,6 +41,10 @@ vi.mock('../utils/SubscriptionBag', () => ({
 }));
 
 import { Player } from './Player';
+import {
+  getSettingsManager,
+  resetSettingsManagerSingletonForTests,
+} from '../core/SettingsManager';
 
 function makeScene(): any {
   const spriteStub = () => ({
@@ -116,6 +120,42 @@ describe('Player.takeDamage', () => {
     p.enableShield();
     p.takeDamage(50); // triggers shield
     expect(p.hasShield()).toBe(false);
+  });
+});
+
+describe('Player.takeDamage — Assist Mode invincibility', () => {
+  beforeEach(() => {
+    resetSettingsManagerSingletonForTests();
+    getSettingsManager().reset();
+  });
+  afterEach(() => {
+    resetSettingsManagerSingletonForTests();
+  });
+
+  it('blocks all damage at the takeDamage chokepoint (so boss pulses / projectiles honour it)', () => {
+    // Boss pulses and enemy projectiles call player.takeDamage() directly,
+    // bypassing the PlayerHitResolver contact gate. Gating takeDamage itself
+    // makes invincibility cover every enemy-damage source, not just contact.
+    getSettingsManager().update((cur) => ({
+      ...cur,
+      assistMode: true,
+      assistModeInvincibility: true,
+    }));
+    const p = makePlayer({ maxHp: 100 });
+    const dead = p.takeDamage(40);
+    expect(dead).toBe(false);
+    expect(p.getHp()).toBe(100);
+  });
+
+  it('applies damage normally when the master Assist toggle is off', () => {
+    getSettingsManager().update((cur) => ({
+      ...cur,
+      assistMode: false,
+      assistModeInvincibility: true,
+    }));
+    const p = makePlayer({ maxHp: 100 });
+    p.takeDamage(40);
+    expect(p.getHp()).toBe(60);
   });
 });
 
