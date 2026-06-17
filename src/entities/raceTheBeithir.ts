@@ -88,7 +88,17 @@ export const RACE_EXPIRE_DAMAGE_MIN = 25;
  */
 export type RaceTheBeithirState =
   | { readonly kind: 'idle' }
-  | { readonly kind: 'stung'; readonly remainingMs: number };
+  | {
+      readonly kind: 'stung';
+      readonly remainingMs: number;
+      /**
+       * The full window this sting opened with (8 s standard, 11 s elite).
+       * Carried so `stingRemainingFraction` divides by the actual window
+       * rather than the constant — otherwise an elite sting's bar clamps
+       * to full for the first ~3 s instead of draining from the start.
+       */
+      readonly durationMs: number;
+    };
 
 /** Initial state — no race running. */
 export function initialBeithirState(): RaceTheBeithirState {
@@ -116,11 +126,18 @@ export function tickBeithir(
   deltaMs: number,
 ): BeithirTickResult {
   if (state.kind !== 'stung') return { state, expiredEdge: false };
-  const remaining = state.remainingMs - deltaMs;
+  // Clamp negative deltas (slow-mo / rewind paths) so a backwards tick can
+  // never grow the timer above its window — matches tickShintyParry /
+  // tickDriftMastery, which both open with `const dt = Math.max(0, ...)`.
+  const dt = Math.max(0, deltaMs);
+  const remaining = state.remainingMs - dt;
   if (remaining <= 0) {
     return { state: { kind: 'idle' }, expiredEdge: true };
   }
-  return { state: { kind: 'stung', remainingMs: remaining }, expiredEdge: false };
+  return {
+    state: { kind: 'stung', remainingMs: remaining, durationMs: state.durationMs },
+    expiredEdge: false,
+  };
 }
 
 /**
@@ -157,7 +174,7 @@ export function applyBeithirSting(
   durationMs: number = RACE_DURATION_MS,
 ): BeithirApplyResult {
   if (isPlayerInvincible) return { state, appliedEdge: false };
-  const refreshed: RaceTheBeithirState = { kind: 'stung', remainingMs: durationMs };
+  const refreshed: RaceTheBeithirState = { kind: 'stung', remainingMs: durationMs, durationMs };
   if (state.kind === 'stung') return { state: refreshed, appliedEdge: false };
   return { state: refreshed, appliedEdge: true };
 }
@@ -192,11 +209,13 @@ export function isStung(state: RaceTheBeithirState): boolean {
  * HUD readout — fraction [0..1] of timer remaining. 1.0 = just stung,
  * 0.0 = about to expire. Used by the HUD chip to drive the draining
  * bar fill. Returns 0 when idle so the chip can render an empty bar
- * during cooldown / not-stung states.
+ * during cooldown / not-stung states. Divides by the sting's own
+ * `durationMs` so an elite (11 s) window drains from full just like a
+ * standard (8 s) one, rather than stalling at full for the first ~3 s.
  */
 export function stingRemainingFraction(state: RaceTheBeithirState): number {
   if (state.kind !== 'stung') return 0;
-  return Math.max(0, Math.min(1, state.remainingMs / RACE_DURATION_MS));
+  return Math.max(0, Math.min(1, state.remainingMs / state.durationMs));
 }
 
 /**

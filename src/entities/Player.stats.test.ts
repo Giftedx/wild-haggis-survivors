@@ -41,6 +41,7 @@ vi.mock('../utils/SubscriptionBag', () => ({
 }));
 
 import { Player } from './Player';
+import { createRuneEffectBag } from '../systems/runes/runeEffects';
 
 function makeScene(): any {
   const spriteStub = () => ({
@@ -177,6 +178,23 @@ describe('Player bonus stacking', () => {
     p.addMaxHp(20);
     expect(p.getMaxHp()).toBe(70);
     expect(p.getHp()).toBe(60); // 40 + 20, capped at 70
+  });
+
+  it('addMaxHp heals up to the rune-folded cap, not the raw max (no silent HP loss)', () => {
+    // Under a max-HP rune (e.g. haggis_loch), getMaxHp() folds a >1 mult and
+    // heal/regen clamp to that folded cap — so HP can legitimately sit above
+    // the raw bar. addMaxHp must clamp to the folded cap too, or it silently
+    // claws HP back down below where regen already put it.
+    const p = makePlayer({ maxHp: 100 });
+    const bag = createRuneEffectBag();
+    bag.hpMaxMult = 1.2; // folded cap = round(100 * 1.2) = 120
+    p.setRuneBagAccessor(() => bag);
+    p.heal(1000);
+    expect(p.getHp()).toBe(120); // heal reaches the folded cap
+
+    p.addMaxHp(10); // raw max 100 → 110; folded cap → round(110 * 1.2) = 132
+    expect(p.getMaxHp()).toBe(132);
+    expect(p.getHp()).toBe(130); // 120 + 10, under the folded cap — not clamped to raw 110
   });
 });
 

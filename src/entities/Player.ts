@@ -1853,7 +1853,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   addMaxHp(amount: number): void {
     this.bonusMaxHp += amount;
     this.recalcStats();
-    this.hp = Math.min(this.hp + amount, this.maxHp);
+    // Clamp to the rune-folded cap (getMaxHp), not the raw bar — otherwise a
+    // max-HP rune that lets regen/heal sit above raw maxHp would see the
+    // granted HP silently clawed back down. Matches heal() / tickRegen().
+    this.hp = Math.min(this.hp + amount, this.getMaxHp());
   }
 
   /**
@@ -1975,7 +1978,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * `inheritedStat` to the matching existing Player bonus channel,
    * matching the additive-multiplier shape of the sister
    * `addDamageMultiplier` / `addCritChance` / `addCooldownReduction`
-   * setters. Spec: `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`.
+   * setters. Spec: `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md`.
    *
    * - `damage` → folds into `bonusDamageMultiplier` (no recalc needed —
    *   the read path multiplies live each frame in `getDamageMultiplier`).

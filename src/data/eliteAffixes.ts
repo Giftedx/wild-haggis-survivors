@@ -94,3 +94,23 @@ export function pickEliteAffixId(
   if (allowed.length === 0) return null;
   return rng.weighted(allowed, (id) => ELITE_AFFIXES[id].weight);
 }
+
+/**
+ * Mark an enemy elite, roll a behaviour- and denylist-gated affix from the
+ * seeded RNG, apply it, and return it (callers use the returned affix for the
+ * indicator tint). Single source for the elite roll so the two spawn paths —
+ * wave `spawnBurst` and node/route `forceSpawn` — cannot drift on the
+ * per-enemy `eliteAffixDenylist`. That drift is exactly what let the
+ * force-spawn path roll a denylisted affix (e.g. volatile/bulwark on a
+ * beithir, which breaks its kill-cure race) while the wave path was safe.
+ */
+export function rollAndApplyEliteAffix(
+  enemy: { markAsElite(): void; applyEliteAffix(id: EliteAffixId): void },
+  config: { behavior: EnemyBehavior; eliteAffixDenylist?: readonly EliteAffixId[] },
+  rng: RNG,
+): EliteAffixId | null {
+  enemy.markAsElite();
+  const affix = pickEliteAffixId(config.behavior, rng, config.eliteAffixDenylist);
+  if (affix) enemy.applyEliteAffix(affix);
+  return affix;
+}

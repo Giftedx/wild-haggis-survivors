@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   coerceInteger,
+  coerceUpgradeLevels,
   isRecord,
   normalizeRunSummary,
   compactReplayBlobs,
@@ -46,6 +47,41 @@ describe('coerceInteger', () => {
 
   it('returns 0 for 0 input', () => {
     expect(coerceInteger(0, 99)).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// coerceUpgradeLevels
+// ---------------------------------------------------------------------------
+
+describe('coerceUpgradeLevels', () => {
+  it('clamps a known upgrade above its maxLevel down to maxLevel', () => {
+    // thick_hide caps at level 5. A corrupt / hand-edited save must not apply
+    // a 9999× stat bonus at run start — the shop UI already guards
+    // currentLevel > maxLevel, the apply path must agree.
+    const out = coerceUpgradeLevels({ thick_hide: 9999 });
+    expect(out.thick_hide).toBe(5);
+  });
+
+  it('leaves an in-range known level unchanged', () => {
+    const out = coerceUpgradeLevels({ thick_hide: 3 });
+    expect(out.thick_hide).toBe(3);
+  });
+
+  it('floors negative / fractional levels (existing coerceInteger behaviour)', () => {
+    const out = coerceUpgradeLevels({ thick_hide: -3, strong_legs: 2.9 });
+    expect(out.thick_hide).toBe(0);
+    expect(out.strong_legs).toBe(2);
+  });
+
+  it('preserves unknown keys as coerced integers (forward-compat, no silent prune)', () => {
+    const out = coerceUpgradeLevels({ future_upgrade: 3 });
+    expect(out.future_upgrade).toBe(3);
+  });
+
+  it('returns {} for non-record input', () => {
+    expect(coerceUpgradeLevels(null)).toEqual({});
+    expect(coerceUpgradeLevels(42)).toEqual({});
   });
 });
 

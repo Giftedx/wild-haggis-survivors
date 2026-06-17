@@ -121,6 +121,20 @@ describe('raceTheBeithir — pure helper', () => {
       expect(r.expiredEdge).toBe(true);
       expect(r.state.kind).toBe('idle');
     });
+
+    it('clamps negative deltaMs — a backwards tick cannot extend the race', () => {
+      // Sibling helpers tickShintyParry / tickDriftMastery guard with
+      // `Math.max(0, dt)`; this one must match so a slow-mo / rewind path
+      // feeding a negative delta can never grow remainingMs above full.
+      const s = applyBeithirSting(initialBeithirState()).state;
+      const r = tickBeithir(s, -1000);
+      expect(r.expiredEdge).toBe(false);
+      if (r.state.kind === 'stung') {
+        expect(r.state.remainingMs).toBe(RACE_DURATION_MS);
+      } else {
+        expect.fail('expected stung state, got idle');
+      }
+    });
   });
 
   describe('cureBeithirSting', () => {
@@ -165,6 +179,18 @@ describe('raceTheBeithir — pure helper', () => {
 
     it('reads 0 when idle', () => {
       expect(stingRemainingFraction(initialBeithirState())).toBe(0);
+    });
+
+    it('elite-window sting drains the bar from full (uses the sting duration as denominator)', () => {
+      // An elite sting opens an 11s window. The fraction must divide by the
+      // sting's own duration, not the constant 8s — otherwise 11000/8000
+      // clamps to 1.0 and the bar visibly stalls at full for the first ~3s.
+      const eliteDuration = RACE_DURATION_MS + RACE_DURATION_ELITE_BONUS_MS;
+      const s = applyBeithirSting(initialBeithirState(), false, eliteDuration).state;
+      expect(stingRemainingFraction(s)).toBe(1);
+      const drained = tickBeithir(s, 1000).state; // 1s into an 11s window
+      expect(stingRemainingFraction(drained)).toBeLessThan(1);
+      expect(stingRemainingFraction(drained)).toBeCloseTo(10000 / 11000, 5);
     });
   });
 
