@@ -16,6 +16,7 @@ import type { NodeOutcome } from '../../data/nodeTypes';
 import type { RoutePick } from '../../data/routes';
 import { RELIC_KEYS, type RelicKey } from '../../data/relics';
 import { SPORRAN_CARD_IDS } from '../../data/sporranCards';
+import { PERMANENT_UPGRADES } from '../../data/permanentUpgrades';
 import {
   COMPANION_KEYS_IN_ORDER,
   type CompanionKey,
@@ -886,12 +887,21 @@ function coerceSettings(value: unknown): SaveSettings {
   };
 }
 
-function coerceUpgradeLevels(value: unknown): Record<string, number> {
+/** Upgrade key → maxLevel, built once so load-time clamping is O(1) per entry. */
+const UPGRADE_MAX_LEVEL = new Map(PERMANENT_UPGRADES.map((u) => [u.key, u.maxLevel]));
+
+export function coerceUpgradeLevels(value: unknown): Record<string, number> {
   if (!isRecord(value)) return {};
 
   const upgrades: Record<string, number> = {};
   for (const [key, rawLevel] of Object.entries(value)) {
-    upgrades[key] = coerceInteger(rawLevel, 0);
+    const level = coerceInteger(rawLevel, 0);
+    const max = UPGRADE_MAX_LEVEL.get(key);
+    // Clamp known upgrades to their maxLevel so a corrupt / hand-edited save
+    // can't apply an out-of-range stat bonus at run start (the shop UI already
+    // guards this at purchase time — shopUpgradeRowState). Unknown keys pass
+    // through untouched to preserve forward-compat with newer saves.
+    upgrades[key] = max === undefined ? level : Math.min(level, max);
   }
   return upgrades;
 }

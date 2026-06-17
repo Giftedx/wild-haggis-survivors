@@ -15,7 +15,7 @@ import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers
 import { shouldMarkCursed } from './cursedSpawnRoll';
 import { evaluatePostBellBossTick } from './postBellBossCadence';
 import { evaluatePostBellRetinueTick } from './postBellRetinueCadence';
-import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
+import { ELITE_AFFIXES, rollAndApplyEliteAffix } from '../data/eliteAffixes';
 import { resolveEliteChance } from './eliteChance';
 import { bossHpTimeScale } from './bossHpTimeScale';
 import { snapToNearestWorldEdge } from './snapToWorldEdge';
@@ -313,10 +313,9 @@ export class SpawnSystem {
     const pos = this.getSpawnPosition(this.scene.cameras.main, player.x, player.y);
     enemy.spawn(pos.x, pos.y, config, this.gameTimeSec);
     if (opts?.elite) {
-      enemy.markAsElite();
-      const rng = this.scene.getRunRng();
-      const affix = pickEliteAffixId(config.behavior, rng);
-      if (affix) enemy.applyEliteAffix(affix);
+      // Shared roll path passes config.eliteAffixDenylist, so a force-spawned
+      // elite respects per-enemy exclusions just like the wave path.
+      rollAndApplyEliteAffix(enemy, config, this.scene.getRunRng());
     }
     if (opts?.waveTag) {
       enemy.nodeWaveTag = opts.waveTag;
@@ -936,9 +935,7 @@ export class SpawnSystem {
             && config.behavior !== 'hazard'
             && config.packSize <= 1
             && rng.bool(eliteChance)) {
-          enemy.markAsElite();
-          const affix = pickEliteAffixId(config.behavior, rng, config.eliteAffixDenylist);
-          if (affix) enemy.applyEliteAffix(affix);
+          const affix = rollAndApplyEliteAffix(enemy, config, rng);
           const flashTint = affix ? ELITE_AFFIXES[affix].indicatorTint : 0xffdd44;
           const flash = this.scene.getStatusFxPool().acquireArc(pos.x + scatter, pos.y + scatter, 15, flashTint, 0.55);
           this.scene.tweens.add({

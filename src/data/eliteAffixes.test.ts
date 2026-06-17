@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { createRNG } from '../utils/rng';
 import type { EnemyBehavior } from './enemies';
-import { ELITE_AFFIX_DISPLAY_ORDER, pickEliteAffixId } from './eliteAffixes';
+import {
+  ELITE_AFFIX_DISPLAY_ORDER,
+  pickEliteAffixId,
+  rollAndApplyEliteAffix,
+  type EliteAffixId,
+} from './eliteAffixes';
 
 describe('ELITE_AFFIX_DISPLAY_ORDER', () => {
   it('lists all five affix ids in a stable order', () => {
@@ -68,5 +73,46 @@ describe('pickEliteAffixId', () => {
     const rng = createRNG(0x1234);
     const id = pickEliteAffixId('chase', rng, []);
     expect(id).not.toBeNull();
+  });
+});
+
+describe('rollAndApplyEliteAffix — shared elite-roll path for both spawn sites', () => {
+  function stubEnemy() {
+    const applied: EliteAffixId[] = [];
+    let marked = false;
+    return {
+      enemy: {
+        markAsElite() { marked = true; },
+        applyEliteAffix(id: EliteAffixId) { applied.push(id); },
+      },
+      applied,
+      get marked() { return marked; },
+    };
+  }
+
+  it('marks the enemy elite and applies the rolled affix', () => {
+    const s = stubEnemy();
+    const affix = rollAndApplyEliteAffix(s.enemy, { behavior: 'chase' }, createRNG(7));
+    expect(s.marked).toBe(true);
+    expect(affix).not.toBeNull();
+    expect(s.applied).toEqual([affix]);
+  });
+
+  it('honours the per-enemy denylist on the force-spawn path (beithir never rolls volatile or bulwark)', () => {
+    // The bug this guards: forceSpawn rolled without config.eliteAffixDenylist,
+    // so a beithir force-spawned as an elite could land a kill-cure-breaking
+    // affix. Routing both paths through this helper makes that impossible.
+    const beithir = {
+      behavior: 'ranged' as EnemyBehavior,
+      eliteAffixDenylist: ['volatile', 'bulwark'] as const,
+    };
+    for (let seed = 0; seed < 300; seed++) {
+      const s = stubEnemy();
+      rollAndApplyEliteAffix(s.enemy, beithir, createRNG(seed));
+      for (const id of s.applied) {
+        expect(id).not.toBe('volatile');
+        expect(id).not.toBe('bulwark');
+      }
+    }
   });
 });
