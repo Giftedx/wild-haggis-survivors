@@ -969,7 +969,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const dx = player.x - this.x;
     const dy = player.y - this.y;
     if (dx * dx + dy * dy <= WAIL_PULSE_RADIUS_PX * WAIL_PULSE_RADIUS_PX) {
-      // Hazard immunity respected via the existing damage path.
+      // Assist Mode invincibility is honoured inside player.takeDamage; this
+      // telegraphed AoE pulse otherwise lands regardless of post-hit iframes.
       player.takeDamage(WAIL_PULSE_DAMAGE);
       player.applyNetSlow(2000);
     }

@@ -1222,6 +1222,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage(amount: number): boolean {
+    // Assist Mode invincibility (A1) — gate ALL enemy damage at this single
+    // chokepoint. Boss AoE pulses and enemy projectiles call takeDamage
+    // directly (not through PlayerHitResolver's contact gate), so checking it
+    // only there left them able to kill an "invincible" player. The reader is
+    // master-gated: returns false unless assistMode + assistModeInvincibility.
+    if (isInvincibilityEnabled()) return false;
     // Flora's Plaid: full invincibility window — no damage, no stacks, no edges.
     if (this._floraPlaidActiveRemainingMs > 0) return false;
     this.hurtEdgeThisFrame = true;
