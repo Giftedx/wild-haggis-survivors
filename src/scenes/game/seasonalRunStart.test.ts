@@ -23,6 +23,29 @@ function inertPlan(): SeasonalRunStartPlan {
   };
 }
 
+/**
+ * The set of `extra*` plan fields that are non-zero, excluding the heal
+ * (every blessing reads `result.extraStartingHpHeal` verbatim). Pins which
+ * single stat-field an event maps onto — the thing a copy-paste refactor
+ * is most likely to get wrong.
+ */
+function nonHealExtras(plan: SeasonalRunStartPlan): string[] {
+  return Object.entries(plan)
+    .filter(([k, v]) => k.startsWith('extra') && k !== 'extraStartingHpHeal' && v !== 0)
+    .map(([k]) => k)
+    .sort();
+}
+
+function planFor(now: Date): SeasonalRunStartPlan {
+  return buildSeasonalRunStartPlan({
+    resumeRun: false,
+    disableSeasonalEvents: false,
+    now,
+    runRng: { pick: vi.fn() } as unknown as RNG,
+    runModifiers: defaultModifiers(),
+  });
+}
+
 describe('buildSeasonalRunStartPlan', () => {
   it('returns an inert plan and does not roll first-footing on resume', () => {
     const modifiers = defaultModifiers();
@@ -275,6 +298,53 @@ describe('buildSeasonalRunStartPlan', () => {
         delayMs: 1500,
       },
     });
+  });
+
+  // Characterization tests for the six events whose build branch was
+  // previously unasserted — pin toast + which stat-field each maps onto so
+  // the table refactor below cannot silently mis-map one.
+  it('builds the Samhain veil plan (heal-only)', () => {
+    const plan = planFor(new Date(2027, 9, 31)); // Oct 31
+    expect(plan.seasonalEventKey).toBe('samhain');
+    expect(plan.toast).toEqual({ key: 'ui.samhain.blessing_toast', color: '#a060c0', delayMs: 1500 });
+    expect(nonHealExtras(plan)).toEqual([]);
+  });
+
+  it('builds the St Andrews plan (heal-only)', () => {
+    const plan = planFor(new Date(2027, 10, 30)); // Nov 30
+    expect(plan.seasonalEventKey).toBe('st_andrews');
+    expect(plan.toast).toEqual({ key: 'ui.standrews.blessing_toast', color: '#5a8acc', delayMs: 1500 });
+    expect(nonHealExtras(plan)).toEqual([]);
+  });
+
+  it('builds the Burns Night plan (heal-only)', () => {
+    const plan = planFor(new Date(2027, 0, 25)); // Jan 25
+    expect(plan.seasonalEventKey).toBe('burns_night');
+    expect(plan.toast).toEqual({ key: 'ui.burnsNight.blessing_toast', color: '#c89060', delayMs: 1500 });
+    expect(nonHealExtras(plan)).toEqual([]);
+  });
+
+  it('builds the Imbolc plan (heal-only)', () => {
+    const plan = planFor(new Date(2027, 1, 2)); // Feb 2
+    expect(plan.seasonalEventKey).toBe('imbolc');
+    expect(plan.toast).toEqual({ key: 'ui.imbolc.blessing_toast', color: '#f5e7b8', delayMs: 1500 });
+    expect(nonHealExtras(plan)).toEqual([]);
+  });
+
+  it('builds the Bannockburn plan (lifesteal)', () => {
+    const plan = planFor(new Date(2027, 5, 23)); // Jun 23
+    expect(plan.seasonalEventKey).toBe('bannockburn');
+    expect(plan.toast).toEqual({ key: 'ui.bannockburn.blessing_toast', color: '#a8c0d0', delayMs: 1500 });
+    expect(nonHealExtras(plan)).toEqual(['extraLifesteal']);
+    expect(plan.extraLifesteal).toBeGreaterThan(0);
+  });
+
+  it('builds the Culloden memorial plan (no buff, no fanfare)', () => {
+    const plan = planFor(new Date(2027, 3, 16)); // Apr 16
+    expect(plan.seasonalEventKey).toBe('culloden');
+    expect(plan.toast).toEqual({ key: 'ui.culloden.memorial_toast', color: '#708090', delayMs: 1500 });
+    expect(nonHealExtras(plan)).toEqual([]);
+    expect(plan.extraStartingHpHeal).toBe(0);
   });
 });
 
