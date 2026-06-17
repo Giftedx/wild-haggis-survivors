@@ -85,7 +85,3 @@ export function generateHaggisNameFromHash(seed: string): string {
   };
   return generateHaggisName(rng);
 }
-
-export function pickKinTerm(rng: () => number): string {
-  return KIN_TERMS[Math.floor(rng() * KIN_TERMS.length)]!;
-}

@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { Projectile } from '../entities/Projectile';
 import { Enemy } from '../entities/Enemy';
-import { WEAPON_DEFS, WeaponDef, SELKIE_CHARM_DURATION_MS, SELKIE_CHORUS_CHARM_COUNT } from '../data/weapons';
+import { WEAPON_DEFS, WeaponDef, SELKIE_CHARM_DURATION_MS, SELKIE_CHORUS_CHARM_COUNT, BODHRAN_VFX_COLOR } from '../data/weapons';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
@@ -790,7 +790,7 @@ export class WeaponSystem {
     } else if (isBodhran || isBeltaneDrum) {
       // Bodhrán / Beltane Drum — warm amber percussion ring. The Beltane
       // Drum adds a second outer crimson ring (the midsummer fire-circle).
-      const inner = this.acquireVfxCircle(px, py, 8, 0xc87840, 0.55);
+      const inner = this.acquireVfxCircle(px, py, 8, BODHRAN_VFX_COLOR, 0.55);
       this.scene.tweens.add({
         targets: inner,
         radius: radius * 0.90,
