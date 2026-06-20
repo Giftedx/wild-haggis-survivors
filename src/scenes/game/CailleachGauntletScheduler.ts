@@ -7,7 +7,7 @@
  * Phaser-free; the scene wires sprite spawn / boss spawn / outcome
  * commit / banter through hooks.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 import {
   advanceGauntlet,

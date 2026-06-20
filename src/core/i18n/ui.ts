@@ -3569,7 +3569,7 @@ export const ui = {
      *  wins (cailleach_dominant). Edge tone throughout; the haggis is
      *  bracing herself for a folkloric reckoning, not boasting. Pool
      *  priority 95 — above beithir_sting (90), below boss_warn (100).
-     *  Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md. */
+     *  Spec: docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md. */
     cailleach_gauntlet: {
       // Structural fallback (untagged) — keeps the every-pool-≥-2-keys
       // + globally-unique-keys fences honest. In practice the

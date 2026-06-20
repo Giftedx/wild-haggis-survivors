@@ -4,7 +4,7 @@
 
 > **STATUS: ✅ SHIPPED (2026-05-22)** — 16-task plan executed inline. Final commits: `95810e8` (fallenCairns helpers) → `5b4e7e9` (schema v10→v11) → `62fc7c1` (gauntlet state machine) → `55b7fdd` (cairn-scheduler getter) → `d897d2d` (gauntlet scheduler) → `abc966f` (cailleach_boss data + manualSpawn) → `739b8f8` (wail behaviour + ice lance) → `072d87f` (boss + candle sprites + boss i18n) → `d041806` (Stormcrown relic + restricted drop) → `688b52d` (WeaponSystem damage chain + freeze hook) → `e48d0d6` (cailleach_gauntlet banter pool) → `8823c2d` (achievement + tartan) → `8a5c85f` (GameScene wire + scheduler tick) → `575c8e9` (Stormcrown drop via rollDrop). 5563/5563 vitest pass; tsc --noEmit clean. E2E smoke (`1e1faa1`) + replay wreath-set determinism regression (`1fe57ba`) completed in follow-up. 5566/5566 vitest pass; tsc clean.
 
-**Goal:** Ship V2 of The Moor Remembers: touching 7 cairns by 14:00 in one run lights a Callanish-circle of candles; Cailleach spawns at 15:00; win wreathes the 7 cairns + drops Stormcrown; lose extinguishes the candles. Spec: [`docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`](../specs/2026-05-22-moor-remembers-v2-design.md).
+**Goal:** Ship V2 of The Moor Remembers: touching 7 cairns by 14:00 in one run lights a Callanish-circle of candles; Cailleach spawns at 15:00; win wreathes the 7 cairns + drops Stormcrown; lose extinguishes the candles. Spec: [`docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`](../specs/2026-05-22-moor-remembers-v2-design.md).
 
 **Architecture:** Pure helpers (`cailleachGauntlet.ts`, mark helpers on `fallenCairns.ts`) hold state-machine + outcome math; testable without Phaser. Scene orchestrator (`CailleachGauntletScheduler.ts`) mirrors V1's `CairnOfEchoesScheduler` shape: hook-driven, pure-tick, replay-deterministic. New `cailleach_boss` enemy with `'wail'` behavior; Stormcrown rare relic with `restrictedToBossKey` for guaranteed drop. Save schema bumps v10 → v11 with optional `wreathedAt` / `extinguishedAt` per cairn.
 
@@ -54,7 +54,7 @@
 | `src/scenes/GameScene.ts` | Modify | Instantiate `CailleachGauntletScheduler`, wire hooks (candles, boss spawn, outcome commit, banter, audio sting). Tick after pause-gate. |
 | `e2e/moor-remembers-cailleach-gauntlet.spec.ts` | Create | E2E smoke — DEBUG fast-forward path. |
 | `src/replay/replayDeterminism.test.ts` | Modify | Wreath-set determinism regression. |
-| `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md` | Modify | Truth-up V1's "Deferred V2" paragraph. |
+| `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md` | Modify | Truth-up V1's "Deferred V2" paragraph. |
 | `CLAUDE.md` | Modify | Mechanic table row. |
 | `docs/DESIGN_IDEAS.md` | Modify | Mark V2 shipped on Moor Remembers entry. |
 | `docs/HUGE_INITIATIVES_MASTER_PLAN.md` | Modify | Move V2 row from Open → What's done. |
@@ -381,7 +381,7 @@ After the `ISaveDataV10` interface, add:
 
 ```ts
 /**
- * V11 — Moor Remembers V2 (`docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`).
+ * V11 — Moor Remembers V2 (`docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`).
  * Per-cairn state via the optional `wreathedAt` / `extinguishedAt` fields
  * on `FallenCairn`. No top-level fields added; the data delta lives in
  * the cairn records themselves.
@@ -620,7 +620,7 @@ Create `src/scenes/game/cailleachGauntlet.ts`:
  *   engaged      — 15:00 reached; Cailleach is on field
  *   resolved     — boss-dead (win) or player-dead (lose); outcome locked
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 
 export const GAUNTLET_TOUCH_THRESHOLD = 7;
@@ -1027,7 +1027,7 @@ Create `src/scenes/game/CailleachGauntletScheduler.ts`:
  * Phaser-free; the scene wires sprite spawn / boss spawn / outcome
  * commit / banter through hooks.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 import {
   advanceGauntlet,
@@ -1335,7 +1335,7 @@ Create `src/entities/wailBehaviour.ts`:
  * The Enemy class composes this each frame to decide whether to fire
  * a lance, fire the one-shot pulse, or neither.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 export const WAIL_LANCE_CADENCE_MS = 4000;
 export const WAIL_PULSE_RADIUS_PX = 600;
@@ -2387,7 +2387,7 @@ git commit -m "feat(moor-remembers-v2): GameScene wire — scheduler + candles +
 **Files:**
 - Create: `e2e/moor-remembers-cailleach-gauntlet.spec.ts`
 - Modify: `src/replay/replayDeterminism.test.ts`
-- Modify: `CLAUDE.md`, `docs/DESIGN_IDEAS.md`, `docs/HUGE_INITIATIVES_MASTER_PLAN.md`, `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`, plan status header
+- Modify: `CLAUDE.md`, `docs/DESIGN_IDEAS.md`, `docs/HUGE_INITIATIVES_MASTER_PLAN.md`, `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md`, plan status header
 
 - [ ] **Step 1: Write the E2E smoke**
 
@@ -2493,7 +2493,7 @@ describe('Cailleach Gauntlet replay determinism', () => {
 #### `docs/DESIGN_IDEAS.md` — update §1 The Moor Remembers entry, append after V1 ship-marker:
 
 ```markdown
-- **V2 Cailleach Gauntlet** ✅ shipped 2026-05-22 — 7 cairn touches by 14:00 trigger the candle ring; Cailleach spawns at 15:00 as a secret boss. Win → 7 cairns wreathed (gold visual + +2 % buff) + Stormcrown relic + cailleach_mantle tartan unlock. Lose → 7 cairns extinguished (candles dim; cairns themselves abide). Diverges from V1 sketch ("all cairns wipe") in favour of per-cairn extinguish. Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+- **V2 Cailleach Gauntlet** ✅ shipped 2026-05-22 — 7 cairn touches by 14:00 trigger the candle ring; Cailleach spawns at 15:00 as a secret boss. Win → 7 cairns wreathed (gold visual + +2 % buff) + Stormcrown relic + cailleach_mantle tartan unlock. Lose → 7 cairns extinguished (candles dim; cairns themselves abide). Diverges from V1 sketch ("all cairns wipe") in favour of per-cairn extinguish. Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
 ```
 
 #### `docs/HUGE_INITIATIVES_MASTER_PLAN.md` — move the V2 row from "Open candidates" to "What's done":
@@ -2504,12 +2504,12 @@ Strike-through the V2 row in Open candidates. Add to What's done:
 | MR2 | The Moor Remembers (V2 — Cailleach Gauntlet) | 7-cairn touch + 14:00 candle ring + 15:00 Cailleach boss + Stormcrown relic + Mantle tartan. Shipped 2026-05-22. |
 ```
 
-#### `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md` — truth-up the V2 deferral:
+#### `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md` — truth-up the V2 deferral:
 
 Replace the one-paragraph "**Deferred V2:**" sketch with:
 
 ```markdown
-**V2 — Cailleach Gauntlet (shipped 2026-05-22):** spec at [`docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`](2026-05-22-moor-remembers-v2-design.md). Diverges from the V1 sketch in one place — "all cairns wipe" softened to per-cairn extinguish, with the cairns themselves abiding.
+**V2 — Cailleach Gauntlet (shipped 2026-05-22):** spec at [`docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`](2026-05-22-moor-remembers-v2-design.md). Diverges from the V1 sketch in one place — "all cairns wipe" softened to per-cairn extinguish, with the cairns themselves abiding.
 ```
 
 #### Plan status header — update top-of-file marker on this plan:
@@ -2529,7 +2529,7 @@ Expected: e2e passes.
 - [ ] **Step 5: Final commit**
 
 ```bash
-git add e2e/moor-remembers-cailleach-gauntlet.spec.ts src/replay/replayDeterminism.test.ts CLAUDE.md docs/DESIGN_IDEAS.md docs/HUGE_INITIATIVES_MASTER_PLAN.md docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md docs/superpowers/plans/2026-05-22-moor-remembers-v2.md
+git add e2e/moor-remembers-cailleach-gauntlet.spec.ts src/replay/replayDeterminism.test.ts CLAUDE.md docs/DESIGN_IDEAS.md docs/HUGE_INITIATIVES_MASTER_PLAN.md docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md docs/archive/superpowers/plans/2026-05-22-moor-remembers-v2.md
 git commit -m "$(cat <<'EOF'
 feat(moor-remembers-v2): ship — e2e smoke + replay regression + canon truth-up
 

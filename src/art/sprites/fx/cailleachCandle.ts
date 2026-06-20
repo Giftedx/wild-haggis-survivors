@@ -7,7 +7,7 @@
  *   - 'extinguished'  — stone base, cold-slate, no flame (gauntlet LOST)
  *
  * Designed at 24 × 24 base. Spec:
- * `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 import * as Phaser from 'phaser';
 

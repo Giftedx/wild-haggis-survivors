@@ -10,7 +10,7 @@
  * of the scene's hot path. Sister-call site sits next to the cairn
  * scheduler instantiation in `resetTransientRunState`.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 import * as Phaser from 'phaser';
 import {

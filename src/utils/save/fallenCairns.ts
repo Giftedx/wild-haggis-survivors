@@ -7,7 +7,7 @@
  * whichever stat that past-self was strongest in.
  *
  * Pure module — no Phaser, no scene state. Spec:
- * `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`.
+ * `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md`.
  */
 
 /** Stat the past-self leveled most — drives the +1 % inherited buff. */

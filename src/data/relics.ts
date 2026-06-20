@@ -277,7 +277,7 @@ export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
   },
   // V2 (Cailleach Gauntlet) — restricted-drop relic. Only drops from
   // cailleach_boss; never appears in the general boss pool.
-  // Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md
+  // Spec: docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md
   stormcrown: {
     key: 'stormcrown',
     rarity: 'rare',

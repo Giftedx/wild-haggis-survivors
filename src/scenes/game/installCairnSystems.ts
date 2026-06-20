@@ -9,7 +9,7 @@
  * Sister to installCailleachGauntlet — callers store the returned
  * schedulers on their own fields and tick them per-frame.
  *
- * Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
+ * Spec: docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
  */
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';

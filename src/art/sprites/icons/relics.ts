@@ -362,7 +362,7 @@ export function bakeRelicIcons(scene: Phaser.Scene): void {
 
   // V2 — Stormcrown: frost-blue ringed crown, three peaks + glint.
   // Cailleach Gauntlet drop. Spec
-  // `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+  // `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
   bake(scene, 'relic_stormcrown', (g) => {
     glow(g, 0xb9d6f0);
     // Crown band (outline + fill)

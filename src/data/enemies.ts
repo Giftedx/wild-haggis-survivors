@@ -36,7 +36,7 @@ export type EnemyBehavior =
    * Wail — Cailleach Gauntlet boss (V2 of The Moor Remembers).
    * Slow chase + ice-lance projectile every 4 s + one-shot 600 px
    * radial slow-pulse at 50 % HP. Spec:
-   * `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+   * `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
    */
   | 'wail'
   /**
@@ -1140,7 +1140,7 @@ export const BOSSES: BossConfig[] = [
   // when 7 cairns have been walked over and game-time has crossed 15:00.
   // The boss is the mythological figure — distinct from the `cailleach`
   // playable variant which is a winter-themed haggis.
-  // Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+  // Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
   {
     key: 'cailleach_boss',
     nameKey: 'boss.cailleach_boss.name',

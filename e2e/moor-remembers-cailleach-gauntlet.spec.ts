@@ -3,7 +3,7 @@ import { expect, test } from './fixtures';
 /**
  * The Moor Remembers V2 — Cailleach Gauntlet E2E smoke.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`
  * § 3.1 "e2e/moor-remembers-cailleach-gauntlet.spec.ts".
  *
  * Seeds 7 FallenCairns at world-centre (player spawn) so all 7 touch

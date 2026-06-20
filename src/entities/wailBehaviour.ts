@@ -5,7 +5,7 @@
  *
  * Slow chase + ice-lance projectile every 4 s + one-shot 600 px radial
  * slow-pulse at 50 % HP. Spec:
- * `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 export const WAIL_LANCE_CADENCE_MS = 4000;
 export const WAIL_PULSE_RADIUS_PX = 600;

@@ -6,7 +6,7 @@
  * variant: this is the actual figure, tall and robed, who answers
  * when seven cairn-stones are touched in a single run.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  *
  * Design notes:
  *  - Tall hooded crone with antler-topped staff. Slow advance — the

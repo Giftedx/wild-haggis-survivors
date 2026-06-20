@@ -9,7 +9,7 @@
  *
  * Replay-deterministic: same context → same result.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md` §4.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md` §4.
  */
 import { GRANDFATHER_WHISPER_CHANCE } from '../../utils/save/fallenCairns';
 

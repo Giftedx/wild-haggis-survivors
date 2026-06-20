@@ -4,7 +4,7 @@
 
 > **STATUS: ✅ SHIPPED (2026-05-22)** — 15-task plan executed via subagent-driven dispatch. Final SHA at ship: `01feedc` (e2e); `4fb0015` (extraction); `48efe10` (scene wire); 5511/5511 vitest pass; npm run ci green (lint + tsc + vitest + build + bundle budget + flash budget + loc-report). Commits chain: `8a2d14f` → `0ccf043` → `73e26c2` → `4913412` → `1a735a6` → `e92060e` → `1611758` → `fb00f08` → `12505fc` → `80e1434` → `53f79d6` → `48efe10` → `4fb0015` → `325a547` → `01feedc`.
 
-**Goal:** Ship V1 of The Moor Remembers: every death becomes a persistent Cairn-of-Echoes saved to `whs_meta_save`. Walk-over fires a whispered past-self line + 1% inherited buff. Rare (1%) hidden grandfather voice unfolds a 25-leaf Almanac arc. Spec: [`docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`](../specs/2026-05-22-the-moor-remembers-design.md).
+**Goal:** Ship V1 of The Moor Remembers: every death becomes a persistent Cairn-of-Echoes saved to `whs_meta_save`. Walk-over fires a whispered past-self line + 1% inherited buff. Rare (1%) hidden grandfather voice unfolds a 25-leaf Almanac arc. Spec: [`docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md`](../specs/2026-05-22-the-moor-remembers-design.md).
 
 **Architecture:** Pure helpers (`fallenCairns.ts`, `cairnOfEchoesWhisper.ts`) carry decision math + are tested without Phaser. Scene orchestrator (`CairnOfEchoesScheduler.ts`) mirrors `CairnStackingScheduler` shape. Extends shipped `AncestralEcho` with a `onSettle` callback so the 30s ghost cleanly becomes a permanent cairn. Save schema bumps v9 → v10 with two new fields (`fallenCairns: FallenCairn[]`, `oldDroverRevealedCount: number`). Replay payload carries cairn list at run-start to preserve T1 contract over FIFO rotation.
 
@@ -162,7 +162,7 @@ Create `src/utils/save/fallenCairns.ts`:
  * whichever stat that past-self was strongest in.
  *
  * Pure module — no Phaser, no scene state. Spec:
- * `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`.
+ * `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md`.
  */
 
 /** Stat the past-self leveled most — drives the +1 % inherited buff. */
@@ -359,7 +359,7 @@ At `src/core/SaveManager.ts` after the `ISaveDataV9` definition (after the exist
 
 ```ts
 /**
- * V10 — The Moor Remembers (`docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`).
+ * V10 — The Moor Remembers (`docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md`).
  * Adds `fallenCairns` (cap 50, FIFO) — persistent cross-run death markers
  * that materialise as Cairns-of-Echoes on future runs. Adds
  * `oldDroverRevealedCount` — count of grandfather hints revealed (0..25),
@@ -694,7 +694,7 @@ Create `src/scenes/game/cairnOfEchoesWhisper.ts`:
  *
  * Replay-deterministic: same context → same result.
  *
- * Spec: `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md` §4.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md` §4.
  */
 import { GRANDFATHER_WHISPER_CHANCE } from '../../utils/save/fallenCairns';
 
@@ -2231,7 +2231,7 @@ In `docs/superpowers/specs/INDEX.md` change the Moor Remembers row's "(plan to b
 - [ ] **Step 4: Final commit if INDEX or plan status was updated**
 
 ```bash
-git add docs/superpowers/specs/INDEX.md docs/superpowers/plans/2026-05-22-the-moor-remembers.md
+git add docs/superpowers/specs/INDEX.md docs/archive/superpowers/plans/2026-05-22-the-moor-remembers.md
 git commit -m "docs: mark The Moor Remembers V1 plan shipped"
 ```
 
@@ -2264,7 +2264,7 @@ Plan complete.
 
 ## Execution Handoff
 
-Plan saved to `docs/superpowers/plans/2026-05-22-the-moor-remembers.md`. Two execution options:
+Plan saved to `docs/archive/superpowers/plans/2026-05-22-the-moor-remembers.md`. Two execution options:
 
 **1. Subagent-Driven (recommended)** — Dispatch a fresh subagent per task; review between tasks; fast iteration.
 

@@ -103,7 +103,7 @@ The mantle slot on the player rig blocks on W71. V2 cannot ship a literal in-rig
 | `src/ui/Minimap.ts` | Differentiate cairn marker colour by wreathed/extinguished state. Gold = wreathed, mid-slate = neutral, dim-slate-cool = extinguished. |
 | `src/replay/replayDeterminism.test.ts` | Regression: record a gauntlet-completion run, replay, assert resulting wreath-set matches the recording's wreath-set. |
 | `src/scenes/almanac/FindsBook.ts` (extend) | Add a "Gauntlet" Finds sub-entry: lit when the player first triggers a gauntlet (regardless of win or lose). Counter rolls per gauntlet entered. |
-| `docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md` | Truth-up the V1 spec's "Deferred V2" paragraph — replace the one-sentence sketch with a link to this V2 spec; record the design divergence (extinguish, not wipe). |
+| `docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md` | Truth-up the V1 spec's "Deferred V2" paragraph — replace the one-sentence sketch with a link to this V2 spec; record the design divergence (extinguish, not wipe). |
 | `CLAUDE.md` | One-liner-per-mechanic table row for Cailleach Gauntlet under Landmarks. |
 | `docs/DESIGN_IDEAS.md` | Strike-through the V2-deferred bullet on The Moor Remembers entry with shipped marker + commit ref. |
 | `docs/HUGE_INITIATIVES_MASTER_PLAN.md` | Move "Moor Remembers V2 — Cailleach Gauntlet" row from "Open candidates" to "What's done" with ship date + outcome. |

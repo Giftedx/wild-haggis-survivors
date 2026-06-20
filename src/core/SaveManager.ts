@@ -321,7 +321,7 @@ export interface ISaveDataV9 {
 }
 
 /**
- * V10 — The Moor Remembers (`docs/superpowers/specs/2026-05-22-the-moor-remembers-design.md`).
+ * V10 — The Moor Remembers (`docs/archive/superpowers/specs/2026-05-22-the-moor-remembers-design.md`).
  * Adds `fallenCairns` (cap 50, FIFO) — persistent cross-run death markers
  * that materialise as Cairns-of-Echoes on future runs. Adds
  * `oldDroverRevealedCount` — count of grandfather hints revealed (0..25),
@@ -353,7 +353,7 @@ export interface ISaveDataV10 {
 }
 
 /**
- * V11 — Moor Remembers V2 (`docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`).
+ * V11 — Moor Remembers V2 (`docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`).
  * Per-cairn state via the optional `wreathedAt` / `extinguishedAt` fields
  * on `FallenCairn`. No top-level fields added; the data delta lives in
  * the cairn records themselves.

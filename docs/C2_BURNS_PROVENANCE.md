@@ -231,7 +231,7 @@ Sub-task B status: **3 corrections shipped, 3 deferred to human review.**
 
 ## Wee Tales v2 — variant-voiced Burns citations (2026-05-22)
 
-Three new Burns citations land in `src/core/i18n/ui.ts` + `src/core/i18n.scs/ui.ts` under `ui.weeTale.variant.burns_wee_beastie.*`. Spec: `docs/superpowers/specs/2026-05-22-wee-tales-v2-design.md`. The wee-tale fires only when the player has elected the Burns's Wee Beastie variant — the variant choice IS the contextual justification per VOICE_CARD §Burns ("any Burns quotation must be contextually justified").
+Three new Burns citations land in `src/core/i18n/ui.ts` + `src/core/i18n.scs/ui.ts` under `ui.weeTale.variant.burns_wee_beastie.*`. Spec: `docs/archive/superpowers/specs/2026-05-22-wee-tales-v2-design.md`. The wee-tale fires only when the player has elected the Burns's Wee Beastie variant — the variant choice IS the contextual justification per VOICE_CARD §Burns ("any Burns quotation must be contextually justified").
 
 ### `ui.weeTale.variant.burns_wee_beastie.death_baseline`
 

@@ -13,7 +13,7 @@
  *   engaged      — 15:00 reached; Cailleach is on field
  *   resolved     — boss-dead (win) or player-dead (lose); outcome locked
  *
- * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+ * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
  */
 
 export const GAUNTLET_TOUCH_THRESHOLD = 7;

@@ -562,7 +562,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * transitions: armed (7th cairn touched), candles_lit (14:00),
    * cailleach_spawned (15:00), cailleach_down (win), cailleach_dominant
    * (lose). Reset per-run in `resetTransientRunState`.
-   * Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
+   * Spec: docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
    */
   cailleachGauntletScheduler!: CailleachGauntletScheduler;
   /** V2 — opaque teardown returned by `installCailleachGauntlet`. */

@@ -1,6 +1,6 @@
 # Sporran Deck — Phase 0 Implementation Plan
 
-> **STATUS:** Open — Phase 0 (helper + tests + spec/plan) ships same session 2026-05-09. No runtime wiring; Phase 1 lifts UI.
+> **STATUS: ✅ SHIPPED (2026-05-09)** — Phase 0 helper, tests, and paired spec/plan shipped same session. Runtime wiring landed in later Sporran phases.
 
 **Goal:** Ship the pure-helper foundation for the Sporran Deck pre-run draft system. Phase 0 delivers `drawSporran` + `applySporranPicks` + 11-card pool + tests. Zero runtime integration — system is invisible to players until Phase 1 wires UI.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript, Vitest. No Phaser. No save schema bump. No i18n keys (deferred to Phase 1).
 
-**Spec:** `docs/superpowers/specs/2026-05-09-sporran-deck-design.md`
+**Spec:** `docs/archive/superpowers/specs/2026-05-09-sporran-deck-design.md`
 
 ---
 

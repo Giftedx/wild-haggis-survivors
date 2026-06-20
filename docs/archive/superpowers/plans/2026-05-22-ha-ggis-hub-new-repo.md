@@ -1,5 +1,7 @@
 # ha.ggis Hub New Repository Plan
 
+> **STATUS:** Superseded 2026-06-14 — this cross-repo bootstrap plan is archived here for decision history. Current WHS deployment is mounted from the separate `ha-ggis-hub` project under `https://ha.ggis.xyz/wild` per `README.md`.
+
 > **For Hermes:** Use subagent-driven-development skill to implement this plan task-by-task after the repo is created.
 
 **Goal:** Create a new standalone project repo for `ha.ggis.xyz`, the playable haggis hub that links into Wild Haggis Survivors as the first game.

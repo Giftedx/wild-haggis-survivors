@@ -365,7 +365,7 @@ export function activateFingalsHorn(state: FingalsHornState): FingalsHornResult 
 // ── stormcrown ─────────────────────────────────────────────────────
 // V2 (Cailleach Gauntlet) — drops only from cailleach_boss kill.
 // +18 % weapon damage + 6 % chance on crit to freeze for 0.5 s.
-// Spec: docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
+// Spec: docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md.
 
 export const STORMCROWN_DAMAGE_MULT = 1.18;
 export const STORMCROWN_FREEZE_CHANCE = 0.06;

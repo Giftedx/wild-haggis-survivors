@@ -898,7 +898,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    * (`wailBehaviour.ts`) drives the decision; this method handles the
    * scene-side effects (chase velocity, projectile spawn, pulse VFX).
    *
-   * Spec: `docs/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
+   * Spec: `docs/archive/superpowers/specs/2026-05-22-moor-remembers-v2-design.md`.
    */
   private behaviorWail(tx: number, ty: number, delta: number): void {
     // Default chase movement.

@@ -4,15 +4,11 @@
 
 ## Active
 
-| Initiative | Plan | Status |
-|---|---|---|
-| Sporran Deck Phase 0 (helper + 11-card pool) | [2026-05-09-sporran-deck-phase0.md](2026-05-09-sporran-deck-phase0.md) | ✅ SHIPPED 2026-05-09 |
-| The Moor Remembers V1 (cairns + grandfather voice) | [2026-05-22-the-moor-remembers.md](2026-05-22-the-moor-remembers.md) | ✅ SHIPPED 2026-05-22 |
-| The Moor Remembers V2 (Cailleach Gauntlet) | [2026-05-22-moor-remembers-v2.md](2026-05-22-moor-remembers-v2.md) | ✅ SHIPPED 2026-05-22 |
+No active implementation plans are currently parked here.
 
 ## Archived
 
-Browse [`docs/archive/superpowers/plans/`](../../archive/superpowers/plans/). 43 plans covering 2026-04-09 through 2026-04-30 (verified 2026-05-10), each documenting a shipped or stalled initiative.
+Browse [`docs/archive/superpowers/plans/`](../../archive/superpowers/plans/). 47 plans covering 2026-04-09 through 2026-05-22, each documenting a shipped, superseded, or stalled initiative.
 
 ## Convention going forward
 
@@ -20,5 +16,5 @@ Browse [`docs/archive/superpowers/plans/`](../../archive/superpowers/plans/). 43
 - Plans get a top-of-file STATUS marker:
   - `> **STATUS: ✅ SHIPPED (YYYY-MM-DD)** — <one-line provenance / commit ref>`
   - `> **STATUS:** <Draft | Open | In progress | Partial> — <one-line current state>`
-- On ship, update the marker. Optionally move to `docs/archive/superpowers/plans/` to keep this directory a small set of live work.
+- On ship, update the marker and move the plan to `docs/archive/superpowers/plans/` once it is older than the 14-day archival window.
 - For tasks spanning sessions, prefer charters under whatever the active dispatch directory is rather than re-opening shipped plans.
