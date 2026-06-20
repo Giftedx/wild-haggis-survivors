@@ -2,7 +2,7 @@
 
 Post-build gzip ceiling for the production JS chunks. Wired into `npm run ci` and `npm run ci:all` so any CI run catches accidental bundle bloat before merge.
 
-> **Status as of 2026-04-26**: Gate live in CI chain. Current measured baselines pass with ~4–6% headroom (see Baselines below). Tracking origin: T310 in `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`. Task-09 (this dispatch slice) wired the standalone script into the CI pipeline and added `--report-only` / `--verbose` affordances.
+> **Status as of 2026-04-26**: Gate live in CI chain. Current measured baselines pass with ~4–6% headroom (see Baselines below). Tracking origin: T310 in `docs/archive/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`. Task-09 (this dispatch slice) wired the standalone script into the CI pipeline and added `--report-only` / `--verbose` affordances.
 
 ## What it covers
 
@@ -84,6 +84,6 @@ A baseline bump is a **deliberate budget allocation**, not a routine maintenance
 
 ## Related docs
 
-- `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md` — T310 (lazy-scene split that established these baselines), T408 (deferred visual regression task that originally bundled with this).
+- `docs/archive/superpowers/plans/2026-04-26-triple-audit-execution-plan.md` — T310 (lazy-scene split that established these baselines), T408 (deferred visual regression task that originally bundled with this).
 - `vite.config.ts` — chunk-splitting strategy; lazy scene loading.
 - `src/scenes/lazyProductionScenes.ts` — production scene lazy-load shim. Constraint: GameScene + ActIntermissionScene must stay eager.

@@ -4,7 +4,7 @@
  * Pure module — no Phaser, no DOM, no network. Vitest-covered.
  *
  * Implements the Last-Writer-Wins-with-conflict-prompt logic described
- * in `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`.
+ * in `docs/archive/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`.
  *
  * Four verdicts:
  *  - `in-sync`               → no action

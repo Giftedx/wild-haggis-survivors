@@ -3,7 +3,7 @@
  *
  * Tracks what the player has encountered across runs: beasties seen + killed,
  * routes picked, finds acquired, banter heard. Feeds the four-book Almanac
- * per `docs/superpowers/specs/2026-04-23-highland-almanac-design.md §3`.
+ * per `docs/archive/superpowers/specs/2026-04-23-highland-almanac-design.md §3`.
  *
  * Pure data — no Phaser, no localStorage. Save integration lives in
  * `src/utils/save.ts` (schema bump + migration + retroactive seed).

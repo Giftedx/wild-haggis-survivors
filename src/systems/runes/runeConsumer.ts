@@ -20,7 +20,7 @@
  * The "bag clock" (`nowMs`) is advanced by the orchestrator; this module
  * doesn't mutate the bag — it only reads.
  *
- * Spec: docs/superpowers/specs/2026-04-23-rune-upgrades-design.md §2
+ * Spec: docs/archive/superpowers/specs/2026-04-23-rune-upgrades-design.md §2
  * Plan: docs/top-10-tasks/09-u1-runes-m4-wire-consumers.md
  */
 

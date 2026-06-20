@@ -5,7 +5,7 @@ during the T401 decomposition push, plus the remaining-debt notes that the
 next dispatch should know about. One paragraph per slice, newest first.
 
 The full plan lives in
-`docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md` (T401 +
+`docs/archive/superpowers/plans/2026-04-26-triple-audit-execution-plan.md` (T401 +
 Exceptions sections); this file is a thinner running journal so a coordinator
 doesn't have to re-read the plan to know what's already gone.
 

@@ -12,7 +12,7 @@
  * _EVENTS`; the calendar is designed to avoid them, but if two
  * windows overlap the first-declared wins.
  *
- * Per spec `docs/superpowers/specs/2026-04-23-seasonal-events-burns-
+ * Per spec `docs/archive/superpowers/specs/2026-04-23-seasonal-events-burns-
  * night-design.md §5`: no server-time check, accepts device-local
  * time, no FOMO gates.
  */

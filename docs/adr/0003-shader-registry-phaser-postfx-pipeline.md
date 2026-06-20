@@ -98,14 +98,14 @@ Each shader subclass follows the same shape:
 
 ## Notes
 
-- **F1 ships first shader (haar fog).** See `docs/superpowers/specs/2026-04-23-haar-shader-design.md`.
+- **F1 ships first shader (haar fog).** See `docs/archive/superpowers/specs/2026-04-23-haar-shader-design.md`.
 - **Photosensitivity accessibility** (per `docs/research/ACCESSIBILITY_RESEARCH.md §2.5`) is a cross-cutting concern for every shader. Each subclass respects `reduceFlashing` and `motionScale` settings when computing animated uniforms.
 - **PEAT audit** (A1 flagship Task 7) covers shader-driven VFX — shaders don't get a pass from seizure-safety auditing.
 
 ## References
 
 - `docs/research/MUSIC_ART_TECH_RESEARCH.md §6` — full shader landscape + GLSL examples.
-- `docs/superpowers/specs/2026-04-23-haar-shader-design.md` — F1 spec (the first shader).
-- `docs/superpowers/plans/2026-04-23-haar-shader.md` — F1 plan.
+- `docs/archive/superpowers/specs/2026-04-23-haar-shader-design.md` — F1 spec (the first shader).
+- `docs/archive/superpowers/plans/2026-04-23-haar-shader.md` — F1 plan.
 - [Phaser 3 PostFXPipeline — Phaser Help](https://docs.phaser.io/phaser/concepts/fx)
 - [Phaser 3 Examples — Custom Post FX Pipeline](https://phaser.io/examples/v3.85.0/renderer/view/custom-post-fx-pipeline)

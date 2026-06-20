@@ -5,7 +5,7 @@
 
 ## Context
 
-Phase 6 C6 (`docs/superpowers/plans/2026-04-12-soul-charter-phase-6-visual-bugs-redesign.md`)
+Phase 6 C6 (`docs/archive/superpowers/plans/2026-04-12-soul-charter-phase-6-visual-bugs-redesign.md`)
 called for a regression test that would catch a class of bug: a
 translation template with `{placeholder}` tokens that call sites don't
 pass. The original spec proposed a headless Phaser scene harness that

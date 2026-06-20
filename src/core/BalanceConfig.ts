@@ -9,7 +9,7 @@ export type WaveTimelineEntry = {
 /**
  * Edinburgh-themed enemy keys gated until B5 Phase 3 ships
  * (cultural consultation required — see CULTURAL_SENSITIVITIES_RESEARCH.md §2.7
- * and docs/superpowers/specs/2026-04-28-five-missing-biomes-design.md).
+ * and docs/archive/superpowers/specs/2026-04-28-five-missing-biomes-design.md).
  * Open-world spawn pool only — `edinburgh_rune` is grounded via `glasgow_close`.
  * Act 3 Moor Road node banks intentionally retain these as designed encounter
  * content; only the open-world cumulative spawn pool is gated here.

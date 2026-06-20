@@ -10,7 +10,7 @@
  * replay playback is byte-deterministic. Callers — RelicSystem,
  * EnemyKillHandler, PickupSpawner — thread the run RNG through.
  *
- * Spec: docs/superpowers/specs/2026-04-23-relics-third-tier-design.md §2, §3, §7.
+ * Spec: docs/archive/superpowers/specs/2026-04-23-relics-third-tier-design.md §2, §3, §7.
  */
 import type { RNG } from '../utils/rng';
 import {

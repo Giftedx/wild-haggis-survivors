@@ -88,5 +88,5 @@ Events are declared in `src/data/seasonalEvents.ts` with `{startMonth, startDay,
 - `docs/research/SCOTTISH_RESEARCH_DEEP.md §22` — full seasonal calendar (12+ events).
 - `docs/research/SCOTTISH_RESEARCH_DEEP.md §11` — Burns Night ritual + wild haggis myth.
 - `docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md §2.3` — Culloden respectful handling.
-- `docs/superpowers/specs/2026-04-23-seasonal-events-burns-night-design.md` — E1 spec.
-- `docs/superpowers/plans/2026-04-23-seasonal-events-burns-night.md` — E1 plan.
+- `docs/archive/superpowers/specs/2026-04-23-seasonal-events-burns-night-design.md` — E1 spec.
+- `docs/archive/superpowers/plans/2026-04-23-seasonal-events-burns-night.md` — E1 plan.

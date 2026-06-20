@@ -1,7 +1,7 @@
 /**
  * Nicnevin Wild Hunt — N1 Tier-2 Mythos boss #2 unique mechanic.
  *
- * Spec: `docs/superpowers/specs/2026-04-28-boss-tier-2-mythos-design.md` §4.
+ * Spec: `docs/archive/superpowers/specs/2026-04-28-boss-tier-2-mythos-design.md` §4.
  *
  * Behaviour: when Nicnevin's HP drops to 50 % (the existing boss enrage
  * threshold — see `Enemy.ts:1273` and `globalEventBus.emit('bossEnraged')`)

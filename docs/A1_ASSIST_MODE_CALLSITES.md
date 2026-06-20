@@ -110,7 +110,7 @@ Manual invincibility smoke:
 - `src/systems/accessibility/AssistMode.test.ts` — coverage.
 - `src/scenes/game/PlayerHitResolver.ts` — primary call site.
 - `src/scenes/game/HazardZones.ts` — hazard call site.
-- `docs/superpowers/specs/2026-04-23-accessibility-foundation-design.md`
+- `docs/archive/superpowers/specs/2026-04-23-accessibility-foundation-design.md`
   §S6 — original spec.
 - `docs/research/ACCESSIBILITY_RESEARCH.md` §5.4 — Celeste assist
   framing reference.

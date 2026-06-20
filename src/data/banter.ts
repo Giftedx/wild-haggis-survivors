@@ -3981,7 +3981,7 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
  *   - no two pools in `BANTER_POOLS` share a priority
  *
  * Tests read `POOL_PRIORITIES` (derived below) to verify the priority
- * ladder called for in `docs/superpowers/specs/2026-04-23-banter-density-push-design.md §2`.
+ * ladder called for in `docs/archive/superpowers/specs/2026-04-23-banter-density-push-design.md §2`.
  */
 // B1 Phase 4 + 5 graduation (2026-04-26): both `cailleach_whisper` and
 // `seasonal_event` graduated into BANTER_POOLS. The PendingBanterContext

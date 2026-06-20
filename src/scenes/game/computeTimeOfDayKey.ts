@@ -1,7 +1,7 @@
 /**
  * Pure mapping: run time (ms) → time-of-day key.
  *
- * Phase 0 of B5 charter (`docs/superpowers/specs/2026-04-28-five-missing-
+ * Phase 0 of B5 charter (`docs/archive/superpowers/specs/2026-04-28-five-missing-
  * biomes-design.md`). Closes `gloaming_rune` (`runeConditions.ts:104`)
  * by giving GameScene a non-null `timeOfDayKey` to thread into the
  * rune evaluator (`GameScene.ts:2370`).

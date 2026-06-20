@@ -1,7 +1,7 @@
 /**
  * SavedStateHydrator — pure helpers that restore per-run state from a
  * saved snapshot. Extracted from GameScene as part of the T401 P3
- * residual decomposition (see docs/superpowers/specs/2026-04-13-
+ * residual decomposition (see docs/archive/superpowers/specs/2026-04-13-
  * gamescene-demonolith-design.md "Out of scope (follow-ups)" — saved-
  * state hydrator module).
  *

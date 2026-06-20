@@ -14,7 +14,7 @@
  *   the others, so a held-slot index stays stable across a discard
  *   (important for the HUD widget and the pickup prompt).
  *
- * See docs/superpowers/specs/2026-04-23-relics-third-tier-design.md §6
+ * See docs/archive/superpowers/specs/2026-04-23-relics-third-tier-design.md §6
  * for the full data shape. `activationUses` + `internalState` live here
  * so M3 effect wiring (Whisky Dram one-shot, Gran's Teapot timer) can
  * store per-slot state without re-introducing parallel arrays.

@@ -4,9 +4,9 @@
  * run-identity toast.
  *
  * Phase 5 Bucket 3 of the codebase restructure plan
- * (`docs/superpowers/plans/2026-04-30-codebase-restructure.md`). Each
+ * (`docs/archive/superpowers/plans/2026-04-30-codebase-restructure.md`). Each
  * function used to live as a private method on GameScene; the audit
- * (`docs/superpowers/specs/2026-04-30-gamescene-regrowth-audit.md`,
+ * (`docs/archive/superpowers/specs/2026-04-30-gamescene-regrowth-audit.md`,
  * lines 78–80) called for extraction here.
  *
  * Pure named functions — caller (GameScene) holds the spawned entity

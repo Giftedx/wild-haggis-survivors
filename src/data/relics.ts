@@ -11,7 +11,7 @@
  * effect wiring. `iconSprite` keys are declared now; the actual Graphics
  * textures are generated in `BootScene` at M3.
  *
- * Source of truth: docs/superpowers/specs/2026-04-23-relics-third-tier-design.md §3.
+ * Source of truth: docs/archive/superpowers/specs/2026-04-23-relics-third-tier-design.md §3.
  */
 
 export type RelicRarity = 'common' | 'uncommon' | 'rare';

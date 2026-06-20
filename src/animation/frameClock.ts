@@ -4,7 +4,7 @@
  * authored tempo. No wall-clock reads; replay-deterministic.
  *
  * Tempos chosen per the animation charter in
- * `docs/superpowers/specs/2026-04-18-moor-renders-itself-design.md` §2.
+ * `docs/archive/superpowers/specs/2026-04-18-moor-renders-itself-design.md` §2.
  */
 
 import type { AnimationState } from './animationStates';

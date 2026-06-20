@@ -11,8 +11,8 @@
  * `src/systems/runes/runeEffects.ts`; tick orchestration in
  * `src/systems/RuneConditionSystem.ts`.
  *
- * Spec: docs/superpowers/specs/2026-04-23-rune-upgrades-design.md
- * Plan: docs/superpowers/plans/2026-04-23-rune-upgrades.md
+ * Spec: docs/archive/superpowers/specs/2026-04-23-rune-upgrades-design.md
+ * Plan: docs/archive/superpowers/plans/2026-04-23-rune-upgrades.md
  */
 
 export const RUNE_RARITY = 'rune' as const;

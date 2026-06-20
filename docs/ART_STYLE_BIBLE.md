@@ -1,6 +1,6 @@
 # Art Style Bible — Wild Haggis Survivors
 
-Non-negotiable bar for every new procedural drawer in the Moor-Renders-Itself push (spec `docs/superpowers/specs/2026-04-18-moor-renders-itself-design.md`). NEW drawers adhere; EXISTING sprites retrofit opportunistically when touched — not blocking.
+Non-negotiable bar for every new procedural drawer in the Moor-Renders-Itself push (spec `docs/archive/superpowers/specs/2026-04-18-moor-renders-itself-design.md`). NEW drawers adhere; EXISTING sprites retrofit opportunistically when touched — not blocking.
 
 ## Palette anchors
 

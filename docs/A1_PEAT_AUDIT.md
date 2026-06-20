@@ -102,8 +102,8 @@ row.
 
 - `docs/research/ACCESSIBILITY_RESEARCH.md` §2.5 — photosensitivity
   engineering playbook.
-- `docs/superpowers/specs/2026-04-23-accessibility-foundation-design.md`
+- `docs/archive/superpowers/specs/2026-04-23-accessibility-foundation-design.md`
   §S1 — original spec.
-- `docs/superpowers/plans/2026-04-24-a1-m5-manual-playtest-followups.md`
+- `docs/archive/superpowers/plans/2026-04-24-a1-m5-manual-playtest-followups.md`
   F1 — PEAT re-audit followup created at M5 ship.
 - `docs/A1_COLORBLIND_AUDIT.md` — sister audit for hue accessibility.

@@ -1,6 +1,6 @@
 /**
  * Per-frame `updateInner` hooks — Phase 5 Bucket 5b/5c/5d of the
- * codebase restructure (audit: `docs/superpowers/specs/2026-04-30-
+ * codebase restructure (audit: `docs/archive/superpowers/specs/2026-04-30-
  * gamescene-regrowth-audit.md`).
  *
  * Each export here is one of the per-frame glue blocks that previously

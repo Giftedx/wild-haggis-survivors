@@ -241,9 +241,9 @@ non-skeletal subjects.
 ## Notes
 
 - **Phase 0 ship report:** `docs/archive/PHASE_0_GATE_NOTES.md`.
-- **Phase 1 enemy plan (executed):** `docs/superpowers/plans/2026-04-20-phase1-enemy-animation.md`.
-- **Phase 2 secondary-motion plan (executed):** `docs/superpowers/plans/2026-04-23-secondary-motion.md`.
-- **Phase 2 design spec:** `docs/superpowers/specs/2026-04-23-secondary-motion-design.md`.
+- **Phase 1 enemy plan (executed):** `docs/archive/superpowers/plans/2026-04-20-phase1-enemy-animation.md`.
+- **Phase 2 secondary-motion plan (executed):** `docs/archive/superpowers/plans/2026-04-23-secondary-motion.md`.
+- **Phase 2 design spec:** `docs/archive/superpowers/specs/2026-04-23-secondary-motion-design.md`.
 - **Charter reference:** `docs/archive/top-10-tasks/02-w71-skeletal-animation-rig.md`.
 - **Determinism contract:** ADR-0002 — replay format covers the deterministic
   fixed-step physics + input-only replay byte budget that this ADR's pure

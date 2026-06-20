@@ -6,7 +6,7 @@
 
 ### Stack
 
-- **Engine:** Phaser **4.0** + Vite 6 + TypeScript 6 + Vitest 3 (migrated 2026-04-23, see memory `project_phaser4_status` and `docs/superpowers/plans/2026-04-23-phaser4-migration.md`).
+- **Engine:** Phaser **4.0** + Vite 6 + TypeScript 6 + Vitest 3 (migrated 2026-04-23, see memory `project_phaser4_status` and `docs/archive/superpowers/plans/2026-04-23-phaser4-migration.md`).
 - **Game version:** `2.7.0` (`package.json`).
 - **Game loop:** Boot → Menu (variants) → Game (survivors loop + biomes + curses + post-bell endless + W2 Moor Road acts + M1 multi-node graph) → Shop / MetaShop. CroftScene is the persistent hub between runs (H1, shipped 2026-04-24).
 - **Persistence:**

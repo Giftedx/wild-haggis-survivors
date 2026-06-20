@@ -14,7 +14,7 @@
  *   - `save/queries.ts`     — Pure derivations (gold reward, win rate, trend, …).
  *   - `save/variants.ts`    — Variant unlock evaluator + progress snapshot.
  *
- * See `docs/superpowers/plans/2026-04-30-codebase-restructure.md` for
+ * See `docs/archive/superpowers/plans/2026-04-30-codebase-restructure.md` for
  * the per-phase ship history.
  */
 

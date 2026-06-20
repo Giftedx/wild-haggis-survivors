@@ -43,7 +43,7 @@ schema-blind passthrough; migrations remain client-side where they
 already live.
 
 Conflict resolution: Last-Writer-Wins, surfaced via a dialog when truly
-ambiguous. Spec: `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`.
+ambiguous. Spec: `docs/archive/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`.
 
 ## Alternatives considered
 
