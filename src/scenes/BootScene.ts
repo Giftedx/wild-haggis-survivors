@@ -467,7 +467,14 @@ export class BootScene extends Phaser.Scene {
     showPhotosensitivityWarningSplash(this, {
       onDismiss: () => {
         settings.update((cur) => markPhotosensitivityWarningSeen(cur));
-        maybeCulturalThenMenu();
+        // Defer the cultural splash by one tick. The dismissal of THIS splash
+        // is running inside the keydown dispatch (Enter/Space/Escape); mounting
+        // the cultural splash synchronously would register its keydown listener
+        // during that same dispatch, letting one keypress cascade through both
+        // splashes and skip the cultural-content acknowledgement entirely
+        // (observed intermittently on firefox). One tick lets the keypress
+        // drain so the second splash requires its own, deliberate dismissal.
+        this.time.delayedCall(0, maybeCulturalThenMenu);
       },
     });
   }
