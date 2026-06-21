@@ -111,6 +111,15 @@ function gameOverPayload() {
 }
 
 test.describe('DESIGN.md scene capture', () => {
+  // Single-reference screenshot harness — chromium is the design reference.
+  // The multi-scene walk flakes on FF/WK headless WebGL (a scene intermittently
+  // misses the 10s activate poll under load), and snap() writes to a shared PNG
+  // dir with no browser suffix, so cross-browser runs just clobber each other's
+  // output. Matches the suite-wide chromium-only convention for WebGL-flaky specs.
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'single-reference screenshot harness; chromium is the design reference (FF/WK headless WebGL flakes)',
+  );
   test.setTimeout(120_000);
 
   test('capture every top-level scene', async ({ page }) => {

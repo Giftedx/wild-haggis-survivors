@@ -15,6 +15,13 @@ import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/S
 const OUT_DIR = path.resolve(process.cwd(), 'design-verify-screens');
 
 test.describe('DESIGN.md boot splash capture', () => {
+  // Single-reference screenshot harness — see design-verify.spec.ts. Chromium is
+  // the design reference; FF/WK headless WebGL flakes on the timed reveal snaps
+  // and clobber the shared PNG dir (no browser suffix). Chromium-only by convention.
+  test.skip(
+    ({ browserName }) => browserName !== 'chromium',
+    'single-reference screenshot harness; chromium is the design reference (FF/WK headless WebGL flakes)',
+  );
   test.setTimeout(30_000);
 
   test('catches the Highland-dawn sequence', async ({ page }) => {
