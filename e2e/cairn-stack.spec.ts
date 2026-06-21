@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Cairn Stacking (DESIGN_IDEAS §1) spawn smoke. Asserts the scheduler
@@ -15,7 +16,6 @@ import { expect, test } from './fixtures';
  * Chromium-only — FF/WK headless WebGL flakes per memory.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('cairn stacking spawn (DESIGN_IDEAS §1)', () => {
   test.skip(

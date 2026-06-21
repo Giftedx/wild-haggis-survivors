@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Nuckelavee boss — spawn + kill smoke.
@@ -19,8 +20,6 @@ import { expect, test } from './fixtures';
  * Chromium-only — FF/WK headless WebGL flakes; single-browser coverage
  * is sufficient for the wiring smoke.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Nuckelavee boss — spawn and kill', () => {
   test.skip(

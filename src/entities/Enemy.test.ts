@@ -5,6 +5,7 @@ import {
   AFFIX_SWIFT_SPEED_MULT,
   AFFIX_WEALTHY_XP_MULT,
 } from '../data/eliteAffixes';
+import { Enemy } from './Enemy';
 
 vi.mock('phaser', () => {
   class Sprite {
@@ -43,8 +44,7 @@ vi.mock('../systems/AudioSystem', () => ({
 }));
 vi.mock('../core/i18n', () => ({ t: (k: string) => k }));
 
-async function createBareEnemy() {
-  const { Enemy } = await import('./Enemy');
+function createBareEnemy() {
   const e: any = Object.create(Enemy.prototype);
   // Minimal state for status/speed tests
   e.behavior = 'chase';
@@ -103,55 +103,55 @@ async function createBareEnemy() {
 }
 
 describe('Enemy status effects', () => {
-  it('applyFreeze reduces speed via freezeSpeedMul', async () => {
-    const e = await createBareEnemy();
+  it('applyFreeze reduces speed via freezeSpeedMul', () => {
+    const e = createBareEnemy();
     e.applyFreeze(0.5, 1000);
     expect(e.speed).toBe(50);
     expect(e.freezeSpeedMul).toBe(0.5);
     expect(e.freezeTimer).toBe(1000);
   });
 
-  it('applyFreeze takes strongest (lowest) multiplier', async () => {
-    const e = await createBareEnemy();
+  it('applyFreeze takes strongest (lowest) multiplier', () => {
+    const e = createBareEnemy();
     e.applyFreeze(0.7, 500);
     e.applyFreeze(0.3, 1000);
     expect(e.freezeSpeedMul).toBe(0.3);
     expect(e.speed).toBe(30);
   });
 
-  it('applySpeedBuff increases speed via buffSpeedMul', async () => {
-    const e = await createBareEnemy();
+  it('applySpeedBuff increases speed via buffSpeedMul', () => {
+    const e = createBareEnemy();
     e.applySpeedBuff(1.3, 500);
     expect(e.speed).toBe(130);
     expect(e.buffSpeedMul).toBe(1.3);
   });
 
-  it('applySpeedBuff takes strongest (highest) multiplier', async () => {
-    const e = await createBareEnemy();
+  it('applySpeedBuff takes strongest (highest) multiplier', () => {
+    const e = createBareEnemy();
     e.applySpeedBuff(1.2, 500);
     e.applySpeedBuff(1.5, 500);
     expect(e.buffSpeedMul).toBe(1.5);
     expect(e.speed).toBe(150);
   });
 
-  it('freeze + buff compose multiplicatively', async () => {
-    const e = await createBareEnemy();
+  it('freeze + buff compose multiplicatively', () => {
+    const e = createBareEnemy();
     e.applyFreeze(0.5, 1000);
     e.applySpeedBuff(1.3, 500);
     // 100 * 1 * 0.5 * 1.3 = 65
     expect(e.speed).toBe(65);
   });
 
-  it('applyBurn on hazard is no-op', async () => {
-    const e = await createBareEnemy();
+  it('applyBurn on hazard is no-op', () => {
+    const e = createBareEnemy();
     e.behavior = 'hazard';
     e.applyBurn(10, 3000);
     expect(e.burnDamage).toBe(0);
     expect(e.burnTimer).toBe(0);
   });
 
-  it('applyBurn refreshes to max damage/duration', async () => {
-    const e = await createBareEnemy();
+  it('applyBurn refreshes to max damage/duration', () => {
+    const e = createBareEnemy();
     e.applyBurn(5, 2000);
     e.applyBurn(10, 1000);
     expect(e.burnDamage).toBe(10);
@@ -160,8 +160,8 @@ describe('Enemy status effects', () => {
 });
 
 describe('Enemy markAsElite', () => {
-  it('doubles HP, 1.3x speed, 3x XP', async () => {
-    const e = await createBareEnemy();
+  it('doubles HP, 1.3x speed, 3x XP', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     expect(e.maxHp).toBe(200);
     expect(e.hp).toBe(200);
@@ -171,16 +171,16 @@ describe('Enemy markAsElite', () => {
     expect(e.eliteFlag).toBe(true);
   });
 
-  it('markAsElite idempotent — second call no-op', async () => {
-    const e = await createBareEnemy();
+  it('markAsElite idempotent — second call no-op', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     e.markAsElite();
     expect(e.maxHp).toBe(200);
     expect(e.speed).toBe(130);
   });
 
-  it('elite + freeze composes correctly', async () => {
-    const e = await createBareEnemy();
+  it('elite + freeze composes correctly', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     e.applyFreeze(0.5, 1000);
     // baseSpeed=130, freeze=0.5 → 65
@@ -189,15 +189,15 @@ describe('Enemy markAsElite', () => {
 });
 
 describe('Enemy applyEliteAffix', () => {
-  it('does nothing when not elite', async () => {
-    const e = await createBareEnemy();
+  it('does nothing when not elite', () => {
+    const e = createBareEnemy();
     e.applyEliteAffix('swift');
     expect(e.eliteAffixId).toBeNull();
     expect(e.baseSpeed).toBe(100);
   });
 
-  it('swift stacks speed on top of elite bake', async () => {
-    const e = await createBareEnemy();
+  it('swift stacks speed on top of elite bake', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     e.applyEliteAffix('swift');
     expect(e.eliteAffixId).toBe('swift');
@@ -205,30 +205,30 @@ describe('Enemy applyEliteAffix', () => {
     expect(e.speed).toBe(e.baseSpeed);
   });
 
-  it('bulwark increases HP after elite double', async () => {
-    const e = await createBareEnemy();
+  it('bulwark increases HP after elite double', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     e.applyEliteAffix('bulwark');
     expect(e.maxHp).toBe(Math.ceil(200 * AFFIX_BULWARK_HP_MULT));
     expect(e.hp).toBe(e.maxHp);
   });
 
-  it('relentless sets knockback multiplier', async () => {
-    const e = await createBareEnemy();
+  it('relentless sets knockback multiplier', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     e.applyEliteAffix('relentless');
     expect(e.knockbackTakenMul).toBe(AFFIX_RELENTLESS_KNOCKBACK_MUL);
   });
 
-  it('wealthy increases XP after elite ×3', async () => {
-    const e = await createBareEnemy();
+  it('wealthy increases XP after elite ×3', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     e.applyEliteAffix('wealthy');
     expect(e.xpValue).toBe(Math.ceil(30 * AFFIX_WEALTHY_XP_MULT));
   });
 
-  it('second applyEliteAffix is ignored', async () => {
-    const e = await createBareEnemy();
+  it('second applyEliteAffix is ignored', () => {
+    const e = createBareEnemy();
     e.markAsElite();
     e.applyEliteAffix('swift');
     const firstBase = e.baseSpeed;
@@ -239,8 +239,8 @@ describe('Enemy applyEliteAffix', () => {
 });
 
 describe('Enemy applyPostBellScaling', () => {
-  it('multiplies maxHp + heals to full when hpMul > 1', async () => {
-    const e = await createBareEnemy();
+  it('multiplies maxHp + heals to full when hpMul > 1', () => {
+    const e = createBareEnemy();
     e.applyPostBellScaling(2.0, 1);
     // Math.ceil(100 * 2) = 200; hp restored to fresh max so the post-bell
     // ramp doesn't trickle down a half-dead enemy that survived the spawn frame.
@@ -248,15 +248,15 @@ describe('Enemy applyPostBellScaling', () => {
     expect(e.hp).toBe(200);
   });
 
-  it('multiplies baseSpeed + recomputes effective speed when speedMul > 1', async () => {
-    const e = await createBareEnemy();
+  it('multiplies baseSpeed + recomputes effective speed when speedMul > 1', () => {
+    const e = createBareEnemy();
     e.applyPostBellScaling(1, 1.4);
     expect(e.baseSpeed).toBe(Math.ceil(100 * 1.4));
     expect(e.speed).toBe(e.baseSpeed);
   });
 
-  it('hpMul=1 + speedMul=1 is a no-op', async () => {
-    const e = await createBareEnemy();
+  it('hpMul=1 + speedMul=1 is a no-op', () => {
+    const e = createBareEnemy();
     e.hp = 50; // wounded
     e.applyPostBellScaling(1, 1);
     expect(e.maxHp).toBe(100);
@@ -266,16 +266,16 @@ describe('Enemy applyPostBellScaling', () => {
     expect(e.baseSpeed).toBe(100);
   });
 
-  it('Math.ceil rounds up — fractional mults never drop the enemy below baseline', async () => {
-    const e = await createBareEnemy();
+  it('Math.ceil rounds up — fractional mults never drop the enemy below baseline', () => {
+    const e = createBareEnemy();
     e.applyPostBellScaling(1.011, 1.011);
     // 100 * 1.011 = 101.1 → ceil → 102
     expect(e.maxHp).toBe(102);
     expect(e.baseSpeed).toBe(102);
   });
 
-  it('composes with freeze — frozen enemy still gets its baseSpeed bumped', async () => {
-    const e = await createBareEnemy();
+  it('composes with freeze — frozen enemy still gets its baseSpeed bumped', () => {
+    const e = createBareEnemy();
     e.applyFreeze(0.5, 1000);
     expect(e.speed).toBe(50);
     e.applyPostBellScaling(1, 2);
@@ -286,16 +286,16 @@ describe('Enemy applyPostBellScaling', () => {
 });
 
 describe('Enemy markAsCursed', () => {
-  it('marks the cursed flag and bumps damage by 40%', async () => {
-    const e = await createBareEnemy();
+  it('marks the cursed flag and bumps damage by 40%', () => {
+    const e = createBareEnemy();
     e.cursedFlag = false;
     e.markAsCursed();
     expect(e.cursedFlag).toBe(true);
     expect(e.damage).toBe(Math.ceil(5 * 1.4));
   });
 
-  it('is idempotent — second call no-op', async () => {
-    const e = await createBareEnemy();
+  it('is idempotent — second call no-op', () => {
+    const e = createBareEnemy();
     e.cursedFlag = false;
     e.markAsCursed();
     const dmgAfterFirst = e.damage;
@@ -303,8 +303,8 @@ describe('Enemy markAsCursed', () => {
     expect(e.damage).toBe(dmgAfterFirst);
   });
 
-  it('isCursed reflects state', async () => {
-    const e = await createBareEnemy();
+  it('isCursed reflects state', () => {
+    const e = createBareEnemy();
     e.cursedFlag = false;
     expect(e.isCursed()).toBe(false);
     e.markAsCursed();

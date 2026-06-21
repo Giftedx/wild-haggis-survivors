@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Drift Mastery (DESIGN_IDEAS §1) input smoke. Asserts G is wired to
@@ -16,7 +17,6 @@ import { expect, test } from './fixtures';
  * Chromium-only — FF/WK headless WebGL flakes per memory.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('drift mastery (DESIGN_IDEAS §1)', () => {
   test.skip(

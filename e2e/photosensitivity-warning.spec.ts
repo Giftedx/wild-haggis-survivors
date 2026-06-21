@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * A1 M5 — photosensitivity warning splash e2e.
@@ -43,7 +44,7 @@ test.describe('A1 M5 photosensitivity warning splash', () => {
     // Meta save still gets `hasCompletedTutorial: true` so the other
     // first-launch UX (tutorial) doesn't interfere; the splash is
     // independent of the tutorial.
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         const metaRaw = localStorage.getItem('whs_meta_save');
         const meta = (metaRaw
@@ -51,7 +52,7 @@ test.describe('A1 M5 photosensitivity warning splash', () => {
           : {}) as Record<string, unknown>;
         localStorage.setItem('whs_meta_save', JSON.stringify({
           ...meta,
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
 
@@ -69,7 +70,7 @@ test.describe('A1 M5 photosensitivity warning splash', () => {
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

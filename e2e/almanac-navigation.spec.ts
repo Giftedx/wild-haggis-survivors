@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * C1 M2 Task 12 — Highland Almanac navigation smoke.
@@ -15,8 +16,6 @@ import { expect, test } from './fixtures';
  *   4. Expanding an entry sets `expandStates.beasties.expandedKey`.
  *   5. Re-toggling the same entry collapses it.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('C1 Highland Almanac — navigation smoke', () => {
   test('Almanac tabs render, switch, and expand', async ({ page }) => {
@@ -64,7 +63,7 @@ test.describe('C1 Highland Almanac — navigation smoke', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

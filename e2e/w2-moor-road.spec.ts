@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * W2 Moor Road E2E — verifies the ActIntermission scene can be launched
@@ -17,8 +18,6 @@ import { expect, test } from './fixtures';
  * + DEBUG.killCurrentBoss. That path proves the onActComplete dispatch +
  * resolver + victory trigger all wire up end-to-end.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
   test('launch → resolve contract holds in a running game', async ({ page }) => {
@@ -40,7 +39,7 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -146,7 +145,7 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -366,6 +365,30 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
 
     // Same settle wait before the final skip.
     await page.waitForTimeout(1_000);
+
+    // The route picker can resume onto an interactive Moor Road node. If that
+    // prompt is open, game time is intentionally paused, so resolve the
+    // accessible Leave action before forcing the finale.
+    const promptState = await page.evaluate(async () => {
+      const g = (window as unknown as { game: {
+        scene: { scenes: Array<{ scene: { key: string } }> };
+      } }).game;
+      const gs = g.scene.scenes.find((s) => s.scene.key === 'Game') as unknown as {
+        nodePromptUI?: { isOpen?(): boolean };
+      };
+      if (gs.nodePromptUI?.isOpen?.() !== true) return 'none';
+      const leave = document.querySelector<HTMLButtonElement>(
+        '#whs-node-prompt-focus-layer button[data-focus-id="node-prompt-leave"]',
+      );
+      leave?.click();
+      const start = Date.now();
+      while (Date.now() - start < 5_000) {
+        if (gs.nodePromptUI?.isOpen?.() !== true) return 'closed';
+        await new Promise((r) => setTimeout(r, 50));
+      }
+      return 'stuck';
+    });
+    expect(promptState, 'Open node prompt did not resolve before finale skip').not.toBe('stuck');
 
     // Taxman (act 3 final) — victory path, no picker. Skip-to-minute 25
     // can leave a stale mid-run boss alive (each_uisge spawned alongside

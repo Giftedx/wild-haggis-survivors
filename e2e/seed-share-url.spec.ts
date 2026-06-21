@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * W82 Shared-run URL — recipient-side smoke.
@@ -17,7 +18,6 @@ import { expect, test } from './fixtures';
  * → init data → applied state).
  */
 
-const CURRENT_SAVE_VERSION = 9;
 // Pin to a small stable seed so the deep link is byte-identical across builds.
 const SEED_FOR_TEST = 12345;
 
@@ -57,7 +57,7 @@ test.describe('W82 shared-run URL', () => {
           hasCompletedTutorial: true,
         }));
       } catch { /* ignore */ }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     const sharedRunUrl = `./?run=${encodeSeedCode(SEED_FOR_TEST)}&v=classic&c=heavy_legs`;
 
@@ -117,7 +117,7 @@ test.describe('W82 shared-run URL', () => {
           hasCompletedTutorial: true,
         }));
       } catch { /* ignore */ }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     // V2 challenge URL — encodes a 12:34 victory (754s) on classic +
     // heavy_legs. The recipient's GameScene reads the parsed
@@ -175,7 +175,7 @@ test.describe('W82 shared-run URL', () => {
           hasCompletedTutorial: true,
         }));
       } catch { /* ignore */ }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     const captureStartingPayload = async (url: string) => {
       await page.goto(url);

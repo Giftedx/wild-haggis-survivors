@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Wallace Sword (Highland Horrors B6) heavy-arc-sweep weapon wiring smoke.
@@ -17,7 +18,6 @@ import { expect, test } from './fixtures';
  * Chromium-only — FF/WK headless WebGL flakes per memory.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('wallace sword (Highland Horrors B6)', () => {
   test.skip(

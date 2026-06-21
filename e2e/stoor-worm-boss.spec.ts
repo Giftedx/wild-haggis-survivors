@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Stoor Worm boss — spawn + kill smoke.
@@ -16,8 +17,6 @@ import { expect, test } from './fixtures';
  * Three-phase state-machine behaviour is covered by stoorWormBehaviour.test.ts.
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Stoor Worm boss — spawn and kill', () => {
   test.skip(

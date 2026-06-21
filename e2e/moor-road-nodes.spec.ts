@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * M1 Moor Road multi-node — smoke: the Act 1 path is generated at run
@@ -6,8 +7,6 @@ import { expect, test } from './fixtures';
  * first node position fires the proximity trigger → records a
  * NodeOutcome in the append-only log.
  */
-
-const CURRENT_SAVE_VERSION = 16;
 
 type NodeKillSnapshot = {
   error?: string;
@@ -38,7 +37,7 @@ test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

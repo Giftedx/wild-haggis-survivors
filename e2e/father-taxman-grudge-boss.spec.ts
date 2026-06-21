@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Father Taxman — Grudge Phase 2 wiring smoke.
@@ -23,8 +24,6 @@ import { expect, test } from './fixtures';
  *
  * Chromium-only — FF/WK headless WebGL flakes (matches the other boss smokes).
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Father Taxman — Grudge Phase 2', () => {
   test.skip(

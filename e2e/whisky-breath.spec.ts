@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Whisky Breath (DESIGN_IDEAS §1) input smoke. Asserts F is wired to
@@ -17,7 +18,6 @@ import { expect, test } from './fixtures';
  * `reference_e2e_pre_existing_failures`.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 const BREATH_STACKS_REQUIRED = 8;
 
 test.describe('whisky breath (DESIGN_IDEAS §1)', () => {

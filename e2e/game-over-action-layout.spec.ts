@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 interface PhaserGameLike {
   scene: {
@@ -19,10 +20,10 @@ interface BoundsLike {
 test.describe('GameOver action/link layout', () => {
   test('mobile uiScale 1.4 keeps action labels, share links, and Wee Tale separated', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 664 });
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         localStorage.setItem('whs_meta_save', JSON.stringify({
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
         const raw = localStorage.getItem('whs_game_settings');
@@ -36,7 +37,7 @@ test.describe('GameOver action/link layout', () => {
           culturalContentSplashSeen: true,
         }));
       } catch { /* ignore */ }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     await expect(page.locator('canvas[role="application"]')).toBeVisible({ timeout: 60_000 });

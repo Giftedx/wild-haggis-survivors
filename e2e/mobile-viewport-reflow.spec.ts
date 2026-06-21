@@ -18,8 +18,7 @@
  */
 
 import { expect, test } from '@playwright/test';
-
-const CURRENT_SAVE_VERSION = 9;
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 const VIEWPORT_WIDTHS = [
   { name: 'iphone-mini-360', width: 360, height: 780 },
@@ -58,7 +57,7 @@ test.describe('W95 mobile viewport reflow', () => {
             photosensitivityWarningSeen: true,
           }));
         } catch { /* ignore */ }
-      }, { ver: CURRENT_SAVE_VERSION });
+      }, { ver: CURRENT_META_SAVE_VERSION });
 
       await page.goto('./');
       const canvas = page.locator('canvas[role="application"]');

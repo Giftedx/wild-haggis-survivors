@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Taxman's Retinue — post-bell wave wiring smoke.
@@ -23,8 +24,6 @@ import { expect, test } from './fixtures';
  *
  * Chromium-only — FF/WK headless WebGL flakes (matches the other boss smokes).
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe("Taxman's Retinue — post-bell", () => {
   test.skip(

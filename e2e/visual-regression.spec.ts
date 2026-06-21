@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures';
 import path from 'node:path';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T408 — visual regression at uiScale 1.4 + mobile viewport.
@@ -109,7 +110,7 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
   test.beforeEach(async ({ page }) => {
     // Skip the tutorial first-run path so the captures aren't dominated
     // by the tutorial overlay.
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         const existingRaw = localStorage.getItem('whs_meta_save');
         const existing = (existingRaw
@@ -117,13 +118,13 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
           : {}) as Record<string, unknown>;
         localStorage.setItem('whs_meta_save', JSON.stringify({
           ...existing,
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
   });
 
   test('MainMenu + Croft at uiScale 1.4 (desktop)', async ({ page, browserName }) => {

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Shinty Parry (DESIGN_IDEAS §1) input smoke. Asserts E opens the
@@ -8,7 +9,6 @@ import { expect, test } from './fixtures';
  * `src/entities/shintyParry.ts` (`PARRY_WINDOW_MS = 350`).
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('shinty parry (DESIGN_IDEAS §1)', () => {
   test('E opens the parry window: idle → active → cooldown', async ({ page }) => {

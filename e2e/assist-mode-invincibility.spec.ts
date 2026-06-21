@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Assist Mode invincibility hidden-toggle smoke.
@@ -9,7 +10,6 @@ import { expect, test } from './fixtures';
  * running GameScene while the Settings UI remains intentionally hidden.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 const CURRENT_SETTINGS_VERSION = 1;
 
 type AssistModeCase = {

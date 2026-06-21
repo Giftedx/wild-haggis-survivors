@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T407 — DOM-visible focus layer for ActIntermissionScene (W2 route picker).
@@ -7,8 +8,6 @@ import { expect, test } from './fixtures';
  * asserts the visually-hidden mirror mounts with one button per route card,
  * stable `data-focus-id` values, and resolved copy (no raw i18n key leaks).
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('ActIntermissionScene DOM focus mirror', () => {
   test('slot A mounts whs-act-intermission-focus-layer with three route buttons', async ({ page }) => {
@@ -29,7 +28,7 @@ test.describe('ActIntermissionScene DOM focus mirror', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -131,7 +130,7 @@ test.describe('ActIntermissionScene DOM focus mirror', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

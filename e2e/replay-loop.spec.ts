@@ -1,5 +1,6 @@
 import { expect, test } from './fixtures';
 import { SAVE_SCHEMA_VERSION } from '../src/utils/save';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T1 replay loop E2E — verifies the record → save → Chronicle → Watch
@@ -19,7 +20,6 @@ import { SAVE_SCHEMA_VERSION } from '../src/utils/save';
  *   4. Blob exhaustion transitions back to Chronicle automatically.
  */
 
-const META_SAVE_VERSION = 9;
 
 test.describe('T1 replay loop', () => {
   test('record → blob persisted → playback chip visible → exhaustion returns to Chronicle', async ({ page }) => {

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T407 parity — DOM-visible focus layer for SporranScene (S1 Phase 1.5).
@@ -25,7 +26,7 @@ test.describe('SporranScene DOM focus mirror', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         const raw = localStorage.getItem('whs_meta_save');
         const existing = raw && raw.length > 0
@@ -33,14 +34,14 @@ test.describe('SporranScene DOM focus mirror', () => {
           : {};
         localStorage.setItem('whs_meta_save', JSON.stringify({
           ...existing,
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
           hasSeenDriftTutorial: true,
         }));
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

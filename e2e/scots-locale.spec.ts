@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Scots locale lazy-load regression — guards the W18 Phase B code-split
@@ -12,8 +13,6 @@ import { expect, test } from './fixtures';
  * Pattern mirrors comfort-smoke.spec.ts: seeds localStorage, drives
  * through the Boot splash, then polls live scene state.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('Scots locale lazy-load', () => {
   test('English default never fetches the Scots chunk', async ({ page }) => {
@@ -36,7 +35,7 @@ test.describe('Scots locale lazy-load', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION });
+    }, { ver: CURRENT_META_SAVE_VERSION });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -98,7 +97,7 @@ test.describe('Scots locale lazy-load', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION, profile: SCOTS_PROFILE });
+    }, { ver: CURRENT_META_SAVE_VERSION, profile: SCOTS_PROFILE });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

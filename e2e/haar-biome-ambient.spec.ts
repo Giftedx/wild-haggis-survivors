@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * F1 M5 — GameScene persistent haar + BiomeController-driven ambient density.
@@ -13,8 +14,6 @@ import { expect, test } from './fixtures';
  * body via `window.game`. This is unavoidable on a canvas-only render
  * surface without adding test-only code to the production bundle.
  */
-
-const CURRENT_SAVE_VERSION = 14;
 
 test.describe('F1 M5 — GameScene biome haar', () => {
   test('main camera carries a HaarFog filter for the full run', async ({ page }) => {
@@ -35,7 +34,7 @@ test.describe('F1 M5 — GameScene biome haar', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -124,7 +123,7 @@ test.describe('F1 M5 — GameScene biome haar', () => {
           hasCompletedTutorial: true,
         }));
       } catch { /* ignore */ }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

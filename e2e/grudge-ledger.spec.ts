@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Taxman Grudge Ledger (DESIGN_IDEAS §1) — recording smoke.
@@ -16,7 +17,6 @@ import { expect, test } from './fixtures';
  * `DEBUG.killCurrentBoss()` to confirm boss finishes also land.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('taxman grudge ledger (DESIGN_IDEAS §1)', () => {
   // 2026-05-10 — un-skipped after `Enemy.emitKillEvents` was extended

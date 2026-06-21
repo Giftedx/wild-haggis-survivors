@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Shinty Stick (DESIGN_IDEAS §1+§5) bouncing-projectile weapon
@@ -16,7 +17,6 @@ import { expect, test } from './fixtures';
  * Chromium-only — FF/WK headless WebGL flakes per memory.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('shinty stick (DESIGN_IDEAS §1+§5)', () => {
   test.skip(

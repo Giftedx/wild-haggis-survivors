@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * W27 capture pipeline — keybind smoke tests.
@@ -17,8 +18,6 @@ import { expect, test } from './fixtures';
  * available for ClipRecorder in headless Chromium.
  */
 
-const CURRENT_SAVE_VERSION = 9;
-
 test.describe('W27 capture: F9 + F10 keybinds', () => {
   test.setTimeout(60_000);
 
@@ -36,7 +35,7 @@ test.describe('W27 capture: F9 + F10 keybinds', () => {
         // Skip level-up card modal so scene ticks freely.
         (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
       } catch { /* ignore */ }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Sgian Dubh (DESIGN_IDEAS §5) arc-sweep weapon wiring smoke.
@@ -11,7 +12,6 @@ import { expect, test } from './fixtures';
  * Chromium-only — FF/WK headless WebGL flakes per memory.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('sgian dubh (DESIGN_IDEAS §5)', () => {
   test.skip(
@@ -129,4 +129,3 @@ test.describe('sgian dubh (DESIGN_IDEAS §5)', () => {
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });
 });
-

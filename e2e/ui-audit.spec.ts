@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * UI design audit harness — screenshots EVERY player-facing surface so a
@@ -222,15 +223,15 @@ test.describe('UI design audit — full screenshot sweep', () => {
   // 02 — Photosensitivity warning splash (first-run, separate from main flow)
   // ---------------------------------------------------------------------------
   test('02 photosensitivity warning splash', async ({ page }) => {
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         localStorage.setItem('whs_meta_save', JSON.stringify({
-          saveVersion: 13,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
         localStorage.removeItem('whs_game_settings');
       } catch { /* ignore */ }
-    });
+    }, CURRENT_META_SAVE_VERSION);
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Selkie Song weapon — wiring smoke.
@@ -20,8 +21,6 @@ import { expect, test } from './fixtures';
  *
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Selkie Song weapon — aura wiring smoke', () => {
   test.skip(

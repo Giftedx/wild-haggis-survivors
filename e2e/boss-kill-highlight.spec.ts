@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * W82 Phase 3 — boss-kill highlight save link.
@@ -28,8 +29,6 @@ import { expect, test } from './fixtures';
  * directly bypasses canvas hit-test coordinate math while still
  * exercising the same handler chain the click event would.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 interface PhaserGameLike {
   scene: {
@@ -62,7 +61,7 @@ test.describe('W82 boss-kill highlight save link', () => {
         }));
         (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
       } catch { /* ignore */ }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

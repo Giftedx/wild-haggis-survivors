@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Nessie, Reconsidered — spawn + kill smoke.
@@ -19,8 +20,6 @@ import { expect, test } from './fixtures';
  * Phase logic is covered by nessieBehaviour.test.ts.
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Nessie boss — spawn and kill', () => {
   test.skip(

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T407 parity — DOM-visible focus layer for MetaShopScene (Lasting Boons).
@@ -17,10 +18,10 @@ test.describe('MetaShopScene DOM focus mirror', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         localStorage.setItem('whs_meta_save', JSON.stringify({
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           totalKills: 5000,
           totalKillsSpent: 0,
           unlockedWeapons: [],
@@ -48,7 +49,7 @@ test.describe('MetaShopScene DOM focus mirror', () => {
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

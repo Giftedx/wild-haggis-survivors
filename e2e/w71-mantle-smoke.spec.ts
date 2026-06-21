@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * W71 Phase 2 — heather-mantle smoke. Boots into Game, drives kills past
@@ -7,8 +8,6 @@ import { expect, test } from './fixtures';
  * Also verifies the baked atlas contains the mantle texture keys for the
  * classic variant.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 interface MantleSnapshot {
   tier: number;
@@ -33,7 +32,7 @@ test.describe('W71 mantle smoke', () => {
         hasCompletedTutorial: true,
       }));
       (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
-    }, { ver: CURRENT_SAVE_VERSION });
+    }, { ver: CURRENT_META_SAVE_VERSION });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

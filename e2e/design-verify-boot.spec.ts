@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Boot-splash verification — catches the Highland-dawn sequence
@@ -12,8 +13,6 @@ import { expect, test } from './fixtures';
  */
 
 const OUT_DIR = path.resolve(process.cwd(), 'design-verify-screens');
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('DESIGN.md boot splash capture', () => {
   test.setTimeout(30_000);
@@ -28,7 +27,7 @@ test.describe('DESIGN.md boot splash capture', () => {
           permanentUpgrades: {},
         }));
       } catch { /* ignore */ }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     // Navigate — this kicks Phaser boot + BootScene.create.
     await page.goto('./');

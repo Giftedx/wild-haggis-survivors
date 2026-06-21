@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Haggis Hunter General boss — spawn + kill smoke.
@@ -15,8 +16,6 @@ import { expect, test } from './fixtures';
  *
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Hunter General boss — spawn and kill', () => {
   test.skip(

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * R1 M2 Ship Gate — relic pickup end-to-end.
@@ -16,8 +17,6 @@ import { expect, test } from './fixtures';
  * (DEBUG.getRelicCatalogueKeys), so a missing or mis-registered relic
  * fails fast before the slot test runs.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('R1 — Relic pickup flow', () => {
   test('spawn → walk over → slot filled', async ({ page }) => {
@@ -41,7 +40,7 @@ test.describe('R1 — Relic pickup flow', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

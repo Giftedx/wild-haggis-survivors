@@ -1,5 +1,7 @@
 import type { Page } from '@playwright/test';
+import { SAVE_SCHEMA_VERSION as LEGACY_SAVE_SCHEMA_VERSION } from '../src/utils/save/schema';
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * H1 M1 T10 — Gran's Croft scene smoke.
@@ -23,11 +25,6 @@ import { expect, test } from './fixtures';
  *   7. Explicit `selectedCompanion: null` in `whs_save` → no delayed
  *      whistle; companion stays absent (opt-out path).
  */
-
-/** Keep aligned with `SaveManager.CURRENT_SAVE_VERSION` (`whs_meta_save`). */
-const META_SAVE_VERSION = 9;
-
-const LEGACY_SAVE_SCHEMA_VERSION = 23;
 
 type GameWin = {
   game?: {

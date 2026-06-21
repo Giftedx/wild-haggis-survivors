@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * W27 Friend Challenges panel — end-to-end smoke.
@@ -17,8 +18,6 @@ import { expect, test } from './fixtures';
  * cap, coerce, isChallengeBeaten). This smoke catches wiring failures
  * between the save layer and the scene.
  */
-
-const META_SAVE_VERSION = 12;
 
 // A stable deterministic seed so the shared run is byte-identical across builds.
 const CHALLENGE_SEED = 0xdeadbeef >>> 0;   // 3735928559

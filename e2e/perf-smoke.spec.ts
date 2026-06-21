@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Perf smoke — frame-rate regression gate.
@@ -52,8 +53,6 @@ import { expect, test } from './fixtures';
 
 test.setTimeout(90_000);
 
-const CURRENT_SAVE_VERSION = 9;
-
 // Steady-state floor. ≥90% of post-warmup samples must be ≥ this FPS.
 const FPS_FLOOR = 50;
 // Fraction of samples that must clear the floor.
@@ -90,7 +89,7 @@ test.describe('Perf smoke (chromium-only)', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

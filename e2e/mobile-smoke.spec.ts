@@ -1,5 +1,6 @@
 // Bypass the shared FORCE_CANVAS fixture — same hang regardless.
 import { expect, test } from '@playwright/test';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Mobile smoke — runs against `chromium-mobile` project (iPhone 13 device
@@ -25,8 +26,6 @@ import { expect, test } from '@playwright/test';
  * worker registration races on mobile preview. Once fixed, expand this
  * spec to drive joystick + gameplay.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.setTimeout(90_000);
 
@@ -69,7 +68,7 @@ test.describe('Mobile smoke', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION });
+    }, { ver: CURRENT_META_SAVE_VERSION });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -190,7 +189,7 @@ test.describe('Mobile smoke', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION });
+    }, { ver: CURRENT_META_SAVE_VERSION });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

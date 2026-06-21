@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * F1 — ActIntermissionScene haar-fog smoke.
@@ -14,8 +15,6 @@ import { expect, test } from './fixtures';
  * attached to camera.filters.internal, shader program compiles, tween
  * mutates state the render node reads at draw time.
  */
-
-const CURRENT_SAVE_VERSION = 14;
 
 test.describe('F1 haar fog — ActIntermissionScene smoke', () => {
   test('intermission applies a HaarFogController with density tweening up', async ({ page }) => {
@@ -36,7 +35,7 @@ test.describe('F1 haar fog — ActIntermissionScene smoke', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

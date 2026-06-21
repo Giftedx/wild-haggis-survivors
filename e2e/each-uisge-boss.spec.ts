@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Each-Uisge boss — spawn + kill smoke.
@@ -16,8 +17,6 @@ import { expect, test } from './fixtures';
  * Phase behaviour and kelpie-foal companion unlock are covered by unit
  * tests. Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Each-Uisge boss — spawn and kill', () => {
   test.skip(

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * A1 M3 T24 — key-remap end-to-end regression.
@@ -8,8 +9,6 @@ import { expect, test } from './fixtures';
  * the rebind round-tripped through persistence → `SettingsManager` →
  * `InputMapper` → `InputManager.consumeDashPressed` → `Player.tryDash`.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 const REMAPPED_SETTINGS = {
   settingsVersion: 1,
@@ -60,7 +59,7 @@ test.describe('Key remapping E2E', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION, profile: REMAPPED_SETTINGS });
+    }, { ver: CURRENT_META_SAVE_VERSION, profile: REMAPPED_SETTINGS });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

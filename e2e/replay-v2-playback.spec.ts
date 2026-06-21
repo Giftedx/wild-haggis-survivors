@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T1 Phase 3 playback cross-check — verifies that a v2 `ReplayBlob`
@@ -14,7 +15,6 @@ import { expect, test } from './fixtures';
  * mid-test (the curse singleton isn't exposed to Playwright cleanly).
  */
 
-const META_SAVE_VERSION = 9;
 
 test.describe('T1 Phase 3 v2 playback', () => {
   test('synthetic v2 blob applies curseKey + composedStats to the run sheet', async ({ page }) => {

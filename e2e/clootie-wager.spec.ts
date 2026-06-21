@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * DESIGN_IDEAS §1 Clootie Rag Wager — spawn smoke.
@@ -9,7 +10,6 @@ import { expect, test } from './fixtures';
  * `clootieRagWager.test.ts`; this smoke is strictly "tree spawns".
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('clootie wager spawn (DESIGN_IDEAS §1)', () => {
   test('tree spawns within the 4-9 minute window', async ({ page }) => {

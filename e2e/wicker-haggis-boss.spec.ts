@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Wicker Haggis boss — spawn + kill smoke.
@@ -16,8 +17,6 @@ import { expect, test } from './fixtures';
  * The wicker_haggis phase behaviour is covered by wickerHaggis.test.ts.
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Wicker Haggis boss — spawn and kill', () => {
   test.skip(

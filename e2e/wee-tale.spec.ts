@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Wee Tales — single procedural prose epitaph that closes a run.
@@ -38,17 +39,17 @@ test.describe('Wee Tales — run-end prose epitaph', () => {
   test.setTimeout(60_000);
 
   test('renders a closing prose line on Game Over (victory + 3 bosses)', async ({ page }) => {
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         const raw = localStorage.getItem('whs_meta_save');
         const existing = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
         localStorage.setItem('whs_meta_save', JSON.stringify({
           ...existing,
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
       } catch { /* ignore */ }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -147,17 +148,17 @@ test.describe('Wee Tales — run-end prose epitaph', () => {
   });
 
   test('renders a death-flavoured prose line for a Taxman-killed run', async ({ page }) => {
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         const raw = localStorage.getItem('whs_meta_save');
         const existing = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
         localStorage.setItem('whs_meta_save', JSON.stringify({
           ...existing,
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
       } catch { /* ignore */ }
-    });
+    }, CURRENT_META_SAVE_VERSION);
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
@@ -254,17 +255,17 @@ test.describe('Wee Tales — run-end prose epitaph', () => {
    *   - rendered prose interpolates the run-name verbatim
    */
   test('renders a Cailleach-voiced victory line with {name} interpolated', async ({ page }) => {
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         const raw = localStorage.getItem('whs_meta_save');
         const existing = raw ? (JSON.parse(raw) as Record<string, unknown>) : {};
         localStorage.setItem('whs_meta_save', JSON.stringify({
           ...existing,
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
       } catch { /* ignore */ }
-    });
+    }, CURRENT_META_SAVE_VERSION);
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });

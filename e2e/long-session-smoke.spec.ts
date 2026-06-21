@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Long-session smoke — closes the coverage gap left by the existing e2e
@@ -19,8 +20,6 @@ import { expect, test } from './fixtures';
  * on the upgrade-card modal. FORCE_CANVAS is set by the shared fixture
  * for headless WebGL stability.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 interface FpsSample {
   minute: number;
@@ -79,7 +78,7 @@ test.describe('Long-session smoke', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION });
+    }, { ver: CURRENT_META_SAVE_VERSION });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

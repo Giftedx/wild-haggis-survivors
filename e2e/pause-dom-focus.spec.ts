@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T407 — DOM-visible focus mirror for in-run PauseMenu.
@@ -7,8 +8,6 @@ import { expect, test } from './fixtures';
  * hidden focus layer mounts with stable data-focus-id values and resolved
  * copy (no raw ui.pause.* key leaks on action buttons).
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('PauseMenu DOM focus mirror', () => {
   test('mounts whs-pause-focus-layer with resume, audio toggles, and quit', async ({ page }) => {
@@ -29,7 +28,7 @@ test.describe('PauseMenu DOM focus mirror', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

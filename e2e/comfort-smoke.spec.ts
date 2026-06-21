@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { expectNoRawI18nKeyLeaks } from './raw-i18n-key-sweep';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Comfort panel E2E — exercises the accessibility profile end-to-end:
@@ -14,8 +15,6 @@ import { expectNoRawI18nKeyLeaks } from './raw-i18n-key-sweep';
  * drives DEBUG.skipToMinute + DEBUG.killCurrentBoss, and polls live
  * game state through the scene manager.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 const COMFORT_PROFILE = {
   settingsVersion: 1,
@@ -87,7 +86,7 @@ test.describe('Comfort panel smoke', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION, profile: COMFORT_PROFILE });
+    }, { ver: CURRENT_META_SAVE_VERSION, profile: COMFORT_PROFILE });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

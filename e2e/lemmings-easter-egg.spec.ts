@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * DESIGN_IDEAS §13 — Lemmings cliff-edge parade. Once-per-variant lifetime
@@ -20,7 +21,6 @@ import { expect, test } from './fixtures';
  * same variant short-circuits the `variantAlreadyFired` gate.
  */
 
-const CURRENT_META_SAVE_VERSION = 9;
 const CURRENT_SAVE_SCHEMA_VERSION = 18;
 
 test.describe('lemmings easter egg (DESIGN_IDEAS §13)', () => {

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * The Laird boss — spawn + kill smoke.
@@ -15,8 +16,6 @@ import { expect, test } from './fixtures';
  *
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('The Laird boss — spawn and kill', () => {
   test.skip(

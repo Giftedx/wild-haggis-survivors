@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T202 — gamepad runtime E2E.
@@ -20,8 +21,6 @@ import { expect, test } from './fixtures';
  * If `pad1.connected` never flips, the spec fails fast with a clear
  * reason rather than waiting on a movement assertion that can never pass.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 interface SyntheticButton {
   pressed: boolean;
@@ -104,7 +103,7 @@ test.describe('Gamepad runtime E2E', () => {
       } catch {
         (navigator as unknown as { getGamepads: typeof proxy }).getGamepads = proxy;
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

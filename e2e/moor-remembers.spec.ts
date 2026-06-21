@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * The Moor Remembers (spec 2026-05-22) — cairn walk-over smoke.
@@ -21,8 +22,6 @@ import { expect, test } from './fixtures';
  *
  * Chromium-only — FF/WK headless WebGL flakes per memory.
  */
-
-const META_SAVE_VERSION = 10;
 
 test.describe('the moor remembers — cairn walk-over (spec 2026-05-22)', () => {
   test.skip(

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * The Moor Remembers V2 — Cailleach Gauntlet E2E smoke.
@@ -21,8 +22,6 @@ import { expect, test } from './fixtures';
  * spec's observation; single-browser coverage is sufficient for the
  * wiring smoke.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('moor-remembers V2 — Cailleach Gauntlet', () => {
   test.skip(

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Lost Ninth Legion boss — spawn + kill smoke.
@@ -17,8 +18,6 @@ import { expect, test } from './fixtures';
  * Shroud DR state-machine and wave-spawn logic are covered by
  * ninthLegionBehaviour.test.ts. Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Lost Ninth Legion boss — spawn and kill', () => {
   test.skip(

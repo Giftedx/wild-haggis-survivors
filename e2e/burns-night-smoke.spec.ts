@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * E1 M2 T15 — Burns Night smoke (clock-mocked).
@@ -46,16 +47,16 @@ test.describe('E1 Burns Night — clock-mocked smoke', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         localStorage.setItem('whs_meta_save', JSON.stringify({
-          saveVersion: 15,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
@@ -111,16 +112,16 @@ test.describe('E1 Burns Night — clock-mocked smoke', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         localStorage.setItem('whs_meta_save', JSON.stringify({
-          saveVersion: 15,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

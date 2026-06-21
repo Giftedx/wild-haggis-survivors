@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * 2026-05-10 — cultural-content first-launch splash e2e.
@@ -25,7 +26,7 @@ test.describe('cultural-content splash (2026-05-10)', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.addInitScript(() => {
+    await page.addInitScript((metaSaveVersion) => {
       try {
         const metaRaw = localStorage.getItem('whs_meta_save');
         const meta = (metaRaw
@@ -33,7 +34,7 @@ test.describe('cultural-content splash (2026-05-10)', () => {
           : {}) as Record<string, unknown>;
         localStorage.setItem('whs_meta_save', JSON.stringify({
           ...meta,
-          saveVersion: 9,
+          saveVersion: metaSaveVersion,
           hasCompletedTutorial: true,
         }));
 
@@ -48,7 +49,7 @@ test.describe('cultural-content splash (2026-05-10)', () => {
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

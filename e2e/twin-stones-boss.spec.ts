@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Twin Stones of Callanish boss — spawn + kill smoke.
@@ -17,8 +18,6 @@ import { expect, test } from './fixtures';
  * The twin-stones phase behaviour is covered by twinStonesBehaviour.test.ts.
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Twin Stones of Callanish boss — spawn and kill', () => {
   test.skip(

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T405 — CroftScene reuse stress test.
@@ -19,8 +20,6 @@ import { expect, test } from './fixtures';
  * the count comparison surfaces the regression at the next CI run.
  */
 
-const CURRENT_SAVE_VERSION = 13;
-
 test.describe('T405 CroftScene reuse stress', () => {
   test('five Croft entries hold the display-list size steady', async ({ page }) => {
     const pageErrors: string[] = [];
@@ -35,7 +34,7 @@ test.describe('T405 CroftScene reuse stress', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

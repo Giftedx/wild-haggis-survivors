@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Black Douglas boss — spawn + kill smoke.
@@ -18,8 +19,6 @@ import { expect, test } from './fixtures';
  * The hush AoE timing is covered by hushBehaviour.test.ts.
  * Chromium-only — FF/WK headless WebGL flakes.
  */
-
-const META_SAVE_VERSION = 11;
 
 test.describe('Black Douglas boss — spawn and kill', () => {
   test.skip(

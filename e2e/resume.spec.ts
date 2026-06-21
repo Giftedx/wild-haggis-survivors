@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Regression guard for the save-and-resume path.
@@ -14,8 +15,6 @@ import { expect, test } from './fixtures';
  * completes without uncaught exceptions. Catches the CLASS of bug, not
  * just the specific one.
  */
-
-const CURRENT_SAVE_VERSION = 9;
 
 test.describe('save and resume', () => {
   test('survives a full save → reload → resume cycle without uncaught errors', async ({ page }) => {
@@ -54,7 +53,7 @@ test.describe('save and resume', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     // Phase 1: boot + start a run.
     await page.goto('./');

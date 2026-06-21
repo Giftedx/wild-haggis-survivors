@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * T407 — DOM-visible focus mirror for NodePromptUI (Moor Road shrine /
@@ -10,7 +11,6 @@ import { expect, test } from './fixtures';
  * and a disabled option that remains in the DOM with disabled state.
  */
 
-const CURRENT_SAVE_VERSION = 9;
 const TIME_TOKEN = 'NODE_PROMPT_DOM_E2E';
 
 test.describe('NodePromptUI DOM focus mirror', () => {
@@ -32,7 +32,7 @@ test.describe('NodePromptUI DOM focus mirror', () => {
       } catch {
         /* ignore */
       }
-    }, CURRENT_SAVE_VERSION);
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

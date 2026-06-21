@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
 /**
  * Marathon smoke — extends the long-session spec to 30 simulated game-
@@ -18,8 +19,6 @@ import { expect, test } from './fixtures';
  */
 
 test.setTimeout(180_000);
-
-const CURRENT_SAVE_VERSION = 9;
 
 interface MarathonSample {
   minute: number;
@@ -88,7 +87,7 @@ test.describe('Marathon smoke', () => {
       } catch {
         /* ignore */
       }
-    }, { ver: CURRENT_SAVE_VERSION });
+    }, { ver: CURRENT_META_SAVE_VERSION });
 
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');

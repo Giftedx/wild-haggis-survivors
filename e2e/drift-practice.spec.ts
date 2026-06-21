@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('post-FTUE drift practice', () => {
   test('shows the marker on the first eligible run and persists skip', async ({ page }) => {

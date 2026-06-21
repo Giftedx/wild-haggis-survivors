@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
+import { CURRENT_SAVE_VERSION as CURRENT_META_SAVE_VERSION } from '../src/core/SaveManager';
 
-const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('stance toggle (DESIGN_IDEAS §1)', () => {
   test('Q cycles loose -> braced -> reeling -> loose', async ({ page }) => {
