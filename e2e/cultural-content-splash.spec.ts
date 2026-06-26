@@ -51,6 +51,32 @@ test.describe('cultural-content splash (2026-05-10)', () => {
       }
     }, CURRENT_META_SAVE_VERSION);
 
+    // Neutralize the phantom gamepad that headless Firefox exposes through
+    // `navigator.getGamepads()`: it reports `connected: true` with spurious
+    // `buttons[0]` presses that autonomously drive Phaser's gamepad input
+    // (the splash dismiss `tickPad`, plus MainMenu/Settings navigation).
+    //
+    // On a fresh save the two first-launch splashes chain — dismissing the
+    // photosensitivity warning SYNCHRONOUSLY mounts the cultural notice
+    // (BootScene.maybeShowPhotosensitivityWarningThenStart). Each splash's
+    // gamepad `tickPad` dismisses on a rising edge but starts `prevPadA`
+    // false, so a phantom button held across two consecutive frames reads as
+    // a fresh rising edge for the just-mounted cultural splash too. Both get
+    // dismissed with no keyboard input — flipping `culturalContentSplashSeen`
+    // true and racing the game to MainMenu before the test presses Escape,
+    // which tripped the "cultural still blocked" assertion (firefox-only,
+    // load-sensitive). Returning [] keeps Phaser's `pad1` undefined so only
+    // the keyboard path — the behaviour under test — drives the splashes; no
+    // cross-browser coverage is lost (real gamepad coverage lives in
+    // gamepad.spec.ts).
+    await page.addInitScript(() => {
+      try {
+        navigator.getGamepads = () => [];
+      } catch {
+        /* read-only in some engines — best-effort */
+      }
+    });
+
     await page.goto('./');
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });

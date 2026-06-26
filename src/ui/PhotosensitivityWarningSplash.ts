@@ -150,8 +150,19 @@ export function showPhotosensitivityWarningSplash(
   scene.input.keyboard?.on('keydown', onKey);
 
   // Gamepad: A (button 0) or Start (button 9) dismiss. Poll on scene
-  // update so we don't need our own RAF loop.
-  let prevPadA = false;
+  // update so we don't need our own RAF loop. Seed `prevPadA` from the
+  // CURRENT pressed state, not false: on a fresh save the cultural splash
+  // mounts the instant this one is dismissed, and the gamepad poll reads
+  // level state (not edges), so a button still held from dismissing the
+  // previous splash would read as a fresh press here and skip this splash on
+  // the next frame. Seeding true means only a release-then-press dismisses —
+  // each splash demands its own deliberate input.
+  const padPressed = (): boolean => {
+    const pad = scene.input.gamepad?.pad1;
+    if (!pad?.connected) return false;
+    return (pad.buttons[0]?.pressed ?? false) || (pad.buttons[9]?.pressed ?? false);
+  };
+  let prevPadA = padPressed();
   const tickPad = () => {
     if (dismissed) return;
     const pad = scene.input.gamepad?.pad1;
