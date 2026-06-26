@@ -236,6 +236,23 @@ describe('Player bonus stacking', () => {
     expect(p.getMaxHp()).toBe(132);
     expect(p.getHp()).toBe(130); // 120 + 10, under the folded cap — not clamped to raw 110
   });
+
+  it('applyClootieWagerCost clamps to the rune-folded cap, not the raw max (no silent HP loss)', () => {
+    // Sibling of addMaxHp: under a max-HP rune (e.g. haggis_loch) getMaxHp()
+    // folds a >1 mult, and heal/regen let HP sit above the raw bar. The clootie
+    // wager must clamp current HP to that folded cap too — clamping to raw
+    // this.maxHp clawed back HP far beyond the wagered amount.
+    const p = makePlayer({ maxHp: 100 });
+    const bag = createRuneEffectBag();
+    bag.hpMaxMult = 1.5; // folded cap = round(100 * 1.5) = 150
+    p.setRuneBagAccessor(() => bag);
+    p.heal(1000);
+    expect(p.getHp()).toBe(150); // at the folded cap
+
+    p.applyClootieWagerCost(20); // raw max 100 → 80; folded cap → round(80 * 1.5) = 120
+    expect(p.getMaxHp()).toBe(120);
+    expect(p.getHp()).toBe(120); // 150 - 20 = 130, clamped to folded cap 120 — NOT raw 80
+  });
 });
 
 describe('Player.tickRegen', () => {

@@ -1881,7 +1881,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (amount <= 0) return;
     this.bonusMaxHp -= amount;
     this.recalcStats();
-    this.hp = Math.max(1, Math.min(this.hp - amount, this.maxHp));
+    // Clamp to the rune-folded cap (getMaxHp), not the raw bar — matches
+    // addMaxHp / heal / tickRegen. Clamping to this.maxHp clawed HP back below
+    // the rune-folded cap, costing far more than the wagered amount.
+    this.hp = Math.max(1, Math.min(this.hp - amount, this.getMaxHp()));
   }
 
   addPickupRadius(amount: number): void {
