@@ -81,10 +81,12 @@ export interface InstallRunBookkeepingOpts {
   getOwnedPassives(): readonly string[];
   getEvolvedWeapons(): readonly string[];
   getHeldRelicKeysForPersistence(): readonly string[];
+  getOwnedRuneIdsForPersistence(): readonly string[];
   setRevivalAvailable(v: boolean): void;
   setOwnedPassives(p: string[]): void;
   setEvolvedWeapons(e: string[]): void;
   restoreHeldRelics(keys: readonly string[]): void;
+  restoreOwnedRunes(ids: readonly string[]): void;
   suppressNextNodeMapRoll(): void;
 
   /** Optional — when provided, collect() includes cairn stack state in the run snapshot. */
@@ -154,10 +156,12 @@ export function installRunBookkeeping(
     getOwnedPassives: opts.getOwnedPassives,
     getEvolvedWeapons: opts.getEvolvedWeapons,
     getHeldRelicKeys: opts.getHeldRelicKeysForPersistence,
+    getOwnedRuneIds: opts.getOwnedRuneIdsForPersistence,
     setRevivalAvailable: opts.setRevivalAvailable,
     setOwnedPassives: opts.setOwnedPassives,
     setEvolvedWeapons: opts.setEvolvedWeapons,
     restoreHeldRelics: opts.restoreHeldRelics,
+    restoreOwnedRunes: opts.restoreOwnedRunes,
     isSceneActive: opts.isSceneActive,
     suppressNextNodeMapRoll: opts.suppressNextNodeMapRoll,
     getCairnStacking: opts.getCairnStacking,

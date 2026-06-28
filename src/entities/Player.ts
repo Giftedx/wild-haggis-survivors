@@ -1292,9 +1292,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.haggisContainer.unequipLayer(removed.id);
   }
 
-  /** Mid-run resume — clamp to current max HP after stats are rebuilt. */
-  setResumeHealth(hp: number): void {
-    this.hp = Math.max(0, Math.min(Math.floor(hp), this.maxHp));
+  /**
+   * Mid-run resume — restore HP, clamped to the run's saved max-HP cap.
+   *
+   * `savedMaxHp` is the folded cap (`getMaxHp()`) captured at save time. We
+   * clamp to it rather than the live `getMaxHp()` because the rune condition
+   * system has NOT ticked yet at resume time — its effect bag still reads the
+   * raw (pre-rune) max, so clamping to the live value would silently claw down
+   * HP that a max-HP rune (haggis_loch / drover / ceilidh-chain) legitimately
+   * lifted above the raw bar. The saved cap is the run's authoritative ceiling;
+   * the live fold re-derives on the first post-resume tick. It also bounds a
+   * hand-edited / corrupt `playerHealth` to a sane value.
+   */
+  setResumeHealth(hp: number, savedMaxHp: number): void {
+    const cap = Math.max(1, Math.floor(savedMaxHp));
+    this.hp = Math.max(0, Math.min(Math.floor(hp), cap));
   }
 
   /** Mid-run resume — restore remaining shield cooldown if present. */

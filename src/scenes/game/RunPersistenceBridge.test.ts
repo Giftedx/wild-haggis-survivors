@@ -21,6 +21,7 @@ function buildState(
     owned?: string[];
     evolved?: string[];
     relics?: string[];
+    runes?: string[];
     ironmoor?: boolean;
   } = {},
 ) {
@@ -34,6 +35,7 @@ function buildState(
     owned: counters.owned ?? [],
     evolved: counters.evolved ?? [],
     relics: counters.relics ?? [],
+    runes: counters.runes ?? [],
   };
   const actState = new RunActState();
   const modifiers = defaultModifiers();
@@ -117,6 +119,7 @@ function buildHooks(
     getOwnedPassives: () => flags.owned,
     getEvolvedWeapons: () => flags.evolved,
     getHeldRelicKeys: () => flags.relics,
+    getOwnedRuneIds: () => flags.runes,
     setRevivalAvailable: (v) => {
       flags.revival = v;
     },
@@ -128,6 +131,9 @@ function buildHooks(
     },
     restoreHeldRelics: (keys) => {
       flags.relics = [...keys];
+    },
+    restoreOwnedRunes: (ids) => {
+      flags.runes = [...ids];
     },
     isSceneActive: () => overrides.sceneActive ?? true,
   };
@@ -201,6 +207,17 @@ describe('RunPersistenceBridge', () => {
       const snapshot = new RunPersistenceBridge(hooks).collect();
       expect(snapshot.heldRelicKeys).toEqual(['sporran_of_holding', 'bronze_clasp']);
       expect(snapshot.heldRelicKeys).not.toBe(state.flags.relics);
+    });
+
+    it('snapshots owned rune ids in pick order when present, omits when empty', () => {
+      const withRunes = buildState({ runes: ['peat_rune', 'thirst_rune'] });
+      const snapWith = new RunPersistenceBridge(buildHooks(withRunes).hooks).collect();
+      expect(snapWith.ownedRuneIds).toEqual(['peat_rune', 'thirst_rune']);
+      expect(snapWith.ownedRuneIds).not.toBe(withRunes.flags.runes);
+
+      // No runes owned → field omitted (back-compat with pre-rune-persistence).
+      const snapWithout = new RunPersistenceBridge(buildHooks(buildState()).hooks).collect();
+      expect(snapWithout.ownedRuneIds).toBeUndefined();
     });
 
     it('snapshots cairn stacking progress when the scheduler is wired', () => {
@@ -279,6 +296,54 @@ describe('RunPersistenceBridge', () => {
       expect(flags.revival).toBe(true);
       expect(flags.owned).toEqual(['greaves']);
       expect(flags.relics).toEqual(['sporran_of_holding']);
+    });
+
+    it('re-registers owned runes, and does so BEFORE setResumeHealth (folded HP cap)', () => {
+      const calls: string[] = [];
+      const { hooks, flags } = buildHooks(buildState());
+      // Stable player mock so we can observe setResumeHealth ordering (the
+      // shared harness builds a fresh player per getPlayer() call).
+      const player = {
+        x: 0, y: 0,
+        getHp: () => 0, getMaxHp: () => 0,
+        getDashCharges: () => 0, getDashCooldownMs: () => 0, getShieldCooldownMs: () => 0,
+        onLevelUp: vi.fn(),
+        setResumeHealth: vi.fn(() => { calls.push('setResumeHealth'); }),
+        setResumeShieldCooldown: vi.fn(),
+        setResumeDashState: vi.fn(),
+      };
+      hooks.getPlayer = () => player as never;
+      const restoreOwnedRunes = vi.fn((ids: readonly string[]) => {
+        calls.push('restoreOwnedRunes');
+        flags.runes = [...ids];
+      });
+      hooks.restoreOwnedRunes = restoreOwnedRunes;
+
+      new RunPersistenceBridge(hooks).applyResume({
+        gameTimeSec: 0, playerX: 0, playerY: 0, playerHealth: 150, playerMaxHp: 150,
+        currentXp: 0, currentLevel: 1, acquiredWeapons: [], selectedVariantKey: 'classic',
+        killCount: 0, ownedPassives: [], evolvedWeaponKeys: [],
+        ownedRuneIds: ['peat_rune', 'thirst_rune'],
+      } as never);
+
+      expect(restoreOwnedRunes).toHaveBeenCalledWith(['peat_rune', 'thirst_rune']);
+      expect(flags.runes).toEqual(['peat_rune', 'thirst_rune']);
+      // Ordering invariant: runes registered before HP is clamped.
+      expect(calls).toEqual(['restoreOwnedRunes', 'setResumeHealth']);
+    });
+
+    it('does not touch runes when the payload has none (legacy resume)', () => {
+      const { hooks, flags } = buildHooks(buildState({ runes: ['stale'] }));
+      const restoreOwnedRunes = vi.fn();
+      hooks.restoreOwnedRunes = restoreOwnedRunes;
+      new RunPersistenceBridge(hooks).applyResume({
+        gameTimeSec: 0, playerX: 0, playerY: 0, playerHealth: 50, playerMaxHp: 100,
+        currentXp: 0, currentLevel: 1, acquiredWeapons: [], selectedVariantKey: 'classic',
+        killCount: 0, ownedPassives: [], evolvedWeaponKeys: [],
+      } as never);
+      expect(restoreOwnedRunes).not.toHaveBeenCalled();
+      // flags.runes is scene-owned; absent payload leaves the live array untouched.
+      expect(flags.runes).toEqual(['stale']);
     });
 
     it('snapshots the run-scoped ironmoor flag (locked-in, not live setting)', () => {

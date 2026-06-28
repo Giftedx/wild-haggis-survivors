@@ -132,6 +132,14 @@ export interface IRunState {
   /** Relic keys held in the three run slots, in slot order. */
   heldRelicKeys?: string[];
   /**
+   * U1 Runes — rune ids owned in this run, in pick order. Re-registered on
+   * resume so the run's rune effects (condition-gated multipliers re-derive
+   * on the first post-resume tick) and the card-pool de-dup survive a
+   * save-and-quit. Absent on pre-rune-persistence payloads → treated as no
+   * runes owned (the legacy "runes dropped on resume" behaviour).
+   */
+  ownedRuneIds?: string[];
+  /**
    * W2 Moor Road — act state (current act, start time, picker history).
    * Absent on pre-W2 resume payloads; the resume path treats that as a
    * fresh act-1 start. When present, `pickerHistory` drives replay of
@@ -553,6 +561,7 @@ function coerceIRunState(raw: unknown): IRunState | null {
       : undefined,
     shieldCooldownMs: toOptionalNonNegativeInt(o.shieldCooldownMs),
     heldRelicKeys: toOptionalStringArray(o.heldRelicKeys),
+    ownedRuneIds: toOptionalStringArray(o.ownedRuneIds),
     actState: coerceRunActStateSnapshot(o.actState),
     ironmoor: toOptionalBool(o.ironmoor),
     cairnStackCount: toOptionalNonNegativeInt(o.cairnStackCount),

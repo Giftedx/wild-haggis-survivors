@@ -94,10 +94,21 @@ export interface RunPersistenceHooks {
   getOwnedPassives(): readonly string[];
   getEvolvedWeapons(): readonly string[];
   getHeldRelicKeys?(): readonly string[];
+  /**
+   * U1 Runes — owned rune ids for the active-run snapshot. Optional: scenes
+   * that don't wire it keep the legacy "runes dropped on resume" behaviour.
+   */
+  getOwnedRuneIds?(): readonly string[];
   setRevivalAvailable(v: boolean): void;
   setOwnedPassives(p: string[]): void;
   setEvolvedWeapons(e: string[]): void;
   restoreHeldRelics?(keys: readonly string[]): void;
+  /**
+   * U1 Runes — re-register the run's owned runes on resume. Called before
+   * `setResumeHealth` so a max-HP rune's folded cap is in place when the
+   * restored HP is clamped. Optional, mirroring `restoreHeldRelics`.
+   */
+  restoreOwnedRunes?(ids: readonly string[]): void;
 
   // Auto-save gate (skip when scene is already torn down)
   isSceneActive(): boolean;
@@ -117,6 +128,7 @@ export class RunPersistenceBridge {
     const juice = h.getJuice();
     const score = h.getRunScore();
     const heldRelicKeys = h.getHeldRelicKeys?.() ?? [];
+    const ownedRuneIds = h.getOwnedRuneIds?.() ?? [];
     return {
       gameTimeSec: h.getSpawnSystem().getGameTimeSec(),
       playerX: player.x,
@@ -149,6 +161,7 @@ export class RunPersistenceBridge {
       spawnedBossKeys: h.getSpawnSystem().getSpawnedBossKeys(),
       shieldCooldownMs: player.getShieldCooldownMs(),
       ...(heldRelicKeys.length > 0 ? { heldRelicKeys: [...heldRelicKeys] } : {}),
+      ...(ownedRuneIds.length > 0 ? { ownedRuneIds: [...ownedRuneIds] } : {}),
       actState: snapshotRunActState(h.getRunActState()),
       ironmoor: h.isIronmoorRun(),
       ...(() => {
@@ -212,7 +225,20 @@ export class RunPersistenceBridge {
     for (const p of passives) {
       levelUpFlow.applyPassiveEffect(p);
     }
-    player.setResumeHealth(run.playerHealth);
+    // U1 Runes — re-register the run's owned runes so a save-and-quit no longer
+    // drops them. Only rune *identity* is persisted: condition-gated effects
+    // (the multipliers/additives/thresholds) re-derive on the first post-resume
+    // tick of the rune condition system from live state. Accrued/latched runtime
+    // state is intentionally NOT restored and re-accumulates from live play —
+    // the Ceilidh persistent max-HP latch (hpMaxMultPersistent) re-earns on its
+    // next pickup-chain, cascade kill-stacks restart at zero, timed windows
+    // re-arm on their next trigger. Done before setResumeHealth so ownership
+    // precedes the HP restore (HP itself clamps to the saved folded cap inside
+    // setResumeHealth, which is tick-independent).
+    if (run.ownedRuneIds && run.ownedRuneIds.length > 0) {
+      h.restoreOwnedRunes?.(run.ownedRuneIds);
+    }
+    player.setResumeHealth(run.playerHealth, run.playerMaxHp);
     player.setResumeShieldCooldown(run.shieldCooldownMs);
     player.setResumeDashState(run.dashCharges, run.dashCooldownMs);
     weapons.replaceWeaponsFromRun(run.acquiredWeapons);

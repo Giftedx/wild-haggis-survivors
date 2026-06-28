@@ -253,6 +253,25 @@ describe('Player bonus stacking', () => {
     expect(p.getMaxHp()).toBe(120);
     expect(p.getHp()).toBe(120); // 150 - 20 = 130, clamped to folded cap 120 — NOT raw 80
   });
+
+  it('setResumeHealth clamps restored HP to the run-saved cap, not the raw bar', () => {
+    // A run saved under a max-HP rune (e.g. haggis_loch) snapshots playerHealth
+    // at the folded value (HP legitimately sits above the raw bar) and
+    // playerMaxHp at the folded cap. On resume the rune condition system has
+    // not ticked yet, so the live getMaxHp() reads the raw max — clamping to it
+    // would claw the restored HP back down to the raw bar and lose the
+    // rune-granted HP on every resume. The saved cap is authoritative.
+    const p = makePlayer({ maxHp: 100 }); // raw max 100
+
+    p.setResumeHealth(150, 150); // saved HP + saved folded cap
+    expect(p.getHp()).toBe(150); // restored to the saved cap — NOT raw 100
+
+    // Bounds an out-of-range / hand-edited payload to the saved cap + floor.
+    p.setResumeHealth(9999, 150);
+    expect(p.getHp()).toBe(150);
+    p.setResumeHealth(-5, 150);
+    expect(p.getHp()).toBe(0);
+  });
 });
 
 describe('Player.tickRegen', () => {
