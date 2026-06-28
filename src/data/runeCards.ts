@@ -5,8 +5,8 @@
  *
  * Kept separate from `runes.ts` so the pure data module has no dependency
  * on the card shape — tests driving condition / effect behaviour do not
- * pull the whole card layer. Live card-pool inclusion is release-gated in
- * `upgrades.ts` until runtime systems consume the rune effect bag.
+ * pull the whole card layer. Live card-pool inclusion is controlled by
+ * `RUNE_CARD_OFFERS_ENABLED` in `upgrades.ts`.
  */
 
 import type { UpgradeCard } from './upgrades';
@@ -26,32 +26,23 @@ function toUpgradeCard(rune: RuneDef): UpgradeCard {
 /**
  * U1 M4 T113 — condition keys that currently have no live-state binding.
  *
- * Live biome IDs are `bog | loch | pine | heather` (`src/data/biomes.ts`).
- * Conditions baked into the rune catalogue at U1 M1 reference future
- * biomes (`fog`, `cold`, `coastal`, `urban`) and a time-of-day axis
- * (`dusk`) that the live game does not yet expose.
- *
- * Until those systems land, runes carrying these keys would be
- * permanent dead picks — a player could equip them and never see the
- * effect fire. Filter them out of the card-pool bridge so the pool
- * only offers runes whose conditions can actually transition.
- *
- * The catalogue itself stays intact (run-history / Almanac references
- * remain stable). Once a missing biome / time-of-day axis ships, the
- * relevant key drops off this list and the rune comes back online
- * with no data churn.
+ * The catalogue can include future-facing rules, but the level-up deck
+ * must not offer a rune whose condition can never transition in the
+ * running game. Keep this list aligned with `RuneSystemController`'s
+ * context builder: when that controller starts feeding a real signal,
+ * remove the matching condition here and add a regression test.
  */
 const UNGROUNDED_CONDITION_KEYS: ReadonlySet<RuneConditionKey> = new Set([
-  // 'biome_urban' graduated 2026-05-25 — `glasgow_close` biome ships;
-  // evaluator maps biome_urban → glasgow_close (edinburgh_rune online).
-  // 'biome_dusk' graduated 2026-04-28 (B5 Phase 0). GameScene now
-  // populates timeOfDayKey via computeTimeOfDayKey, so gloaming_rune
-  // fires in the 15-22min window of every run.
-  // 'biome_coastal' graduated 2026-04-29 (B5 Phase 1a).
-  // 'biome_fog' graduated 2026-04-30 (B5 Phase 1b).
-  // 'biome_cold' graduated 2026-04-30 (B5 Phase 2) — dedicated
-  // 'frost' biome shipped. The condition evaluator wires
-  // biomeKey === 'cold' || === 'frost' for forward-compat.
+  'near_cairn',
+  'dash_recent_2s',
+  'every_nth_kill:10',
+  'kill_cascade',
+  'three_types_in_5s',
+  'crit_on_weakened',
+  'pickup_chain_5s',
+  'dashed_5s_ago',
+  'kill_on_thistle',
+  'music_bass_active',
 ]);
 
 /**

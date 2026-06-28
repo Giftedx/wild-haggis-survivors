@@ -49,15 +49,21 @@ describe('assist game speed TimeManager token', () => {
     expect(high.request).not.toHaveBeenCalled();
   });
 
-  it('GameScene wires the token after replay mode is known', () => {
-    const source = readFileSync('src/scenes/GameScene.ts', 'utf8');
+  it('create() phase 2 wires the token after replay mode is known', () => {
+    // The run-start sequence (variant → replay bridge → assist token →
+    // Player) lives in the `installPlayerAndRunStart` phase helper since
+    // the GameScene facade decomposition. The ordering invariant the
+    // assist token depends on — replay mode resolved BEFORE the token is
+    // applied, token applied BEFORE the Player is constructed — is
+    // asserted at the code's home.
+    const source = readFileSync('src/scenes/game/installPlayerAndRunStart.ts', 'utf8');
 
-    expect(source).toContain("import { getAssistModeGameSpeed } from '../systems/accessibility/AssistMode';");
-    expect(source).toContain("import { applyAssistGameSpeedToken } from '../systems/accessibility/assistGameSpeed';");
+    expect(source).toContain("import { getAssistModeGameSpeed } from '../../systems/accessibility/AssistMode';");
+    expect(source).toContain("import { applyAssistGameSpeedToken } from '../../systems/accessibility/assistGameSpeed';");
 
     const replayInstallIndex = source.indexOf('installReplayPlayback({');
-    const applyIndex = source.indexOf('applyAssistGameSpeedToken(this.timeManager');
-    const playerIndex = source.indexOf('this.player = new Player(');
+    const applyIndex = source.indexOf('applyAssistGameSpeedToken(scene.timeManager');
+    const playerIndex = source.indexOf('scene.player = new Player(');
 
     expect(replayInstallIndex).toBeGreaterThan(-1);
     expect(applyIndex).toBeGreaterThan(replayInstallIndex);

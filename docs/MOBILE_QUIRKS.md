@@ -42,18 +42,18 @@ release. UI hit-tests run first (`scene.input.hitTestPointer`) so taps
 on level-up cards / pause buttons / overlays don't trigger gameplay.
 
 The split is now visibly hinted on first mobile run: `setupTouchInput()`
-spawns a faint additive band + `TAP TAE DASH` label centred in the right
-40% (depth 998/999, `setName('dash-zone-hint-band|label')`). The band
-breathes via `dashZoneHintPulseAlpha` and self-dismisses on the first
+spawns a faint lower-right thumb pad + `TAP TAE DASH` label inside the
+right 40% (depth 998/999, `setName('dash-zone-hint-band|label')`). The
+pad breathes via `dashZoneHintPulseAlpha` and self-dismisses on the first
 tap inside the zone (320ms fade). Geometry helpers + the visibility gate
 are pure (`src/ui/dashZoneAffordance.ts`) and unit-covered across the
 canonical mobile viewport widths used by `mobile-viewport-reflow.spec.ts`.
 
-`mobile-viewport-reflow.spec.ts` asserts the band's centreX + width track
-`width * 0.8` and `width * 0.4` on touch-primary emulation, so a future
-canvas-fraction tweak that drops out of sync with `setupTouchInput`'s
-literal `0.6` will fail CI. Both layers reference `DASH_ZONE_X_FRACTION`;
-update one and the unit + e2e fences will catch the drift.
+`mobile-viewport-reflow.spec.ts` asserts the hint stays inside the right
+40% while remaining a compact lower-right pad, so a future canvas-
+fraction tweak or a full-height overlay regression fails CI. Both input
+and hint placement reference `resolveTouchControlLayout`; update that
+helper and the unit + e2e fences will catch drift.
 
 ### Tap target minimum (≥44pt)
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { EN_STRINGS } from './i18n/enStrings';
@@ -28,11 +28,11 @@ import { COMPANION_KEYS_IN_ORDER } from '../entities/companions/companionTypes';
 const SRC_ROOT = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 
 function walk(dir: string, out: string[] = []): string[] {
-  for (const name of readdirSync(dir)) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const name = entry.name;
     if (name === 'node_modules' || name === 'dist') continue;
     const full = join(dir, name);
-    const st = statSync(full);
-    if (st.isDirectory()) walk(full, out);
+    if (entry.isDirectory()) walk(full, out);
     else if (name.endsWith('.ts') && !name.endsWith('.test.ts')) out.push(full);
   }
   return out;
@@ -54,27 +54,31 @@ function resolves(key: string): boolean {
 const T_CALL = /(?<![\w.])t\(\s*['"`]([A-Za-z][\w]*(?:\.[\w]+)+)['"`]/g;
 
 describe('i18n code→locale key existence', () => {
-  it('every literal t() key referenced in src resolves in EN_STRINGS', () => {
-    const files = walk(SRC_ROOT);
-    const missing = new Map<string, string[]>(); // key -> files
-    for (const file of files) {
-      const text = readFileSync(file, 'utf8');
-      let m: RegExpExecArray | null;
-      T_CALL.lastIndex = 0;
-      while ((m = T_CALL.exec(text)) !== null) {
-        const key = m[1];
-        if (resolves(key)) continue;
-        const rel = file.slice(SRC_ROOT.length + 1).replace(/\\/g, '/');
-        const list = missing.get(key) ?? [];
-        if (!list.includes(rel)) list.push(rel);
-        missing.set(key, list);
+  it(
+    'every literal t() key referenced in src resolves in EN_STRINGS',
+    () => {
+      const files = walk(SRC_ROOT);
+      const missing = new Map<string, string[]>(); // key -> files
+      for (const file of files) {
+        const text = readFileSync(file, 'utf8');
+        let m: RegExpExecArray | null;
+        T_CALL.lastIndex = 0;
+        while ((m = T_CALL.exec(text)) !== null) {
+          const key = m[1];
+          if (resolves(key)) continue;
+          const rel = file.slice(SRC_ROOT.length + 1).replace(/\\/g, '/');
+          const list = missing.get(key) ?? [];
+          if (!list.includes(rel)) list.push(rel);
+          missing.set(key, list);
+        }
       }
-    }
-    const report = [...missing.entries()]
-      .map(([k, files]) => `  ${k}  <- ${files.join(', ')}`)
-      .join('\n');
-    expect(missing.size, `Unresolved i18n keys (render raw to the player):\n${report}`).toBe(0);
-  });
+      const report = [...missing.entries()]
+        .map(([k, files]) => `  ${k}  <- ${files.join(', ')}`)
+        .join('\n');
+      expect(missing.size, `Unresolved i18n keys (render raw to the player):\n${report}`).toBe(0);
+    },
+    15_000,
+  );
 });
 
 /**

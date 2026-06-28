@@ -100,10 +100,16 @@ test.describe('Perf smoke (chromium-only)', () => {
 
     const booted = await page.evaluate(async () => {
       const g = (window as unknown as { game?: {
-        scene: { start(k: string): void; isActive(k: string): boolean };
+        scene: {
+          scenes: Array<{ scene: { key: string; start?(k: string): void } }>;
+          start(k: string): void;
+          isActive(k: string): boolean;
+        };
       } }).game;
       if (!g) return false;
-      g.scene.start('Game');
+      const mainMenu = g.scene.scenes.find((s) => s.scene.key === 'MainMenu');
+      if (mainMenu?.scene.start) mainMenu.scene.start('Game');
+      else g.scene.start('Game');
       const start = Date.now();
       while (Date.now() - start < 30_000) {
         if (g.scene.isActive('Game')) return true;

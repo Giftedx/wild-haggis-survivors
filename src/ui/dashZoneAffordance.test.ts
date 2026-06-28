@@ -3,6 +3,7 @@ import {
   DASH_ZONE_X_FRACTION,
   dashZoneHintPulseAlpha,
   resolveDashZoneBounds,
+  resolveTouchControlLayout,
   shouldShowDashZoneHint,
 } from './dashZoneAffordance';
 
@@ -32,6 +33,34 @@ describe('resolveDashZoneBounds', () => {
     expect(b.x).toBe(0);
     expect(b.width).toBe(0);
     expect(b.centreX).toBe(0);
+  });
+});
+
+describe('resolveTouchControlLayout', () => {
+  it('shares one split contract between joystick and dash input zones', () => {
+    const layout = resolveTouchControlLayout(390, 844);
+
+    expect(layout.joystickZone.x).toBe(0);
+    expect(layout.joystickZone.width).toBeCloseTo(390 * DASH_ZONE_X_FRACTION);
+    expect(layout.dashZone.x).toBeCloseTo(layout.joystickZone.width);
+    expect(layout.dashZone.width).toBeCloseTo(390 * (1 - DASH_ZONE_X_FRACTION));
+    expect(layout.joystickZone.x + layout.joystickZone.width).toBeCloseTo(layout.dashZone.x);
+    expect(layout.dashZone.x + layout.dashZone.width).toBeCloseTo(390);
+  });
+
+  it('keeps the visible dash hint in the lower-right thumb reach', () => {
+    const layout = resolveTouchControlLayout(390, 844, {
+      top: 47,
+      right: 0,
+      bottom: 34,
+      left: 0,
+    });
+
+    expect(layout.dashHint.x).toBeGreaterThanOrEqual(layout.dashZone.x + 12);
+    expect(layout.dashHint.x + layout.dashHint.width).toBeLessThanOrEqual(390 - 12);
+    expect(layout.dashHint.y).toBeGreaterThan(844 * 0.65);
+    expect(layout.dashHint.y + layout.dashHint.height).toBeLessThanOrEqual(844 - 34 - 12);
+    expect(layout.dashHint.height).toBeGreaterThanOrEqual(72);
   });
 });
 

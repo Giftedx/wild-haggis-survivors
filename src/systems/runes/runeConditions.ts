@@ -71,6 +71,21 @@ export function emptyRuneEvalContext(): RuneEvalContext {
   };
 }
 
+/**
+ * True event predicates represent frame-local pulses, not sustained
+ * state. A true value on two adjacent frames means two events occurred,
+ * so the condition system must apply the effect both times instead of
+ * latching `active` after the first frame.
+ */
+export function isOneShotRuneCondition(key: RuneConditionKey): boolean {
+  switch (key) {
+    case 'kill_named_elite':
+      return true;
+    default:
+      return false;
+  }
+}
+
 // Thresholds pinned centrally so balancing touches one place.
 export const RUNE_THRESHOLDS = Object.freeze({
   HP_LOW_FRAC: 0.3,

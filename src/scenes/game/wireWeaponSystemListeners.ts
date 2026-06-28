@@ -54,6 +54,7 @@ export interface WireWeaponSystemListenersInputs {
   getHud: () => HUD;
   runStatsTracker: RunStatsTracker;
   runeBag: RuneEffectBag;
+  onNamedEliteKilled: () => void;
   getSFXManager: () => SFXManager;
   /**
    * Taxman Grudge Ledger — per-run finish buffer. The listener subscribes
@@ -73,6 +74,7 @@ export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInput
     getHud,
     runStatsTracker,
     runeBag,
+    onNamedEliteKilled,
     getSFXManager,
     grudgeLedger,
   } = inputs;
@@ -87,7 +89,10 @@ export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInput
       wasBoss: boolean,
       wasElite: boolean = false,
       eliteAffixId?: EliteAffixId | null,
-    ) => enemyKillHandler.handle(x, y, xpValue, enemyKey, wasBoss, wasElite, eliteAffixId),
+    ) => {
+      enemyKillHandler.handle(x, y, xpValue, enemyKey, wasBoss, wasElite, eliteAffixId);
+      if (wasElite && !wasBoss) onNamedEliteKilled();
+    },
   );
 
   // Cascade Rune kill bookkeeper — no-op when no cascade rune is

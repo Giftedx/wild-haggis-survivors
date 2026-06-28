@@ -109,6 +109,7 @@ export interface InstallCombatCollisionsOpts {
   onTouristPhotographed: (x: number, y: number) => void;
   onHunterFieldNote: (x: number, y: number) => void;
   onEliteKilled: (x: number, y: number) => void;
+  onNamedEliteKilled: () => void;
   onBossKilled: (bossKey: string, x: number, y: number) => void;
   bumpBossKillCount: (bossKey: string) => void;
   bumpCursedVictoryByBoss: (bossKey: string) => void;
@@ -171,6 +172,7 @@ export function installCombatCollisions(
     getHud: opts.getHud,
     runStatsTracker: opts.runStatsTracker,
     runeBag: opts.runeBag,
+    onNamedEliteKilled: opts.onNamedEliteKilled,
     getSFXManager: opts.getSFXManager,
     grudgeLedger: opts.grudgeLedger,
   });

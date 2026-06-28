@@ -173,12 +173,12 @@ test.describe('W95 mobile viewport reflow', () => {
         expect(fit.xpBar.y, 'XP bar y in bottom half').toBeGreaterThan(fit.height * 0.5);
       }
 
-      // W95 — visible right-zone dash affordance. The band + label only
-      // spawn when Phaser sees the device as touch-primary; under
-      // chromium-mobile device emulation that should resolve to true.
-      // If the device is reported as desktop the assertion below
-      // tolerantly skips (touch-primary detection lives in InputManager
-      // constructor and is not under test from this spec).
+      // W95 — visible dash affordance. The band + label only spawn
+      // when Phaser sees the device as touch-primary; under chromium-
+      // mobile device emulation that should resolve to true. If the
+      // device is reported as desktop the assertion below tolerantly
+      // skips (touch-primary detection lives in InputManager constructor
+      // and is not under test from this spec).
       const dashHint = await page.evaluate(() => {
         const g = (window as unknown as { game: {
           scale: { width: number; height: number };
@@ -204,17 +204,22 @@ test.describe('W95 mobile viewport reflow', () => {
         expect(dashHint.band, 'dash-zone-hint-band should mount on touch-primary devices').not.toBeNull();
         expect(dashHint.label, 'dash-zone-hint-label should mount on touch-primary devices').not.toBeNull();
         if (dashHint.band) {
-          // The band is centred on the right 40% of the viewport. Its
-          // centreX should be near width * 0.8 (= 0.6 + 0.4/2). Allow a
-          // small tolerance for sub-pixel rounding across viewports.
-          expect(
-            Math.abs(dashHint.band.x - dashHint.width * 0.8),
-            `band centreX ${dashHint.band.x} drifted from expected ${dashHint.width * 0.8}`,
-          ).toBeLessThanOrEqual(2);
-          expect(
-            Math.abs(dashHint.band.width - dashHint.width * 0.4),
-            `band width ${dashHint.band.width} drifted from expected ${dashHint.width * 0.4}`,
-          ).toBeLessThanOrEqual(2);
+          const hintLeft = dashHint.band.x - dashHint.band.width / 2;
+          const hintRight = dashHint.band.x + dashHint.band.width / 2;
+          const hintTop = dashHint.band.y - dashHint.band.height / 2;
+          const hintBottom = dashHint.band.y + dashHint.band.height / 2;
+          expect(hintLeft, 'dash hint stays inside the right-side dash zone')
+            .toBeGreaterThanOrEqual(dashHint.width * 0.6 - 2);
+          expect(hintRight, 'dash hint respects the viewport right edge')
+            .toBeLessThanOrEqual(dashHint.width + 2);
+          expect(hintTop, 'dash hint lives in the lower thumb reach')
+            .toBeGreaterThan(dashHint.height * 0.55);
+          expect(hintBottom, 'dash hint respects the viewport bottom edge')
+            .toBeLessThanOrEqual(dashHint.height + 2);
+          expect(dashHint.band.height, 'dash hint remains a compact pad, not a full-height overlay')
+            .toBeLessThanOrEqual(96);
+          expect(dashHint.band.width, 'dash hint remains large enough to teach the dash zone')
+            .toBeGreaterThanOrEqual(96);
         }
       }
 

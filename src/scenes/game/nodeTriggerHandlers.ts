@@ -462,8 +462,9 @@ function showShrineTimedToast(deps: NodeTriggerHandlerDeps, key: string, duratio
  * Wee Trader node — prompt with the resolver's stock. Each pick costs
  * the rolled `priceGold`, deducted from `RunScoreState.coinGoldSpent`
  * via `spendCoinGold`. Unaffordable options are disabled at the modal.
- * F8-pending: the 'passive' slot still grants a stub +40g refund when
- * accepted because no mid-run passive grant exists yet.
+ * The 'passive' slot routes through `grantTraderPassive`, which shares
+ * the level-up passive grant path and only pays the refund when no
+ * unheld passive remains.
  */
 function openTraderNode(
   deps: NodeTriggerHandlerDeps,

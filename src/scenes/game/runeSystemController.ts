@@ -27,9 +27,11 @@ import type { UpgradeCardsUI } from '../../ui/UpgradeCards';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { RunActState } from './RunActState';
 import type { RunScoreState } from './RunScoreState';
+import type { TempBuffBag } from '../../systems/TempBuffBag';
 import type { RuneEffectBag } from '../../systems/runes/runeEffects';
 import type { RuneConditionSystem } from '../../systems/RuneConditionSystem';
 import { drainRunePulses } from '../../systems/runes/runeEffects';
+import { SHRINE_BUFF_KEYS, applyShrineBuff } from '../../systems/shrineBuffRegistry';
 import {
   composeGoldMul,
   composeBagpipesRadiusMul,
@@ -40,6 +42,8 @@ import { computeTimeOfDayKey } from './computeTimeOfDayKey';
 import { buildRuneEvalContextFromScene } from './runeContextBuilder';
 import { t } from '../../core/i18n';
 
+const RUNE_SHRINE_BUFF_DURATION_MS = 60_000;
+
 export interface RuneSystemControllerHooks {
   getPlayer: () => Player;
   getJuice: () => JuiceSystem;
@@ -48,6 +52,7 @@ export interface RuneSystemControllerHooks {
   getXPSystem: () => XPSystem;
   getRunScore: () => RunScoreState;
   getRunActState: () => RunActState;
+  getTempBuffBag: () => TempBuffBag;
   getRuneBag: () => RuneEffectBag;
   getRuneSystem: () => RuneConditionSystem;
   getRunePulseRng: () => RNG;
@@ -64,7 +69,13 @@ export interface RuneSystemControllerHooks {
 }
 
 export class RuneSystemController {
+  private namedEliteKilledEdge = false;
+
   constructor(private readonly hooks: RuneSystemControllerHooks) {}
+
+  noteNamedEliteKilled(): void {
+    this.namedEliteKilledEdge = true;
+  }
 
   /**
    * U1 Task 14 — per-frame rune tick. Builds a RuneEvalContext from live
@@ -79,6 +90,8 @@ export class RuneSystemController {
   tick(delta: number): void {
     const runeSystem = this.hooks.getRuneSystem();
     const runScore = this.hooks.getRunScore();
+    const namedEliteKilledThisFrame = this.namedEliteKilledEdge;
+    this.namedEliteKilledEdge = false;
     if (runeSystem.activeCount() === 0) {
       // Even with no runes, ensure the gold mult is identity (cheap; the
       // setter clamps so this is safe to call every frame).
@@ -116,7 +129,7 @@ export class RuneSystemController {
       distinctKillTypesIn5s: 0,
       critOnWeakenedThisFrame: false,
       pickupChainDurationMs: 0,
-      namedEliteKilledThisFrame: false,
+      namedEliteKilledThisFrame,
       killOnThistleThisFrame: false,
       musicBassActive: false,
       // Approximation: act # × 4 + current node index gives a rough
@@ -205,12 +218,16 @@ export class RuneSystemController {
       );
     }
     if (drained.shrineBuffs > 0) {
-      // Stand-in: small heal + gold burst until a dedicated shrine-buff
-      // grant API lands. Documented in the M4 plan as a known stub.
-      p.heal(Math.max(5, Math.ceil(p.getMaxHp() * 0.1)));
-      runScore.addCoinGold(20 * drained.shrineBuffs);
+      const tempBuffBag = this.hooks.getTempBuffBag();
+      let granted = 0;
+      for (let i = 0; i < drained.shrineBuffs; i++) {
+        const key = runePulseRng.pick(SHRINE_BUFF_KEYS);
+        if (applyShrineBuff(tempBuffBag, key, RUNE_SHRINE_BUFF_DURATION_MS, { player: p })) {
+          granted++;
+        }
+      }
       juice.showToast(
-        t('ui.game.rune_shrine_pulse', { count: drained.shrineBuffs }),
+        t('ui.game.rune_shrine_pulse', { count: granted }),
         '#ffdd66',
       );
     }

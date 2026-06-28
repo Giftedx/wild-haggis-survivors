@@ -1,11 +1,9 @@
 import * as Phaser from 'phaser';
-import { GAME } from '../config';
 import { Player } from '../entities/Player';
 import { createGrudgeLedger, type GrudgeLedgerState } from '../entities/grudgeLedger';
 import type { SpawnSystem } from '../systems/SpawnSystem';
 import type { WeaponSystem } from '../systems/WeaponSystem';
 import type { XPSystem } from '../systems/XPSystem';
-import { installCoreCombatSystems } from './game/installCoreCombatSystems';
 import { NodeMapSystem } from '../systems/NodeMapSystem';
 import { NodeMarkerSystem } from '../systems/NodeMarkerSystem';
 import { UpgradeCardsUI } from '../ui/UpgradeCards';
@@ -21,20 +19,10 @@ import { JuiceSystem } from '../systems/JuiceSystem';
 import type { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
 import type { HazardsSystem } from '../systems/HazardsSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
-import { getAssistModeGameSpeed } from '../systems/accessibility/AssistMode';
-import { applyAssistGameSpeedToken } from '../systems/accessibility/assistGameSpeed';
-import { disposeRecordingAudioStream } from '@/systems/audioContext';
 import type { ClipRecorder } from '@/utils/clipRecorder';
-import {
-  recordRun, loadSave,
-  bumpBanterHeard,
-  bumpBossKillCount, bumpCursedVictoryByBoss,
-  unlockCompanion,
-} from '../utils/save';
-import { audio } from '../systems/AudioSystem';
+import { loadSave } from '../utils/save';
 import { GameMusicState } from '../systems/music/ProceduralMusicEngine';
-import { getVariantByKey, VariantDef, formatRunVariantLabel } from '../data/variants';
-import { ensureVariantAtlas } from './boot/variantAtlasBaker';
+import { VariantDef, formatRunVariantLabel } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -42,16 +30,10 @@ import { encodeSeed, type RNG } from '../utils/rng';
 import type { ReplayRecorder } from '../replay/ReplayRecorder';
 import type { ReplayInput } from '../replay/ReplayInput';
 import type { ReplayBlobAny } from '../replay/replayBlob';
-import { resolveReplayMode } from '../replay/replayConfig';
 import { parseGameSceneInitData } from './gameSceneInitData';
 import type { SharedRunSetup } from '../utils/sharedRunUrl';
-import {
-  formatSharedRunIdentityToast,
-  SHARED_RUN_TOAST_COLOR,
-} from './game/sharedRunIdentityToast';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager } from '../core/SaveManager';
-import { StatComposer } from '../core/StatComposer';
 import { getSettingsManager } from '../core/SettingsManager';
 import { BanterSystem } from '../systems/BanterSystem';
 import type { BanterContext } from '../data/banter';
@@ -72,7 +54,6 @@ import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
 import { runFrameTick } from './game/runFrameTick';
-import { installCombatCollisions } from './game/installCombatCollisions';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
 import { buildRuneSystemControllerHooks } from './game/buildRuneSystemControllerHooks';
@@ -84,23 +65,19 @@ import { BiomeController } from './game/BiomeController';
 import type { FloraScatter } from '../systems/FloraScatter';
 import type { WildlifeSystem } from '../systems/WildlifeSystem';
 import type { MistLayer } from '../systems/MistLayer';
-import { installWorldDressing } from './game/installWorldDressing';
+import { installWorldAndAtmosphere } from './game/installWorldAndAtmosphere';
+import { installPlayerAndRunStart } from './game/installPlayerAndRunStart';
+import { installCombatAndUpgrades } from './game/installCombatAndUpgrades';
+import { installUiLandmarksAndFlow } from './game/installUiLandmarksAndFlow';
 import { FilmGrainOverlay } from './game/FilmGrainOverlay';
 import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
 import type { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { CairnStackingScheduler } from './game/CairnStackingScheduler';
-import { CairnBoonPickerScene } from './CairnBoonPickerScene';
 import { CairnOfEchoesScheduler } from './game/CairnOfEchoesScheduler';
 import { CailleachGauntletScheduler } from './game/CailleachGauntletScheduler';
-import { installCailleachGauntlet } from './game/installCailleachGauntlet';
-import { installCorryVreckan } from './game/installCorryVreckan';
 import { EngineerTurretSystem } from './game/EngineerTurretSystem';
 import { TuftedFamiliarSystem } from './game/TuftedFamiliarSystem';
-import { installVariantCompanions } from './game/installVariantCompanions';
-import { installCairnSystems } from './game/installCairnSystems';
-import { installLemmingsEasterEgg } from './game/installLemmingsEasterEgg';
-import { installCompanionSystem } from './game/installCompanionSystem';
 import type { WhisperResult } from './game/cairnOfEchoesWhisper';
 import {
   createCairnSpriteForScene,
@@ -110,20 +87,15 @@ import {
 } from './game/cairnOfEchoesSceneWire';
 import {
   type FallenCairn,
-  type InheritedStatKey,
 } from '../utils/save/fallenCairns';
-import { installRunBookkeeping } from './game/installRunBookkeeping';
 import {
   type MoorMomentsState,
   createMoorMomentsState,
   type MoorMomentsContext,
-  tryMoorMercyLuck as moorMomentsTryMercyLuck,
-  trySpawnAncestralEcho as moorMomentsTrySpawnAncestralEcho,
   spawnStandingStones as moorMomentsSpawnStandingStones,
   spawnReliquary as moorMomentsSpawnReliquary,
   spawnClootieTree as moorMomentsSpawnClootieTree,
   spawnBlackClootieTree as moorMomentsSpawnBlackClootieTree,
-  showRunIdentityToast as moorMomentsShowRunIdentityToast,
 } from './game/moorMoments';
 import { PauseMenu } from './game/PauseMenu';
 import { buildPauseMenuHooks } from './game/buildPauseMenuHooks';
@@ -137,68 +109,37 @@ import type { LemmingsEasterEgg } from './game/lemmingsEasterEgg';
 import { AncestralEcho } from './game/ancestralEcho';
 import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
 import type { RoutePick, RouteResumeContext } from '../data/routes';
-import { resolveRouteLabels, resolveRelicLabels, resolveRuneLabels } from './game/runIdentityLabels';
 import { FloatTextPool } from './game/FloatTextPool';
 import type { RunPersistenceBridge } from './game/RunPersistenceBridge';
 import type { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import type { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
-import { installRunEndComposers } from './game/installRunEndComposers';
 import { generateHaggisName } from '@/data/haggisNames';
-import { showRunIntroToasts } from './game/runIntroToasts';
 import type { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
 import type { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
 import type { RunExitComposer } from './game/RunExitComposer';
 import { RunScoreState } from './game/RunScoreState';
-import { installRunStartCeremony } from './game/runStartCeremony';
-import {
-  installReplayPlayback,
-  installReplayRecording,
-  recordReplayFrame,
-} from './game/replayBridgeInstall';
-import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
+import { recordReplayFrame } from './game/replayBridgeInstall';
 import { captureReplayStateHash, shouldCaptureReplayStateHash } from './game/replayStateHash';
 import { installRunEndShutdown } from './game/runEndShutdown';
+import { buildRunEndShutdownDeps } from './game/buildRunEndShutdownDeps';
 import { resetTransientRunState as resetTransientRunStateImpl } from './game/resetTransientRunState';
-import {
-  applySeasonalRunStartPostSpawn,
-  buildSeasonalRunStartPlan,
-} from './game/seasonalRunStart';
-import {
-  applySporranRunStartPostSpawn,
-  buildSporranRunStartPlan,
-} from './game/sporranRunStart';
 import type { LevelUpFlow } from './game/LevelUpFlow';
 import type { RunLifecycle } from './game/RunLifecycle';
-import { installRunFlow } from './game/installRunFlow';
 import { RelicOrchestrator } from './game/RelicOrchestrator';
-import { RELICS, type RelicKey } from '../data/relics';
-import { createHighlandTerrain } from './game/highlandTerrain';
+import { type RelicKey } from '../data/relics';
 import type { HazardZones } from './game/HazardZones';
-import { installHazardZones } from './game/installHazardZones';
 import type { GameTickers } from './game/GameTickers';
-import { installRuntimeAmbient } from './game/installRuntimeAmbient';
-import {
-  applyPermanentUpgrades,
-  applyVariantModifiers,
-  applyVariantStartPassives,
-  applyVariantStartWeapons,
-} from './game/runStartModifiers';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
   installAutoBattleTimeScale,
   isAutoBattleEnabled,
-  uninstallAutoBattleTimeScale,
 } from '../dev/AutoBattler';
-import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { type SecondTickHookContext } from './game/runtimeTickHooks';
 import type { HaarFogController } from '../systems/shaders/HaarFogController';
-import { installHaarFog, handleBiomeEnteredForHaar } from './game/haarFogInstall';
-import { installRunStartupHud } from './game/installRunStartupHud';
 import { LivingWorldDirector } from './game/LivingWorldDirector';
 import { CompanionSystem } from './game/CompanionSystem';
-import { getSelkieRunStartPickupBonus } from '../entities/selkieForm';
 
 /**
  * GameScene — the core gameplay loop.
@@ -318,7 +259,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** W2 Moor Road: act number + picker history across the run. */
   readonly runActState = new RunActState();
   /** Mutable mercy-luck flag, owned by the moor-moments helper module. */
-  private readonly moorMomentsState: MoorMomentsState = createMoorMomentsState();
+  readonly moorMomentsState: MoorMomentsState = createMoorMomentsState();
   /** Standing Stones trinity — nulls out between runs, spawned at 5:00 mark. */
   standingStones: StandingStones | null = null;
   /** True once the 4:45 "stones stir" pre-warning has fired this run. */
@@ -353,14 +294,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Ancestral Echo — spectral haggis at last-death spot. Nulls on resolve. */
   ancestralEcho: AncestralEcho | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
-  private xpOverflowGoldBatch: number = 0;
+  xpOverflowGoldBatch: number = 0;
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
   pendingChests: Array<{ golden: boolean }> = [];
   gameTickers!: GameTickers;
-  private revivalAvailable: boolean = false;
+  revivalAvailable: boolean = false;
   activeVariant!: VariantDef;
   /** Extra ms added to chest/coin despawn windows by the Treasure Magnet permanent upgrade. */
-  private chestDurationBonusMs: number = 0;
+  chestDurationBonusMs: number = 0;
 
   /**
    * Run-scoped seeded PRNG for gameplay decisions (card draws, elite rolls,
@@ -380,22 +321,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   replayRecorder: ReplayRecorder | null = null;
   replayInput: ReplayInput | null = null;
   replayStateHashMismatches: string[] = [];
-  private pendingReplay: ReplayBlobAny | null = null;
+  pendingReplay: ReplayBlobAny | null = null;
   /** v2 route queue — `launchActIntermission` shifts one off per act boundary during playback. */
-  private pendingReplayRoutes: RoutePick[] = [];
+  pendingReplayRoutes: RoutePick[] = [];
   /** Pending seed passed via init() data. Consumed in create(). */
   private pendingRunSeed: number | null = null;
   /** Set when the run is a Daily Challenge attempt — drives save tracking + end-of-run UI. */
   runIsDaily: boolean = false;
   /** Optional variant override from init data (seeded / daily runs). Cleared in create(). */
-  private pendingForceVariantKey: string | null = null;
+  pendingForceVariantKey: string | null = null;
   /**
    * T303 — curse selection passed via `scene.start('Game', { curseKey })`.
    * Replaces the prior `pendingCurseKey` module singleton so a stale pick
    * cannot leak from one run into the next via process-wide state. Set by
    * init() (or the v2 replay blob), consumed once in create().
    */
-  private pendingCurseKey: string | null = null;
+  pendingCurseKey: string | null = null;
   /**
    * S1 Phase 1 — Sporran Deck picks passed via
    * `scene.start('Game', { pickedSporranIds })`. Consumed once in
@@ -404,7 +345,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * heals fire alongside the seasonal toast pipeline. `null` for any
    * run that did not go through `SporranScene`.
    */
-  private pendingSporranIds: readonly string[] | null = null;
+  pendingSporranIds: readonly string[] | null = null;
   /**
    * W82 Shared-run URL — set when BootScene launched this run from a
    * `?run=...&v=...` deep link. GameScene consumes it once during
@@ -412,9 +353,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * welcome toast, then nulls it (so a hot-replay through the same
    * scene instance doesn't re-fire the banner).
    */
-  private pendingSharedRunMeta: SharedRunSetup | null = null;
+  pendingSharedRunMeta: SharedRunSetup | null = null;
   /** W27 — full setup retained through the run for challenge-attempt recording at run-end. */
-  private activeSharedRun: SharedRunSetup | null = null;
+  activeSharedRun: SharedRunSetup | null = null;
   /**
    * S1 Phase 2 — snapshot of the picks that actually landed at run
    * start (filtered to known cards via `applySporranPicks`). Read by
@@ -423,7 +364,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * row. Empty when the player took the Curse / clean path or for a
    * resumed run (which already absorbed picks at the original start).
    */
-  private committedSporranIds: readonly string[] = [];
+  committedSporranIds: readonly string[] = [];
   /**
    * T101 — set by `RunPersistenceBridge.applyResume` when it reconstructs
    * the rolled `currentActNodeMap` from the snapshot. The next
@@ -431,20 +372,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * instead of re-rolling — so the player's visited[] survives resume.
    * Subsequent calls (act 3 stretch transitions) re-roll normally.
    */
-  private suppressNextNodeMapRoll = false;
+  suppressNextNodeMapRoll = false;
 
   /** Pickup lifetimes — scheduled on scene-owned UpdateTickers. */
-  private pickupDespawnHandles: TickerHandle[] = [];
+  pickupDespawnHandles: TickerHandle[] = [];
   readonly runEndTickers = new RunEndTickers();
   /** End-of-run screen-space fade overlays — tracked as fields so shutdown
    *  can destroy them; anonymous locals would orphan on scene restart since
    *  Phaser's scene.stop() doesn't clear the display list. */
-  private victoryFade: Phaser.GameObjects.Rectangle | null = null;
-  private deathFade: Phaser.GameObjects.Rectangle | null = null;
+  victoryFade: Phaser.GameObjects.Rectangle | null = null;
+  deathFade: Phaser.GameObjects.Rectangle | null = null;
   subs = new SubscriptionBag();
   debugOverlay: DebugOverlay | null = null;
-  private announcedEvolutionReady = new Set<string>();
-  private playerEnemyCollider: Phaser.Physics.Arcade.Collider | null = null;
+  announcedEvolutionReady = new Set<string>();
+  playerEnemyCollider: Phaser.Physics.Arcade.Collider | null = null;
   bossHpTracker!: BossHpTracker;
   debugTimeTravelApi!: DebugTimeTravelApi;
   runExit!: RunExitComposer;
@@ -467,9 +408,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   readonly metaSaveManager = new SaveManager();
   readonly settingsManager = getSettingsManager();
-  private statusFxPool!: StatusFxPool;
+  statusFxPool!: StatusFxPool;
   /** Pooled floating text for high-frequency combat/pickup feedback (armor, gold). */
-  private readonly floatTextPool = new FloatTextPool();
+  readonly floatTextPool = new FloatTextPool();
   readonly runStatsTracker = new RunStatsTracker();
   readonly deathCauseTracker = new DeathCauseTracker();
   /** Per-run modifier bag (from curse pick). Defaults to identity — an un-cursed run behaves identically to the pre-curse codebase. */
@@ -484,7 +425,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * the 1.3× multiplier after 60 s. Both reset on every `create()`
    * run — see the reset block near the top.
    */
-  private burnsPlatterSpawned: boolean = false;
+  burnsPlatterSpawned: boolean = false;
   burnsPlatterPickedUpAtMs: number | null = null;
   /**
    * W66 Ironmoor — locked in at run start (from Settings on a fresh run,
@@ -495,7 +436,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * to a permadeath run or silently drop a row from the leaderboard.
    */
   activeIronmoorRun = false;
-  private runName = '';
+  runName = '';
   lastEmittedRunSecond = -1;
   eventBusDispose: (() => void) | null = null;
   /** N1 Tier-2 mythos boss #2 — Wild Hunt gem-pull controller. Lives
@@ -512,7 +453,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** F1 M5 — persistent haar fog controller on the main camera. Null when
    *  the Canvas renderer is in use (filter pipeline unavailable there). */
   haarFog: HaarFogController | null = null;
-  private pauseMenu: PauseMenu | null = null;
+  pauseMenu: PauseMenu | null = null;
   pickupSpawner!: PickupSpawner;
   /**
    * R1 — Relic pickup flow + slot/effect ownership (RelicSystem +
@@ -530,16 +471,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   levelUpFlow!: LevelUpFlow;
   runLifecycle!: RunLifecycle;
   runPersistence!: RunPersistenceBridge;
-  private runHistoryRecorder!: RunHistoryRecorder;
+  runHistoryRecorder!: RunHistoryRecorder;
   /**
    * T401 P3 — replay-aware wrapper around `RunHistoryRecorder.record`
    * and the legacy `recordRun` save call. Built once `runHistoryRecorder`
    * exists; `RunLifecycle` reads through it so the playback no-op is
    * unit-testable instead of an anonymous closure.
    */
-  private runPersistenceCoordinator!: RunPersistenceCoordinator;
+  runPersistenceCoordinator!: RunPersistenceCoordinator;
   hazardZones!: HazardZones;
-  private captionManager: CaptionManager | null = null;
+  captionManager: CaptionManager | null = null;
   captionOverlay: CaptionOverlay | null = null;
   filmGrain: FilmGrainOverlay | null = null;
   banter: BanterSystem | null = null;
@@ -547,8 +488,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     getAnalyticsManager().endGameplaySession();
   });
 
-  private moorMoments!: MoorMomentScheduler;
-  private cairnStacking!: CairnStackingScheduler;
+  moorMoments!: MoorMomentScheduler;
+  cairnStacking!: CairnStackingScheduler;
   /**
    * The Moor Remembers (spec 2026-05-22) — orchestrates persistent
    * past-self cairns loaded from `whs_meta_save.fallenCairns`. Created
@@ -566,7 +507,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   cailleachGauntletScheduler!: CailleachGauntletScheduler;
   /** V2 — opaque teardown returned by `installCailleachGauntlet`. */
-  private gauntletTeardown: (() => void) | null = null;
+  gauntletTeardown: (() => void) | null = null;
   /**
    * DESIGN_IDEAS §3 — Corryvreckan encounter install. Ticked per-frame
    * via `tickFrameWorld`; null between runs. Reset on each `create()`.
@@ -575,25 +516,25 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Engineer variant turret — null when variant is not engineer. */
   engineerTurretSystem: EngineerTurretSystem | null = null;
   /** Turret sprite — held here so resetTransientRunState can destroy it. */
-  private engineerTurretSprite: Phaser.GameObjects.Image | null = null;
+  engineerTurretSprite: Phaser.GameObjects.Image | null = null;
   /** Tufted variant familiar — null when variant is not tufted. */
   tuftedFamiliarSystem: TuftedFamiliarSystem | null = null;
   /** Pup sprite — held here so resetTransientRunState can destroy it. */
-  private tuftedPupSprite: Phaser.GameObjects.Image | null = null;
+  tuftedPupSprite: Phaser.GameObjects.Image | null = null;
   /**
    * Live sprite refs keyed by FallenCairn identity so the scheduler's
    * `onSpriteCreate` / `onSpriteDestroy` callbacks can find and tween
    * the right sprite. Cleared in `resetTransientRunState` (the
    * scheduler.destroy path runs each create()).
    */
-  private cairnSprites = new Map<FallenCairn, Phaser.GameObjects.Sprite>();
+  cairnSprites = new Map<FallenCairn, Phaser.GameObjects.Sprite>();
   /**
    * True until the first cairn is touched this run — routes the first
    * past-self walk-over banter to `past_self_first` (a slightly more
    * acknowledging line), subsequent touches to `past_self`. Reset to
    * true on each `create()` pass.
    */
-  private firstCairnTouchedThisRun = true;
+  firstCairnTouchedThisRun = true;
   floraScatter: FloraScatter | null = null;
   wildlifeSystem: WildlifeSystem | null = null;
   mistLayer: MistLayer | null = null;
@@ -803,902 +744,32 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       installAutoBattleTimeScale(this);
     }
 
-    // Set world bounds
-    this.physics.world.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
+    // create() phase 1 — static world + atmosphere (terrain, haar, biome,
+    // dressing, rune-pulse RNG branch, lifecycle reset, captions, banter).
+    // RNG branch order preserved inside the helper (replay determinism).
+    installWorldAndAtmosphere(this);
 
-    // Draw the Highland ground
-    createHighlandTerrain(this);
-
-    // F1 M5 — attach a persistent HaarFogController to the main camera so
-    // biome-driven ambient fog can live across the whole run. WebGL-only;
-    // Canvas silently runs without haar.
-    this.haarFog = installHaarFog(this);
-
-    // Biome partition — voronoi regions seeded from the run RNG.
-    // Owns manager, renderer, entry-toast state, and player-modifier push.
-    this.biomeController?.destroy();
-    this.postBellLastReseedSec = -1;
-    this.biomeController = new BiomeController(
-      this,
-      this.runRng.branch(),
-      GAME.WORLD_WIDTH,
-      GAME.WORLD_HEIGHT,
-      { onBiomeEnter: (biome) => handleBiomeEnteredForHaar(this, this.haarFog, biome) },
-    );
-    // World dressing — decorations + atmospheric mist.
-    const dressing = installWorldDressing({
-      scene: this,
-      biomeManager: this.getBiomeManager(),
-      runRng: this.runRng,
-      worldWidth: GAME.WORLD_WIDTH,
-      worldHeight: GAME.WORLD_HEIGHT,
-      reduceParticles: this.settingsManager.load().reduceParticles,
-      prior: {
-        floraScatter: this.floraScatter,
-        wildlifeSystem: this.wildlifeSystem,
-        mistLayer: this.mistLayer,
-      },
-    });
-    this.floraScatter = dressing.floraScatter;
-    this.wildlifeSystem = dressing.wildlifeSystem;
-    this.mistLayer = dressing.mistLayer;
-
-    // Rune-pulse RNG — branched after world-dressing branches so the
-    // mist/flora/wildlife sub-seeds keep their pre-2026-04-29 values.
-    this.runePulseRng = this.runRng.branch();
-
-    // Post-Bell + key handler live on RunLifecycle — reset on every scene
-    // create since Phaser reuses scene instances across runs.
-    this.runLifecycle?.reset();
-
-    // Captions — render regardless of whether the setting is enabled so
-    // runtime toggling works; CaptionOverlay checks the flag per frame.
-    this.captionOverlay?.destroy();
-    this.captionManager = new CaptionManager();
-    this.captionOverlay = new CaptionOverlay(this, this.captionManager);
-
-    // Banter — initialised lazily so juice/caption are wired up first. The
-    // wiring happens after JuiceSystem is constructed (search for "this.juice = new").
-    this.banter?.reset();
-
-    // Create the player (resume position) or world center.
-    // Seeded / daily runs can override the saved variant so all players
-    // face the same starting conditions — required for fair leaderboards
-    // and shareable seeds. Override is ignored when resuming a run.
-    const selectedVariant = resumeRun
-      ? getVariantByKey(resumeRun.selectedVariantKey)
-      : getVariantByKey(this.pendingForceVariantKey ?? save.selectedVariant);
-    this.pendingForceVariantKey = null;
-    this.activeVariant = selectedVariant;
-
-    // ADR-0005 lazy-bake descope (2026-05-11): BootScene only warms the
-    // default + saved variants. If the active variant is neither (replay
-    // playback of a non-default seed, daily challenge, /forceVariant
-    // debug path), bake the atlas now — idempotent, ~13ms per cold
-    // variant, well under the run-start budget. AnimationController
-    // calls `sprite.setTexture(atlasKey(...))` during Player
-    // construction below, so the cache MUST be warm before then.
-    ensureVariantAtlas(this, selectedVariant.key);
-
-    // T1 replay — mutually exclusive modes (playback wins over record).
-    // Slice in `replayBridgeInstall.ts`; recorder build deferred below
-    // so the v2 meta captures the live curse + composed stats.
-    this.replayRecorder = null;
-    const { replayMode, replayInput, playbackV2, consumePending } =
-      installReplayPlayback({
-        pendingReplay: this.pendingReplay,
-        resolvedMode: resolveReplayMode(),
-      });
-    this.replayInput = replayInput;
-    if (consumePending) this.pendingReplay = null;
-    applyAssistGameSpeedToken(this.timeManager, {
-      speed: getAssistModeGameSpeed(),
-      replayMode,
-    });
-
-    const metaSave = this.metaSaveManager.load();
-    const baseStats = StatComposer.getPlayerStats(metaSave);
-
-    // T303 + T1 v2 — curse application + composedStats derivation.
-    // Slice in `applyCurseAndComposeStats.ts`. Resolution rules
-    // (precedence, resume/daily gates, replay-determinism override)
-    // live in the helper; this call site only owns the field
-    // assignments + the consume-once null-out for `pendingCurseKey`.
-    const curseResult = applyCurseAndComposeStats({
-      pendingCurseKey: this.pendingCurseKey,
-      resumeRun: !!resumeRun,
-      runIsDaily: this.runIsDaily,
-      playbackV2,
-      baseStats,
-    });
-    if (curseResult.consumePending) this.pendingCurseKey = null;
-    this.runModifiers = curseResult.runModifiers;
-    this.activeCurseKey = curseResult.activeCurseKey;
-    const composedStats = curseResult.composedStats;
-
-    // S1 Phase 1 — Sporran Deck picks. Mutates the modifier bag in
-    // place BEFORE seasonal so first-footing / blessing layering still
-    // multiplies on top of any sporran curse penalties + boons. The
-    // post-spawn heal lands alongside the seasonal heal pipeline below.
-    // Resumed runs short-circuit: the picks were already absorbed at
-    // the original run-start.
-    const sporranRunStart = buildSporranRunStartPlan({
-      resumeRun: !!resumeRun,
-      pickedSporranIds: this.pendingSporranIds,
-      runModifiers: this.runModifiers,
-    });
-    this.pendingSporranIds = null;
-    // Snapshot what actually applied (stale-id filtered) so the replay
-    // recorder + run-history recorder both pull from the same source
-    // of truth — see field doc above.
-    this.committedSporranIds = sporranRunStart.appliedIds;
-
-    // Seasonal run-start hooks. Modifier-bag deltas apply now, before
-    // systems snapshot the bag; post-spawn heal/player bonuses/toast
-    // apply after Player construction below.
-    const seasonalRunStart = buildSeasonalRunStartPlan({
-      resumeRun: !!resumeRun,
-      disableSeasonalEvents: this.settingsManager.load().disableSeasonalEvents,
-      now: new Date(),
-      runRng: this.runRng,
-      runModifiers: this.runModifiers,
-    });
-
-    // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
-    // `replayBridgeInstall.ts`; built here so the v2 blob captures the
-    // live curse + composed stats. `pushRoute` is fed from the Moor
-    // Road resolver further down (search: `runActState.recordPick`).
-    ({
-      replayRecorder: this.replayRecorder,
-      pendingReplayRoutes: this.pendingReplayRoutes,
-    } = installReplayRecording({
-      replayMode,
-      playbackV2,
-      seed: this.runRng.seed,
-      variantKey: selectedVariant.key,
-      build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
-      curseKey: this.activeCurseKey,
-      composedStats,
-      sporranPicks: this.committedSporranIds,
-      // The Moor Remembers (spec 2026-05-22) — snapshot meta-save
-      // cairns at run-start so replay reproduces the same moor even
-      // after live FIFO rotation. Reads the same source as the live
-      // CairnOfEchoesScheduler.load() path (consistent with T1).
-      cairns: this.metaSaveManager.getFallenCairns(),
-    }));
-    const spawnPx = resumeRun
-      ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
-      : GAME.WORLD_WIDTH / 2;
-    const spawnPy = resumeRun
-      ? Phaser.Math.Clamp(resumeRun.playerY, 40, GAME.WORLD_HEIGHT - 40)
-      : GAME.WORLD_HEIGHT / 2;
-    this.player = new Player(
-      this,
-      spawnPx,
-      spawnPy,
-      selectedVariant.textureKey,
-      this.timeManager,
-      composedStats,
-      this.replayInput ?? undefined,
-    );
-    // U1 M4 — give Player live access to the run's rune effect bag so
-    // getMaxHp / getDamageMultiplier / getXpMultiplier / getCritChance
-    // / getLuckDrawBonus / getMoveSpeed fold the bag at read time. The
-    // accessor returns the *current* bag so a per-run reset (`runeBag =
-    // createRuneEffectBag()` above) is picked up without re-wiring.
-    this.player.setRuneBagAccessor(() => this.runeBag);
-    registerDebugHotkeys(this, {
-      getPlayer: () => this.player,
-      getScene: () => this,
-    });
-
-    // S1 Phase 1 + 1.5 — Sporran Deck post-spawn. Heal +
-    // damage-multiplier (the latter for `quirk_haggis_blooded`).
-    // Damage-mult lives Player-side; the addDamageMultiplier hook
-    // mirrors the seasonal pipeline.
-    applySporranRunStartPostSpawn(sporranRunStart, {
-      heal: (amount) => this.player.heal(amount),
-      addDamageMultiplier: (amount) => this.player.addDamageMultiplier(amount),
-    });
-
-    // Seasonal post-spawn application. Toast is delayed so it lands
-    // after the run-start ceremony settles into the HUD.
-    applySeasonalRunStartPostSpawn(seasonalRunStart, {
-      heal: (amount) => this.player.heal(amount),
-      addXpMultiplier: (amount) => this.player.addXpMultiplier(amount),
-      addCritChance: (amount) => this.player.addCritChance(amount),
-      addLifesteal: (amount) => this.player.addLifesteal(amount),
-      addAoeMultiplier: (amount) => this.player.addAoeMultiplier(amount),
-      addPickupRadius: (amount) => this.player.addPickupRadius(amount),
-      addCritDamageMultiplier: (amount) => this.player.addCritDamageMultiplier(amount),
-      addDamageMultiplier: (amount) => this.player.addDamageMultiplier(amount),
-      addMaxHp: (amount) => this.player.addMaxHp(amount),
-      showToastAfter: (delayMs, key, color) => {
-        this.time.delayedCall(delayMs, () => {
-          if (!this.scene.isActive('Game')) return;
-          this.juice.showToast(t(key), color);
-        });
-      },
-    });
-
-    // Camera before GrowthSystem so baseZoom matches the zoom used in-game (GrowthSystem reads cameras.main.zoom in its ctor).
-    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-    this.cameras.main.setZoom(1.3);
-    this.cameras.main.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
-
-    this.hazardZones = installHazardZones({
-      scene: this,
-      prior: this.hazardZones,
-      getPlayer: () => this.player,
-      getJuice: () => this.juice,
-      getDeathCauseTracker: () => this.deathCauseTracker,
-      getSpawnSystem: () => this.spawnSystem,
-      getRunRng: () => this.runRng,
-      getIFrameController: () => this.iFrameController,
-      getRunScore: () => this.runScore,
-      getRunModifiers: () => this.runModifiers,
-      getRunLifecycle: () => this.runLifecycle,
-      getRelicEffectDriver: () => this.relicEffectDriver ?? null,
-      getCurrentTimeMs: () => this.time.now,
-      tryMoorMercyLuck: (hp) => moorMomentsTryMercyLuck(this.moorMomentsState, this.buildMoorMomentsContext(), hp),
-    });
-
-    ({
-      statusFxPool: this.statusFxPool,
-      spawnSystem: this.spawnSystem,
-      weaponSystem: this.weaponSystem,
-      xpSystem: this.xpSystem,
-    } = installCoreCombatSystems({
-      scene: this,
-      runModifiers: this.runModifiers,
-      bossHpTracker: this.bossHpTracker,
-      getRelicEffectDriver: () => this.relicEffectDriver ?? null,
-    }));
-    this.ownedPassives = [];
-    this.evolvedWeapons = [];
-    this.ownedRuneIds = [];
-    // U1 — fresh rune bag + system per run (scene instance is reused).
-    this.runeBag = createRuneEffectBag();
-    this.runeSystem = new RuneConditionSystem(this.runeBag);
-    this.xpOverflowGoldBatch = 0;
-    this.revivalAvailable = false;
-
-    // Pre-allocate floating text pool for armor/gold feedback.
-    this.floatTextPool.init(this);
-
-    // Variant starter weapon: variants with startWithWeapons get their
-    // thematic weapon; all others get the default Thistle Shot.
-    // Called before applyPermanentUpgrades so weapon_training levels the
-    // right weapon. WeaponSystem constructor is now starter-weapon-free.
-    applyVariantStartWeapons(this.weaponSystem, selectedVariant);
-
-    // Variant modifiers establish the run archetype before permanent upgrades stack on top.
-    applyVariantModifiers(this.player, selectedVariant);
-    // V2 followup — variant starter passives land before permanent
-    // upgrades so lucky_start reads the pre-populated ownedPassives.
-    applyVariantStartPassives(this.player, this.ownedPassives, selectedVariant);
-
-    // Wild Living World — Selkie Dual-Form bind. Player owns the form
-    // state; the listener routes the shift into the LivingWorld
-    // director so future subsystems (music bridge, atmosphere) can
-    // react to it. Phase 2 — also bind a biome accessor so the seal
-    // form's coastal-affinity bloom resolves against the live biome,
-    // and apply the run-start pickup-radius blessing (no-op for any
-    // non-Selkie variant — `getSelkieRunStartPickupBonus` short-circuits).
-    this.player.bindSelkieRun(selectedVariant.key, (form) => {
-      this.livingWorldDirector.notify({
-        kind: 'form_shifted',
-        from: form === 'seal' ? 'haggis' : 'seal',
-        to: form,
-      });
-      // Wild Living World Phase 2 — banter follow-up. Pass the new form
-      // as the sub-pool tag so the engine picks `seal` / `haggis` lines
-      // appropriately. Priority 27 keeps dash-spam from outshouting
-      // higher-tier events (boss warnings, low-HP); the no-repeat ring
-      // handles cadence within the pool.
-      this.requestBanter('form_shifted', form);
-    });
-    this.player.setBiomeAccessor(() => {
-      if (!this.biomeController) return null;
-      return this.biomeController.currentBiomeAt(this.player.x, this.player.y);
-    });
-    {
-      // Selkie Phase 2 — small one-shot pickup-radius blessing at run
-      // start so the seal's coastal affinity reads as "kit the player
-      // brought" rather than purely a biome reaction. Goes through the
-      // public `addPickupRadius` accessor so the bonus participates in
-      // `recalcStats` (which clamps + reapplies fog mul + selkie flat).
-      const bonus = getSelkieRunStartPickupBonus(selectedVariant.key);
-      if (bonus > 0) this.player.addPickupRadius(bonus);
-    }
-
-    // Drouthy Haggis — pre-load Whisky Breath stacks so the first burst
-    // is available from the opening bell (flask was half-drunk already).
-    if (selectedVariant.startWhiskyStacks) {
-      this.player.setWhiskyBreathStacks(selectedVariant.startWhiskyStacks);
-    }
-
-    // Pibroch Haggis — widen the beat-alignment window so rhythm hits
-    // come naturally (the ceòl mòr is already in them).
-    if (selectedVariant.modifiers.pibrochWindowExtensionMs) {
-      this.weaponSystem.setPibrochWindowExtensionMs(selectedVariant.modifiers.pibrochWindowExtensionMs);
-    }
-
-    // Apply permanent upgrades from save data. The two flag outputs
-    // don't live on Player so come back as a result object.
-    const permResult = applyPermanentUpgrades({
-      player: this.player,
-      weaponSystem: this.weaponSystem,
-      ownedPassives: this.ownedPassives,
-      runRng: this.runRng,
-    });
-    this.revivalAvailable = permResult.revivalAvailable;
-    // W66 Ironmoor: lock the ironmoor flag in at run start. On a fresh
-    // run we read the live setting; on resume we prefer the snapshot
-    // value so a player who toggled Ironmoor OFF between quit + resume
-    // doesn't retroactively get Second Wind back on a permadeath run.
-    this.activeIronmoorRun = resumeRun?.ironmoor
-      ?? this.settingsManager.load().ironmoorMode;
-    if (this.activeIronmoorRun) {
-      // Opt-in single-life mode suppresses the Second-Wind grant
-      // regardless of permanent-upgrade purchases.
-      this.revivalAvailable = false;
-    }
-    this.chestDurationBonusMs = permResult.chestDurationBonusMs;
-
-    // Phase 5 Bucket 6 finish — four run-bookkeeping ctors bundled into
-    // a single helper. MoorMomentScheduler must exist before resume
-    // hydration (its pushAfterResume is called); RunPersistenceBridge
-    // owns snapshot/hydrate; BossHpTracker pushes HUD fraction; the
-    // dev API wires globalThis.DEBUG + Shift+] (install() fires later
-    // once `relicSystem` is built).
-    ({
-      moorMoments: this.moorMoments,
-      runPersistence: this.runPersistence,
-      bossHpTracker: this.bossHpTracker,
-      debugTimeTravelApi: this.debugTimeTravelApi,
-    } = installRunBookkeeping({
-      getRunRng: () => this.runRng,
-      getPlayer: () => this.player,
-      getXPSystem: () => this.xpSystem,
-      getJuice: () => this.juice,
-      getSpawnSystem: () => this.spawnSystem,
-      getRunModifiers: () => this.runModifiers,
-      isSceneActive: () => this.scene.isActive(),
-      getVictoryPending: () => this.runScore.victoryPending,
-      getCurrentBiomeId: () => this.getCurrentBiomeId(),
-      getTutorialSystem: () => this.tutorialSystem,
-      getBanter: () => this.banter,
-      getSFXManager: () => this.getSFXManager(),
-      addCoinGold: (amount) => { this.runScore.addCoinGold(amount); },
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-      getWeaponSystem: () => this.weaponSystem,
-      getTimeManager: () => this.timeManager,
-      getRunStatsTracker: () => this.runStatsTracker,
-      getLevelUpFlow: () => this.levelUpFlow,
-      getSaveManager: () => this.metaSaveManager,
-      getActiveVariant: () => this.activeVariant,
-      getRunScore: () => this.runScore,
-      getRunActState: () => this.runActState,
-      isIronmoorRun: () => this.activeIronmoorRun,
-      getTempBuffBag: () => this.tempBuffBag,
-      getRevivalAvailable: () => this.revivalAvailable,
-      getOwnedPassives: () => this.ownedPassives,
-      getEvolvedWeapons: () => this.evolvedWeapons,
-      getHeldRelicKeysForPersistence: () => this.relicSystem?.heldKeys() ?? [],
-      setRevivalAvailable: (v) => { this.revivalAvailable = v; },
-      setOwnedPassives: (p) => { this.ownedPassives = p; },
-      setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
-      restoreHeldRelics: (keys) => this.relicOrchestrator.restoreHeld(keys),
-      suppressNextNodeMapRoll: () => { this.suppressNextNodeMapRoll = true; },
-      updateBossBar: (data) => this.hud.updateBossBar(data),
-      spawnRelicAt: (key, x, y) => this.relicOrchestrator.debugSpawnAt(key, x, y),
-      getHeldRelicKeysForDebug: () => this.relicSystem?.heldKeys() ?? [],
-      getCairnStacking: () => this.cairnStacking,
-      getRelicCatalogue: () => RELICS,
-      openRelicDiscardPromptForAudit: () => {
-        if (this.relicOrchestrator.isDiscardModalOpen()) return false;
-        this.relicOrchestrator.restoreHeld(['sporran_of_holding', 'oatcake_stash', 'grans_thimble']);
-        this.relicOrchestrator.openDiscardModal(RELICS.whisky_dram, 'bargain');
-        return true;
-      },
-    }));
-
-    // Phase 5 Bucket 6 partial — RunExitComposer + RunHistoryRecorder +
-    // RunPersistenceCoordinator construction. De-duplicated hook bag
-    // (~9 fields used to repeat across the three composers' ctors).
-    ({
-      runExit: this.runExit,
-      runHistoryRecorder: this.runHistoryRecorder,
-      runPersistenceCoordinator: this.runPersistenceCoordinator,
-    } = installRunEndComposers({
-      getWeaponSystem: () => this.weaponSystem,
-      getSpawnSystem: () => this.spawnSystem,
-      getJuice: () => this.juice,
-      getXPSystem: () => this.xpSystem,
-      getRunStatsTracker: () => this.runStatsTracker,
-      getSaveManager: () => this.metaSaveManager,
-      getActiveVariant: () => this.activeVariant,
-      getActiveCurseKey: () => this.activeCurseKey,
-      getRunRng: () => this.runRng,
-      getRunModifiers: () => this.runModifiers,
-      getRunScore: () => this.runScore,
-      getRunName: () => this.runName,
-      isDailyRun: () => this.runIsDaily,
-      isIronmoorRun: () => this.activeIronmoorRun,
-      getSecondsPastBell: () => this.runLifecycle?.getSecondsPastBell() ?? 0,
-      getOwnedPassivesLength: () => this.ownedPassives.length,
-      getEvolvedWeaponsLength: () => this.evolvedWeapons.length,
-      stopGameScene: () => this.scene.stop('Game'),
-      startGameOverScene: (payload) => this.scene.start('GameOver', payload),
-      // H1 T9 — post-run lands in CroftScene (hub) rather than MainMenu.
-      // Hook name retained until a broader rename sweep (scope: future polish).
-      startMainMenuScene: () => this.scene.start('Croft'),
-      unregisterRunAutoSave: () => this.runPersistence?.unregisterMidRunHooks(),
-      // T402 — Game Over run-identity radiator (parity with pause panel).
-      getCurrentAct: () => this.runActState.currentAct,
-      getRouteLabels: () => resolveRouteLabels(this.runActState.pickerHistory),
-      getRelicLabels: () => resolveRelicLabels(this.relicSystem ?? null),
-      getRuneLabels: () => resolveRuneLabels(this.ownedRuneIds),
-      // Wee Tales — surface the per-run boss-kill roster to the run
-      // exit composer; `getBiomesVisited` (further below) already
-      // feeds both history + exit composers via the install hook.
-      getBossKilledKeys: () => this.bossKilledKeys,
-      getBossKillCount: () => this.runScore.bossKillCount,
-      getRoutePicks: () => this.runActState.pickerHistory,
-      getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
-      getReplayBlob: () => this.replayRecorder?.finalize() ?? null,
-      getEnteredHealingCircle: () => this.hazardZones?.didEnterHealingCircle() ?? false,
-      getBiomesVisited: () => this.biomeController?.getBiomesVisited() ?? [],
-      getEvolvedWeaponCount: () => this.weaponSystem?.getEvolvedWeaponCount() ?? 0,
-      areSeasonalEventsDisabled: () => this.settingsManager.load().disableSeasonalEvents,
-      getSporranPicks: () => this.committedSporranIds,
-      getActiveSharedRunSetup: () => this.activeSharedRun,
-      // T401 P3 — replay-aware persistence; reads `this.replayInput` at
-      // call time so the gate stays correct across create()'s lifecycle.
-      isReplayPlayback: () => this.replayInput !== null,
-      recordRun,
-      loadSave,
-    }));
-
-    if (resumeRun) {
-      this.runPersistence.applyResume(resumeRun);
-    }
-
-    this.upgradeUI = new UpgradeCardsUI(this, (card) => this.levelUpFlow.apply(card), this.updateTickers);
-    this.upgradeUI.setRerollCallback(() => this.levelUpFlow.reroll());
-    this.upgradeUI.setVariantKey(this.activeVariant.key);
-
-    ({ playerEnemyCollider: this.playerEnemyCollider } = installCombatCollisions({
-      scene: this,
-      player: this.player,
-      spawnSystem: this.spawnSystem,
-      weaponSystem: this.weaponSystem,
-      xpSystem: this.xpSystem,
-      timeManager: this.timeManager,
-      deathCauseTracker: this.deathCauseTracker,
-      iFrameController: this.iFrameController,
-      floatTextPool: this.floatTextPool,
-      runScore: this.runScore,
-      runRng: this.runRng,
-      runStatsTracker: this.runStatsTracker,
-      runeBag: this.runeBag,
-      updateTickers: this.updateTickers,
-      grudgeLedger: this.grudgeLedger,
-      getJuice: () => this.juice,
-      getHud: () => this.hud,
-      getBanter: () => this.banter,
-      getPickupSpawner: () => this.pickupSpawner,
-      getLevelUpFlow: () => this.levelUpFlow,
-      getRunModifiers: () => this.runModifiers,
-      getActiveVariantKey: () => this.activeVariant?.key,
-      getActiveCurseKey: () => this.activeCurseKey,
-      getSFXManager: () => this.getSFXManager(),
-      getSettingsManager: () => this.settingsManager,
-      triggerVictory: () => this.runLifecycle.handleVictory(),
-      onActComplete: (actN) => this.launchActIntermission(actN),
-      onStretchComplete: (stretch) => this.initNodeMapForAct(3, stretch),
-      onBottleBreak: (x, y) => this.hazardZones.spawnBottleSlick(x, y),
-      onTotemFall: (x, y) => {
-        // Four slicks at the cardinals, offset so the totem kill site is
-        // walkable — player shouldn't be trapped by the burst they caused.
-        const offset = 32;
-        this.hazardZones.spawnBottleSlick(x - offset, y);
-        this.hazardZones.spawnBottleSlick(x + offset, y);
-        this.hazardZones.spawnBottleSlick(x, y - offset);
-        this.hazardZones.spawnBottleSlick(x, y + offset);
-      },
-      onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
-      onTouristPhotographed: (x, y) => this.pickupSpawner.spawnPolaroid(x, y),
-      onHunterFieldNote: (x, y) => this.pickupSpawner.spawnFieldNote(x, y),
-      onEliteKilled: (x, y) => this.relicOrchestrator.rollAndSpawn('elite', x, y),
-      onBossKilled: (bossKey, x, y) => {
-        this.relicOrchestrator.rollAndSpawn('boss', x, y, bossKey);
-        // Wee Tales — record the boss key in kill order so the run-end
-        // tale-picker can match a "three_bosses victory" or per-boss
-        // line. Push-only here; resetTransientRunState clears the
-        // array on the next run.
-        this.bossKilledKeys.push(bossKey);
-        // Wild Living World Phase 4 — Kelpie Foal unlock on first
-        // Each Uisge kill. The foal follows the haggis out of the
-        // loch after its kin is defeated.
-        if (bossKey === 'each_uisge') {
-          const foalUnlocked = unlockCompanion('kelpie_foal');
-          if (foalUnlocked) {
-            this.juice?.showToast(t('ui.cairn.kelpie_foal_unlock_toast'), '#40d8e0');
-            this.caption('kelpie_foal_unlock', t('ui.cairn.kelpie_foal_unlock_caption'), '#40d8e0', 3500);
-          }
-        }
-        // W82 Phase 3 — snapshot the rolling buffer at the kill
-        // moment. Non-destructive: the recorder keeps rolling so a
-        // subsequent boss kill produces its own clean snapshot
-        // (replaces this one). Skipped silently when the recorder
-        // is unavailable, audio-only, or hasn't yet accumulated a
-        // chunk.
-        const rec = this.clipRecorder;
-        if (rec && rec.isAvailable()) {
-          const blob = rec.snapshot();
-          if (blob !== null) {
-            this.bossKillHighlight = {
-              bossKey,
-              blob,
-              extension: rec.selectedExtension(),
-              capturedAtSec: this.spawnSystem?.getGameTimeSec() ?? 0,
-            };
-          }
-        }
-      },
-      bumpBossKillCount,
-      bumpCursedVictoryByBoss,
-      modifyLifesteal: (base, nowMs) => this.relicEffectDriver?.modifyLifesteal(base, nowMs) ?? base,
-      modifyXpGain: (base) => this.relicEffectDriver?.modifyXpGain(base) ?? base,
-      tryCairnStoneMagnet: (x, y) => {
-        // R1 M4.5 P1 — heather-biome kills grant a short pickup-magnet
-        // pulse, reusing the ceilidh-chain buff path (flat radius +
-        // duration). Cooldown lives inside the driver.
-        const driver = this.relicEffectDriver;
-        if (!driver) return;
-        const biome = this.getBiomeManager()?.biomeAt(x, y);
-        if (biome !== 'heather') return;
-        if (!driver.tryCairnStoneHeatherKill(this.time.now)) return;
-        this.player.grantCeilidhChainMagnet(40, 2000);
-      },
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-      onAfterNonFatalHit: (hpBefore) => {
-        // R1 M4 — stamp clootie_rag lifesteal-double window + reset
-        // grans_teapot damage-free timer on every hit the haggis
-        // survives. Fatal hits skip: no run remains to collect on.
-        this.relicEffectDriver?.noteDamageTaken(this.time.now);
-        moorMomentsTryMercyLuck(this.moorMomentsState, this.buildMoorMomentsContext(), hpBefore);
-      },
-      armIFrames: (ms) => this.armIFrames(ms),
-      onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
-      modifyEnemyContactDamage: (base, enemyKey) => {
-        // R1 M4 — midgie_repellent zeroes midge-swarm damage.
-        if (enemyKey === 'midge' && this.relicEffectDriver?.isMidgieSwarmImmune()) {
-          return 0;
-        }
-        return base;
-      },
-    }));
-
-    // HUD + Juice
-    this.hud = new HUD(this);
-    this.juice = new JuiceSystem(this, this.timeManager, this.updateTickers, this.settingsManager);
-    // Banter sits downstream of juice (toast surface) + captions. It reads
-    // banterFrequency live on every request so the Comfort panel toggle
-    // takes effect without a scene restart. Reset history now so the
-    // prior run's no-repeat buffer doesn't leak into this one.
-    if (!this.banter) {
-      this.banter = new BanterSystem({
-        sink: {
-          toast: (m, c) => this.juice.showToast(m, c),
-          caption: (id, m, tint) => this.caption(id, m, tint),
-        },
-        translate: t,
-        now: () => this.time.now,
-        getFrequency: () => getSettingsManager().load().banterFrequency,
-        // C1 M4 Task 19 — route every fired line into the Almanac's
-        // Banter book via the shared save bump helper.
-        onLineFired: (evt) => bumpBanterHeard(evt.key, this.discoveryRunId(), Date.now()),
-      });
-    }
-    this.banter.reset();
-    // Curse pact — one hearth line after the HUD settles (soul weave: run start).
-    if (this.activeCurseKey) {
-      const curseTag = this.activeCurseKey;
-      this.time.delayedCall(1200, () => {
-        this.banter?.request('curse_start', { tag: curseTag });
-        // Burns echo — "Nae man can tether time or tide" Tam-o'-Shanter
-        // couplet on the cursed-run slow window. Scheduled past the
-        // 8 s banter cooldown + a small grace so it lands on a quiet
-        // tick after curse_start has flushed.
-        this.time.delayedCall(9_000, () => {
-          this.banter?.request('burns_citation', { tag: 'nae_haste' });
-        });
-      });
-    }
-    installRunStartCeremony({
-      isReplayPlayback: !!this.replayInput,
-      isResume: !!resumeRun,
-      activeCurseKey: this.activeCurseKey,
-      disableSeasonalEvents: this.settingsManager.load().disableSeasonalEvents,
-      now: new Date(),
-      scheduleSceneDelay: (ms, cb) => { this.time.delayedCall(ms, cb); },
-      getBurnsPlatterSpawned: () => this.burnsPlatterSpawned,
-      setBurnsPlatterSpawned: () => { this.burnsPlatterSpawned = true; },
-      getPickupSpawner: () => this.pickupSpawner ?? null,
-      banter: this.banter,
-      audio,
-    });
-    this.weather?.stop();
-    this.hazards?.stop();
-    ({
-      weather: this.weather,
-      hazards: this.hazards,
-      gameTickers: this.gameTickers,
-      pickupSpawner: this.pickupSpawner,
-    } = installRuntimeAmbient({
-      scene: this,
-      getPlayer: () => this.player,
-      getJuice: () => this.juice,
-      getCurrentBiomeId: () => this.getCurrentBiomeId(),
-      getRunRng: () => this.runRng,
-      isIFramesActive: () => this.iFrameController.isActive(),
-      getUiViewport: () => this.getUiViewport(),
-      getBanter: () => this.banter,
-      getActiveVariantKey: () => this.activeVariant.key,
-      hasEnemyNearby: (r) => this.spawnSystem.hasEnemyNear(this.player?.x ?? 0, this.player?.y ?? 0, r),
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-      getXPSystem: () => this.xpSystem,
-      getUpdateTickers: () => this.updateTickers,
-      getSFXManager: () => this.getSFXManager(),
-      getChestDurationBonusMs: () => this.chestDurationBonusMs,
-      getChestRegistry: () => this.chestRegistry,
-      getFloatTextPool: () => this.floatTextPool,
-      getRelicEffectDriver: () => this.relicEffectDriver,
-      getLevelUpFlow: () => this.levelUpFlow,
-      getRuneSystemController: () => this.runeSystemController,
-      getRunScore: () => this.runScore,
-      pushPickupDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
-      attachRelicSpawner: () => this.relicOrchestrator.attachSpawner(),
-      onWeatherShutdown: () => { this.weather = null; },
-      onHazardsShutdown: () => { this.hazards = null; },
-    }));
-
-    this.companionSystem?.destroy();
-    this.companionSystem = installCompanionSystem({
-      scene: this,
-      getPlayer: () => this.player,
-      director: this.livingWorldDirector,
-      isReplayInput: !!this.replayInput,
-      scheduleDelay: (ms, cb) => { this.time.delayedCall(ms, cb); },
-      getCurrentSystem: () => this.companionSystem,
-    });
-
-    const replayCairns =
-      this.pendingReplay
-        ? ((this.pendingReplay as { cairns?: FallenCairn[] }).cairns ?? [])
-        : null;
-    this.firstCairnTouchedThisRun = true;
-    this.cairnSprites.clear();
-    ({ cairnStacking: this.cairnStacking,
-      cairnOfEchoesScheduler: this.cairnOfEchoesScheduler,
-    } = installCairnSystems({
-      getRng: () => this.runRng,
-      getPlayer: () => this.player,
-      getVictoryPending: () => this.runScore.victoryPending,
-      getJuice: () => this.juice,
-      getBanter: () => this.banter,
-      spawnCairnStone: (onCollect, onExpired) => {
-        this.pickupSpawner.spawnCairnStone(onCollect, onExpired);
-      },
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-      openCairnBoonPicker: (options, onPick) => {
-        this.timeManager.request('CAIRN_BOON', { pausePhysics: true, timeScale: 0 });
-        this.scene.launch(CairnBoonPickerScene.KEY, {
-          options,
-          onPick: (id: Parameters<typeof onPick>[0]) => {
-            this.timeManager.release('CAIRN_BOON');
-            onPick(id);
-          },
-        });
-      },
-      cairnResume: resumeRun ? {
-        stoneCount: resumeRun.cairnStackCount ?? 0,
-        spawnedCount: resumeRun.cairnSpawnedCount ?? 0,
-        nextSpawnAtSec: resumeRun.cairnNextSpawnAtSec,
-      } : null,
-      getCairns: () =>
-        replayCairns !== null ? replayCairns : this.metaSaveManager.getFallenCairns(),
-      getRngSample: () => this.runRng.next(),
-      getOldDroverRevealedCount: () => this.metaSaveManager.getOldDroverRevealedCount(),
-      onWalkOver: ({ cairn, whisper }) => this.handleCairnWalkOver(cairn, whisper),
-      onSpriteCreate: (cairn) => this.spawnCairnSprite(cairn),
-      onSpriteDestroy: (cairn) => this.destroyCairnSprite(cairn),
-    }));
-
-    // V2 — Cailleach Gauntlet scheduler. Sister to cairn scheduler;
-    // reads touched-this-run count from it, fires win/lose hooks at
-    // resolution. Extracted to installCailleachGauntlet to keep
-    // GameScene under the 2200-LOC ceiling. Teardown closes over the
-    // candle sprites + boss ref the install owns.
-    if (this.gauntletTeardown) this.gauntletTeardown();
-    const gauntletInstall = installCailleachGauntlet({
-      scene: this,
-      getPlayer: () => this.player ?? null,
-      getSpawnSystem: () => this.spawnSystem,
-      getBanter: () => this.banter ?? null,
-      getCairnScheduler: () => this.cairnOfEchoesScheduler,
-      metaSaveManager: this.metaSaveManager,
-      caption: (id, message, color, durationMs) =>
-        this.caption(id, message, color, durationMs),
-      showToast: (message, color) => this.juice?.showToast(message, color),
-    });
-    this.cailleachGauntletScheduler = gauntletInstall.scheduler;
-    this.gauntletTeardown = gauntletInstall.teardown;
-
-    // DESIGN_IDEAS §3 — Corryvreckan encounter. Teardown (destroy visuals)
-    // is called on each reset so graphics from a prior run don't leak.
-    this.corryVreckanInstall?.teardown();
-    this.corryVreckanInstall = installCorryVreckan({
-      scene: this,
-      getPlayer: () => this.player ?? null,
-      getSpawnSystem: () => this.spawnSystem,
-      getJuice: () => this.juice,
-      getBanter: () => this.banter ?? null,
-      getCurrentBiomeId: () => this.getCurrentBiomeId(),
-      getGameTimeSec: () => this.spawnSystem?.getGameTimeSec() ?? 0,
-      getRunRng: () => this.runRng,
-      onSurvived: () => this.pickupSpawner.spawnGoldenChest(),
-      onFailed: () => {
-        const player = this.player;
-        if (!player?.active) return;
-        const dmg = Math.floor(player.getMaxHp() * 0.35);
-        player.takeDamage(dmg);
-      },
-    });
-
-    this.engineerTurretSprite?.destroy();
-    this.tuftedPupSprite?.destroy();
-    ({
-      engineerTurretSystem: this.engineerTurretSystem,
-      engineerTurretSprite: this.engineerTurretSprite,
-      tuftedFamiliarSystem: this.tuftedFamiliarSystem,
-      tuftedPupSprite: this.tuftedPupSprite,
-    } = installVariantCompanions({
-      scene: this,
-      hasEngineerTurret: !!selectedVariant.modifiers.engineerTurret,
-      hasTuftedFamiliar: !!selectedVariant.modifiers.tuftedFamiliar,
-      spawnPx,
-      spawnPy,
-      getIsVictoryPending: () => this.runScore.victoryPending,
-      getPlayerPosition: () => ({ x: this.player.x, y: this.player.y }),
-      fireTurretShot: (fromX, fromY, damageMul) =>
-        this.weaponSystem.fireTurretShot(fromX, fromY, damageMul),
-    }));
-
-    this.lemmingsEasterEgg = installLemmingsEasterEgg({
-      scene: this,
-      getPlayer: () => this.player,
-      getActiveVariantKey: () => this.activeVariant.key,
-      getCurrentBiomeId: () => this.getCurrentBiomeId(),
-      requestBanter: () => this.requestBanter('lemmings_remember'),
-      caption: (id, message, tint) => this.caption(id, message, tint),
-    });
-
-    // Phase 5 Bucket 6 partial — LevelUpFlow + RunLifecycle ctors bundled.
-    ({ levelUpFlow: this.levelUpFlow, runLifecycle: this.runLifecycle } = installRunFlow({
-      scene: this,
-      getPlayer: () => this.player,
-      getXPSystem: () => this.xpSystem,
-      getSpawnSystem: () => this.spawnSystem,
-      getJuice: () => this.juice,
-      getTimeManager: () => this.timeManager,
-      getUiViewport: () => this.getUiViewport(),
-      armIFrames: (ms) => this.armIFrames(ms),
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-      getWeaponSystem: () => this.weaponSystem,
-      getStatusFxPool: () => this.statusFxPool,
-      getTutorialSystem: () => this.tutorialSystem,
-      getUpgradeUI: () => this.upgradeUI,
-      getRunRng: () => this.runRng,
-      getOwnedPassives: () => this.ownedPassives,
-      pushOwnedPassive: (key) => { this.ownedPassives.push(key); },
-      getEvolvedWeapons: () => this.evolvedWeapons,
-      pushEvolvedWeapon: (key) => { this.evolvedWeapons.push(key); },
-      getAnnouncedEvolutionReady: () => this.announcedEvolutionReady,
-      addKill: (n = 1) => {
-        // W71 Phase 2 — loop through incrementKillCount so onKillsChanged
-        // fires for each tallied kill. Direct `killCount += n` would bypass
-        // the notifier and leave the mantle-tier wiring stale after
-        // level-up cards like "destroy N nearest enemies."
-        for (let i = 0; i < n; i++) this.runScore.incrementKillCount();
-      },
-      drainPendingChests: () => this.drainPendingChests(),
-      requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
-      getDiscoveryRunId: () => this.discoveryRunId(),
-      tryChestLegendaryRelicOverride: () => this.relicOrchestrator.tryChestOverride(),
-      getRelicLuckPoints: () => this.relicEffectDriver?.luckDrawPoints() ?? 0,
-      isBossKilledThisRun: () => this.runScore.bossKillCount > 0,
-      getOwnedRuneIds: () => this.ownedRuneIds,
-      grantRune: (runeId) => this.grantRune(runeId),
-      isPostBell: () => this.runLifecycle?.isPostBell() ?? false,
-      getOverchargedWeaponKeys: () => this.weaponSystem.getOverchargedKeys(),
-      getSaveManager: () => this.metaSaveManager,
-      getDeathCauseTracker: () => this.deathCauseTracker,
-      getBanter: () => this.banter,
-      getGrudgeLedger: () => this.grudgeLedger,
-      getSettingsManager: () => this.settingsManager,
-      getCamera: () => this.cameras.main,
-      getVictoryPending: () => this.runScore.victoryPending,
-      setVictoryPending: (v) => { this.runScore.victoryPending = v; },
-      invalidatePendingVictoryTicker: () => { this.runScore.nextVictoryDelayGen(); },
-      getRevivalAvailable: () => this.revivalAvailable,
-      setRevivalAvailable: (v) => { this.revivalAvailable = v; },
-      getVictoryFade: () => this.victoryFade,
-      setVictoryFade: (r) => { this.victoryFade = r; },
-      getDeathFade: () => this.deathFade,
-      setDeathFade: (r) => { this.deathFade = r; },
-      setVictoryResultTicker: (ms, cb) => this.runEndTickers.armVictoryResultOverlay(ms, cb),
-      setDeathResultTicker: (ms, cb) => this.runEndTickers.armDeathResultOverlay(ms, cb),
-      setVictoryDeferMs: (ms) => this.runEndTickers.armVictoryDefer(ms, () => this.runLifecycle.handleVictory()),
-      buildRunSummary: (victory) => this.runExit.buildSummary(victory),
-      buildRunHistoryContext: () => this.runHistoryRecorder.buildContext(),
-      buildGameOverPayload: (mode, s, r, pb, dc) => this.runExit.buildGameOverPayload(mode, s, r, pb, dc),
-      // T307 + T1 replay — replay-aware wrappers live on
-      // `runPersistenceCoordinator`. During playback both calls no-op
-      // (recordToHistory) or return a no-pollution RunResult (recordRun)
-      // so a replay run can't double-count Chronicle attempts or write
-      // duplicate gold/variant unlocks.
-      recordToHistory: (s, r) => this.runPersistenceCoordinator.recordToHistory(s, r),
-      recordRun: (s, ctx) => this.runPersistenceCoordinator.recordRun(s, ctx),
-      transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
-      onActComplete: (actN) => this.launchActIntermission(actN),
-      isIronmoorRun: () => this.activeIronmoorRun,
-      isDailyRun: () => this.runIsDaily,
-      // The Moor Remembers (spec 2026-05-22) — `getActiveVariantKey`
-      // stamps the FallenCairn so future runs route to the variant-
-      // specific past-self whisper; `pickInheritedStat` is the v1
-      // safe-default heuristic (a richer signal can land in v2 without
-      // re-touching the hook seam).
-      getActiveVariantKey: () => this.activeVariant?.key ?? 'classic',
-      pickInheritedStat: (): InheritedStatKey => 'damage',
-    }));
-    this.juice.setResumeBestCombo(resumeRun?.bestCombo);
-    this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
-    moorMomentsShowRunIdentityToast(this.buildMoorMomentsContext(), Boolean(resumeRun));
-    // W82 Shared-run banner — fired right after the identity toast so
-    // the queue order is "Classic · The original" → "Shared run ·
-    // Classic · Heavy Legs". `pendingSharedRunMeta` is consumed once
-    // (nulled) so a hot replay through the same scene instance does
-    // not re-fire the welcome.
-    if (this.pendingSharedRunMeta && !resumeRun) {
-      this.juice.showToast(
-        formatSharedRunIdentityToast(this.pendingSharedRunMeta),
-        SHARED_RUN_TOAST_COLOR,
-      );
-    }
-    this.pendingSharedRunMeta = null;
-    showRunIntroToasts({
-      scene: this,
-      replayInput: this.replayInput,
-      juice: this.juice,
-      hud: this.hud,
-      loadMetaSave: () => this.metaSaveManager.load(),
-      getJuice: () => this.getJuice() ?? null,
-    });
-
-    // Phase 5 Bucket 11 — post-flow startup chain (HUD scaffolding,
-    // debug surfaces, audio init, ceremony, countdown handshake).
-    // Extracted to `installRunStartupHud` — see that helper for the
-    // ordering contract.
-    installRunStartupHud(this, {
+    // create() phase 2 — variant resolution, T1 replay bridge, curse +
+    // sporran + seasonal run-start plans, Player construction, and the
+    // post-spawn blessing pipeline. Returns the locals later phases need.
+    // RNG consumption order preserved inside the helper (replay determinism).
+    const { selectedVariant, spawnPx, spawnPy } = installPlayerAndRunStart(this, {
+      save,
       resumeRun,
-      initNodeMapForAct: (act, stretch) => this.initNodeMapForAct(act, stretch),
-      trySpawnAncestralEcho: () => { const echo = moorMomentsTrySpawnAncestralEcho(this.buildMoorMomentsContext(), this.ancestralEcho !== null); if (echo) this.ancestralEcho = echo; },
-      toggleUiPause: () => this.toggleUiPause(),
     });
+
+    // create() phase 3 — camera, hazard zones, core combat trio, per-run
+    // state resets, variant starter kit, Selkie bind, and permanent
+    // upgrades + Ironmoor lock. RNG consumption order preserved in helper.
+    installCombatAndUpgrades(this, { selectedVariant, resumeRun });
+
+    // create() phase 4 (final) — UI, landmarks, run flow, startup chain.
+    // Run-bookkeeping + composers, resume hydration, upgrade UI, combat
+    // collisions, HUD/Juice/Banter, ceremony, runtime ambient, companion
+    // + cairn + Cailleach Gauntlet + Corryvreckan + variant-companion +
+    // Lemmings installs, LevelUpFlow + RunLifecycle, identity/intro toasts,
+    // and the post-flow startup-HUD chain. Order preserved in the helper.
+    installUiLandmarksAndFlow(this, { resumeRun, selectedVariant, spawnPx, spawnPy });
   }
 
   private registerShutdownCleanup(): void {
@@ -1706,71 +777,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Body extracted to `installRunEndShutdown` (T401 slice 6) — every
     // silenced-catch is preserved one-for-one in the helper so partial-init
     // failures cannot short-circuit the shutdown sequence.
-    installRunEndShutdown({
-      scene: this,
-      clipRecorder: this.clipRecorder,
-      setClipRecorder: (next) => { this.clipRecorder = next; },
-      disposeRecordingAudioStream,
-      uninstallAutoBattleTimeScale,
-      gameplaySessionGuard: this.gameplaySessionGuard,
-      playerEnemyCollider: this.playerEnemyCollider,
-      setPlayerEnemyCollider: (next) => { this.playerEnemyCollider = next; },
-      clearSfx: () => sfxManager.clear(),
-      resetAudioTransient: () => audio.resetTransient(),
-      eventBusDispose: this.eventBusDispose,
-      setEventBusDispose: (next) => { this.eventBusDispose = next; },
-      nicnevinWildHunt: this.nicnevinWildHunt,
-      setNicnevinWildHunt: (next) => { this.nicnevinWildHunt = next; },
-      runPersistence: this.runPersistence,
-      debugTimeTravelApi: this.debugTimeTravelApi,
-      subs: this.subs,
-      debugOverlay: this.debugOverlay,
-      setDebugOverlay: (next) => { this.debugOverlay = next; },
-      runLifecycle: this.runLifecycle,
-      biomeController: this.biomeController,
-      setBiomeController: (next) => { this.biomeController = next; },
-      setHaarFog: (next) => { this.haarFog = next; },
-      floraScatter: this.floraScatter,
-      setFloraScatter: (next) => { this.floraScatter = next; },
-      wildlifeSystem: this.wildlifeSystem,
-      setWildlifeSystem: (next) => { this.wildlifeSystem = next; },
-      mistLayer: this.mistLayer,
-      setMistLayer: (next) => { this.mistLayer = next; },
-      captionOverlay: this.captionOverlay,
-      setCaptionOverlay: (next) => { this.captionOverlay = next; },
-      captionManager: this.captionManager,
-      setCaptionManager: (next) => { this.captionManager = next; },
-      weaponSystem: this.weaponSystem,
-      xpSystem: this.xpSystem,
-      updateTickers: this.updateTickers,
-      timeManager: this.timeManager,
-      spawnSystem: this.spawnSystem,
-      tutorialSystem: this.tutorialSystem,
-      statusFxPool: this.statusFxPool,
-      floatTextPool: this.floatTextPool,
-      juice: this.juice,
-      hud: this.hud,
-      minimap: this.minimap,
-      nodeMapUI: this.nodeMapUI,
-      setNodeMapUI: (next) => { this.nodeMapUI = next; },
-      nodePromptUI: this.nodePromptUI,
-      setNodePromptUI: (next) => { this.nodePromptUI = next; },
-      setInteractivePromptIndex: (next) => { this.interactivePromptIndex = next; },
-      nodeMapSystem: this.nodeMapSystem,
-      nodeWaveTracker: this.nodeWaveTracker,
-      edgeIndicators: this.edgeIndicators,
-      upgradeUI: this.upgradeUI,
-      gameTickers: this.gameTickers,
-      pauseMenu: this.pauseMenu,
-      setPauseMenu: (next) => { this.pauseMenu = next; },
-      chestRegistry: this.chestRegistry,
-      victoryFade: this.victoryFade,
-      setVictoryFade: (next) => { this.victoryFade = next; },
-      deathFade: this.deathFade,
-      setDeathFade: (next) => { this.deathFade = next; },
-      filmGrain: this.filmGrain,
-      setFilmGrain: (next) => { this.filmGrain = next; },
-    });
+    installRunEndShutdown(buildRunEndShutdownDeps(this));
     this.events.once('shutdown', () => this.nodeMarkerSystem.destroy());
   }
 
@@ -1853,7 +860,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     };
   }
 
-  private buildMoorMomentsContext(): MoorMomentsContext {
+  buildMoorMomentsContext(): MoorMomentsContext {
     return {
       scene: this,
       player: this.player,
@@ -1897,7 +904,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * stays 3 across stretch switches — stretch is a sub-state only the
    * bank + cursor care about.
    */
-  private initNodeMapForAct(act: 1 | 2 | 3, stretch: Act3Stretch = 1): void {
+  initNodeMapForAct(act: 1 | 2 | 3, stretch: Act3Stretch = 1): void {
     initNodeMapForActImpl(
       {
         scene: this,
@@ -1914,7 +921,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
   }
 
-  private launchActIntermission(actN: 1 | 2): void {
+  launchActIntermission(actN: 1 | 2): void {
     launchActIntermissionImpl(
       {
         scene: this,
@@ -1944,7 +951,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * Falls back to a sentinel if the rng wasn't ready (cold scene init
    * paths shouldn't hit this; the sentinel keeps the bump non-throwing).
    */
-  private discoveryRunId(): string {
+  discoveryRunId(): string {
     try {
       return `run:${this.runRng.seed >>> 0}`;
     } catch {
@@ -1959,7 +966,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * Unknown rune ids are silently skipped — defensive against future
    * save/replay drift.
    */
-  private grantRune(runeId: string): void {
+  grantRune(runeId: string): void {
     const def = RUNES[runeId];
     if (!def) return;
     if (this.ownedRuneIds.includes(runeId)) return;
@@ -2061,13 +1068,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     };
   }
 
-  private spawnCairnSprite(cairn: FallenCairn): void {
+  spawnCairnSprite(cairn: FallenCairn): void {
     if (this.cairnSprites.has(cairn)) return;
     const sprite = createCairnSpriteForScene(this.cairnWireDeps(), cairn);
     if (sprite) this.cairnSprites.set(cairn, sprite);
   }
 
-  private destroyCairnSprite(cairn: FallenCairn): void {
+  destroyCairnSprite(cairn: FallenCairn): void {
     const sprite = this.cairnSprites.get(cairn);
     if (sprite) {
       destroyCairnSpriteOnScene(this.cairnWireDeps(), sprite);
@@ -2075,7 +1082,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  private handleCairnWalkOver(cairn: FallenCairn, whisper: WhisperResult): void {
+  handleCairnWalkOver(cairn: FallenCairn, whisper: WhisperResult): void {
     handleCairnWalkOverOnScene(this.cairnWireDeps(), cairn, whisper, {
       firstThisRun: this.firstCairnTouchedThisRun,
       setFirstThisRun: (v) => {

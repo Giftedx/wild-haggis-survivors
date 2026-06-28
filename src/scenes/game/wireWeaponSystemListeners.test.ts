@@ -53,6 +53,7 @@ describe('wireWeaponSystemListeners', () => {
       getHud: () => liveHud as never,
       runStatsTracker: runStatsTracker as never,
       runeBag: {} as never,
+      onNamedEliteKilled: vi.fn(),
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
       grudgeLedger: { finishes: [] },
     });
@@ -82,6 +83,7 @@ describe('wireWeaponSystemListeners', () => {
       getHud: () => ({ logDamage: vi.fn() }) as never,
       runStatsTracker: { addWeaponDamage: vi.fn() } as never,
       runeBag: {} as never,
+      onNamedEliteKilled: vi.fn(),
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
       grudgeLedger: { finishes: [] },
     });
@@ -103,6 +105,7 @@ describe('wireWeaponSystemListeners', () => {
       getHud: () => ({ logDamage: vi.fn() }) as never,
       runStatsTracker: { addWeaponDamage: vi.fn() } as never,
       runeBag: {} as never,
+      onNamedEliteKilled: vi.fn(),
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
       grudgeLedger: { finishes: [] },
     });
@@ -122,12 +125,37 @@ describe('wireWeaponSystemListeners', () => {
       getHud: () => ({ logDamage: vi.fn() }) as never,
       runStatsTracker: { addWeaponDamage: vi.fn() } as never,
       runeBag: {} as never,
+      onNamedEliteKilled: vi.fn(),
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
       grudgeLedger: { finishes: [] },
     });
 
     events.emit('enemyKilled', 1, 2, 3, 'midge', false, false, null);
     expect(handle).toHaveBeenCalledWith(1, 2, 3, 'midge', false, false, null);
+  });
+
+  it('enemyKilled marks non-boss elite kills for the Laird Rune trigger', () => {
+    const events = makeEmitter();
+    const onNamedEliteKilled = vi.fn();
+    const inputs = {
+      weaponSystem: { events } as never,
+      enemyKillHandler: { handle: vi.fn() } as never,
+      player: { notifyWeaponFired: vi.fn() } as never,
+      getJuice: () => ({ showDamageNumber: vi.fn(), spawnImpactRing: vi.fn(), spawnTrail: vi.fn() }) as never,
+      getHud: () => ({ logDamage: vi.fn() }) as never,
+      runStatsTracker: { addWeaponDamage: vi.fn() } as never,
+      runeBag: {} as never,
+      getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
+      grudgeLedger: { finishes: [] },
+      onNamedEliteKilled,
+    };
+    wireWeaponSystemListeners(inputs);
+
+    events.emit('enemyKilled', 1, 2, 3, 'midge', false, true, null);
+    events.emit('enemyKilled', 1, 2, 3, 'gordon', true, true, null);
+    events.emit('enemyKilled', 1, 2, 3, 'midge', false, false, null);
+
+    expect(onNamedEliteKilled).toHaveBeenCalledTimes(1);
   });
 
   it('eliteOrBossFinished pushes a snapshot to the grudge ledger', () => {
@@ -141,6 +169,7 @@ describe('wireWeaponSystemListeners', () => {
       getHud: () => ({ logDamage: vi.fn() }) as never,
       runStatsTracker: { addWeaponDamage: vi.fn() } as never,
       runeBag: {} as never,
+      onNamedEliteKilled: vi.fn(),
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
       grudgeLedger,
     });

@@ -26,6 +26,7 @@ import {
 } from './runes/runeEffects';
 import {
   evaluateRuneCondition,
+  isOneShotRuneCondition,
   type RuneEvalContext,
 } from './runes/runeConditions';
 
@@ -75,6 +76,13 @@ export class RuneConditionSystem {
   tick(ctx: RuneEvalContext): void {
     for (const slot of this.slots) {
       const nowTrue = evaluateRuneCondition(slot.def.conditionKey, ctx);
+      if (isOneShotRuneCondition(slot.def.conditionKey)) {
+        if (nowTrue) {
+          for (const eff of slot.def.effects) applyRuneEffect(this.bag, eff);
+        }
+        slot.active = false;
+        continue;
+      }
       if (nowTrue && !slot.active) {
         for (const eff of slot.def.effects) applyRuneEffect(this.bag, eff);
         slot.active = true;

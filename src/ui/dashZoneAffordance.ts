@@ -36,6 +36,39 @@ export interface DashZoneBounds {
   centreY: number;
 }
 
+export interface DashZoneSafeInsets {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+export interface TouchControlLayout {
+  /** Full-height left-side virtual joystick activation zone. */
+  joystickZone: DashZoneBounds;
+  /** Full-height right-side dash activation zone. */
+  dashZone: DashZoneBounds;
+  /** Visible lower-right dash hint bounds; smaller than the activation zone. */
+  dashHint: DashZoneBounds;
+}
+
+const DASH_HINT_SIDE_PAD_PX = 12;
+const DASH_HINT_BOTTOM_PAD_PX = 12;
+const DASH_HINT_MIN_WIDTH_PX = 96;
+const DASH_HINT_MAX_WIDTH_PX = 144;
+const DASH_HINT_HEIGHT_PX = 88;
+
+function boundsFromRect(x: number, y: number, width: number, height: number): DashZoneBounds {
+  return {
+    x,
+    y,
+    width,
+    height,
+    centreX: x + width / 2,
+    centreY: y + height / 2,
+  };
+}
+
 /**
  * Resolve dash-zone bounds for a given canvas size. The right edge of
  * the zone is the canvas right edge; the left edge is at
@@ -45,13 +78,48 @@ export function resolveDashZoneBounds(canvasWidth: number, canvasHeight: number)
   const x = canvasWidth * DASH_ZONE_X_FRACTION;
   const width = canvasWidth - x;
   const height = canvasHeight;
+  return boundsFromRect(x, 0, width, height);
+}
+
+/**
+ * Resolve the full touch-control contract for mobile play. The input
+ * zones remain broad and forgiving, while the visible dash affordance
+ * stays in the lower-right thumb reach so it teaches the gesture
+ * without tinting the whole right side of the playfield.
+ */
+export function resolveTouchControlLayout(
+  canvasWidth: number,
+  canvasHeight: number,
+  safeInsets: DashZoneSafeInsets = { top: 0, right: 0, bottom: 0, left: 0 },
+): TouchControlLayout {
+  const splitX = canvasWidth * DASH_ZONE_X_FRACTION;
+  const joystickZone = boundsFromRect(0, 0, splitX, canvasHeight);
+  const dashZone = resolveDashZoneBounds(canvasWidth, canvasHeight);
+  const hintAvailableWidth = Math.max(0, dashZone.width - DASH_HINT_SIDE_PAD_PX * 2);
+  const hintWidth = Math.max(
+    0,
+    Math.min(DASH_HINT_MAX_WIDTH_PX, Math.max(DASH_HINT_MIN_WIDTH_PX, hintAvailableWidth)),
+  );
+  const hintAvailableHeight = Math.max(
+    0,
+    canvasHeight - safeInsets.top - safeInsets.bottom - DASH_HINT_SIDE_PAD_PX - DASH_HINT_BOTTOM_PAD_PX,
+  );
+  const hintHeight = Math.max(0, Math.min(DASH_HINT_HEIGHT_PX, hintAvailableHeight));
+  const rightEdge = Math.max(
+    dashZone.x,
+    canvasWidth - safeInsets.right - DASH_HINT_SIDE_PAD_PX,
+  );
+  const hintX = Math.max(dashZone.x + DASH_HINT_SIDE_PAD_PX, rightEdge - hintWidth);
+  const bottomEdge = Math.max(
+    safeInsets.top + DASH_HINT_SIDE_PAD_PX,
+    canvasHeight - safeInsets.bottom - DASH_HINT_BOTTOM_PAD_PX,
+  );
+  const hintY = Math.max(safeInsets.top + DASH_HINT_SIDE_PAD_PX, bottomEdge - hintHeight);
+
   return {
-    x,
-    y: 0,
-    width,
-    height,
-    centreX: x + width / 2,
-    centreY: height / 2,
+    joystickZone,
+    dashZone,
+    dashHint: boundsFromRect(hintX, hintY, hintWidth, hintHeight),
   };
 }
 

@@ -900,7 +900,7 @@ export interface BuildCardPoolContext {
   readonly bossKilledThisRun?: boolean;
   /** Rune ids already owned this run (filtered from draw). */
   readonly ownedRuneIds?: readonly string[];
-  /** Test/future-rollout override for the release gate above. */
+  /** Test override for rune card pool inclusion. */
   readonly runeOffersEnabled?: boolean;
   /** Phase B Endless — true while in post-bell. Gates Overcharge cards. */
   readonly isPostBell?: boolean;
@@ -1000,10 +1000,9 @@ export function buildCardPool(
     }
   }
 
-  // Rune tier — still behind a release gate. Until runtime consumers read
-  // RuneEffectBag, offering these cards would over-promise to the player.
-  // The explicit context override keeps the pure pool logic testable for
-  // the future re-enable path.
+  // Rune tier — live after at least one boss kill. The explicit context
+  // override keeps the pure pool logic testable without coupling tests to
+  // the global rollout constant.
   if (ctx.bossKilledThisRun && (ctx.runeOffersEnabled ?? RUNE_CARD_OFFERS_ENABLED)) {
     const owned = new Set(ctx.ownedRuneIds ?? []);
     for (const card of buildRuneCards()) {

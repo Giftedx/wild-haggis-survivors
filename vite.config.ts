@@ -137,6 +137,10 @@ export default defineConfig({
     // patterns in tests keep working after the W18 Scots lazy-load pass.
     // Production still fetches `./i18n.scs` dynamically on first use.
     setupFiles: ['./src/core/i18n.testSetup.ts'],
+    // The full suite is now ~600 files. On Windows/Node 25, Vitest's default
+    // CPU-based fan-out can exhaust native worker allocation before assertions run.
+    maxWorkers: 8,
+    minWorkers: 2,
     ...vitestNoWebStorage,
     coverage: {
       provider: 'v8',

@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { SubscriptionBag } from './SubscriptionBag';
 import type { IInput } from './iInput';
 import { clampVectorLength, gamepadStickToMove, mergeMoveVectors, clampJoystickOrigin, type ViewportSafeInsets } from './inputMath';
-import { resolveDashZoneBounds, dashZoneHintPulseAlpha } from '../ui/dashZoneAffordance';
+import { resolveTouchControlLayout, dashZoneHintPulseAlpha } from '../ui/dashZoneAffordance';
 import { t } from '../core/i18n';
 import { InputMapper } from '../input/InputMapper';
 import { isGamepadActionPressed } from '../input/gamepadAction';
@@ -266,7 +266,8 @@ export class InputManager implements IInput {
       const hitObjects = scene.input.hitTestPointer(pointer);
       if (hitObjects.some((obj) => obj.input?.enabled)) return;
 
-      if (pointer.x >= scene.scale.width * 0.6) {
+      const controlLayout = resolveTouchControlLayout(scene.scale.width, scene.scale.height, readBodySafeInsets());
+      if (pointer.x >= controlLayout.dashZone.x) {
         this.pendingTouchDash = true;
         // First tap inside the dash zone dismisses the discoverability
         // hint — once the player has used it, the band would be noise.
@@ -274,7 +275,7 @@ export class InputManager implements IInput {
         return;
       }
 
-      if (!this.joystickActive && pointer.x < scene.scale.width * 0.6) {
+      if (!this.joystickActive && pointer.x < controlLayout.dashZone.x) {
         ensureVisuals();
         this.joystickActive = true;
         this.joystickPointerId = pointer.id;
@@ -353,9 +354,13 @@ export class InputManager implements IInput {
     };
     if (typeof sceneAddAny.rectangle !== 'function' || typeof sceneAddAny.text !== 'function') return;
     if (!scene.events || typeof scene.events.on !== 'function') return;
-    const bounds = resolveDashZoneBounds(scene.scale.width, scene.scale.height);
+    const bounds = resolveTouchControlLayout(
+      scene.scale.width,
+      scene.scale.height,
+      readBodySafeInsets(),
+    ).dashHint;
     this.dashZoneBand = scene.add
-      .rectangle(bounds.centreX, bounds.centreY, bounds.width, bounds.height, 0xffd980, 0.08)
+      .rectangle(bounds.centreX, bounds.centreY, bounds.width, bounds.height, 0xffd980, 0.1)
       .setName('dash-zone-hint-band')
       .setScrollFactor(0)
       .setDepth(998)

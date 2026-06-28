@@ -31,6 +31,15 @@ const echoRune: RuneDef = {
   glyph: 'rune_echo',
 };
 
+const lairdsRune: RuneDef = {
+  id: 'lairds_rune',
+  nameKey: 'runes.lairds_rune.name',
+  conditionKey: 'kill_named_elite',
+  effects: [{ key: 'shrine_buff_grant', params: { count: 1 } }],
+  flavourKey: 'runes.lairds_rune.flavour',
+  glyph: 'rune_lairds',
+};
+
 const ctx = (patch: Partial<RuneEvalContext>): RuneEvalContext => ({ ...emptyRuneEvalContext(), ...patch });
 
 describe('RuneConditionSystem — transitions', () => {
@@ -81,6 +90,18 @@ describe('RuneConditionSystem — transitions', () => {
     // 20th kill: condition true again → another pulse queued.
     sys.tick(ctx({ killsThisRun: 20, justKilled: true }));
     expect(bag.pendingHealingThistles).toBe(2);
+  });
+
+  it('one-shot event conditions fire on consecutive true frames', () => {
+    const bag = createRuneEffectBag();
+    const sys = new RuneConditionSystem(bag);
+    sys.addRune(lairdsRune);
+
+    sys.tick(ctx({ namedEliteKilledThisFrame: true }));
+    sys.tick(ctx({ namedEliteKilledThisFrame: true }));
+
+    expect(bag.pendingShrineBuffs).toBe(2);
+    expect(sys.snapshot()[0]?.active).toBe(false);
   });
 
   it('multiple runes evaluate independently in one tick', () => {

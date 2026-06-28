@@ -36,7 +36,7 @@ const SRC_ROOT = join(process.cwd(), 'src');
 const BASELINE = {
   'core/i18n.ts': 111,
   'core/i18n.scs.ts': 15,
-  'scenes/GameScene.ts': 1819,
+  'scenes/GameScene.ts': 1193,
   'data/banter.ts': 2682,
   'utils/save.ts': 91,
   'art/sprites/icons/cards.ts': 2,
@@ -55,12 +55,23 @@ const BASELINE = {
 
 /**
  * Single hard guardrail: GameScene's growth is the most-watched signal in
- * the codebase. HARD_CEILING_GAMESCENE (2200) is ~21% above the 2026-05-10
- * BASELINE entry for `scenes/GameScene.ts` (1819). CI fails past 2200 — extract
- * a slice before bolting on more wiring. The discipline is "does the file
- * fit on one mental page?" not an arbitrary ceiling.
+ * the codebase. HARD_CEILING_GAMESCENE (1400) is ~17% above the 2026-06-28
+ * BASELINE entry for `scenes/GameScene.ts` (1193 — this script counts
+ * split('\n'), i.e. `wc -l` + 1; the file is 1192 by `wc -l`). CI fails past
+ * 1400 — extract a slice before bolting on more wiring. The discipline is
+ * "does the file fit on one mental page?" not an arbitrary ceiling.
+ *
+ * 2026-06-28 ratchet: the GameScene facade decomposition cut create() from a
+ * ~930-line monolith to a ~57-line phase sequence (installWorldAndAtmosphere
+ * → installPlayerAndRunStart → installCombatAndUpgrades →
+ * installUiLandmarksAndFlow) plus the large inline install hook bags moved to
+ * sibling `build*Hooks.ts` files (combat collisions, run flow, run-end
+ * composers, run bookkeeping, cairn systems, runtime ambient, run-end
+ * shutdown). File went 2186 → 1192 LOC. The old 2200 ceiling (set against the
+ * 1819 baseline) was retired with it — keeping 2200 would have left ~1000
+ * lines of slack and invited regrowth straight back to the god-object shape.
  */
-const HARD_CEILING_GAMESCENE = 2200;
+const HARD_CEILING_GAMESCENE = 1400;
 
 /** Soft alarm threshold for `--strict` mode: any file growing >25% from baseline. */
 const STRICT_GROWTH_THRESHOLD = 0.25;

@@ -42,6 +42,7 @@ export function buildRuneSystemControllerHooks(scene: GameScene): RuneSystemCont
     getXPSystem: () => scene.xpSystem,
     getRunScore: () => scene.runScore,
     getRunActState: () => scene.runActState,
+    getTempBuffBag: () => scene.tempBuffBag,
     getRuneBag: () => scene.runeBag,
     getRuneSystem: () => scene.runeSystem,
     getRunePulseRng: () => scene.runePulseRng,
