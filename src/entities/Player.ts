@@ -1454,8 +1454,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // every weapon path picks them up via WeaponSystem.setMultipliers.
     const bag = this.runeBagAccessor();
     const runeMul = bag ? composeDamageMul(bag) : 1;
-    // Gran's Best: +30% when HP ≤ 40%. Dynamic per-frame check.
-    const granMul = (this._granBestEnabled && this.maxHp > 0 && this.hp / this.maxHp <= Player.GRAN_BEST_THRESHOLD)
+    // Gran's Best: +30% when HP ≤ 40% of the rune-folded cap. getMaxHp() is
+    // the bar the player sees (HUD + low-HP caption measure against it); raw
+    // maxHp would drift the threshold lower under a max-HP rune so the
+    // comeback bonus fires later than designed. Sibling of addMaxHp/clootie.
+    const folded = this.getMaxHp();
+    const granMul = (this._granBestEnabled && folded > 0 && this.hp / folded <= Player.GRAN_BEST_THRESHOLD)
       ? (1 + Player.GRAN_BEST_BONUS)
       : 1;
     return this.bonusDamageMultiplier * runeMul * granMul;
@@ -1482,10 +1486,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   setIronBrewStacking(v: boolean): void { this._ironBrewStacking = v; }
   getIronBrewStacks(): number { return this._ironBrewStacks; }
 
-  /** Gran's Best variant — true when bonus is active (HP ≤ 40% of max). */
+  /** Gran's Best variant — true when bonus is active (HP ≤ 40% of the rune-folded cap). */
   setGranBestEnabled(v: boolean): void { this._granBestEnabled = v; }
   isGranBestActive(): boolean {
-    return this._granBestEnabled && this.maxHp > 0 && this.hp / this.maxHp <= Player.GRAN_BEST_THRESHOLD;
+    const folded = this.getMaxHp();
+    return this._granBestEnabled && folded > 0 && this.hp / folded <= Player.GRAN_BEST_THRESHOLD;
   }
 
   /** Jacobite variant — true during the 2s Flora's Plaid invincibility window. */

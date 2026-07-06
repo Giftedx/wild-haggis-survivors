@@ -274,6 +274,56 @@ describe('Player bonus stacking', () => {
   });
 });
 
+describe("Player Gran's Best low-HP bonus", () => {
+  it('tracks the rune-folded cap, not the raw bar (no max-HP rune: identical)', () => {
+    // Without a max-HP rune, getMaxHp() === raw maxHp, so the 40% threshold
+    // sits at 40 HP exactly. This pins the common-case behaviour as a no-op
+    // guard against the rune-folded fix below.
+    const p = makePlayer({ maxHp: 100 });
+    p.setGranBestEnabled(true);
+
+    p.takeDamage(60); // hp 40 → 40/100 = 40% ≤ 40%: bonus ON
+    expect(p.getHp()).toBe(40);
+    expect(p.isGranBestActive()).toBe(true);
+
+    p.heal(5); // hp 45 → 45% > 40%: bonus OFF
+    expect(p.getHp()).toBe(45);
+    expect(p.isGranBestActive()).toBe(false);
+  });
+
+  it('measures the threshold against the rune-folded getMaxHp(), not raw maxHp', () => {
+    // Gran's Best grants +30% damage at ≤40% HP. "40% HP" is 40% of the
+    // player-visible bar, and the HUD bar + low-HP caption both fill against
+    // the rune-folded getMaxHp() (HazardZones/heal/regen clamp to it too).
+    // Measuring against the raw maxHp makes a max-HP rune push the threshold
+    // lower in absolute HP than the bar shows, so the comeback bonus fires
+    // later than designed. Sibling of the addMaxHp / clootie / resume fixes.
+    const p = makePlayer({ maxHp: 100 });
+    p.setGranBestEnabled(true);
+    const bag = createRuneEffectBag();
+    bag.hpMaxMult = 1.5; // folded cap = round(100 * 1.5) = 150; 40% = 60 HP
+    p.setRuneBagAccessor(() => bag);
+    p.heal(1000); // hp = 150 (the folded cap)
+    expect(p.getMaxHp()).toBe(150);
+
+    // hp 55 → 55/150 = 36.7% of the bar (≤40%): bonus ON.
+    // Raw-bar logic would read 55/100 = 55% (>40%) and wrongly miss it.
+    p.takeDamage(95);
+    expect(p.getHp()).toBe(55);
+    expect(p.isGranBestActive()).toBe(true);
+    const activeMul = p.getDamageMultiplier();
+
+    // hp 65 → 65/150 = 43.3% of the bar (>40%): bonus OFF.
+    p.heal(10);
+    expect(p.getHp()).toBe(65);
+    expect(p.isGranBestActive()).toBe(false);
+    const inactiveMul = p.getDamageMultiplier();
+
+    // The only difference between the two states is the +30% Gran's Best fold.
+    expect(activeMul).toBeCloseTo(inactiveMul * 1.3);
+  });
+});
+
 describe('Player.tickRegen', () => {
   it('heals 1 HP after accumulating 1.0 from regen rate', () => {
     const p = makePlayer({ maxHp: 100 });
