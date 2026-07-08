@@ -1,7 +1,7 @@
 /**
  * Sporran Deck — card pool (DESIGN_IDEAS §1, Phase 0 + 1 + 1.5 + 2 + 3).
  *
- * Phase 0–1.5: 12 base cards (5 curses + 4 boons + 3 quirks). Curse
+ * Phase 0–1.5: 12 original base cards (5 curses + 4 boons + 3 quirks). Curse
  * cards delegate to `CURSES[i].apply(m)` so the curse-balance singularity
  * stays — no reimplementation. The CurseScene remains the single-curse
  * path for players who don't opt into Sporran. Boon and quirk cards
@@ -11,18 +11,19 @@
  *
  * Phase 2: chronicle persistence + replay v4 (no card additions).
  *
- * Phase 3 (this file): pool grows 12 → 18 with three gated families —
+ * Current pool layers Hearth-register comforts onto the original 12,
+ * then keeps three gated families —
  * - 2 deed-gated rares (`rare_*`) — past-victories or cursed-runs threshold
- * - 2 seasonal-date-gated (`seasonal_*`) — only drawable while a
+ * - seasonal-date-gated (`seasonal_*`) — only drawable while a
  *   matching SeasonalEvent window is open
  * - 2 variant-keyed (`variant_*`) — only drawable when the matching
  *   variant is selected
  *
  * Gates evaluate via `filterEligibleSporranCards(pool, ctx)` from
- * `systems/sporranDeck.ts`. The 12 base cards stay un-gated; the draw
- * always sees them. The 6 Phase 3 cards conditionally appear, so a
- * fresh-save player at default variant gets the original 12-card pool;
- * a Witch's-Hare player on Burns Night sees up to 18.
+ * `systems/sporranDeck.ts`. The 15 ungated cards stay available; the
+ * gated cards conditionally appear, so a fresh-save player at default
+ * variant gets the common 15-card pool; a Witch's-Hare player on Burns
+ * Night sees the matching earned extras too.
  */
 
 import type { SporranCard } from '../systems/sporranDeck';
@@ -154,6 +155,47 @@ const QUIRK_CARDS: readonly SporranCard[] = [
 ];
 
 /**
+ * Hearth-register cards — ungated everyday comforts that read warmer
+ * than the deed / seasonal / variant cards. Small mixed profiles keep
+ * them in the common draft without crowding out curse stakes.
+ */
+const HEARTH_CARDS: readonly SporranCard[] = [
+  {
+    id: 'hearth_kettle_on',
+    kind: 'boon',
+    nameKey: 'sporran.hearth.kettle_on.name',
+    descKey: 'sporran.hearth.kettle_on.desc',
+    // A cuppa before the bell: modest immediate safety, no quirk cost.
+    apply: () => ({ extraStartingHpHeal: 18, extraDamageMultiplier: 0 }),
+  },
+  {
+    id: 'hearth_grans_shawl',
+    kind: 'quirk',
+    nameKey: 'sporran.hearth.grans_shawl.name',
+    descKey: 'sporran.hearth.grans_shawl.desc',
+    apply: (m) => {
+      // Wrapped up warm: hits land softer, but the feet are less eager.
+      m.damageTakenMult *= 0.93;
+      m.moveSpeedMult *= 0.96;
+      return { extraStartingHpHeal: 0, extraDamageMultiplier: 0 };
+    },
+  },
+  {
+    id: 'hearth_banked_ember',
+    kind: 'quirk',
+    nameKey: 'sporran.hearth.banked_ember.name',
+    descKey: 'sporran.hearth.banked_ember.desc',
+    apply: (m) => {
+      // Keep the fire ready: faster weapon rhythm, paid for with a
+      // smaller starting heart pool.
+      m.weaponCooldownMult *= 0.95;
+      m.startHpRatio *= 0.94;
+      return { extraStartingHpHeal: 0, extraDamageMultiplier: 0 };
+    },
+  },
+];
+
+/**
  * Phase 3 — 2 deed-gated rares. Both unlock from lifetime stats already
  * tracked on `VariantProgressSnapshot` (no new save fields). `rare_*`
  * naming sister to the existing `curse_*` / `boon_*` / `quirk_*` so the
@@ -251,6 +293,20 @@ const SEASONAL_CARDS: readonly SporranCard[] = [
       return { extraStartingHpHeal: 0, extraDamageMultiplier: 0.12 };
     },
   },
+  {
+    id: 'seasonal_st_andrews_saltire',
+    kind: 'boon',
+    nameKey: 'sporran.seasonal.st_andrews_saltire.name',
+    descKey: 'sporran.seasonal.st_andrews_saltire.desc',
+    eligibility: { type: 'seasonal', eventKey: 'st_andrews' },
+    apply: (m) => {
+      // A saltire ribbon from the winter market: just enough lift to
+      // steady the hooves and soften the first scrape. St Andrew's only.
+      m.moveSpeedMult *= 1.04;
+      m.damageTakenMult *= 0.98;
+      return { extraStartingHpHeal: 0, extraDamageMultiplier: 0 };
+    },
+  },
 ];
 
 /**
@@ -315,10 +371,10 @@ const VARIANT_CARDS: readonly SporranCard[] = [
 ];
 
 /**
- * Full pool — 22 cards across four families:
- * - 12 base (Phase 0–1.5: 5 curses + 4 boons + 3 quirks)
+ * Full pool — 26 cards across five families:
+ * - 15 base (Phase 0–1.5: 5 curses + 4 boons + 3 quirks; Hearth: 3)
  * - 2 deed-gated rares (Phase 3)
- * - 4 seasonal-gated (Phase 3: burns_dram, samhain_lantern; Phase 4: hogmanay_coal, beltane_spark)
+ * - 5 seasonal-gated (Phase 3: burns_dram, samhain_lantern; Phase 4: hogmanay_coal, beltane_spark; St Andrew's follow-up: st_andrews_saltire)
  * - 4 variant-keyed (Phase 3: cailleach_frost, glaswegian_buckie; Phase 4: witch_hare_familiar, selkie_sealskin)
  *
  * Order is stable for test readability; `drawSporran` shuffles a copy
@@ -331,6 +387,7 @@ export const ALL_SPORRAN_CARDS: readonly SporranCard[] = [
   ...CURSE_CARDS,
   ...BOON_CARDS,
   ...QUIRK_CARDS,
+  ...HEARTH_CARDS,
   ...RARE_DEED_CARDS,
   ...SEASONAL_CARDS,
   ...VARIANT_CARDS,

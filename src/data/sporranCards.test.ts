@@ -1,14 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
 import { ALL_SPORRAN_CARDS, SPORRAN_CARD_IDS } from './sporranCards';
 import { defaultModifiers } from '../core/RunModifiers';
+import { DEFAULT_LOCALE, ensureLocaleReady, setLocale, t } from '../core/i18n';
+
+afterEach(() => setLocale(DEFAULT_LOCALE));
 
 // ---------------------------------------------------------------------------
 // Pool integrity
 // ---------------------------------------------------------------------------
 
 describe('ALL_SPORRAN_CARDS pool', () => {
-  it('has 22 cards (5 curse + 4 boon + 3 quirk + 2 rare + 4 seasonal + 4 variant)', () => {
-    expect(ALL_SPORRAN_CARDS).toHaveLength(22);
+  it('has 26 cards (5 curse + 4 boon + 3 quirk + 3 hearth + 2 rare + 5 seasonal + 4 variant)', () => {
+    expect(ALL_SPORRAN_CARDS).toHaveLength(26);
   });
 
   it('has no duplicate IDs', () => {
@@ -20,6 +23,19 @@ describe('ALL_SPORRAN_CARDS pool', () => {
     for (const card of ALL_SPORRAN_CARDS) {
       expect(typeof card.nameKey).toBe('string');
       expect(typeof card.descKey).toBe('string');
+    }
+  });
+
+  it('resolves every card name and description in English and Scots', async () => {
+    for (const locale of ['en', 'scs'] as const) {
+      await ensureLocaleReady(locale);
+      setLocale(locale);
+      for (const card of ALL_SPORRAN_CARDS) {
+        const name = t(card.nameKey);
+        const desc = t(card.descKey);
+        expect(name, `${locale} ${card.id} name`).not.toBe(card.nameKey);
+        expect(desc, `${locale} ${card.id} desc`).not.toBe(card.descKey);
+      }
     }
   });
 
@@ -123,6 +139,45 @@ describe('boon_silver apply', () => {
     const m = defaultModifiers();
     card.apply(m);
     expect(m.goldMult).toBeCloseTo(1.10);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Hearth-register card apply effects
+// ---------------------------------------------------------------------------
+
+describe('hearth_kettle_on apply', () => {
+  it('heals 18 starting HP with no damage multiplier or bag mutation', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'hearth_kettle_on')!;
+    const m = defaultModifiers();
+    const result = card.apply(m);
+    expect(result.extraStartingHpHeal).toBe(18);
+    expect(result.extraDamageMultiplier).toBe(0);
+    expect(m).toEqual(defaultModifiers());
+  });
+});
+
+describe('hearth_grans_shawl apply', () => {
+  it('reduces damageTakenMult and moveSpeedMult', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'hearth_grans_shawl')!;
+    const m = defaultModifiers();
+    const result = card.apply(m);
+    expect(m.damageTakenMult).toBeCloseTo(0.93);
+    expect(m.moveSpeedMult).toBeCloseTo(0.96);
+    expect(result.extraStartingHpHeal).toBe(0);
+    expect(result.extraDamageMultiplier).toBe(0);
+  });
+});
+
+describe('hearth_banked_ember apply', () => {
+  it('reduces weaponCooldownMult and startHpRatio', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'hearth_banked_ember')!;
+    const m = defaultModifiers();
+    const result = card.apply(m);
+    expect(m.weaponCooldownMult).toBeCloseTo(0.95);
+    expect(m.startHpRatio).toBeCloseTo(0.94);
+    expect(result.extraStartingHpHeal).toBe(0);
+    expect(result.extraDamageMultiplier).toBe(0);
   });
 });
 
@@ -231,6 +286,18 @@ describe('seasonal_beltane_spark apply', () => {
     const result = card.apply(m);
     expect(result.extraDamageMultiplier).toBeCloseTo(0.12);
     expect(m.startHpRatio).toBeCloseTo(0.92);
+  });
+});
+
+describe('seasonal_st_andrews_saltire apply', () => {
+  it('speeds movement and softens damage taken during the St Andrew\'s window', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'seasonal_st_andrews_saltire')!;
+    const m = defaultModifiers();
+    const result = card.apply(m);
+    expect(m.moveSpeedMult).toBeCloseTo(1.04);
+    expect(m.damageTakenMult).toBeCloseTo(0.98);
+    expect(result.extraStartingHpHeal).toBe(0);
+    expect(result.extraDamageMultiplier).toBe(0);
   });
 });
 

@@ -133,7 +133,7 @@ export class SporranScene extends Phaser.Scene {
     // seasonal / variant gates can hide cards the context doesn't earn.
     const rng = createRNG(Date.now());
     const eligible = filterEligibleSporranCards(ALL_SPORRAN_CARDS, this.buildEligibilityContext());
-    this.drawnHand = drawSporran(rng, eligible, SPORRAN_DRAW_COUNT);
+    this.drawnHand = this.drawForcedOrRandomHand(rng, eligible);
 
     // Tile row
     const layout = sporranTileRowLayout(width);
@@ -426,10 +426,47 @@ export class SporranScene extends Phaser.Scene {
   }
 
   /**
+   * E2E/dev hook: specs can pin the visible draft without touching
+   * production save state. Forced ids still pass through eligibility, and
+   * the remaining hand is filled by the normal cosmetic shuffle.
+   */
+  private drawForcedOrRandomHand(rng: ReturnType<typeof createRNG>, eligible: readonly SporranCard[]): SporranCard[] {
+    const forcedIds = this.readForcedSporranDraftIds();
+    if (forcedIds.length === 0) return drawSporran(rng, eligible, SPORRAN_DRAW_COUNT);
+
+    const eligibleById = new Map(eligible.map((card) => [card.id, card]));
+    const forced: SporranCard[] = [];
+    const seen = new Set<string>();
+    for (const id of forcedIds) {
+      if (seen.has(id)) continue;
+      const card = eligibleById.get(id);
+      if (!card) continue;
+      forced.push(card);
+      seen.add(id);
+      if (forced.length >= SPORRAN_DRAW_COUNT) break;
+    }
+    const remaining = drawSporran(
+      rng,
+      eligible.filter((card) => !seen.has(card.id)),
+      SPORRAN_DRAW_COUNT - forced.length,
+    );
+    return [...forced, ...remaining];
+  }
+
+  private readForcedSporranDraftIds(): string[] {
+    const globalWithHook = globalThis as typeof globalThis & {
+      WHS_FORCE_SPORRAN_DRAFT_IDS?: unknown;
+    };
+    const forced = globalWithHook.WHS_FORCE_SPORRAN_DRAFT_IDS;
+    if (!Array.isArray(forced)) return [];
+    return forced.filter((id): id is string => typeof id === 'string');
+  }
+
+  /**
    * Phase 3 — assemble the eligibility context from save state +
    * settings + clock. Defensive: a corrupt save returns a default
    * context (DEFAULT_VARIANT_KEY, no events, empty progress) so the
-   * draft falls back to the un-gated 12-card pool rather than crashing
+   * draft falls back to the un-gated 15-card pool rather than crashing
    * the picker. Read-once per draft (no per-frame work).
    */
   private buildEligibilityContext(): SporranEligibilityContext {
@@ -487,6 +524,17 @@ export class SporranScene extends Phaser.Scene {
       )
       .setOrigin(0.5)
       .setScale(uiScale);
+
+    if (card.id.startsWith('hearth_')) {
+      // Hearth-register pocket comforts get a tiny ember badge so the
+      // draft reads as more than a kind-colour strip at a glance.
+      const badgeX = cx + w / 2 - Math.round(16 * uiScale);
+      const badgeY = cy - h / 2 + Math.round(36 * uiScale);
+      this.add.circle(badgeX, badgeY, Math.round(9 * uiScale), 0x5a2410, 0.95)
+        .setStrokeStyle(1.5, 0xf0c060, 0.9);
+      this.add.circle(badgeX, badgeY + Math.round(2 * uiScale), Math.max(2, 3 * uiScale), 0xf2a23a, 1);
+      this.add.circle(badgeX, badgeY - Math.round(2 * uiScale), Math.max(1.5, 2 * uiScale), 0xffdf7a, 0.9);
+    }
 
     // Card name — bold, centred, two-line wrap.
     this.add

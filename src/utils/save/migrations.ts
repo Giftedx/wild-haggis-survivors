@@ -22,7 +22,13 @@ import {
   type CompanionKey,
 } from '../../entities/companions/companionTypes';
 import { generateHaggisNameFromHash } from '../../data/haggisNames';
-import { isReplayBlobAny } from '../../replay/replayBlob';
+import {
+  deserializeReplay,
+  isReplayBlobAny,
+  type ReplayBlobAny,
+} from '../../replay/replayBlob';
+import { deserializeReplayV2 } from '../../replay/replayBlobV2';
+import { deserializeReplayV3 } from '../../replay/replayBlobV3';
 import {
   type VariantKey,
   type VariantProgressSnapshot,
@@ -751,6 +757,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
   const variantKey = typeof raw.variantKey === 'string' && raw.variantKey ? raw.variantKey : '';
   if (!variantKey) return null;
   const sporranPicks = coerceSporranPicks(raw.sporranPicks);
+  const replay = coerceReplayBlob(raw.replay);
   return {
     timestamp: coerceInteger(raw.timestamp, 0),
     timeSurvivedSec: coerceInteger(raw.timeSurvivedSec, 0),
@@ -773,7 +780,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
       : [],
     ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
     ...(raw.ironmoor === true ? { ironmoor: true } : {}),
-    ...(isReplayBlobAny(raw.replay) ? { replay: raw.replay } : {}),
+    ...(replay ? { replay } : {}),
     ...(typeof raw.seasonalEvent === 'string' && raw.seasonalEvent
       ? { seasonalEvent: raw.seasonalEvent }
       : {}),
@@ -781,6 +788,26 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     name: coerceRunHistoryName(raw),
     ...(sporranPicks ? { sporranPicks: sporranPicks.slice() } : {}),
   };
+}
+
+function coerceReplayBlob(value: unknown): ReplayBlobAny | null {
+  if (!isReplayBlobAny(value)) return null;
+  let raw: string;
+  try {
+    raw = JSON.stringify(value);
+  } catch {
+    return null;
+  }
+  switch (value.version) {
+    case 1:
+      return deserializeReplay(raw);
+    case 2:
+      return deserializeReplayV2(raw);
+    case 3:
+      return deserializeReplayV3(raw);
+    default:
+      return null;
+  }
 }
 
 /**

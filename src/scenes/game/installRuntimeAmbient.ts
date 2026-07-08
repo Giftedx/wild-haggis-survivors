@@ -128,6 +128,7 @@ export function installRuntimeAmbient(
     getXPSystem: opts.getXPSystem,
     getUpdateTickers: opts.getUpdateTickers,
     getSFXManager: opts.getSFXManager,
+    getRunRng: opts.getRunRng,
     getChestDurationBonusMs: opts.getChestDurationBonusMs,
     onCoinCollected: (amount) => {
       // R1 M3 T20b — sporran_of_holding grants +2 per gold pickup.

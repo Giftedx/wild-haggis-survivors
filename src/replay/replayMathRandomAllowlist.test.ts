@@ -87,7 +87,7 @@ const ALLOWLIST: AllowlistEntry[] = [
   },
   {
     path: 'scenes/game/PickupSpawner.ts',
-    reason: 'cosmetic placement (positions visual; trigger time gameplay) + golden-chest gold reward intentionally non-seeded — terminal currency, never re-enters the combat sim, and PickupSpawner has no runRng access (see inline comment at spawnGoldenChest)',
+    reason: 'cosmetic pickup tilt + collection-spectacle particles; stateful pickup positions/rewards draw from runRng via hook',
   },
   {
     path: 'scenes/game/FilmGrainOverlay.ts',
@@ -231,7 +231,7 @@ const ALLOWLIST: AllowlistEntry[] = [
   },
   {
     path: 'scenes/game/CairnStackingScheduler.ts',
-    reason: 'comment-only — explains gap jitter uses runRng; PickupSpawner placement is cosmetic',
+    reason: 'comment-only — explains gap jitter and spawned stone placement both stay on runRng',
   },
   {
     path: 'entities/companions/sheepdogCompanion.ts',

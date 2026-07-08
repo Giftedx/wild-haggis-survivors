@@ -48,12 +48,12 @@ describe('buildSporranPipsForChronicle', () => {
     const pips = buildSporranPipsForChronicle([
       'boon_whisky',
       'rare_taxman_grudge',
-      'seasonal_burns_dram',
+      'seasonal_st_andrews_saltire',
     ]);
     expect(pips.map((p) => p.nameKey)).toEqual([
       'sporran.boon.whisky.name',
       'sporran.rare.taxman_grudge.name',
-      'sporran.seasonal.burns_dram.name',
+      'sporran.seasonal.st_andrews_saltire.name',
     ]);
   });
 

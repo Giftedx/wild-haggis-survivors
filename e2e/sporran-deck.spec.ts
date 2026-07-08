@@ -9,7 +9,7 @@ import { expect, test } from './fixtures';
 const SAVE_VER = 9;
 type GameWin = { game?: { scene: {
   start(k: string): void; isActive(k: string): boolean; getScene(k: string): unknown;
-} } };
+} }; WHS_FORCE_SPORRAN_DRAFT_IDS?: string[] };
 
 test.describe('sporran deck pre-run picker (DESIGN_IDEAS §1)', () => {
   test('renders 7 tiles and confirm routes to Game', async ({ page }) => {
@@ -21,6 +21,9 @@ test.describe('sporran deck pre-run picker (DESIGN_IDEAS §1)', () => {
         localStorage.setItem('whs_meta_save', JSON.stringify({
           saveVersion: v, hasCompletedTutorial: true, hasSeenDriftTutorial: true,
         }));
+        (window as unknown as GameWin).WHS_FORCE_SPORRAN_DRAFT_IDS = [
+          'hearth_kettle_on', 'hearth_grans_shawl', 'hearth_banked_ember',
+        ];
       } catch { /* ignore */ }
     }, SAVE_VER);
 
@@ -54,6 +57,11 @@ test.describe('sporran deck pre-run picker (DESIGN_IDEAS §1)', () => {
     });
     expect(tiles.hand, 'drawnHand should hold 7 cards').toBe(7);
     expect(tiles.tiles, 'tileEntries should hold 7 picker tiles').toBe(7);
+
+    const focusLayer = page.locator('[data-whs-dom-focus-layer="whs-sporran-focus-layer"]');
+    await expect(focusLayer.getByRole('button', { name: /Kettle's On/ })).toBeAttached();
+    await expect(focusLayer.getByRole('button', { name: /Gran's Shawl/ })).toBeAttached();
+    await expect(focusLayer.getByRole('button', { name: /Banked Ember/ })).toBeAttached();
 
     // Digit 1/2/3 pick first three tiles; Enter at full picks routes to Game.
     // Hold each press across a Phaser frame — `press()` can fire keydown→

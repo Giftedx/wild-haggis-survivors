@@ -100,6 +100,10 @@ test.describe('SettingsScene DOM focus mirror', () => {
   test('surfaces settings persistence failures while staying on the settings screen', async ({ page }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
+    const warnings: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'warning') warnings.push(msg.text());
+    });
 
     await page.addInitScript(() => {
       try {
@@ -168,6 +172,8 @@ test.describe('SettingsScene DOM focus mirror', () => {
     }, null, { timeout: 5_000 });
 
     expect(await bannerText.jsonValue()).toContain('settings');
+    expect(warnings.some((line) => line.includes('[save] persistence failure (settings): quota full'))).toBe(true);
+    await expect(layer).toBeAttached();
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });
 });

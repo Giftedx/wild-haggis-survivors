@@ -20,6 +20,7 @@ import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { XPSystem } from '../../systems/XPSystem';
 import type { UpdateTickers, TickerHandle } from '../../utils/UpdateTickers';
 import type { SFXManager } from '../../systems/audio/SFXManager';
+import type { RNG } from '../../utils/rng';
 import { t } from '../../core/i18n';
 import { audio } from '../../systems/AudioSystem';
 import { pickNearbyPosition } from './nearbySpawn';
@@ -36,6 +37,7 @@ export interface PickupSpawnerHooks {
   getXPSystem(): XPSystem;
   getUpdateTickers(): UpdateTickers;
   getSFXManager(): SFXManager;
+  getRunRng(): RNG;
   getChestDurationBonusMs(): number;
   onCoinCollected(amount: number): void;
   trackChest(sprite: Phaser.GameObjects.Sprite, golden: boolean): void;
@@ -89,6 +91,14 @@ export class PickupSpawner {
     private readonly hooks: PickupSpawnerHooks,
   ) {}
 
+  private runRand(): number {
+    return this.hooks.getRunRng().next();
+  }
+
+  private runInt(min: number, max: number): number {
+    return this.hooks.getRunRng().int(min, max);
+  }
+
   spawnTreasure(): void {
     const scene = this.scene;
     const player = this.hooks.getPlayer();
@@ -98,7 +108,7 @@ export class PickupSpawner {
       playerY: player.y,
       worldWidth: GAME.WORLD_WIDTH,
       worldHeight: GAME.WORLD_HEIGHT,
-      rand: Math.random,
+      rand: () => this.runRand(),
     });
 
     this.hooks.getJuice().showToast(t('ui.game.treasure_nearby'), TOAST_COLORS.reward);
@@ -136,8 +146,8 @@ export class PickupSpawner {
       player.heal(Math.ceil(player.getMaxHp() * 0.25));
       for (let i = 0; i < 8; i++) {
         this.hooks.getXPSystem().spawnGem(
-          x + Phaser.Math.Between(-20, 20),
-          y + Phaser.Math.Between(-20, 20),
+          x + this.runInt(-20, 20),
+          y + this.runInt(-20, 20),
           3,
         );
       }
@@ -253,7 +263,7 @@ export class PickupSpawner {
       playerY: player.y,
       worldWidth: GAME.WORLD_WIDTH,
       worldHeight: GAME.WORLD_HEIGHT,
-      rand: Math.random,
+      rand: () => this.runRand(),
     });
 
     this.hooks.getJuice().showToast(t('ui.game.golden_nearby'), TOAST_COLORS.reward);
@@ -275,12 +285,10 @@ export class PickupSpawner {
       if (collected) return;
       collected = true;
       despawnHandle?.cancel();
-      // Gold reward is intentionally non-seeded. Gold is terminal currency —
-      // it never re-enters the combat sim, so this variance cannot diverge a
-      // replayed fight. PickupSpawner is a deliberate non-seeded zone (scene is
-      // Phaser.Scene, no runRng access); seed this only if shared-seed gold-
-      // total parity is ever required. See replayMathRandomAllowlist.test.ts.
-      const goldReward = Phaser.Math.Between(5, 15);
+      // Gold reward is run-seeded because it is persisted run outcome state.
+      // Cosmetic chest spray below stays on Math.random/Phaser helpers per the
+      // allowlist split.
+      const goldReward = this.runInt(5, 15);
       this.hooks.onCoinCollected(goldReward);
       this.hooks.getJuice().showToast(t('ui.game.golden_collected', { gold: goldReward }), TOAST_COLORS.reward);
       this.hooks.getJuice().flashWhite(150);
@@ -618,7 +626,7 @@ export class PickupSpawner {
       playerY: player.y,
       worldWidth: GAME.WORLD_WIDTH,
       worldHeight: GAME.WORLD_HEIGHT,
-      rand: Math.random,
+      rand: () => this.runRand(),
     });
 
     this.hooks.getJuice().showToast(t('ui.game.cairn_stone_nearby'), '#a8b4b8');
@@ -709,7 +717,7 @@ export class PickupSpawner {
       playerY: player.y,
       worldWidth: GAME.WORLD_WIDTH,
       worldHeight: GAME.WORLD_HEIGHT,
-      rand: Math.random,
+      rand: () => this.runRand(),
     });
 
     this.hooks.getJuice().showToast(t('ui.game.burns_platter_nearby'), '#ffcc44');

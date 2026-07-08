@@ -20,6 +20,7 @@
     "flash-budget": "node scripts/check-flash-budget.mjs",
     "budget": "node scripts/check-bundle-budget.mjs",
     "loc-report": "node scripts/report-loc.mjs",
+    "mechanic:e2e-inventory": "node scripts/report-mechanic-e2e-coverage.mjs",
     "palette": "node scripts/check-palette-drift.mjs",
     "ci": "npm run lint && npm test && npm run build && npm run budget && npm run flash-budget && npm run loc-report",
     "test:e2e": "playwright test",

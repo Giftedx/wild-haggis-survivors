@@ -74,6 +74,21 @@ export const sporran = {
       desc: 'Runs hot. Bigger bite — but the moor reads ye hot back.',
     },
   },
+  /** Hearth-register cards — kitchen-table warmth with small trade-offs. */
+  hearth: {
+    kettle_on: {
+      name: 'Kettle\'s On',
+      desc: 'A cup by the fire afore the bell. Starts ye steadier — +18 HP.',
+    },
+    grans_shawl: {
+      name: 'Gran\'s Shawl',
+      desc: 'Cooried in wool. Hits land softer, but yir hooves take a minute tae wake.',
+    },
+    banked_ember: {
+      name: 'Banked Ember',
+      desc: 'A coal kept glowing. Weapons fire quicker; ye start with a smaller heart.',
+    },
+  },
   /**
    * Phase 3 — deed-gated rares. Edge register: scars from past runs,
    * not first-footer warmth. Only drawable when the lifetime stat
@@ -109,6 +124,10 @@ export const sporran = {
     beltane_spark: {
       name: 'Beltane Spark',
       desc: 'The fire leaps in ye. +12% damage; the crossing asks less heart. Beltane only.',
+    },
+    st_andrews_saltire: {
+      name: 'Saltire Ribbon',
+      desc: 'A blue-white favour from the winter market. Quicker hooves, softer scrapes. St Andrew\'s only.',
     },
   },
   /**

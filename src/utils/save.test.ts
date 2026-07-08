@@ -695,6 +695,73 @@ describe('save schema v5 → v6 (T1 Phase 3 ReplayBlobAny widening)', () => {
     );
     expect(result.save.runHistory[0].replay).toEqual(replayBlobV2);
   });
+
+  it('coerces v3 replay optional metadata during save load while preserving run-shape fields', () => {
+    const composedStats = {
+      speed: 190,
+      maxHp: 120,
+      driftDegrees: 8,
+      pickupRadius: 115,
+      damagePctBonus: 0.15,
+      hpRegen: 0.5,
+      critBonus: 0.1,
+      cooldownReduction: 0.2,
+      xpGainBonus: 0.25,
+      armorBonus: 2,
+      dashCooldownReduction: 0.05,
+    };
+    const v3Replay = {
+      version: 3 as const,
+      build: 'test-build',
+      seed: 0xC0FFEE,
+      variantKey: 'moor_runner',
+      frameCount: 1,
+      frames: [{ dtMs: 16, dx: 0, dy: 1, dash: false, menu: false }],
+      curseKey: 'heavy_legs',
+      routes: [
+        { slot: 'A', routeKey: 'round_the_loch', atGameTimeSec: 305, defaultedBySetting: false },
+        { slot: 'Z', routeKey: 'round_the_loch', atGameTimeSec: 999, defaultedBySetting: false },
+        { slot: 'B', routeKey: 'not-a-route', atGameTimeSec: 999, defaultedBySetting: false },
+      ],
+      composedStats,
+      sporranPicks: ['boon_silver', 'not_a_card', '', 'curse_heavy_legs'],
+    };
+
+    const migrated = migrateSave({
+      ...createDefaultSave(),
+      runHistory: [{
+        timestamp: 1700000000000,
+        timeSurvivedSec: 300,
+        enemiesKilled: 100,
+        level: 6,
+        bossKills: 2,
+        goldEarned: 35,
+        bestCombo: 14,
+        variantKey: 'moor_runner',
+        isVictory: false,
+        weaponKeys: ['thistle_shot'],
+        runSeed: 0xC0FFEE,
+        routes: [],
+        replay: v3Replay,
+        sporranPicks: ['boon_silver', 'not_a_card', 'curse_heavy_legs'],
+      }],
+    });
+
+    const entry = migrated.runHistory[0];
+    expect(entry.runSeed).toBe(0xC0FFEE);
+    expect(entry.sporranPicks).toEqual(['boon_silver', 'curse_heavy_legs']);
+    expect(entry.replay).toMatchObject({
+      version: 3,
+      seed: 0xC0FFEE,
+      variantKey: 'moor_runner',
+      curseKey: 'heavy_legs',
+      composedStats,
+      routes: [
+        { slot: 'A', routeKey: 'round_the_loch', atGameTimeSec: 305, defaultedBySetting: false },
+      ],
+      sporranPicks: ['boon_silver', 'curse_heavy_legs'],
+    });
+  });
 });
 
 describe('save schema v6 → v7 (B1 banter tracking)', () => {

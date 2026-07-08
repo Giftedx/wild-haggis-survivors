@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultModifiers } from '../core/RunModifiers';
 import { ALL_SPORRAN_CARDS } from '../data/sporranCards';
 import { DEFAULT_VARIANT_KEY } from '../data/variants';
+import { getActiveSeasonalEventKey } from './SeasonalEventManager';
 import { createRNG } from '../utils/rng';
 import {
   SPORRAN_DRAW_COUNT,
@@ -159,19 +160,39 @@ describe('applySporranPicks', () => {
     expect(m.damageTakenMult).toBeCloseTo(1.05, 5);
     expect(m.goldMult).toBeCloseTo(1.30 * 1.10, 5);
   });
+
+  it('applies the three Hearth-register cards with distinct boon and cost profiles', () => {
+    const m = defaultModifiers();
+    const result = applySporranPicks(
+      [pick('hearth_kettle_on'), pick('hearth_grans_shawl'), pick('hearth_banked_ember')],
+      m,
+    );
+    expect(result.appliedIds).toEqual([
+      'hearth_kettle_on',
+      'hearth_grans_shawl',
+      'hearth_banked_ember',
+    ]);
+    expect(result.extraStartingHpHeal).toBe(18);
+    expect(result.extraDamageMultiplier).toBe(0);
+    expect(m.damageTakenMult).toBeCloseTo(0.93, 5);
+    expect(m.moveSpeedMult).toBeCloseTo(0.96, 5);
+    expect(m.weaponCooldownMult).toBeCloseTo(0.95, 5);
+    expect(m.startHpRatio).toBeCloseTo(0.94, 5);
+  });
 });
 
 describe('ALL_SPORRAN_CARDS pool integrity', () => {
-  it('contains exactly 22 cards (Phase 4 — 18 prior + 2 seasonal + 2 variant)', () => {
-    expect(ALL_SPORRAN_CARDS).toHaveLength(22);
+  it('contains exactly 26 cards (Phase 5 — 22 prior + 3 Hearth-register + 1 seasonal St Andrew\'s card)', () => {
+    expect(ALL_SPORRAN_CARDS).toHaveLength(26);
   });
 
-  it('splits as 5 curses + 6 boons + 11 quirks across the full pool', () => {
+  it('splits as 5 curses + 8 boons + 13 quirks across the full pool', () => {
     const counts = { curse: 0, boon: 0, quirk: 0 };
     for (const card of ALL_SPORRAN_CARDS) counts[card.kind]++;
-    // base 5+4+3 + Phase 3 (2 boons in seasonal + 4 quirks in rare/variant)
-    // + Phase 4 (4 more quirks: 2 seasonal + 2 variant) = 5/6/11
-    expect(counts).toEqual({ curse: 5, boon: 6, quirk: 11 });
+    // base 5+4+3 + Hearth (1 boon + 2 quirks) + Phase 3 (2 boons in
+    // seasonal + 4 quirks in rare/variant) + Phase 4 (4 more quirks:
+    // 2 seasonal + 2 variant) + St Andrew's follow-up (1 boon) = 5/8/13
+    expect(counts).toEqual({ curse: 5, boon: 8, quirk: 13 });
   });
 
   it('every card has a unique non-empty id matching ^[a-z_]+$', () => {
@@ -200,12 +221,13 @@ describe('ALL_SPORRAN_CARDS pool integrity', () => {
     expect(SPORRAN_DRAW_COUNT).toBeLessThanOrEqual(ALL_SPORRAN_CARDS.length);
   });
 
-  it('the 12 base cards remain un-gated (no eligibility field)', () => {
+  it('the 15 base + Hearth cards remain un-gated (no eligibility field)', () => {
     const baseIds = new Set([
       'curse_heavy_legs', 'curse_thin_hide', 'curse_restless_spirits',
       'curse_empty_larder', 'curse_windless_pipes',
       'boon_shortbread', 'boon_whisky', 'boon_coal', 'boon_silver',
       'quirk_light_step', 'quirk_hardy_breath', 'quirk_haggis_blooded',
+      'hearth_kettle_on', 'hearth_grans_shawl', 'hearth_banked_ember',
     ]);
     for (const card of ALL_SPORRAN_CARDS) {
       if (baseIds.has(card.id)) {
@@ -214,11 +236,11 @@ describe('ALL_SPORRAN_CARDS pool integrity', () => {
     }
   });
 
-  it('the 10 gated cards each carry an explicit eligibility gate', () => {
+  it('the 11 gated cards each carry an explicit eligibility gate', () => {
     const gatedIds = new Set([
       'rare_taxman_grudge', 'rare_witchs_thread',
       'seasonal_burns_dram', 'seasonal_samhain_lantern',
-      'seasonal_hogmanay_coal', 'seasonal_beltane_spark',
+      'seasonal_hogmanay_coal', 'seasonal_beltane_spark', 'seasonal_st_andrews_saltire',
       'variant_cailleach_frost', 'variant_glaswegian_buckie',
       'variant_witch_hare_familiar', 'variant_selkie_sealskin',
     ]);
@@ -276,6 +298,26 @@ describe('isSporranCardEligible — Phase 3 gating', () => {
     expect(isSporranCardEligible(card, ctxOn)).toBe(true);
   });
 
+  it('date-forces the St Andrew\'s card in-window and falls back out-of-window', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'seasonal_st_andrews_saltire')!;
+    const inWindowCtx: SporranEligibilityContext = {
+      ...baseContext,
+      activeSeasonalEventKey: getActiveSeasonalEventKey(new Date(2027, 10, 30)),
+    };
+    const outWindowCtx: SporranEligibilityContext = {
+      ...baseContext,
+      activeSeasonalEventKey: getActiveSeasonalEventKey(new Date(2027, 11, 4)),
+    };
+    expect(inWindowCtx.activeSeasonalEventKey).toBe('st_andrews');
+    expect(outWindowCtx.activeSeasonalEventKey).toBeNull();
+    expect(isSporranCardEligible(card, inWindowCtx)).toBe(true);
+    expect(isSporranCardEligible(card, outWindowCtx)).toBe(false);
+
+    const fallbackPool = filterEligibleSporranCards(ALL_SPORRAN_CARDS, outWindowCtx);
+    expect(fallbackPool.map((c) => c.id)).not.toContain('seasonal_st_andrews_saltire');
+    expect(drawSporran(createRNG(31), fallbackPool)).toHaveLength(SPORRAN_DRAW_COUNT);
+  });
+
   it('a variant gate fails on the wrong variant and passes on the matching one', () => {
     const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'variant_cailleach_frost')!;
     expect(isSporranCardEligible(card, baseContext)).toBe(false);
@@ -293,9 +335,9 @@ describe('isSporranCardEligible — Phase 3 gating', () => {
 });
 
 describe('filterEligibleSporranCards — Phase 3 pool filter', () => {
-  it('default-variant fresh-save context yields the 12 un-gated cards', () => {
+  it('default-variant fresh-save context yields the 15 un-gated cards', () => {
     const eligible = filterEligibleSporranCards(ALL_SPORRAN_CARDS, baseContext);
-    expect(eligible).toHaveLength(12);
+    expect(eligible).toHaveLength(15);
     expect(eligible.every((c) => !c.eligibility)).toBe(true);
   });
 
@@ -325,8 +367,8 @@ describe('filterEligibleSporranCards — Phase 3 pool filter', () => {
     expect(eligibleIds.has('seasonal_samhain_lantern')).toBe(false);
     expect(eligibleIds.has('variant_cailleach_frost')).toBe(true);
     expect(eligibleIds.has('variant_glaswegian_buckie')).toBe(false);
-    // 12 base + 2 rare + 1 seasonal + 1 variant = 16
-    expect(eligible).toHaveLength(16);
+    // 15 base/Hearth + 2 rare + 1 seasonal + 1 variant = 19
+    expect(eligible).toHaveLength(19);
   });
 
   it('does not mutate the source pool', () => {

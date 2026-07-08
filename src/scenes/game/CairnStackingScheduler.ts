@@ -26,12 +26,9 @@
  * Replay determinism: the gap jitter draws from `getRunRng()` (seeded
  * `RNG`, not `Math.random`), matching the contract spelled out in
  * `CLAUDE.md` "New-system safety pattern checklist (b)" and
- * `feedback_test_runner_vs_tsc.md`. The spawn position itself goes
- * through `pickNearbyPosition` inside `PickupSpawner.spawnCairnStone`,
- * which uses `Math.random` — that's fine for visual placement (no
- * downstream gameplay state branches off the position). If a future
- * change makes the position load-bearing for replay state, the call
- * site must be threaded through `runRng` too.
+ * `feedback_test_runner_vs_tsc.md`. The spawned pickup position is also
+ * run-seeded inside `PickupSpawner.spawnCairnStone`, because whether a
+ * replayed movement path reaches the stone is gameplay state.
  */
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';

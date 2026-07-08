@@ -58,6 +58,20 @@ export const sporran = {
       desc: 'Rins hot. Bigger bite — but tha moor reads ye hot back.',
     },
   },
+  hearth: {
+    kettle_on: {
+      name: 'Kettle\'s On',
+      desc: 'A cup by tha fire afore tha bell. Stairts ye steadier — +18 HP.',
+    },
+    grans_shawl: {
+      name: 'Gran\'s Shawl',
+      desc: 'Cooried in oo. Hits land safter, but yer hooves tak a meenit tae wake.',
+    },
+    banked_ember: {
+      name: 'Banked Ember',
+      desc: 'A coal kept lowin. Weapons fire quicker; ye stairt wi a smaller hert.',
+    },
+  },
   rare: {
     taxman_grudge: {
       name: 'Cairried Grudge',
@@ -84,6 +98,10 @@ export const sporran = {
     beltane_spark: {
       name: 'Beltane Spark',
       desc: 'Tha fire lowps in ye. +12% skaith; tha crossin asks less hert. Beltane anely.',
+    },
+    st_andrews_saltire: {
+      name: 'Saltire Ribbon',
+      desc: 'A blue-white favour frae tha winter mercat. Quicker hooves, safter scrapes. St Andra\'s anely.',
     },
   },
   variant: {

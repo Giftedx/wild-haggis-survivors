@@ -3,6 +3,7 @@ import { applyRunSummary, createDefaultSave, migrateSave } from '../utils/save';
 import { ReplayInput } from './ReplayInput';
 import { ReplayRecorder } from './ReplayRecorder';
 import { deserializeReplay, serializeReplay, type ReplayBlob } from './replayBlob';
+import { deserializeReplayV3, serializeReplayV3 } from './replayBlobV3';
 
 /**
  * Integration: record a synthetic run's worth of input frames via
@@ -136,6 +137,57 @@ describe('replay recorder ↔ save v5 integration', () => {
       'boon_coal',
       'curse_heavy_legs',
     ]);
+  });
+
+  it('S1 Phase 2 — recorded Sporran replay metadata survives serialization with route shape intact', () => {
+    const composedStats = {
+      speed: 180,
+      maxHp: 110,
+      driftDegrees: 6,
+      pickupRadius: 105,
+      damagePctBonus: 0.1,
+      hpRegen: 0.2,
+      critBonus: 0.15,
+      cooldownReduction: 0.05,
+      xpGainBonus: 0.3,
+      armorBonus: 1,
+      dashCooldownReduction: 0.12,
+    };
+    const r = new ReplayRecorder({
+      ...META,
+      curseKey: 'heavy_legs',
+      composedStats,
+      sporranPicks: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+    });
+    r.pushRoute({
+      slot: 'A',
+      routeKey: 'round_the_loch',
+      atGameTimeSec: 305,
+      defaultedBySetting: false,
+    });
+    r.pushFrame({ dtMs: 16, dx: 1, dy: 0, dash: true, menu: false });
+
+    const blob = r.finalize();
+    if (blob.version !== 3) throw new Error(`expected v3 replay blob, got v${blob.version}`);
+    const round = deserializeReplayV3(serializeReplayV3(blob));
+
+    expect(round).toMatchObject({
+      version: 3,
+      seed: META.seed,
+      variantKey: META.variantKey,
+      curseKey: 'heavy_legs',
+      composedStats,
+      routes: [
+        {
+          slot: 'A',
+          routeKey: 'round_the_loch',
+          atGameTimeSec: 305,
+          defaultedBySetting: false,
+        },
+      ],
+      sporranPicks: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+    });
+    expect(round?.frames[0].dash).toBe(true);
   });
 
   it('recorder → ReplayInput round-trip preserves direction + edge sequence', () => {
