@@ -40,7 +40,10 @@ import { paginationState } from '../ui/pagination';
 import { createPaginationNav, type PaginationNavHandle } from '../ui/gamePagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
-import { buildSporranPipsForChronicle } from './chronicleSporranPips';
+import {
+  buildSporranPipsForChronicle,
+  formatSporranPicksForChronicle,
+} from './chronicleSporranPips';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { createBackButton } from './createBackButton';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
@@ -585,23 +588,26 @@ export class ChronicleScene extends Phaser.Scene {
       // S1 Phase 2 follow-up — sporran picks pip strip. Three small
       // kind-coloured circles (curse purple / boon green / quirk amber)
       // immediately left of the curse-chip slot, rendered only when the
-      // run went through SporranScene. Resolves stale ids defensively.
-      // Hover any pip → tooltip lists every pick by name (sister to
-      // the rerun glyph's pointerover/pointerout pattern below).
+      // run went through SporranScene. Removed card ids fall back to faded
+      // old-charm copy instead of leaking raw ids into the Chronicle.
+      // Hover any pip -> compact picked card names + effects.
+      const sporranSummary = formatSporranPicksForChronicle(entry.sporranPicks, t);
       const sporranPips = buildSporranPipsForChronicle(entry.sporranPicks);
-      if (sporranPips.length > 0) {
+      if (sporranPips.length > 0 && sporranSummary) {
         const stripCx = width - 270;
         const pipR = 4;
         const pipGap = 11;
-        const tooltipText = sporranPips
-          .map((pip) => (pip.nameKey ? t(pip.nameKey) : pip.cardId))
-          .join(' · ');
+        const tooltipText = sporranSummary.tooltipText;
+        const tooltipWrapW = Math.max(160, Math.min(320, width - 100)) / Math.max(1, uiScale);
         let pipTooltip: Phaser.GameObjects.Text | null = null;
         const showPipTooltip = () => {
           if (pipTooltip) return;
-          pipTooltip = this.add.text(stripCx + sporranPips.length * pipGap, y - 14, tooltipText, {
+          pipTooltip = this.add.text(width - 40, y - 18, tooltipText, {
             fontFamily: 'monospace', fontSize: '10px', color: COLORS_CSS.TEXT_SUBTITLE, fontStyle: 'italic',
-          }).setOrigin(0, 0.5).setScale(uiScale).setDepth(10);
+            backgroundColor: '#0f1828',
+            wordWrap: { width: tooltipWrapW },
+          }).setOrigin(1, 0.5).setScale(uiScale).setDepth(10).setName('chronicle-sporran-tooltip');
+          pipTooltip.setPadding(6, 4, 6, 4);
           this.runRowObjects.push(pipTooltip);
         };
         const hidePipTooltip = () => {
@@ -616,6 +622,7 @@ export class ChronicleScene extends Phaser.Scene {
             .circle(cx, y, pipR, pip.color, 0.95)
             .setStrokeStyle(1, 0x000000, 0.4)
             .setScale(uiScale)
+            .setName(`chronicle-sporran-pip-${entry.timestamp}-${idx}`)
             .setInteractive({ useHandCursor: false });
           dot.on('pointerover', showPipTooltip);
           dot.on('pointerout', hidePipTooltip);
@@ -724,7 +731,11 @@ export class ChronicleScene extends Phaser.Scene {
         this.runRowObjects.push(watch);
       }
 
-      this.chronicleRowNavHits.push({ rect: rowBg, label: mainLine, entry });
+      this.chronicleRowNavHits.push({
+        rect: rowBg,
+        label: sporranSummary ? `${mainLine} · ${sporranSummary.rowText}` : mainLine,
+        entry,
+      });
     });
 
     this.paginationNav.destroy();
@@ -896,4 +907,3 @@ function formatDevRelicHistogramSection(history: readonly RunHistoryEntry[]): st
   const heading = `\n\nRelic pick-rates — ${summary.runsWithAnyRelic}/${summary.sampleRuns} runs held a relic (dev only)`;
   return `${heading}\n${lines.join('\n')}`;
 }
-

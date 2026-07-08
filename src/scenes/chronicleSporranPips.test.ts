@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { buildSporranPipsForChronicle } from './chronicleSporranPips';
+import {
+  buildSporranPipsForChronicle,
+  formatSporranPicksForChronicle,
+} from './chronicleSporranPips';
 import { SPORRAN_KIND_ACCENT } from './sporranTileLayout';
 
 describe('buildSporranPipsForChronicle', () => {
@@ -57,13 +60,18 @@ describe('buildSporranPipsForChronicle', () => {
     ]);
   });
 
-  it('drops unknown ids silently (renamed / removed cards)', () => {
+  it('uses a fallback descriptor for renamed / removed card ids', () => {
     const pips = buildSporranPipsForChronicle([
       'boon_silver',
       'curse_obsolete_xyz',
       'boon_coal',
     ]);
-    expect(pips.map((p) => p.cardId)).toEqual(['boon_silver', 'boon_coal']);
+    expect(pips.map((p) => p.cardId)).toEqual(['boon_silver', 'curse_obsolete_xyz', 'boon_coal']);
+    expect(pips[1]).toMatchObject({
+      nameKey: 'sporran.chronicle.unknown_name',
+      effectKey: 'sporran.chronicle.unknown_effect',
+      isFallback: true,
+    });
   });
 
   it('drops non-string / empty entries (defensive against malformed save)', () => {
@@ -92,5 +100,42 @@ describe('buildSporranPipsForChronicle', () => {
     ]);
     const colours = new Set(pips.map((p) => p.color));
     expect(colours.size).toBe(3);
+  });
+});
+describe('formatSporranPicksForChronicle', () => {
+  const resolve = (key: string): string => {
+    const labels: Record<string, string> = {
+      'ui.chronicle.sporran_summary_prefix': 'Sporran',
+      'sporran.boon.silver.name': 'Silver Sixpence',
+      'sporran.boon.coal.name': "Lump o' Coal",
+      'sporran.chronicle.unknown_name': 'Old charm',
+      'sporran.chronicle.unknown_effect': 'ink faded',
+      'sporran.chronicle.effect.boon_silver': '+10% gold',
+      'sporran.chronicle.effect.boon_coal': 'softer hits',
+    };
+    return labels[key] ?? key;
+  };
+
+  it('returns compact picked card names and effects with removed-id fallback', () => {
+    const summary = formatSporranPicksForChronicle([
+      'boon_silver',
+      'removed_card_from_old_save',
+      'boon_coal',
+    ], resolve);
+
+    expect(summary).toEqual({
+      rowText: "Sporran: Silver Sixpence (+10% gold) · Old charm (ink faded) · Lump o' Coal (softer hits)",
+      tooltipText: [
+        'Sporran',
+        'Silver Sixpence — +10% gold',
+        'Old charm — ink faded',
+        "Lump o' Coal — softer hits",
+      ].join('\n'),
+    });
+  });
+
+  it('returns null when there are no picked cards to show', () => {
+    expect(formatSporranPicksForChronicle(undefined, resolve)).toBeNull();
+    expect(formatSporranPicksForChronicle([], resolve)).toBeNull();
   });
 });

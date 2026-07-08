@@ -240,6 +240,7 @@ export const ui = {
     run_row_defeat: '{time} · {kills} culls · L{level} · {variant}',
     run_daily_tag: '[DAILY]',
     run_curse_chip: '⚖ {curse}',
+    sporran_summary_prefix: 'Sporran',
     rerun_tooltip: 'rerun {seed}',
     rerun_tooltip_with_curse: 'rerun {seed} ☠ {curse}',
     run_act_reached: '↟ Act {act}',

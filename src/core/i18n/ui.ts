@@ -301,6 +301,8 @@ export const ui = {
     run_daily_tag: '[DAILY]',
     /** Badge rendered on a run row where the player bore a curse. */
     run_curse_chip: '⚖ {curse}',
+    /** Prefix for Sporran pick summaries on Chronicle run rows. */
+    sporran_summary_prefix: 'Sporran',
     /** Hover tooltip on the rerun-this-seed button. */
     rerun_tooltip: 'rerun {seed}',
     /** Same tooltip when the rerun will carry a curse forward. */

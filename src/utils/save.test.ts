@@ -749,7 +749,7 @@ describe('save schema v5 → v6 (T1 Phase 3 ReplayBlobAny widening)', () => {
 
     const entry = migrated.runHistory[0];
     expect(entry.runSeed).toBe(0xC0FFEE);
-    expect(entry.sporranPicks).toEqual(['boon_silver', 'curse_heavy_legs']);
+    expect(entry.sporranPicks).toEqual(['boon_silver', 'not_a_card', 'curse_heavy_legs']);
     expect(entry.replay).toMatchObject({
       version: 3,
       seed: 0xC0FFEE,
@@ -2508,7 +2508,7 @@ describe('save schema v18 → v19 (S1 Phase 2 — Sporran chronicle)', () => {
     expect(migrated.cairnBlessingsLifetime).toBe(0);
   });
 
-  it('coerces sporranPicks on history entries — drops unknown ids, omits empty', () => {
+  it('coerces sporranPicks on history entries — preserves unknown ids for Chronicle fallback, omits empty', () => {
     const migrated = migrateSave({
       schemaVersion: 19,
       runHistory: [
@@ -2552,9 +2552,9 @@ describe('save schema v18 → v19 (S1 Phase 2 — Sporran chronicle)', () => {
         },
       ],
     });
-    expect(migrated.runHistory[0].sporranPicks).toEqual(['boon_silver', 'curse_heavy_legs']);
-    // Fully-stale entry → field omitted, not stamped as [].
-    expect(migrated.runHistory[1].sporranPicks).toBeUndefined();
+    expect(migrated.runHistory[0].sporranPicks).toEqual(['boon_silver', 'not_a_card', 'curse_heavy_legs']);
+    // Fully-stale string IDs are preserved so Chronicle can render old-charm fallbacks.
+    expect(migrated.runHistory[1].sporranPicks).toEqual(['nope_a', 'nope_b']);
     // Pre-v19 entry (no field) → field omitted.
     expect(migrated.runHistory[2].sporranPicks).toBeUndefined();
   });

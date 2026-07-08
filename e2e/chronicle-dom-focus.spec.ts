@@ -196,4 +196,142 @@ test.describe('ChronicleScene DOM focus mirror', () => {
 
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });
+
+  for (const locale of ['en', 'scs'] as const) {
+    test(`seeded Sporran run history resolves compact summary at uiScale 1.4 (${locale})`, async ({ page }) => {
+      const pageErrors: string[] = [];
+      page.on('pageerror', (err) => { pageErrors.push(err.message); });
+      const timestamp = 1_700_123_456_000;
+
+      await page.addInitScript(({ metaSaveVersion, localeKey, ts }) => {
+        try {
+          localStorage.setItem('whs_game_settings', JSON.stringify({
+            settingsVersion: 1,
+            masterVolume: 1,
+            sfxVolume: 1,
+            musicVolume: 1,
+            screenShake: true,
+            damageNumbers: true,
+            reduceParticles: false,
+            uiScale: 1.4,
+            highContrastUi: false,
+            motionScale: 1,
+            captionsEnabled: false,
+            banterFrequency: 'normal',
+            telemetryOptIn: false,
+            skipActIntermissions: false,
+            ironmoorMode: false,
+            speedrunTimerVisible: false,
+            captureEnabled: false,
+            localeKey,
+          }));
+          localStorage.setItem('whs_save', JSON.stringify({
+            schemaVersion: 19,
+            gold: 0,
+            upgrades: {},
+            unlockedVariants: ['classic'],
+            selectedVariant: 'classic',
+            totalRuns: 1,
+            bestTime: 180,
+            bestKills: 12,
+            totalKills: 12,
+            totalGoldEarned: 0,
+            bestCombo: 3,
+            victories: 0,
+            bestEndlessSeconds: 0,
+            runHistory: [{
+              timestamp: ts,
+              timeSurvivedSec: 180,
+              enemiesKilled: 12,
+              level: 4,
+              bossKills: 0,
+              goldEarned: 6,
+              bestCombo: 3,
+              variantKey: 'classic',
+              isVictory: false,
+              weaponKeys: ['thistle_shot'],
+              sporranPicks: ['boon_silver', 'removed_card_from_old_save', 'curse_heavy_legs'],
+            }],
+            settings: { soundOn: true, musicOn: true },
+          }));
+          localStorage.setItem('whs_meta_save', JSON.stringify({
+            saveVersion: metaSaveVersion,
+            hasCompletedTutorial: true,
+            hasSeenDriftTutorial: true,
+          }));
+        } catch {
+          /* ignore */
+        }
+      }, { metaSaveVersion: CURRENT_META_SAVE_VERSION, localeKey: locale, ts: timestamp });
+
+      await page.goto('./');
+      const canvas = page.locator('canvas[role="application"]');
+      await expect(canvas).toBeVisible({ timeout: 60_000 });
+      await canvas.click({ position: { x: 8, y: 8 } });
+      await page.bringToFront();
+
+      const sceneStarted = await page.evaluate(async () => {
+        const g = (window as unknown as { game?: {
+          scene: {
+            start(k: string, data?: unknown): void;
+            isActive(k: string): boolean;
+          };
+        } }).game;
+        if (!g) return false;
+        g.scene.start('Chronicle', { returnTo: 'MainMenu' });
+        const deadline = Date.now() + 15_000;
+        while (Date.now() < deadline) {
+          if (g.scene.isActive('Chronicle')) return true;
+          await new Promise((r) => setTimeout(r, 50));
+        }
+        return false;
+      });
+      expect(sceneStarted, 'Chronicle scene failed to activate').toBe(true);
+
+      const layer = page.locator('[data-whs-dom-focus-layer="whs-chronicle-focus-layer"]');
+      await expect(layer).toBeAttached({ timeout: 5_000 });
+      const rowLabel = await layer.locator('button[data-focus-id^="chronicle-run-"]').first().getAttribute('aria-label');
+      expect(rowLabel, 'run row label includes resolved Sporran prefix').toContain('Sporran');
+      expect(rowLabel, 'run row label includes resolved known card name').toContain(
+        locale === 'scs' ? 'Siller Sixpence' : 'Silver Sixpence',
+      );
+      expect(rowLabel, 'run row label includes removed-card fallback').toContain(
+        locale === 'scs' ? 'Auld charm' : 'Old charm',
+      );
+      expect(rowLabel, 'run row label does not leak raw removed id').not.toContain('removed_card_from_old_save');
+
+      const tooltipBounds = await page.evaluate((ts) => {
+        const g = (window as unknown as { game?: {
+          scene: { getScene(k: string): unknown };
+          scale: { width: number; height: number };
+        } }).game;
+        const scene = g?.scene.getScene('Chronicle') as { children?: { getByName(n: string): unknown } } | undefined;
+        const pip = scene?.children?.getByName(`chronicle-sporran-pip-${ts}-0`) as { emit?: (event: string) => void } | undefined;
+        pip?.emit?.('pointerover');
+        const tip = scene?.children?.getByName('chronicle-sporran-tooltip') as {
+          getBounds?: () => { x: number; y: number; right: number; bottom: number; width: number; height: number };
+        } | undefined;
+        const b = tip?.getBounds?.();
+        return b
+          ? {
+            x: b.x,
+            y: b.y,
+            right: b.x + b.width,
+            bottom: b.y + b.height,
+            width: b.width,
+            height: b.height,
+            canvasWidth: g?.scale.width ?? 0,
+            canvasHeight: g?.scale.height ?? 0,
+          }
+          : null;
+      }, timestamp);
+      expect(tooltipBounds, 'Sporran tooltip should render on pip hover').not.toBeNull();
+      expect(tooltipBounds!.x, 'tooltip left bound').toBeGreaterThanOrEqual(0);
+      expect(tooltipBounds!.right, 'tooltip right bound').toBeLessThanOrEqual(tooltipBounds!.canvasWidth);
+      expect(tooltipBounds!.bottom, 'tooltip bottom bound').toBeLessThanOrEqual(tooltipBounds!.canvasHeight);
+      expect(tooltipBounds!.width, 'tooltip remains compact at uiScale 1.4').toBeLessThanOrEqual(360);
+
+      expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
+    });
+  }
 });

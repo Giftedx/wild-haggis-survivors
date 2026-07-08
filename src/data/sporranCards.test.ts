@@ -39,6 +39,19 @@ describe('ALL_SPORRAN_CARDS pool', () => {
     }
   });
 
+  it('resolves every Chronicle effect summary in English and Scots', async () => {
+    for (const locale of ['en', 'scs'] as const) {
+      await ensureLocaleReady(locale);
+      setLocale(locale);
+      expect(t('sporran.chronicle.unknown_name'), `${locale} unknown name`).not.toBe('sporran.chronicle.unknown_name');
+      expect(t('sporran.chronicle.unknown_effect'), `${locale} unknown effect`).not.toBe('sporran.chronicle.unknown_effect');
+      for (const card of ALL_SPORRAN_CARDS) {
+        const key = `sporran.chronicle.effect.${card.id}`;
+        expect(t(key), `${locale} ${card.id} chronicle effect`).not.toBe(key);
+      }
+    }
+  });
+
   it('every card has a valid kind', () => {
     const validKinds = new Set(['curse', 'boon', 'quirk']);
     for (const card of ALL_SPORRAN_CARDS) {

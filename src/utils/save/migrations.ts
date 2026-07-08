@@ -15,7 +15,6 @@
 import type { NodeOutcome } from '../../data/nodeTypes';
 import type { RoutePick } from '../../data/routes';
 import { RELIC_KEYS, type RelicKey } from '../../data/relics';
-import { SPORRAN_CARD_IDS } from '../../data/sporranCards';
 import { PERMANENT_UPGRADES } from '../../data/permanentUpgrades';
 import {
   COMPANION_KEYS_IN_ORDER,
@@ -304,8 +303,8 @@ function migrateV17ToV18(raw: SaveRecord): SaveRecord {
  * retroactive seed: pre-v19 runs didn't track picks, and reconstructing
  * from the embedded replay blob (when present) is brittle for runs that
  * never recorded one. The coercer in `coerceRunHistoryEntry` validates
- * IDs against `SPORRAN_CARD_IDS` so a renamed / removed card never
- * survives load; absent / malformed → field omitted.
+ * IDs as strings so a renamed / removed card can still be rendered by the
+ * Chronicle's old-charm fallback; absent / malformed → field omitted.
  */
 function migrateV18ToV19(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
@@ -811,11 +810,11 @@ function coerceReplayBlob(value: unknown): ReplayBlobAny | null {
 }
 
 /**
- * S1 Phase 2 — coerce + validate persisted Sporran pick IDs. Drops
- * non-string / empty / stale IDs (anything not in `SPORRAN_CARD_IDS`)
- * so a renamed or removed card from a future release doesn't poison
- * the Chronicle. Returns `null` on absent / empty / fully-invalid
- * input so the caller can omit the field entirely from the entry —
+ * S1 Phase 2 - coerce persisted Sporran pick IDs. Drops non-string /
+ * empty values, but preserves unknown string IDs so the Chronicle can
+ * render renamed/removed cards as faded old-charm fallbacks instead of
+ * silently erasing them from run history. Returns `null` on absent /
+ * empty / fully-invalid input so the caller can omit the field entirely -
  * keeps pre-v19 history rows lean and avoids stamping `[]` on every
  * legacy entry at migration time.
  */
@@ -824,7 +823,6 @@ function coerceSporranPicks(value: unknown): readonly string[] | null {
   const out: string[] = [];
   for (const raw of value) {
     if (typeof raw !== 'string' || raw.length === 0) continue;
-    if (!SPORRAN_CARD_IDS.has(raw)) continue;
     out.push(raw);
   }
   return out.length > 0 ? out : null;
