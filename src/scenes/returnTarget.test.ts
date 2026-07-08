@@ -15,5 +15,7 @@ describe('scene return target helpers', () => {
 
   it('creates Phaser scene data for preserving the current parent hub', () => {
     expect(returnTargetData('Croft')).toEqual({ returnTo: 'Croft' });
+    expect(resolveSceneReturnTarget(returnTargetData('Croft').returnTo)).toBe('Croft');
+    expect(resolveSceneReturnTarget(returnTargetData('MainMenu').returnTo)).toBe('MainMenu');
   });
 });

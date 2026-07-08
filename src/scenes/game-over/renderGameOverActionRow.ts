@@ -20,6 +20,7 @@ import { createDomFocusLayer, type DomFocusLayer } from '../../ui/domFocusLayer'
 import type { GameOverPayload } from '../gameOverPayload';
 import { buildGameOverDomFocusActions } from '../gameOverDomFocusActions';
 import { formatClockTime } from '../gameOverFormatting';
+import { returnTargetData } from '../returnTarget';
 import { createResultActionButton } from './resultPanelBuilders';
 import type { GameOverFocusController } from './GameOverFocusController';
 
@@ -90,7 +91,7 @@ export function renderGameOverActionRow(
     if (shopLocked) return;
     audio.playClick();
     musicEngine.stop();
-    scene.scene.start('Shop');
+    scene.scene.start('Shop', returnTargetData('Croft'));
   };
   const onTaeGran = () => {
     audio.playClick();

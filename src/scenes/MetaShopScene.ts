@@ -28,6 +28,11 @@ import { textStyle } from '../ui/typography';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
 import { buildMetaShopDomFocusActions } from './metaShopDomFocusActions';
 import { bindHubMenuKeyboardNav } from '../ui/hubMenuKeyboardNav';
+import {
+  resolveSceneReturnTarget,
+  type SceneReturnData,
+  type SceneReturnTarget,
+} from './returnTarget';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -44,6 +49,7 @@ export class MetaShopScene extends Phaser.Scene {
   private backButton!: Phaser.GameObjects.Rectangle;
   private gamepadNav: GamepadMenuNav | null = null;
   private hubKeyboardUnbind?: () => void;
+  private returnTo: SceneReturnTarget = 'MainMenu';
   private page = 0;
   private readonly ROWS_PER_PAGE = 5;
   private pageText!: Phaser.GameObjects.Text;
@@ -51,6 +57,10 @@ export class MetaShopScene extends Phaser.Scene {
 
   constructor() {
     super({ key: 'MetaShop' });
+  }
+
+  init(data?: SceneReturnData): void {
+    this.returnTo = resolveSceneReturnTarget(data?.returnTo);
   }
 
   create(): void {
@@ -85,7 +95,7 @@ export class MetaShopScene extends Phaser.Scene {
       x: width / 2, y: height - 28, width: 200, height: 38,
       label: t('ui.metaShop.back'), fontSize: '15px',
     });
-    this.backButton.on('pointerdown', clickToScene(this, 'MainMenu'));
+    this.backButton.on('pointerdown', clickToScene(this, this.returnTo));
 
     // Page indicator
     this.pageText = this.add
@@ -170,7 +180,7 @@ export class MetaShopScene extends Phaser.Scene {
         this.renderRows();
       },
       onBack: () => {
-        clickToScene(this, 'MainMenu')();
+        clickToScene(this, this.returnTo)();
       },
     });
   }
@@ -300,7 +310,7 @@ export class MetaShopScene extends Phaser.Scene {
 
     entries.push({
       rect: this.backButton,
-      activate: clickToScene(this, 'MainMenu'),
+      activate: clickToScene(this, this.returnTo),
     });
     this.gamepadNav = new GamepadMenuNav(this, entries, {
       onHighlightChange: (i) => this.domFocusLayer?.setFocusedIndex(i),
