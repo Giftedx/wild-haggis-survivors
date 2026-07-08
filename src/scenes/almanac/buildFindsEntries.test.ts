@@ -1,14 +1,29 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   createEmptyDiscoveryLog,
   recordItemAcquired,
 } from '../../systems/DiscoveryLog';
 import { buildFindsEntries, findsDiscoverySummary } from './buildFindsEntries';
+import { DEFAULT_LOCALE, ensureLocaleReady, setLocale, t } from '../../core/i18n';
 import { WEAPON_DEFS } from '../../data/weapons';
 import { PASSIVE_CARDS } from '../../data/upgrades';
 import { EVOLUTION_RECIPES } from '../../core/BalanceConfig';
 import { PERMANENT_UPGRADES } from '../../data/permanentUpgrades';
 import { RELIQUARY_CURIOS } from '../../scenes/game/reliquary';
+import { buildFindDetail } from './buildFindDetail';
+
+const RECENT_MECHANIC_FIELD_NOTES = [
+  'foundation_09',
+  'foundation_10',
+  'foundation_11',
+  'foundation_12',
+  'foundation_13',
+  'foundation_14',
+] as const;
+
+afterEach(() => {
+  setLocale(DEFAULT_LOCALE);
+});
 
 describe('buildFindsEntries', () => {
   it('yields one entry per acquirable thing across all seven categories', () => {
@@ -20,7 +35,7 @@ describe('buildFindsEntries', () => {
       PERMANENT_UPGRADES.length +
       RELIQUARY_CURIOS.length +
       25 + // old drover lore arc
-      8;   // foundation lore arc
+      14;  // foundation lore arc
     expect(entries.length).toBe(expectedCount);
   });
 
@@ -145,10 +160,10 @@ describe('Old Drover entry — The Moor Remembers reveal arc', () => {
 });
 
 describe('Foundation entries — Haggis Wildlife Foundation lore arc', () => {
-  it('renders 8 foundation entries with acquired=false when fieldNotesLifetime=0', () => {
+  it('renders 14 foundation entries with acquired=false when fieldNotesLifetime=0', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 0);
     const found = entries.filter((e) => e.key.startsWith('foundation_'));
-    expect(found).toHaveLength(8);
+    expect(found).toHaveLength(14);
     expect(found.every((e) => e.acquired === false)).toBe(true);
   });
 
@@ -168,10 +183,41 @@ describe('Foundation entries — Haggis Wildlife Foundation lore arc', () => {
     expect(found.every((e) => e.acquired === false)).toBe(true);
   });
 
-  it('unlocks all 8 when fieldNotesLifetime >= 75', () => {
+  it('unlocks the original 8-note Foundation arc when fieldNotesLifetime >= 75', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 75);
     const found = entries.filter((e) => e.key.startsWith('foundation_'));
-    expect(found.every((e) => e.acquired === true)).toBe(true);
+    expect(found.slice(0, 8).every((e) => e.acquired === true)).toBe(true);
+    expect(found.slice(8).every((e) => e.acquired === false)).toBe(true);
+  });
+
+  it('adds recent-mechanic field notes after the original Foundation arc', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 165);
+    const recentNotes = entries.filter((e) =>
+      RECENT_MECHANIC_FIELD_NOTES.includes(e.key as typeof RECENT_MECHANIC_FIELD_NOTES[number]),
+    );
+    expect(recentNotes.map((e) => e.key)).toEqual([...RECENT_MECHANIC_FIELD_NOTES]);
+    expect(recentNotes.every((e) => e.category === 'foundation')).toBe(true);
+    expect(recentNotes.every((e) => e.acquired === true)).toBe(true);
+  });
+
+  it('recent-mechanic field notes resolve in EN and SCS without raw keys', async () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 165);
+    const recentNotes = entries.filter((e) =>
+      RECENT_MECHANIC_FIELD_NOTES.includes(e.key as typeof RECENT_MECHANIC_FIELD_NOTES[number]),
+    );
+    expect(recentNotes).toHaveLength(RECENT_MECHANIC_FIELD_NOTES.length);
+
+    for (const entry of recentNotes) {
+      const detail = buildFindDetail(entry);
+      setLocale('en');
+      expect(t(detail.titleKey), entry.key + ' EN title').not.toBe(detail.titleKey);
+      expect(t(detail.descKey), entry.key + ' EN desc').not.toBe(detail.descKey);
+
+      await ensureLocaleReady('scs');
+      setLocale('scs');
+      expect(t(detail.titleKey), entry.key + ' SCS title').not.toBe(detail.titleKey);
+      expect(t(detail.descKey), entry.key + ' SCS desc').not.toBe(detail.descKey);
+    }
   });
 
   it('all foundation entries have category "foundation"', () => {
@@ -201,7 +247,7 @@ describe('Foundation entries — Haggis Wildlife Foundation lore arc', () => {
   it('defaults to 0 fieldNotesLifetime when third arg is omitted (backward compat)', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0);
     const found = entries.filter((e) => e.key.startsWith('foundation_'));
-    expect(found).toHaveLength(8);
+    expect(found).toHaveLength(14);
     expect(found.every((e) => e.acquired === false)).toBe(true);
   });
 });

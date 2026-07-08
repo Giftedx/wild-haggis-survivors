@@ -45,7 +45,7 @@ const CATEGORY_ORDER: readonly FindCategory[] = [
 
 const OLD_DROVER_SLOTS = 25;
 
-const FOUNDATION_THRESHOLDS = [1, 3, 7, 12, 20, 30, 50, 75] as const;
+const FOUNDATION_THRESHOLDS = [1, 3, 7, 12, 20, 30, 50, 75, 90, 105, 120, 135, 150, 165] as const;
 
 export function buildFindsEntries(
   log: DiscoveryLog,
@@ -129,7 +129,7 @@ function buildOldDroverEntries(oldDroverRevealedCount: number): FindEntryVM[] {
 /**
  * Field Notes v2 (DESIGN_IDEAS §11) — Haggis Wildlife Foundation lore arc.
  *
- * Emits 8 flat `FindEntryVM` foundation entries. Each entry unlocks once
+ * Emits 14 flat `FindEntryVM` foundation entries. Each entry unlocks once
  * `fieldNotesLifetime` reaches the corresponding threshold in
  * `FOUNDATION_THRESHOLDS`. The nameKey and descKey both point at the same
  * i18n leaf — the expanded panel shows the pompous faux-naturalist text as

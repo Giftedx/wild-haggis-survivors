@@ -4733,6 +4733,12 @@ export const ui = {
       '06': "The haggis is not known to vocalise. During storm events on Rannoch Moor, researchers have reported a low-frequency tonal register which could be described as 'the moor itself breathing.' We have filed this under 'ambient.' It has not been further reviewed.",
       '07': "The Foundation's 2024 census estimate: 'abundant.' Our methodology: we started counting, felt it was going well, and stopped before the number could disappoint us. Per HWF Resolution 14(b): 'a figure that feels correct is no less valid than one that doesn't.'",
       '08': "After 57 years of rigorous study, we are prepared to confirm that the wild haggis exists. Evidence: we have seen it. More than once. That neither sighting was reproducible under laboratory conditions reflects the laboratory's failure to replicate the moor, not the moor's failure to be real.",
+      '09': "Beithir venom does not poison immediately. It issues a deadline. Running water and the serpent's death both close the case. Researchers are advised to locate either before the subject starts glowing in a meaningful way.",
+      '10': "Clootie trees trade in payment, not charity. The subject gives blood; the moor returns wrath, patience, or haste. Do not untie another creature's rag. The Foundation learned this without needing a second trial.",
+      '11': "Three loose stones make a cairn; a finished cairn mends the subject and draws stray gems inward. We classify this as navigation, medicine, and extremely tidy behaviour.",
+      '12': "The shinty parry is a defensive caman-flick. Timed correctly, it turns incoming tricks aside; mistimed, it merely looks confident. The Foundation respects both outcomes.",
+      '13': "Stag antler alters dash behaviour. A dash becomes a sideways sweep; velvet stores another burst; monarch behaviour becomes circular and inadvisable to stand near.",
+      '14': "The sporran is a pre-run sorting organ. Seven papers enter, three decisions leave. Curses, boons, and quirks are all accepted; the animal insists this is a wallet.",
     },
   },
 } as const;
