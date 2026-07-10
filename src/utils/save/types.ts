@@ -242,6 +242,20 @@ export interface SaveData {
   fieldNotesLifetime?: number;
 
   /**
+   * Taxman Grudge Ledger v2 (DESIGN_IDEAS §1) — lifetime count of each
+   * victory verdict the Taxman has banked (`coward` / `bruiser` /
+   * `precise` / `reckless` / `even`, see `GrudgeVerdict` in
+   * `src/entities/grudgeLedger.ts`). Bumped once per victory via
+   * `bumpGrudgeVerdict`; the dominant non-even verdict colours Gran's
+   * Croft greeting (`src/scenes/croft/grudgeGreeting.ts`) — word gets
+   * round the glen about how her haggis wins. Keyed by plain string so
+   * the save layer stays decoupled from the entity union; the coercer
+   * drops malformed values. v24 addition. Optional + omitted while
+   * empty so pre-victory saves stay lean.
+   */
+  grudgeVerdictsLifetime?: Record<string, number>;
+
+  /**
    * Total cursed-run victories across all time. Unlocks the Cailleach
    * variant at count=3. Retroactively seeded from runHistory on first
    * load for existing players who already have past cursed victories.

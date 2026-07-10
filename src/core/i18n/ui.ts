@@ -168,6 +168,18 @@ export const ui = {
     subtitle: 'Hearth, kettle, and the kindness o\' the stove.',
     /** Gran's opening greeting when the scene fades in. Still Game hearth. */
     gran_greet: 'Come awa in — the kettle\'s on.',
+    /** Grudge Ledger v2 — once a finishing style dominates the lifetime
+     *  victory-verdict ledger (`grudgeVerdictsLifetime`, schema v24),
+     *  word gets round the glen and Gran's greeting picks it up. Hearth
+     *  voice — warm, wry, never scolding; Gran kens how her haggis wins
+     *  and loves it anyway. Falls back to `gran_greet` until a styled
+     *  verdict is banked. Selection in `croft/grudgeGreeting.ts`. */
+    gran_greet_grudge: {
+      coward: 'Come awa in. The glen says ye win fae across the field — wise wee thing.',
+      bruiser: 'Look at they paws — right in among them again. Wash afore supper.',
+      precise: 'No\' a mark on ye, the ledger says. Clean wins. Gran kens.',
+      reckless: 'Won by a whisker again, I hear. Ye\'ll be the death o\' me, no\' them.',
+    },
     /** Mobile Croft header hint — replaces Gran's longer desktop greeting where vertical space is tight. */
     mobile_hint: 'Rest a breath. Oot when ye\'re ready.',
     /** Back button — exits the croft back to the loadout screen. "Ben" is Scots for inward, so we stay outward-facing with "the door". */

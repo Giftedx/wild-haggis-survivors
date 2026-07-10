@@ -26,7 +26,7 @@ import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save'
 import type { GameOverPayload } from '../gameOverPayload';
 import {
   recordPostBellBest, recordLastDeath, recordIronmoorBest, bumpFirstTimeEvent,
-  flushBeastieKills, wipeIronmoorHistoryInPlace,
+  bumpGrudgeVerdict, flushBeastieKills, wipeIronmoorHistoryInPlace,
 } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
@@ -226,6 +226,11 @@ export class RunLifecycle {
     // `forceLine` so it bypasses arbitration regardless.
     const grudgeVerdict = judgeGrudge(this.hooks.getGrudgeLedger());
     this.hooks.getBanter()?.request('taxman_grudge', { tag: grudgeVerdict });
+    // v2 — bank the verdict to the lifetime ledger (schema v24). The
+    // dominant lifetime verdict colours Gran's Croft greeting; word
+    // gets round the glen about how her haggis wins. Victory-only by
+    // design: the Taxman judges the runs that beat him.
+    bumpGrudgeVerdict(grudgeVerdict);
 
     // B1 Phase 2 — Gran's proud-modest line after victory. Priority 28
     // yields to louder pools; fires cleanly here because RUN_END pauses

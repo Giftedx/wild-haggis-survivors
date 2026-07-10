@@ -106,6 +106,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV21ToV22(raw));
     case 22:
       return finalizeSaveCandidate(migrateV22ToV23(raw));
+    case 23:
+      return finalizeSaveCandidate(migrateV23ToV24(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -376,6 +378,21 @@ function migrateV22ToV23(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v23 → v24 (Taxman Grudge Ledger v2 — lifetime verdict counts,
+ * DESIGN_IDEAS §1 v2 follow-up). Adds `grudgeVerdictsLifetime?:
+ * Record<string, number>` — one bump per victory verdict via
+ * `bumpGrudgeVerdict`; the dominant non-even verdict colours Gran's
+ * Croft greeting. Pure version bump — `coerceGrudgeVerdictsLifetime`
+ * in `finalizeSaveCandidate` validates entries and omits the field
+ * while empty. No retroactive seed: per-run verdicts were never
+ * persisted (v1 judged and discarded), so past victories are
+ * unrecoverable. The Taxman starts a fresh page for everyone.
+ */
+function migrateV23ToV24(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -383,6 +400,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const lastDeath = coerceLastDeath(candidate.lastDeath);
   const stonesPicked = coerceStonesPicked(candidate.standingStonesPicked);
   const reliquaryPicked = coerceReliquaryCuriosPicked(candidate.reliquaryCuriosPicked);
+  const grudgeVerdicts = coerceGrudgeVerdictsLifetime(candidate.grudgeVerdictsLifetime);
   const runHistory = coerceRunHistory(candidate.runHistory);
 
   // Retroactive seed: if the field was absent, count past cursed victories from history.
@@ -432,6 +450,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
     ...(reliquaryPicked ? { reliquaryCuriosPicked: reliquaryPicked } : {}),
+    ...(grudgeVerdicts ? { grudgeVerdictsLifetime: grudgeVerdicts } : {}),
     ancestralEchoesTouched: coerceInteger(candidate.ancestralEchoesTouched, 0),
     ceilidhPulsesLifetime: coerceInteger(candidate.ceilidhPulsesLifetime, 0),
     beithirCuresLifetime: coerceInteger(candidate.beithirCuresLifetime, 0),
@@ -732,6 +751,24 @@ function coerceStringNumberRecord(raw: unknown): Record<string, number> {
     out[k] = Math.floor(v);
   }
   return out;
+}
+
+/**
+ * Coerce persisted Taxman grudge verdict counts (v24). Same omit-when-
+ * empty shape as `coerceReliquaryCuriosPicked` — the field only exists
+ * once a victory has banked a verdict, so pre-victory saves stay lean.
+ * Keys are plain strings (the save layer stays decoupled from the
+ * `GrudgeVerdict` union); a retired verdict key survives harmlessly.
+ */
+function coerceGrudgeVerdictsLifetime(raw: unknown): Record<string, number> | undefined {
+  if (!isRecord(raw)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof k !== 'string' || k.length === 0) continue;
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) continue;
+    out[k] = Math.floor(v);
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 /**

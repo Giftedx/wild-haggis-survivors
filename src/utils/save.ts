@@ -55,6 +55,7 @@ export {
   bumpClootieWagerCommit,
   bumpCursedVictoryByBoss,
   bumpFirstTimeEvent,
+  bumpGrudgeVerdict,
   bumpItemAcquired,
   bumpReliquaryCurioPick,
   bumpRoutePicked,

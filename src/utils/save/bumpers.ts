@@ -25,6 +25,7 @@ import {
 } from '../../systems/DiscoveryLog';
 import type { CompanionKey } from '../../entities/companions/companionTypes';
 import { COMPANION_KEYS_IN_ORDER } from '../../entities/companions/companionTypes';
+import type { GrudgeVerdict } from '../../entities/grudgeLedger';
 import { loadSave, writeSave } from './io';
 
 /**
@@ -224,6 +225,26 @@ export function bumpFieldNotesLifetime(): number {
     return before;
   } catch {
     return Number.MAX_SAFE_INTEGER;
+  }
+}
+
+/**
+ * Taxman Grudge Ledger v2 (DESIGN_IDEAS §1) — bank one victory verdict
+ * into the lifetime ledger (`grudgeVerdictsLifetime`, v24). Called from
+ * `RunLifecycle.handleVictory` right after `judgeGrudge` speaks. All
+ * five verdicts are banked (`even` included — it's a ledger, not a
+ * highlight reel); the Croft greeting reader ignores `even` when
+ * picking the dominant style. Best-effort — a storage failure never
+ * blocks the victory flow.
+ */
+export function bumpGrudgeVerdict(verdict: GrudgeVerdict): void {
+  try {
+    const cur = loadSave();
+    const counts = { ...(cur.grudgeVerdictsLifetime ?? {}) };
+    counts[verdict] = (counts[verdict] ?? 0) + 1;
+    writeSave({ ...cur, grudgeVerdictsLifetime: counts });
+  } catch {
+    /* best-effort */
   }
 }
 

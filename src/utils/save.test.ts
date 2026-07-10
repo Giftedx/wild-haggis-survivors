@@ -385,13 +385,13 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 23', () => {
-    // Wild Living World Phase 2 (2026-05-11) bumped v22 → v23 to
-    // persist `livingWorldUnlocks` (companion roster + selection).
+  it('SAVE_SCHEMA_VERSION is 24', () => {
+    // Grudge Ledger v2 (2026-07-10) bumped v23 → v24 to persist
+    // `grudgeVerdictsLifetime` (Taxman victory-verdict counts).
     // Schema-V3 → V4 (W2 routes) is still the historical anchor for
     // this describe block; the assertion just pins the latest live
     // schema number so a silent bump trips CI.
-    expect(SAVE_SCHEMA_VERSION).toBe(23);
+    expect(SAVE_SCHEMA_VERSION).toBe(24);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -2506,6 +2506,41 @@ describe('save schema v18 → v19 (S1 Phase 2 — Sporran chronicle)', () => {
       cairnBlessingsLifetime: 'not a number',
     });
     expect(migrated.cairnBlessingsLifetime).toBe(0);
+  });
+
+  it('v23 → v24 (Grudge Ledger v2): pre-v24 save leaves grudgeVerdictsLifetime absent', () => {
+    const migrated = migrateSave({ schemaVersion: 23, runHistory: [] });
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    // Omit-when-empty shape (sister to reliquaryCuriosPicked) — the
+    // field only appears once a victory banks a verdict.
+    expect(migrated.grudgeVerdictsLifetime).toBeUndefined();
+  });
+
+  it('v24 coerce: existing grudgeVerdictsLifetime is preserved on round-trip', () => {
+    const migrated = migrateSave({
+      schemaVersion: 24,
+      runHistory: [],
+      grudgeVerdictsLifetime: { precise: 3, even: 1 },
+    });
+    expect(migrated.grudgeVerdictsLifetime).toEqual({ precise: 3, even: 1 });
+  });
+
+  it('v24 coerce: malformed grudgeVerdictsLifetime entries are dropped; empty record omitted', () => {
+    const migrated = migrateSave({
+      schemaVersion: 24,
+      runHistory: [],
+      grudgeVerdictsLifetime: { precise: 'aye', coward: -2, bruiser: 2.9 },
+    });
+    // Non-numeric + negative dropped; fractional floors to 2. Only
+    // valid entries survive.
+    expect(migrated.grudgeVerdictsLifetime).toEqual({ bruiser: 2 });
+
+    const emptied = migrateSave({
+      schemaVersion: 24,
+      runHistory: [],
+      grudgeVerdictsLifetime: { precise: 'aye' },
+    });
+    expect(emptied.grudgeVerdictsLifetime).toBeUndefined();
   });
 
   it('coerces sporranPicks on history entries — preserves unknown ids for Chronicle fallback, omits empty', () => {

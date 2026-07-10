@@ -147,6 +147,14 @@ export const ui = {
     title: 'GRAN\'S CROFT',
     subtitle: 'Hearth, kettle, an tha kindness o tha stove.',
     gran_greet: 'Come awa in — tha kettle\'s on.',
+    // Grudge Ledger v2 — greeting shifts wi tha dominant lifetime
+    // verdict. Hearth, wry, never scoldin.
+    gran_greet_grudge: {
+      coward: 'Come awa in. Tha glen says ye win fae across tha field — wice wee thing.',
+      bruiser: 'Look at they paws — richt in amang them again. Wash afore supper.',
+      precise: 'No a merk on ye, tha ledger says. Clean wins. Gran kens.',
+      reckless: 'Won by a whisker again, A hear. Ye\'ll be tha daith o me, no them.',
+    },
     mobile_hint: 'Rest a breath. Oot when yer ready.',
     back: 'BACK TAE THA DOOR',
     actions: {

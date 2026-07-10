@@ -4,6 +4,7 @@ import {
   recordGrudgeFinish,
   judgeGrudge,
   GRUDGE_MIN_FINISHES,
+  GRUDGE_BOSS_WEIGHT,
   GRUDGE_COWARD_DISTANCE_PX,
   GRUDGE_BRUISER_DISTANCE_PX,
   GRUDGE_PRECISE_HP_FRAC,
@@ -147,5 +148,65 @@ describe('grudgeLedger', () => {
     recordGrudgeFinish(s, finish({ distancePx: 110, hpFraction: 0.5 }));
     recordGrudgeFinish(s, finish({ distancePx: 200, hpFraction: 0.5 }));
     expect(judgeGrudge(s)).toBe('bruiser');
+  });
+});
+
+describe('grudgeLedger — v2 boss weighting', () => {
+  it('boss weight constant is the documented 2', () => {
+    expect(GRUDGE_BOSS_WEIGHT).toBe(2);
+  });
+
+  it('a boss finish outvotes an elite finish in the median', () => {
+    // One mid-band elite + one precise BOSS + one precise elite.
+    // Weighted samples [0.5, 0.95, 0.95, 0.95] → median 0.95 → precise.
+    // Unweighted the same ledger would sit at median 0.95 too, so the
+    // proof is the mirror below: flip which finish carries the boss
+    // flag and the verdict flips with it.
+    const s = createGrudgeLedger();
+    recordGrudgeFinish(s, finish({ hpFraction: 0.5 }));
+    recordGrudgeFinish(s, finish({ hpFraction: 0.95, wasBoss: true }));
+    recordGrudgeFinish(s, finish({ hpFraction: 0.95 }));
+    expect(judgeGrudge(s)).toBe('precise');
+
+    // Mirror ledger with the boss flag flipped onto the mid-band finish
+    // instead: samples [0.5, 0.5, 0.95, 0.95] → median 0.725 → even.
+    // Same three finishes, different boss placement, different verdict —
+    // the weighting is doing the work.
+    const m = createGrudgeLedger();
+    recordGrudgeFinish(m, finish({ hpFraction: 0.5, wasBoss: true }));
+    recordGrudgeFinish(m, finish({ hpFraction: 0.95 }));
+    recordGrudgeFinish(m, finish({ hpFraction: 0.95 }));
+    expect(judgeGrudge(m)).toBe('even');
+  });
+
+  it('boss weighting applies to the distance median too', () => {
+    // Elite kills at mid distance, boss kills in the squeeze zone. The
+    // two boss finishes contribute four samples: [60×4, 175, 175] →
+    // median 60 → bruiser. Unweighted it would be (60+175)/2 = 117.5
+    // → even.
+    const s = createGrudgeLedger();
+    recordGrudgeFinish(s, finish({ distancePx: 175 }));
+    recordGrudgeFinish(s, finish({ distancePx: 175 }));
+    recordGrudgeFinish(s, finish({ distancePx: 60, wasBoss: true }));
+    recordGrudgeFinish(s, finish({ distancePx: 60, wasBoss: true }));
+    expect(judgeGrudge(s)).toBe('bruiser');
+  });
+
+  it('min-finishes gate counts raw entries, not weighted samples', () => {
+    // Two boss finishes = four weighted samples but only two ledger
+    // entries — still below GRUDGE_MIN_FINISHES, still even.
+    const s = createGrudgeLedger();
+    recordGrudgeFinish(s, finish({ hpFraction: 0.95, wasBoss: true }));
+    recordGrudgeFinish(s, finish({ hpFraction: 0.95, wasBoss: true }));
+    expect(s.finishes.length).toBeLessThan(GRUDGE_MIN_FINISHES);
+    expect(judgeGrudge(s)).toBe('even');
+  });
+
+  it('all-elite ledgers are unaffected by the weighting change', () => {
+    const s = createGrudgeLedger();
+    recordGrudgeFinish(s, finish({ distancePx: 320, hpFraction: 0.5 }));
+    recordGrudgeFinish(s, finish({ distancePx: 320, hpFraction: 0.5 }));
+    recordGrudgeFinish(s, finish({ distancePx: 320, hpFraction: 0.5 }));
+    expect(judgeGrudge(s)).toBe('coward');
   });
 });

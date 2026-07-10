@@ -58,6 +58,7 @@ import {
   resolveNextSelection,
   type CompanionPickerRow,
 } from './croft/companionPicker';
+import { pickGranGreetingKey } from './croft/grudgeGreeting';
 import { setSelectedCompanion } from '../utils/save/bumpers';
 
 const CROFT_MOBILE_WIDTH = 600;
@@ -992,7 +993,11 @@ export class CroftScene extends Phaser.Scene {
       .text(width / 2, narrow ? 86 : 90, t('ui.croft.subtitle'), sceneSubtitleTextStyle(COLORS_CSS.WARM_TAN, width))
       .setOrigin(0.5)
       .setDepth(82);
-    const hintKey = narrow ? 'ui.croft.mobile_hint' : 'ui.croft.gran_greet';
+    // Grudge Ledger v2 — the greeting shifts once a finishing style
+    // dominates the lifetime verdict ledger (word gets round the glen).
+    // Narrow layouts keep the terse mobile hint; the grudge colouring
+    // is a desktop-header flourish, not load-bearing information.
+    const hintKey = narrow ? 'ui.croft.mobile_hint' : pickGranGreetingKey(loadSave());
     const hint = this.add
       .text(width / 2, narrow ? 116 : 118, t(hintKey), sceneSubtitleTextStyle(COLORS_CSS.DUSTY_TAN, width))
       .setOrigin(0.5)
