@@ -2991,6 +2991,12 @@ export const ui = {
     lemmings_remember: {
       a: 'Tha lemmings mind ye. Aff they go.',
       b: 'Wee green-heidit anes — they\'ve passed.',
+      // v2 second-fire — anither variant earned the parade first; the
+      // wee anes ken the species noo. Wry hearth, nae fresh wonder.
+      again: {
+        a: 'They mind this snoot an\' aw. Aff they go, same as aye.',
+        b: 'A different haggis, the same wee mairch. They ken us aw.',
+      },
     },
     // Wild Living World Phase 2 — Selkie form-shift commentary in Scots.
     form_shifted: {

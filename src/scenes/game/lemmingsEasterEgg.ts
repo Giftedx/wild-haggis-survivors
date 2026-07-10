@@ -74,6 +74,11 @@ export interface LemmingsEasterEggHooks {
   isPlayerStill(): boolean;
   /** Save accessor — has THIS variant ever earned the parade? */
   hasVariantSeen(variantKey: string): boolean;
+  /** v2 save accessor — has any OTHER variant already earned the
+   *  parade? Drives the `again` banter sub-pool: the second-fire on a
+   *  different haggis gets a knowing callback ("they mind this face
+   *  an' aw") instead of the first-discovery line. */
+  hasAnyOtherVariantSeen(variantKey: string): boolean;
   /** Save mutator — append the variant key to the lifetime list.
    *  Best-effort; the orchestrator shouldn't crash on storage failure
    *  (the parade still plays — losing the lifetime mark just means
@@ -81,8 +86,10 @@ export interface LemmingsEasterEggHooks {
   persistVariantSeen(variantKey: string): void;
   /** Banter request — caller injects so the orchestrator stays free
    *  of BanterSystem-specific imports. Caller should map this to
-   *  `banter.request('lemmings_remember')`. */
-  requestBanter(): void;
+   *  `banter.request('lemmings_remember', tag)`. Tag `again` selects
+   *  the v2 second-fire sub-pool; undefined falls back to the
+   *  first-discovery leaves. */
+  requestBanter(tag?: 'again'): void;
   /** Accessibility caption for the OH NO! SFX and falling-parade beat.
    *  Caller maps to `GameScene.caption`; captions settings decide
    *  whether it is visible. */
@@ -134,10 +141,14 @@ export class LemmingsEasterEgg {
    */
   private fireParade(variantKey: string): void {
     this.active = true;
+    // Read the "seen before on another haggis?" verdict BEFORE the
+    // persist write for clarity — the accessor excludes the current
+    // variant either way, but the intent reads cleaner pre-write.
+    const isRepeatAcrossVariants = this.hooks.hasAnyOtherVariantSeen(variantKey);
     this.hooks.persistVariantSeen(variantKey);
     const cue = buildLemmingsParadeCue();
     this.hooks.caption(cue.captionId, cue.caption, cue.captionTint);
-    this.hooks.requestBanter();
+    this.hooks.requestBanter(isRepeatAcrossVariants ? 'again' : undefined);
     this.hooks.playSfx();
     this.spawnAndAnimate();
   }

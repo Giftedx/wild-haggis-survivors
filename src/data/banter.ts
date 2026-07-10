@@ -121,8 +121,9 @@ export type BanterContext =
   // DESIGN_IDEAS §13 Lemmings Easter Egg — fires once when the cliff-edge
   // parade triggers (90 s idle in coastal biome, once per variant
   // lifetime). Hearth tone; the toast that follows the OH NO! parade.
-  // No sub-pool tags — single discrete moment, two leaves on the
-  // no-repeat ring for variety across variants.
+  // Sub-pool tag `again` (v2) fires when a DIFFERENT variant already
+  // earned the parade — the lemmings recognise the new face. Top-level
+  // keys carry the first-discovery lines and double as the fallback.
   | 'lemmings_remember'
   // DESIGN_IDEAS §1 Race the Beithir — venom-fang sting opens the 8 s
   // race window. Edge tone for `stung` + `expired`; hearth-warm relief
@@ -2483,6 +2484,17 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.lemmings_remember.a',
       'ui.banter.lemmings_remember.b',
     ],
+    // v2 — the parade is once-per-variant, so a player who earns it on
+    // a SECOND haggis has done the 90 s stillness twice. The `again`
+    // sub-pool rewards that dedication with a knowing callback rather
+    // than replaying first-discovery wonder. Orchestrator passes the
+    // tag when any other variant is already in `lemmingsSeenForVariant`.
+    keysByTag: {
+      again: [
+        'ui.banter.lemmings_remember.again.a',
+        'ui.banter.lemmings_remember.again.b',
+      ],
+    },
   },
   {
     // Wild Living World Phase 2 — Selkie form-shifted commentary.

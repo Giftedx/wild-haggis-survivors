@@ -11,6 +11,7 @@
  */
 import * as Phaser from 'phaser';
 import { LemmingsEasterEgg } from './lemmingsEasterEgg';
+import { hasOtherVariantSeenLemmings } from '../../entities/lemmingsTrigger';
 import { audio } from '../../systems/AudioSystem';
 import { loadSave, bumpLemmingsSeenForVariant } from '../../utils/save';
 import type { Player } from '../../entities/Player';
@@ -20,7 +21,7 @@ export interface InstallLemmingsEasterEggDeps {
   readonly getPlayer: () => Player;
   readonly getActiveVariantKey: () => string;
   readonly getCurrentBiomeId: () => string | null;
-  readonly requestBanter: () => void;
+  readonly requestBanter: (tag?: 'again') => void;
   readonly caption: (id: string, message: string, tint?: string) => void;
 }
 
@@ -45,8 +46,15 @@ export function installLemmingsEasterEgg(
         return false;
       }
     },
+    hasAnyOtherVariantSeen: (key) => {
+      try {
+        return hasOtherVariantSeenLemmings(loadSave().lemmingsSeenForVariant, key);
+      } catch {
+        return false;
+      }
+    },
     persistVariantSeen: (key) => bumpLemmingsSeenForVariant(key),
-    requestBanter: () => deps.requestBanter(),
+    requestBanter: (tag) => deps.requestBanter(tag),
     caption: (id, message, tint) => deps.caption(id, message, tint),
     playSfx: () => audio.playLemmingsOhNo(),
   });

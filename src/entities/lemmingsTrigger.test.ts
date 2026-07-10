@@ -3,6 +3,7 @@ import {
   LEMMINGS_BIOME_ID,
   LEMMINGS_IDLE_THRESHOLD_MS,
   createLemmingsTriggerState,
+  hasOtherVariantSeenLemmings,
   hasVariantSeenLemmings,
   markVariantSeenLemmings,
   tickLemmingsTrigger,
@@ -263,5 +264,20 @@ describe('lemmingsTrigger — save accessors', () => {
     const before = ['classic', 'glaswegian'];
     const next = markVariantSeenLemmings(before, 'classic');
     expect(next).toBe(before); // identity — no allocation when nothing changes
+  });
+
+  it('hasOtherVariantSeenLemmings is false on empty array (true first fire)', () => {
+    expect(hasOtherVariantSeenLemmings([], 'classic')).toBe(false);
+  });
+
+  it('hasOtherVariantSeenLemmings ignores the current variant', () => {
+    // Whether the caller reads before or after persisting this fire's
+    // mark, the current variant's own entry never counts as "other".
+    expect(hasOtherVariantSeenLemmings(['classic'], 'classic')).toBe(false);
+  });
+
+  it('hasOtherVariantSeenLemmings is true when a different variant fired first', () => {
+    expect(hasOtherVariantSeenLemmings(['classic'], 'glaswegian')).toBe(true);
+    expect(hasOtherVariantSeenLemmings(['classic', 'glaswegian'], 'glaswegian')).toBe(true);
   });
 });

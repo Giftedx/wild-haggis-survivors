@@ -252,7 +252,7 @@ export function installUiLandmarksAndFlow(
     getPlayer: () => scene.player,
     getActiveVariantKey: () => scene.activeVariant.key,
     getCurrentBiomeId: () => scene.getCurrentBiomeId(),
-    requestBanter: () => scene.requestBanter('lemmings_remember'),
+    requestBanter: (tag) => scene.requestBanter('lemmings_remember', tag),
     caption: (id, message, tint) => scene.caption(id, message, tint),
   });
 

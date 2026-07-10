@@ -173,6 +173,18 @@ export function hasVariantSeenLemmings(
   return seenForVariant.includes(variantKey);
 }
 
+/** v2 accessor — has any OTHER variant already earned the parade? Drives
+ *  the `again` banter sub-pool: the second-fire (on a different haggis)
+ *  gets a knowing callback instead of the first-discovery line. Excludes
+ *  the current variant so the answer is stable whether the caller reads
+ *  before or after persisting this fire's lifetime mark. */
+export function hasOtherVariantSeenLemmings(
+  seenForVariant: readonly string[],
+  variantKey: string,
+): boolean {
+  return seenForVariant.some((key) => key !== variantKey);
+}
+
 /** Save mutator — append the variant key (no-op if already present).
  *  Returns a fresh array per immutable-update convention; caller writes
  *  it back into the save record. */

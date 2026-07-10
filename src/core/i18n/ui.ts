@@ -3657,6 +3657,13 @@ export const ui = {
     lemmings_remember: {
       a: 'The lemmings remember ye. Aff they go.',
       b: 'Wee green-haired ones — they\'ve passed.',
+      /** v2 second-fire sub-pool — a DIFFERENT variant already earned
+       *  the parade, so the lemmings recognise the species if not the
+       *  face. Same hearth register, wry rather than wondering. */
+      again: {
+        a: 'They mind this face and aw. Off they go, same as ever.',
+        b: 'A different haggis, the same wee march. They ken us all.',
+      },
     },
     /** Wild Living World Phase 2 — Selkie form-shift commentary. Hearth
      *  register, soft and considered: the seal is a relief; the haggis
