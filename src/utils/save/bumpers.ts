@@ -207,15 +207,23 @@ export function bumpCairnBlessing(): number {
 
 /**
  * Field Notes v2 (DESIGN_IDEAS §11) — bump the lifetime field-note pickup
- * counter. Gates Foundation faction entries in the Highland Almanac Finds
- * tab. Best-effort — swallow storage errors so a pickup never blocks.
+ * counter and return the **pre-bump** value. Gates two surfaces: the
+ * Foundation faction entries in the Highland Almanac Finds tab (threshold
+ * unlocks) and the `first` / `page` banter sub-pools on collect (pre-bump
+ * 0 = first page ever; pre-bump+1 crossing a Foundation threshold = a
+ * fresh Almanac page just unlocked). Sister to `bumpBeithirCured` +
+ * `bumpClootieWagerCommit` + `bumpCairnBlessing`. Storage failures return
+ * `Number.MAX_SAFE_INTEGER` so neither banter gate trips falsely on a
+ * corrupted save — the pickup itself never blocks.
  */
-export function bumpFieldNotesLifetime(): void {
+export function bumpFieldNotesLifetime(): number {
   try {
     const cur = loadSave();
-    writeSave({ ...cur, fieldNotesLifetime: (cur.fieldNotesLifetime ?? 0) + 1 });
+    const before = cur.fieldNotesLifetime ?? 0;
+    writeSave({ ...cur, fieldNotesLifetime: before + 1 });
+    return before;
   } catch {
-    /* best-effort */
+    return Number.MAX_SAFE_INTEGER;
   }
 }
 

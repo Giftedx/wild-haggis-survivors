@@ -45,7 +45,11 @@ const CATEGORY_ORDER: readonly FindCategory[] = [
 
 const OLD_DROVER_SLOTS = 25;
 
-const FOUNDATION_THRESHOLDS = [1, 3, 7, 12, 20, 30, 50, 75, 90, 105, 120, 135, 150, 165] as const;
+/** Lifetime field-note counts at which each Foundation field-guide page
+ *  unlocks. Exported for the collect-time banter tag picker
+ *  (`src/scenes/game/fieldNoteCollectTag.ts`) so the "a fresh page just
+ *  unlocked" beat can never drift from the Almanac's own unlock maths. */
+export const FOUNDATION_THRESHOLDS = [1, 3, 7, 12, 20, 30, 50, 75, 90, 105, 120, 135, 150, 165] as const;
 
 export function buildFindsEntries(
   log: DiscoveryLog,

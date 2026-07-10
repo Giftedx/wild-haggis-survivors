@@ -3460,6 +3460,23 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.field_note_pickup.e',
       'ui.banter.field_note_pickup.f',
     ],
+    // Foundation follow-up (DESIGN_IDEAS §11 v2) — the collect site
+    // routes by pre-bump lifetime count via `pickFieldNoteCollectTag`:
+    // `first` fires once per save (the haggis discovers the Foundation
+    // keeps a book on him at all); `page` fires when the collect
+    // crosses a FOUNDATION_THRESHOLDS boundary, i.e. a fresh field-
+    // guide page just unlocked in the Almanac on Gran's shelf — the
+    // line IS the discoverability cue, no toast needed.
+    keysByTag: {
+      first: [
+        'ui.banter.field_note_pickup.first.a',
+        'ui.banter.field_note_pickup.first.b',
+      ],
+      page: [
+        'ui.banter.field_note_pickup.page.a',
+        'ui.banter.field_note_pickup.page.b',
+      ],
+    },
   },
   // ── B1 Phase 4 Task 21 — Cailleach whispers.
   //

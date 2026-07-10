@@ -3502,6 +3502,16 @@ export const ui = {
       d: '"Haggis scoticus dextrogyrus." Means tha wee richt-leanin yin.',
       e: 'They\'ve meisured ma legs. Tha wee man\'s pencil broke.',
       f: 'Footnote — "unfit for shores below 53°N." Aye, that\'s truth.',
+      // First page ever — the Foundation keeps a hale book on him.
+      first: {
+        a: 'Sae they keep a book on me. Page ane: "subject exists." Aye — emphatically.',
+        b: 'First page o\' their field guide, mine noo. Gran\'s shelf will want tha rest.',
+      },
+      // Threshold-cross — a fresh field-guide page unlocked in the Almanac.
+      page: {
+        a: 'Anither page catalogued. Their book o\' me is gettin thick.',
+        b: 'A hale new chapter o\' "notable specimen". Tha Foundation should pey me royalties.',
+      },
     },
     // ── Haggis inner monologue (B1 Phase 2 Task 10). SCS pair for
     //    ui.banter.haggis_ambient.*. Scots conventions: tha/fae/aye/

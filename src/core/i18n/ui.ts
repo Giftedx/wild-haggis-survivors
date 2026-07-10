@@ -4202,6 +4202,19 @@ export const ui = {
       d: '"Haggis scoticus dextrogyrus." Means the wee right-leanin\' wan.',
       e: 'They\'ve measured ma legs. The wee man\'s pencil broke.',
       f: 'Footnote — "unfit for shores below 53°N." Aye, that\'s truth.',
+      /** First page ever collected — the haggis learns the Foundation
+       *  keeps a whole book on him. Wonder with an edge of cheek. */
+      first: {
+        a: 'So they keep a book on me. Page one: "subject exists." Aye — emphatically.',
+        b: 'First page o\' their field guide, mine noo. Gran\'s shelf will want the rest.',
+      },
+      /** A collect that crosses a Foundation threshold — a fresh field-
+       *  guide page just unlocked in the Almanac. The line carries the
+       *  discoverability nudge; no toast, no UI chrome. */
+      page: {
+        a: 'Anither page catalogued. Their book o\' me is gettin\' thick.',
+        b: 'A whole new chapter o\' "notable specimen". The Foundation should pay me royalties.',
+      },
     },
     // ── Haggis inner monologue (B1 Phase 2 Task 10). Hearth,
     //    wee-beastie simple — peaceful sensory notes, food daydreams,

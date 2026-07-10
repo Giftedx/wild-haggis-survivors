@@ -38,6 +38,7 @@ import type { LevelUpFlow } from './LevelUpFlow';
 import type { RuneSystemController } from './runeSystemController';
 import type { RunScoreState } from './RunScoreState';
 import { bumpFieldNotesLifetime } from '../../utils/save/bumpers';
+import { pickFieldNoteCollectTag } from './fieldNoteCollectTag';
 
 export interface InstallRuntimeAmbientOpts {
   scene: Phaser.Scene;
@@ -143,8 +144,11 @@ export function installRuntimeAmbient(
     modifyHealOrbAmount: (a) => opts.getRelicEffectDriver().modifyHealOnOrb(a),
     onBurnsPlatterCollect: () => opts.getRuneSystemController().onBurnsPlatterCollect(),
     onFieldNoteCollect: () => {
-      opts.getBanter()?.request('field_note_pickup');
-      bumpFieldNotesLifetime();
+      // Pre-bump count routes the banter: 0 → `first` (the Foundation
+      // keeps a book on me?), threshold-cross → `page` (a fresh field-
+      // guide page just unlocked on Gran's shelf), else flat pool.
+      const tag = pickFieldNoteCollectTag(bumpFieldNotesLifetime());
+      opts.getBanter()?.request('field_note_pickup', tag ? { tag } : undefined);
     },
   });
 
