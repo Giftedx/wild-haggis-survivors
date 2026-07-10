@@ -4748,6 +4748,11 @@ export const ui = {
       locked: '???',
       complete: 'He is quiet noo. The muir is yours.',
     },
+    // DESIGN_IDEAS §13 — Celtic-pattern credit colophon, Scots overlay.
+    makersNote: {
+      title: 'Tha Patterns — a makar\'s note',
+      body: 'Every knot, key, an rose in this wee gemme is borrowed licht. Tha carved stanes follae tha Picts — Aberlemno\'s beasts, tha crescent an V-rod naebody noo reads. Tha plaited borders boo tae tha knotwork o Kells an Iona. Tha saft line against tha haird grid is Charles Rennie Mackintosh\'s rose, by wey o a Glesga tearoom. Drawn wi love, never claimed: tha patterns belang tae tha folk that cut them first.',
+    },
     /** Field Notes v2 — Foundation entries use the same officious English
      *  as the EN copy. The joke is the Foundation writes in English; the
      *  haggis speaks Scots. SCS = EN verbatim by design. */

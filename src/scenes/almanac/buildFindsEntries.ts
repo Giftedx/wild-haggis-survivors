@@ -94,10 +94,30 @@ function collectCategory(
         toEntry(c.id, 'relic', c.titleKey, c.descKey, log),
       );
     case 'lore':
-      return buildOldDroverEntries(oldDroverRevealedCount);
+      return [...buildOldDroverEntries(oldDroverRevealedCount), buildMakersNoteEntry()];
     case 'foundation':
       return buildFoundationEntries(fieldNotesLifetime);
   }
+}
+
+/**
+ * DESIGN_IDEAS §13 — the Celtic-pattern credit. A single always-
+ * acquired colophon at the tail of the lore book naming the visual
+ * traditions the game's art borrows from (Pictish stones, insular
+ * knotwork, the Mackintosh rose). Deliberately unadvertised — no
+ * unlock beat, no toast; it is simply there for the player who reads
+ * to the end of the shelf, the way a colophon should be.
+ */
+function buildMakersNoteEntry(): FindEntryVM {
+  return {
+    key: 'makers_note',
+    category: 'lore',
+    nameKey: 'ui.almanac.makersNote.title',
+    descKey: 'ui.almanac.makersNote.body',
+    acquired: true,
+    acquireCount: 1,
+    firstAcquiredAt: null,
+  };
 }
 
 /**

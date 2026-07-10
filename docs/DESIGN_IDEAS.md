@@ -329,7 +329,7 @@ Scotland is a games country — Dundee's DMA Design (now Rockstar North) created
 - **Macintosh (the computer)** — sly reference given Apple's name shares with Charles Rennie Mackintosh and "mackintosh" (rain coat, invented by Charles Macintosh). Triple-pun potential.
 - **Abertay University wink** — a hidden NPC "Professor Abertay" who awards students… with a pixel-art diploma. Tiny, obscure, kind.
 - **"Still Game" tribute** — if a legitimate nod can happen (fair-use-adjacent), a background NPC named "Boabby" in a pub-biome tavern banter scene.
-- **Celtic pattern credit** — hidden credits page that lists the Pictish-stone + Celtic-knot + Mackintosh-rose inspirations explicitly, as a love-letter to Scottish visual tradition.
+- ~~**Celtic pattern credit**~~ — ✅ shipped 2026-07-10 as "The Patterns — a maker's note": an always-acquired colophon at the tail of the Almanac Finds lore book (`buildFindsEntries.ts` `makers_note`, after the 25 Old Drover slots) naming the Pictish stones (Aberlemno, crescent + V-rod), insular knotwork (Kells / Iona), and the Mackintosh rose. EN + SCS. Unadvertised by design — no unlock beat, no toast; found by the player who reads to the end of the shelf.
 
 **Rule.** Homages are deep-cut and *discovered* rather than advertised. They're love letters to Scottish games history — reward for the attentive.
 

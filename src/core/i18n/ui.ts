@@ -455,6 +455,15 @@ export const ui = {
       locked: '???',
       complete: 'He is quiet now. The moor is yours.',
     },
+    /** DESIGN_IDEAS §13 — the Celtic-pattern credit. A colophon at the
+     *  tail of the lore book, always readable, never advertised: a
+     *  love-letter naming the visual traditions the game's art borrows
+     *  from. Per CULTURAL_SENSITIVITIES_RESEARCH — credit given plainly,
+     *  ownership never claimed. */
+    makersNote: {
+      title: 'The Patterns — a maker\'s note',
+      body: 'Every knot, key, and rose in this wee game is borrowed light. The carved stones follow the Picts — Aberlemno\'s beasts, the crescent and V-rod nobody now reads. The plaited borders bow to the knotwork of Kells and Iona. The soft line against the hard grid is Charles Rennie Mackintosh\'s rose, by way of a Glasgow tearoom. Drawn wi\' love, never claimed: the patterns belong to the folk who cut them first.',
+    },
     /** Field Notes v2 (DESIGN_IDEAS §11) — Haggis Wildlife Foundation lore arc.
      *  14 entries unlocked by fieldNotesLifetime thresholds [1,3,7,12,20,30,50,75,90,105,120,135,150,165].
      *  Pompous faux-naturalist voice; the joke is that the Foundation writes in

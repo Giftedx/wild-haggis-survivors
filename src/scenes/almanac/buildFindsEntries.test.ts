@@ -35,6 +35,7 @@ describe('buildFindsEntries', () => {
       PERMANENT_UPGRADES.length +
       RELIQUARY_CURIOS.length +
       25 + // old drover lore arc
+      1 +  // maker's-note colophon (DESIGN_IDEAS §13)
       14;  // foundation lore arc
     expect(entries.length).toBe(expectedCount);
   });
@@ -159,6 +160,41 @@ describe('Old Drover entry — The Moor Remembers reveal arc', () => {
   });
 });
 
+describe("maker's-note colophon — Celtic pattern credit (DESIGN_IDEAS §13)", () => {
+  it('sits at the tail of the lore book, after the 25 drover slots', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog());
+    const loreEntries = entries.filter((e) => e.category === 'lore');
+    expect(loreEntries).toHaveLength(26);
+    expect(loreEntries[loreEntries.length - 1].key).toBe('makers_note');
+  });
+
+  it('is always acquired — a colophon, not a collectible', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 0);
+    const note = entries.find((e) => e.key === 'makers_note')!;
+    expect(note.acquired).toBe(true);
+    expect(note.acquireCount).toBe(1);
+    expect(note.category).toBe('lore');
+  });
+
+  it('title and body resolve to real copy in both locales', async () => {
+    const note = buildFindsEntries(createEmptyDiscoveryLog()).find(
+      (e) => e.key === 'makers_note',
+    )!;
+    await ensureLocaleReady('scs');
+    for (const locale of ['en', 'scs'] as const) {
+      setLocale(locale);
+      const title = t(note.nameKey);
+      const body = t(note.descKey);
+      expect(title, `${locale} title`).not.toBe(note.nameKey);
+      expect(body, `${locale} body`).not.toBe(note.descKey);
+      // The credit must actually name the three traditions it honours.
+      expect(body).toMatch(/Pict/);
+      expect(body).toMatch(/Mackintosh/);
+      expect(body).toMatch(/Iona/);
+    }
+  });
+});
+
 describe('Foundation entries — Haggis Wildlife Foundation lore arc', () => {
   it('renders 14 foundation entries with acquired=false when fieldNotesLifetime=0', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog(), 0, 0);
@@ -259,12 +295,13 @@ describe('findsDiscoverySummary', () => {
     log = recordItemAcquired(log, 'sporran', 'run-1', 200);
     const entries = buildFindsEntries(log);
     const summary = findsDiscoverySummary(entries);
-    expect(summary.acquired).toBe(2);
+    // 2 acquired items + the always-acquired maker's-note colophon.
+    expect(summary.acquired).toBe(3);
     expect(summary.total).toBe(entries.length);
   });
 
-  it('returns 0 acquired on a cold DiscoveryLog', () => {
+  it('a cold DiscoveryLog counts only the always-acquired colophon', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog());
-    expect(findsDiscoverySummary(entries).acquired).toBe(0);
+    expect(findsDiscoverySummary(entries).acquired).toBe(1);
   });
 });
