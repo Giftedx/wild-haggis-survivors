@@ -1,6 +1,7 @@
 import { t } from '../core/i18n';
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
+import { PARRY_REFLECT_STATS_KEY } from '../entities/shintyParry';
 import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
@@ -54,7 +55,11 @@ export function buildWeaponDamageRows(input: WeaponDamageRowsInput): string {
   const evoDisplay = new Map(EVOLUTION_RECIPES.map((r) => [r.evolvedWeapon, t(r.nameKey)]));
   for (const e of entries.slice(0, cap)) {
     const def = WEAPON_DEFS[e.key as WeaponKey];
-    const raw = def ? t(def.nameKey) : (evoDisplay.get(e.key) ?? e.key);
+    // Shinty Parry v2 — reflected-shot damage logs under its own
+    // pseudo-key (not a WeaponKey); resolve it to a proper label.
+    const raw = e.key === PARRY_REFLECT_STATS_KEY
+      ? t('ui.gameOver.parry_reflect_label')
+      : def ? t(def.nameKey) : (evoDisplay.get(e.key) ?? e.key);
     const label = raw.length > 18 ? raw.slice(0, 17) + '…' : raw;
     const pct = totalDamage > 0 ? Math.round((e.damage / totalDamage) * 100) : 0;
     lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}   ${pct.toString().padStart(2, ' ')}%`);

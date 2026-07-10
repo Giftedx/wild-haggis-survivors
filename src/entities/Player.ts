@@ -58,6 +58,7 @@ import {
   getStanceModifiers,
 } from './stanceToggle';
 import {
+  type ParryReflectContext,
   type ShintyParryState,
   createShintyParryState,
   tickShintyParry,
@@ -65,6 +66,7 @@ import {
   isParryActive,
   isParryReady,
   parryCooldownFraction,
+  reflectShintyProjectile,
 } from './shintyParry';
 import {
   type RaceTheBeithirState,
@@ -2062,8 +2064,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
-   * Shinty Parry intercept (DESIGN_IDEAS §1). Called by Enemy.fireNet's
-   * overlap callback when an enemy projectile contacts the player.
+   * Shinty Parry intercept (DESIGN_IDEAS §1). Called by every enemy
+   * projectile-overlap callback when the shot contacts the player.
    *
    * - Returns true: the parry window was active. The projectile is
    *   considered negated; the caller MUST skip `applyNetSlow` and may
@@ -2074,11 +2076,56 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    *
    * The consume call also rolls the helper into cooldown — one window,
    * one parry, even if a barrage arrives in the same tick.
+   *
+   * v2 — reflection: when the caller passes the incoming shot's
+   * kinematics (captured BEFORE its cleanup destroys the body), a
+   * consumed parry also returns the shot. `reflectShintyProjectile`
+   * owns the state transition + velocity math: the ball keeps the
+   * incoming speed and flies along the player→shooter facing vector
+   * (return to sender), falling back to a straight reverse when the
+   * shooter is on top of the player. The scene materialises it via
+   * `fireParryReflect` (GameScene → WeaponSystem) and the ball deals
+   * the shot's own damage to the first enemy it meets. No RNG — the
+   * reflect is a pure function of positions, preserving the T1 replay
+   * contract.
    */
-  tryParryProjectile(): boolean {
+  tryParryProjectile(incoming?: ParryReflectContext): boolean {
+    if (incoming) {
+      const r = reflectShintyProjectile(this.shintyParryState, {
+        projectile: {
+          owner: 'enemy',
+          velocityX: incoming.velocityX,
+          velocityY: incoming.velocityY,
+          damage: incoming.damage,
+          reflectable: true,
+        },
+        facing: { x: incoming.sourceX - this.x, y: incoming.sourceY - this.y },
+      });
+      if (!r.reflected || !r.projectile) return false;
+      this.shintyParryState = r.state;
+      this.emitParryFeedback();
+      const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
+      sceneCtx.fireParryReflect?.(
+        this.x,
+        this.y,
+        r.projectile.velocityX,
+        r.projectile.velocityY,
+        r.projectile.damage,
+      );
+      return true;
+    }
+
     const r = consumeParry(this.shintyParryState);
     if (!r.consumed) return false;
     this.shintyParryState = r.state;
+    this.emitParryFeedback();
+    return true;
+  }
+
+  /** Shared parry-consume feedback — SFX, first-success tutorial
+   *  caption, banter. Split out so the negate and reflect paths can't
+   *  drift. */
+  private emitParryFeedback(): void {
     audio.playShintyParry?.();
     const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
     if (this.parryFirstSuccessPending) {
@@ -2086,7 +2133,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       sceneCtx.caption?.('parry_first_success', 'Caman flick — that\'s a parry.', '#9fcad9', 2400);
     }
     sceneCtx.requestBanter?.('shinty_parry');
-    return true;
   }
 
   /** HUD readout — true while the parry window is open. */

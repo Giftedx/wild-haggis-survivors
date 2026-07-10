@@ -225,6 +225,20 @@ describe('buildWeaponDamageRows', () => {
     expect(out[3]).toContain('100');
   });
 
+  it('resolves the Shinty Parry reflect pseudo-key to its own label, not the raw key', () => {
+    const out = buildWeaponDamageRows({
+      ...baseInput,
+      weaponDamage: { thistle_shot: 100, shinty_parry: 40 },
+      maxRows: 5,
+    }).split('\n');
+    expect(out).toHaveLength(3);
+    // The pseudo-key never leaks raw into the table; the row still
+    // carries its damage figure.
+    expect(out[2]).not.toContain('shinty_parry');
+    expect(out[2]).toContain('40');
+    expect(out[2]).toContain('Returned shots');
+  });
+
   it('truncates to maxRows and appends a "+N more" overflow line', () => {
     const out = buildWeaponDamageRows({
       ...baseInput,

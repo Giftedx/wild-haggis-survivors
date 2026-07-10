@@ -118,7 +118,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 | Drift Mastery | `entities/driftMastery.ts` | G | Counter-rotate accumulates Grip pips; consume → drift-cancel + speed burst. Refs SCOTTISH_RESEARCH_DEEP §11.5. |
 | Whisky Breath | `entities/whiskyBreath.ts` | F | Kill-stack AOE + burn-puddle DoT; needs ≥8 stacks. Refs §13.6. |
 | Stance Toggle | `entities/stanceToggle.ts` | Q | Cycle loose/braced/reeling — speed × drift muls; persistent posture. |
-| Shinty Parry | `entities/shintyParry.ts` | E | 350 ms negate window vs enemy projectiles; whiff is free. Refs §15. |
+| Shinty Parry | `entities/shintyParry.ts` | E | 350 ms window vs enemy projectiles — negate + v2 return-to-sender (`WeaponSystem.fireParryReflect`); whiff is free. Refs §15. |
 
 **Landmarks (walk-through interactions):**
 

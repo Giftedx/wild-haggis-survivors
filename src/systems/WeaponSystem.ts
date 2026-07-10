@@ -16,6 +16,7 @@ import { applyPibrochDamage, isPibrochAligned, PIBROCH_WINDOW_MS } from './music
 import { applyPibrochHammerRhythm, applyWaulkingRhythm } from './music/waulkingRhythm';
 import { populateEvolvedKeys } from './evolvedWeaponKeys';
 import { pickBouncingLaunchAngle } from './weaponAngleSeed';
+import { PARRY_REFLECT_STATS_KEY, PARRY_REFLECT_TTL_MS } from '../entities/shintyParry';
 import {
   createDashStrikeState,
   tickDashStrike,
@@ -2446,6 +2447,48 @@ export class WeaponSystem {
     proj.setWeaponKey(w.config.key);
     proj.setPibrochAligned(false);
     this.applyProjectileVisual(proj, texture);
+  }
+
+  /**
+   * Shinty Parry v2 (DESIGN_IDEAS §1) — materialise a parried shot
+   * flying back at its shooter. Called via the `fireParryReflect`
+   * ISceneContext hook from `Player.tryParryProjectile`.
+   *
+   * The ball is a cream shinty-leather circle (red-stitched seam) using
+   * the same ad-hoc circle + overlap + TTL shape as the enemy shots it
+   * answers — the pooled `Projectile` class assumes weapon configs, and
+   * the reflect carries none. Damage routes through the standard
+   * `dealDamageToEnemy` path (damage number, impact ring, kill events,
+   * grudge emission) under `PARRY_REFLECT_STATS_KEY`, never a crit —
+   * the reflect consumes no RNG, preserving the T1 replay contract.
+   * One hit, first enemy in the lane; the negated shot's own damage is
+   * the payload (returned to sender, exactly what they posted).
+   */
+  fireParryReflect(fromX: number, fromY: number, velocityX: number, velocityY: number, damage: number): void {
+    if (this.destroyed) return;
+    const ball = this.scene.add.circle(fromX, fromY, 5, 0xe8dcc8, 0.95);
+    ball.setStrokeStyle(1.5, 0xb04838, 0.9);
+    this.scene.physics.add.existing(ball);
+    const body = ball.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(velocityX, velocityY);
+
+    let done = false;
+    const cleanup = () => {
+      if (done) return;
+      done = true;
+      try {
+        this.scene.physics.world.removeCollider(overlapRef);
+        if (ball.active) ball.destroy();
+      } catch { /* scene may have restarted */ }
+    };
+    const overlapRef = this.scene.physics.add.overlap(ball, this.enemyGroup, (_ball, enemyObj) => {
+      if (done) return;
+      const enemy = enemyObj as Enemy;
+      if (!enemy.active) return;
+      cleanup();
+      this.dealDamageToEnemy(enemy, damage, false, PARRY_REFLECT_STATS_KEY);
+    });
+    this.scene.getUpdateTickers().addOnce('raw', PARRY_REFLECT_TTL_MS, cleanup);
   }
 
   /** Find the closest active enemy to an arbitrary world position — used by

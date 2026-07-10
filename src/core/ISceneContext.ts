@@ -87,5 +87,16 @@ export interface ISceneContext {
    * burst still applies its instant AOE damage either way.
    */
   spawnWhiskyPuddle?(x: number, y: number, dmgPerTick: number): void;
+
+  /**
+   * Shinty Parry v2 reflection hook (DESIGN_IDEAS §1). Called by
+   * `Player.tryParryProjectile` when a parry consumes an incoming shot
+   * that carried reflect kinematics — GameScene routes it to
+   * `WeaponSystem.fireParryReflect`, which materialises the returned
+   * ball (cream shinty leather) flying at the shooter for the shot's
+   * own damage. Optional so unit-test scenes without a WeaponSystem
+   * keep the plain negate behaviour.
+   */
+  fireParryReflect?(fromX: number, fromY: number, velocityX: number, velocityY: number, damage: number): void;
 }
 

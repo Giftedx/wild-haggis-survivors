@@ -1048,6 +1048,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.banter?.request(context, tag ? { tag } : undefined);
   }
 
+  /**
+   * Shinty Parry v2 — ISceneContext hook. Player.tryParryProjectile
+   * calls this on a reflect-consume; WeaponSystem materialises the
+   * returned ball and owns its damage path.
+   */
+  fireParryReflect(fromX: number, fromY: number, velocityX: number, velocityY: number, damage: number): void {
+    this.weaponSystem?.fireParryReflect(fromX, fromY, velocityX, velocityY, damage);
+  }
+
   // ── The Moor Remembers (spec 2026-05-22) ──────────────────────────
   // CairnOfEchoes sprite + walk-over wiring. The scheduler is hook-
   // driven so it stays Phaser-free + unit-testable; the methods below

@@ -40,12 +40,15 @@
  * Refs: SCOTTISH_RESEARCH_DEEP.md §15 (camanachd / shinty);
  * DESIGN_IDEAS.md §1 ("Shinty Parry — a new weapon with a 350 ms
  * reflect window against projectiles. High-skill defensive layer.").
- * The "reflect" framing collapsed to *negate* in v1: literally
- * reversing a projectile's velocity into a damage source touches the
- * enemy projectile group + scene-state in ways that broaden the
- * contract. v1 ships the timing-window discipline cleanly; v2 can
- * fold reflection in once an enemy-projectile group exists (today
- * each fireNet spawns ad-hoc circles with their own overlap).
+ * The "reflect" framing collapsed to *negate* in v1. v2 (shipped)
+ * folds reflection in: every enemy projectile-overlap site snapshots
+ * a `ParryReflectContext` before its cleanup and threads it through
+ * `Player.tryParryProjectile` — a consumed parry both negates the
+ * shot AND returns it at the shooter via `reflectShintyProjectile`
+ * (state transition + velocity math here) and
+ * `WeaponSystem.fireParryReflect` (materialisation + damage). The
+ * return ball deals the negated shot's own damage, never crits, and
+ * consumes no RNG — replay-deterministic by construction.
  */
 
 /** Length of the active parry window in ms. Tuned for "reflexive flick"
@@ -221,6 +224,34 @@ export interface ShintyProjectileReflectionInput {
   readonly facing: ShintyFacingVector;
 }
 
+/**
+ * v2 wiring context — what a projectile-overlap site hands to
+ * `Player.tryParryProjectile` so a consumed parry can return the shot.
+ * Captured INSIDE the overlap callback BEFORE the site's `cleanup()`
+ * destroys the projectile (post-destroy body reads are undefined
+ * behaviour across Phaser versions). `sourceX/Y` is the firing enemy's
+ * position at hit time — the return ball flies at where the shooter is
+ * NOW, not where it fired from.
+ */
+export interface ParryReflectContext {
+  readonly velocityX: number;
+  readonly velocityY: number;
+  readonly damage: number;
+  readonly sourceX: number;
+  readonly sourceY: number;
+}
+
+/** Stats key the reflected ball's damage is logged under. Not a
+ *  `WeaponKey` — the Game Over damage table resolves it to its own
+ *  "Returned shots" label, and the tartan top-weapon lookup falls back
+ *  to the neutral palette on unknown keys by design. */
+export const PARRY_REFLECT_STATS_KEY = 'shinty_parry';
+
+/** Lifetime of the materialised return ball before it fizzles, ms.
+ *  Matches the enemy shots' own 2 s despawn convention — long enough
+ *  to cross a full screen back to the shooter. */
+export const PARRY_REFLECT_TTL_MS = 2000;
+
 export interface ShintyProjectileReflectionResult {
   readonly state: ShintyParryState;
   readonly reflected: boolean;
@@ -229,13 +260,16 @@ export interface ShintyProjectileReflectionResult {
 }
 
 /**
- * Prototype-only reflection helper for Shinty Parry v2.
- *
- * This intentionally stops at pure projectile math + ownership transfer:
- * no Phaser groups, no collision mutation, no scene wiring. A future
- * enemy-projectile owner can call this after an overlap decides the parry
- * window is active, then materialise the returned player-owned projectile.
- * Same inputs produce same outputs; there is no RNG, wall-clock, or IO.
+ * Reflection core for Shinty Parry v2 — pure projectile math +
+ * ownership transfer + the consume state transition. No Phaser groups,
+ * no collision mutation, no scene wiring: `Player.tryParryProjectile`
+ * calls this when the overlap site supplied a `ParryReflectContext`,
+ * then hands the returned player-owned projectile to
+ * `WeaponSystem.fireParryReflect` to materialise. The reflected ball
+ * keeps the incoming speed and flies along the caller's facing vector
+ * (in practice: player→shooter), falling back to a straight reverse
+ * when facing is degenerate. Same inputs produce same outputs; there
+ * is no RNG, wall-clock, or IO.
  */
 export function reflectShintyProjectile(
   state: ShintyParryState,

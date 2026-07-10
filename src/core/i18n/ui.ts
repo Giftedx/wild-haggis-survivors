@@ -561,6 +561,9 @@ export const ui = {
     menu: 'TAE GRAN\'S',
     damage_summary: 'Kills {kills}  ·  Time {time}  ·  Gold +{gold}',
     no_weapon_damage: '(quiet run — nae weapon tally this time)',
+    /** Shinty Parry v2 — damage-table label for shots parried back at
+     *  their shooter (logged under a pseudo-key, not a weapon). */
+    parry_reflect_label: 'Returned shots',
     more_weapons: '… +{count} more',
     unlock_single: 'NEW VARIANT — WELCOME TAE THE HERD',
     unlock_multi: 'NEW VARIANTS — THE HERD GROWS',

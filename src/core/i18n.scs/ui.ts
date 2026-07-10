@@ -290,6 +290,8 @@ export const ui = {
     gold_breakdown: 'Time {timeGold}  |  Culls {killGold}  |  Boss {bossGold}  |  Coins {coinGold}',
     damage_summary: 'Culls {kills}  ·  Time {time}  ·  Gold +{gold}',
     no_weapon_damage: '(quait run — nae wapen tally this time)',
+    // Shinty Parry v2 — table label for shots caman'd back at the sender.
+    parry_reflect_label: 'Returned shots',
     more_weapons: '… +{count} mair',
     unlock_single: 'NEW VARIANT — WELCOME TAE THA HERD',
     unlock_multi: 'NEW VARIANTS — THA HERD GROWS',

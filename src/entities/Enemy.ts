@@ -18,6 +18,7 @@ import {
 } from '../data/eliteAffixes';
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 import { isDiveOffscreen } from './isDiveOffscreen';
+import type { ParryReflectContext } from './shintyParry';
 import { simulateWailBehaviour, WAIL_PULSE_RADIUS_PX, WAIL_PULSE_DAMAGE, type WailState } from './wailBehaviour';
 import { simulateCardDealBehaviour, CARD_DEAL_FAN_COUNT, CARD_DEAL_SPREAD_RAD, CARD_DEAL_SPEED, CARD_DEAL_DAMAGE, CARD_DEAL_RANGE_MS, type CardDealState } from './cardDealBehaviour';
 import { simulateHushBehaviour, HUSH_RADIUS_PX, HUSH_DAMAGE, HUSH_SLOW_MS, HUSH_TELEGRAPH_MS, type HushState } from './hushBehaviour';
@@ -917,6 +918,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
+   * Shinty Parry v2 — snapshot an in-flight hostile shot for the
+   * reflect path. MUST be called inside the overlap callback BEFORE
+   * the site's `cleanup()` destroys the shot (post-destroy body reads
+   * are undefined behaviour). `sourceX/Y` reads this enemy's CURRENT
+   * position so the returned ball flies at where the shooter is now;
+   * `damage` is the shot's own on-hit damage — returned to sender.
+   */
+  private buildParryReflect(body: Phaser.Physics.Arcade.Body, damage: number): ParryReflectContext {
+    return {
+      velocityX: body.velocity.x,
+      velocityY: body.velocity.y,
+      damage,
+      sourceX: this.x,
+      sourceY: this.y,
+    };
+  }
+
+  /**
    * V2 — Cailleach's ice-lance projectile. Mirrors `fireNet` shape but
    * with a frost-blue tint and the wail-tuned damage (18) + slow on hit
    * (player.applyNetSlow). The standard Shinty Parry hook (`tryParry
@@ -946,10 +965,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     const overlapRef = this.scene.physics.add.overlap(lance, spawnedPlayer, () => {
       if (hit) return;
+      const reflect = this.buildParryReflect(body, 18);
       cleanup();
       const currentPlayer = this.ctx.getPlayer();
       if (currentPlayer !== spawnedPlayer) return;
-      if (currentPlayer.tryParryProjectile()) return;
+      if (currentPlayer.tryParryProjectile(reflect)) return;
       currentPlayer.takeDamage(18);
       currentPlayer.applyNetSlow(1200);
     });
@@ -1038,10 +1058,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
       const overlapRef = this.scene.physics.add.overlap(card, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, CARD_DEAL_DAMAGE);
         cleanup();
         const currentPlayer = this.ctx.getPlayer();
         if (currentPlayer !== spawnedPlayer) return;
-        if (currentPlayer.tryParryProjectile()) return;
+        if (currentPlayer.tryParryProjectile(reflect)) return;
         currentPlayer.takeDamage(CARD_DEAL_DAMAGE);
       });
 
@@ -1164,10 +1185,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(lance, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, STORM_LANCE_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(STORM_LANCE_DAMAGE);
         cur.applyNetSlow(STORM_LANCE_SLOW_MS);
       });
@@ -1199,10 +1221,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(bolt, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, STORM_HAIL_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(STORM_HAIL_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 1400, cleanup);
@@ -1285,10 +1308,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, TWIN_RING_SHARD_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(TWIN_RING_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
@@ -1315,10 +1339,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, TWIN_FAN_SHARD_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(TWIN_FAN_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
@@ -1363,10 +1388,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, WICKER_RING_SHARD_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(WICKER_RING_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2200, cleanup);
@@ -1391,10 +1417,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, WICKER_TRANSITION_SHARD_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(WICKER_TRANSITION_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 3200, cleanup);
@@ -1425,10 +1452,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, WICKER_SCATTER_SHARD_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(WICKER_SCATTER_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
@@ -1466,10 +1494,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, NESSIE_SWEEP_SHARD_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(NESSIE_SWEEP_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
@@ -1496,10 +1525,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(shard, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, NESSIE_PLUNGE_SHARD_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(NESSIE_PLUNGE_SHARD_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 1800, cleanup);
@@ -1584,10 +1614,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     };
     const overlapRef = this.scene.physics.add.overlap(orb, spawnedPlayer, () => {
       if (hit) return;
+      const reflect = this.buildParryReflect(body, LANTERN_DAMAGE);
       cleanup();
       const cur = this.ctx.getPlayer();
       if (cur !== spawnedPlayer) return;
-      if (cur.tryParryProjectile()) return;
+      if (cur.tryParryProjectile(reflect)) return;
       cur.takeDamage(LANTERN_DAMAGE);
     });
     this.ctx.getUpdateTickers().addOnce('raw', 2500, cleanup);
@@ -1612,10 +1643,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const overlapRef = this.scene.physics.add.overlap(orb, spawnedPlayer, () => {
         if (hit) return;
+        const reflect = this.buildParryReflect(body, LANTERN_DAMAGE);
         cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(LANTERN_DAMAGE);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2500, cleanup);
@@ -1752,10 +1784,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
       };
       const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-        if (hit) return; cleanup();
+        if (hit) return;
+        const reflect = this.buildParryReflect(body, 22);
+        cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(22);
         cur.applyNetSlow(900);
       });
@@ -1780,10 +1814,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
       };
       const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-        if (hit) return; cleanup();
+        if (hit) return;
+        const reflect = this.buildParryReflect(body, 20);
+        cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(20);
         cur.applyNetSlow(700);
       });
@@ -1806,10 +1842,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
     };
     const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-      if (hit) return; cleanup();
+      if (hit) return;
+      // Reflect carries what the assessment tried to levy — 12% of the
+      // player's (unharmed, parry negated the hit) current HP.
+      const reflect = this.buildParryReflect(
+        body,
+        Math.max(8, Math.floor(spawnedPlayer.getHp() * 0.12)),
+      );
+      cleanup();
       const cur = this.ctx.getPlayer();
       if (cur !== spawnedPlayer) return;
-      if (cur.tryParryProjectile()) return;
+      if (cur.tryParryProjectile(reflect)) return;
       cur.takeDamage(Math.max(8, Math.floor(cur.getHp() * 0.12)));
     });
     this.ctx.getUpdateTickers().addOnce('raw', 5500, cleanup);
@@ -1835,10 +1878,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
       };
       const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-        if (hit) return; cleanup();
+        if (hit) return;
+        const reflect = this.buildParryReflect(body, 14);
+        cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(14);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2200, cleanup);
@@ -1864,10 +1909,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         try { this.scene.physics.world.removeCollider(overlapRef); if (proj.active) proj.destroy(); } catch { /* scene restart */ }
       };
       const overlapRef = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-        if (hit) return; cleanup();
+        if (hit) return;
+        const reflect = this.buildParryReflect(body, 18);
+        cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(18);
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2600, cleanup);
@@ -1928,10 +1975,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const dmg = this.damage;
       const ol = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-        if (hit) return; cleanup();
+        if (hit) return;
+        const reflect = this.buildParryReflect(body, Math.round(dmg * 0.7));
+        cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(Math.round(dmg * 0.7));
         cur.applyNetSlow(600);
       });
@@ -1956,10 +2005,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const dmg = this.damage;
       const ol = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-        if (hit) return; cleanup();
+        if (hit) return;
+        const reflect = this.buildParryReflect(body, Math.round(dmg * 0.55));
+        cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(Math.round(dmg * 0.55));
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2800, cleanup);
@@ -2037,10 +2088,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       };
       const dmg = this.damage;
       const ol = this.scene.physics.add.overlap(proj, spawnedPlayer, () => {
-        if (hit) return; cleanup();
+        if (hit) return;
+        const reflect = this.buildParryReflect(body, Math.round(dmg * 0.65));
+        cleanup();
         const cur = this.ctx.getPlayer();
         if (cur !== spawnedPlayer) return;
-        if (cur.tryParryProjectile()) return;
+        if (cur.tryParryProjectile(reflect)) return;
         cur.takeDamage(Math.round(dmg * 0.65));
       });
       this.ctx.getUpdateTickers().addOnce('raw', 2200, cleanup);
@@ -2112,6 +2165,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     const overlapRef = this.scene.physics.add.overlap(net, spawnedPlayer, () => {
       if (hit) return;
+      // v2 reflect — the net carries no damage of its own; the return
+      // ball carries the netter's contact damage (fling the net back).
+      const reflect = this.buildParryReflect(body, this.damage);
       cleanup();
 
       // Guard: only apply slow if this is still the same player (not a new run)
@@ -2124,7 +2180,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       // internally so the contact site stays a single check. The net
       // is already destroyed (cleanup() above), so a parried hit just
       // skips the slow.
-      if (currentPlayer.tryParryProjectile()) return;
+      if (currentPlayer.tryParryProjectile(reflect)) return;
 
       // Apply a game-tick net slow (duration freezes with timeScale/pause).
       spawnedPlayer.applyNetSlow(2000);
@@ -2193,6 +2249,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     const overlapRef = this.scene.physics.add.overlap(fang, spawnedPlayer, () => {
       if (hit) return;
+      // v2 reflect — the fang's payload is a deferred sting, not
+      // damage, so the returned ball carries the beithir's own contact
+      // damage instead: spit the venom back at the serpent.
+      const reflect = this.buildParryReflect(body, this.damage);
       cleanup();
 
       const currentPlayer = this.ctx.getPlayer();
@@ -2202,7 +2262,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       // no sting applied, the player keeps the agency beat. Sister to
       // the existing parry/applyNetSlow chain so future projectile
       // types pick up parry support uniformly.
-      if (currentPlayer.tryParryProjectile()) return;
+      if (currentPlayer.tryParryProjectile(reflect)) return;
 
       currentPlayer.applyBeithirStingFromFang(this.eliteFlag);
     });
