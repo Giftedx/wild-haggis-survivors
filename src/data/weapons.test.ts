@@ -38,10 +38,20 @@ describe('WEAPON_DEFS', () => {
   });
 
   it('every evolution recipe references valid weapon and passive keys', () => {
+    const seenEvolved = new Set<string>();
     for (const recipe of EVOLUTION_RECIPES) {
       expect(keys).toContain(recipe.baseWeapon);
+
+      expect(typeof recipe.evolvedWeapon).toBe('string');
+      expect(recipe.evolvedWeapon.length).toBeGreaterThan(0);
+      expect(seenEvolved.has(recipe.evolvedWeapon)).toBe(false);
+      seenEvolved.add(recipe.evolvedWeapon);
+
       const evoName = t(recipe.nameKey);
       expect(evoName, `Evolution ${recipe.evolvedWeapon} nameKey not found`).not.toBe(recipe.nameKey);
+
+      const evoDesc = t(recipe.descriptionKey);
+      expect(evoDesc, `Evolution ${recipe.evolvedWeapon} descriptionKey not found`).not.toBe(recipe.descriptionKey);
     }
   });
 
