@@ -1,10 +1,9 @@
 /**
  * P3 Cloud Saves — envelope shape.
  *
- * The cloud envelope wraps the existing `whs_save` payload (schema v18,
- * see `src/utils/save/schema.ts`) without modifying the inner shape. The
- * server is schema-blind passthrough; client-side migrations stay where
- * they already live.
+ * The cloud envelope wraps the existing `whs_save` payload after removing
+ * optional per-run replay blobs. The local save remains unchanged and the
+ * server stays schema-blind; client-side migrations remain where they live.
  *
  * Pure module — no Phaser, no DOM, no network. Safe to import from any
  * layer; covered by Vitest at `cloudSaveEnvelope.test.ts`.
@@ -25,8 +24,8 @@ export const CLOUD_SAVE_ENVELOPE_VERSION = 1 as const;
  * Maximum accepted inner-payload length in bytes. The hard ceiling is
  * any cloud provider's per-row blob limit (D1: 1 MB, KV: 25 MB,
  * Firestore: 1 MB, Supabase: 50 MB). 256 KB is generous for the
- * existing v17 payload (5–50 KB typical, 200 KB worst case with full
- * replay blob) and gives the server a sanity check before persisting.
+ * existing payload once local-only replay blobs are removed and gives the
+ * server a sanity check before persisting.
  */
 export const MAX_PAYLOAD_BYTES = 256 * 1024;
 
@@ -53,10 +52,9 @@ export interface CloudSaveEnvelope {
    */
   deviceId: string;
   /**
-   * The inner payload, JSON-stringified. Stored as a string (not parsed
-   * here) so we don't have to coerce the inner shape; that's the
-   * existing `migrateAndCoerce` path's job in `save.ts` and
-   * `SaveManager.ts`. Server is schema-blind.
+   * The cloud-safe inner payload, JSON-stringified. Replay blobs are omitted;
+   * all other coercion remains the existing save migration path's job. The
+   * server is schema-blind.
    */
   payload: string;
   /**
@@ -89,9 +87,10 @@ export interface BuildEnvelopeOpts {
 }
 
 /**
- * Wrap an inner save payload (already JSON-stringified) in a cloud
- * envelope. Throws if the payload exceeds `MAX_PAYLOAD_BYTES` — the
- * caller (toast handler) decides how to surface that.
+ * Wrap an inner save payload (already JSON-stringified) in a cloud envelope.
+ * Run-history replay blobs are local-only and stripped before the size guard.
+ * Throws if the remaining payload exceeds `MAX_PAYLOAD_BYTES` — the caller
+ * (toast handler) decides how to surface that.
  */
 export function buildCloudSaveEnvelope(
   payload: string,
@@ -100,7 +99,8 @@ export function buildCloudSaveEnvelope(
   if (typeof payload !== 'string') {
     throw new TypeError('cloudSaveEnvelope: payload must be a string');
   }
-  const bytes = byteLength(payload);
+  const cloudPayload = stripRunHistoryReplays(payload);
+  const bytes = byteLength(cloudPayload);
   if (bytes < MIN_PAYLOAD_BYTES) {
     throw new RangeError(`cloudSaveEnvelope: payload too small (${bytes} bytes)`);
   }
@@ -123,7 +123,7 @@ export function buildCloudSaveEnvelope(
     payloadSchemaVersion: Math.floor(opts.payloadSchemaVersion),
     lastModified: Math.floor(now),
     deviceId: opts.deviceId,
-    payload,
+    payload: cloudPayload,
   };
 }
 
@@ -204,4 +204,26 @@ function byteLength(s: string): number {
     else bytes += 3;
   }
   return bytes;
+}
+
+function stripRunHistoryReplays(payload: string): string {
+  let save: unknown;
+  try {
+    save = JSON.parse(payload);
+  } catch {
+    return payload;
+  }
+  if (!isRecord(save) || !Array.isArray(save.runHistory)) return payload;
+
+  let stripped = false;
+  for (const entry of save.runHistory) {
+    if (!isRecord(entry) || !('replay' in entry)) continue;
+    delete entry.replay;
+    stripped = true;
+  }
+  return stripped ? JSON.stringify(save) : payload;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
