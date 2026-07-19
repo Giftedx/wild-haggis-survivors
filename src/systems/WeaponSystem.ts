@@ -50,7 +50,7 @@ export interface ActiveWeapon {
 }
 
 /**
- * WeaponSystem — manages all 6 weapon types with different behaviors.
+ * WeaponSystem — manages weapons defined in WEAPON_DEFS across different behaviors.
  *
  * Projectile weapons (thistle_shot, caber_toss, haggis_hurler) use pooled sprites.
  * Area weapons (bagpipe_blast, scotch_mist, nessie_tentacle) directly query enemies.
