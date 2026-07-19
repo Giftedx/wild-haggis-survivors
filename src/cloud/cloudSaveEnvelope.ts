@@ -1,7 +1,7 @@
 /**
  * P3 Cloud Saves — envelope shape.
  *
- * The cloud envelope wraps the existing `whs_save` payload (schema v18,
+ * The cloud envelope wraps the existing `whs_save` payload (schema v${SAVE_SCHEMA_VERSION},
  * see `src/utils/save/schema.ts`) without modifying the inner shape. The
  * server is schema-blind passthrough; client-side migrations stay where
  * they already live.
@@ -25,7 +25,7 @@ export const CLOUD_SAVE_ENVELOPE_VERSION = 1 as const;
  * Maximum accepted inner-payload length in bytes. The hard ceiling is
  * any cloud provider's per-row blob limit (D1: 1 MB, KV: 25 MB,
  * Firestore: 1 MB, Supabase: 50 MB). 256 KB is generous for the
- * existing v17 payload (5–50 KB typical, 200 KB worst case with full
+ * existing v${SAVE_SCHEMA_VERSION} payload (5–50 KB typical, 200 KB worst case with full
  * replay blob) and gives the server a sanity check before persisting.
  */
 export const MAX_PAYLOAD_BYTES = 256 * 1024;
@@ -37,7 +37,7 @@ export interface CloudSaveEnvelope {
   /** Envelope schema version. Distinct from inner payload's schema. */
   envelopeVersion: typeof CLOUD_SAVE_ENVELOPE_VERSION;
   /**
-   * The inner payload schema version (e.g. 17 for current `whs_save`).
+   * The inner payload schema version (e.g. SAVE_SCHEMA_VERSION for current `whs_save`).
    * Recorded so the conflict-resolution layer can refuse to overwrite
    * a newer-schema local with an older-schema cloud blob (or vice
    * versa). See `cloudSaveConflict.ts`.
