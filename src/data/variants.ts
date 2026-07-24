@@ -119,14 +119,14 @@ export type VariantUnlockCondition =
   // Wired via `RunHistoryContext.biomesVisited` and BiomeController.
   | { type: 'runs_in_coastal_only'; required: number }
   // V2 Track 3 — Burns's Wee Beastie unlock: "earned when the bard is
-  // honoured". Counter increments on victory when >= 7 weapons evolved
-  // in the same run (all 7 evolutions fired — Burns, Ayrshire poet of
+  // honoured". Counter increments on victory when >= BURNS_EVOLUTION_THRESHOLD
+  // (10) weapons evolved in the same run — Burns, Ayrshire poet of
   // the haggis itself, emerges when the player has fully earned him).
   // Retained on the type for back-compat; no variant currently uses
   // this gate after the E1 tightening.
   | { type: 'runs_with_all_evolutions'; required: number }
-  // E1 M2 T11 — tightened Burns's Wee Beastie gate. Victory with
-  // all-7 evolutions AND run ended inside a Burns Night window
+  // E1 M2 T11 — tightened Burns's Wee Beastie gate. Victory with >=
+  // BURNS_EVOLUTION_THRESHOLD (10) evolutions AND run ended inside a Burns Night window
   // (device-local date). Counter is `burnsNightFullEvoRuns` on the
   // VariantProgressSnapshot; SaveData mirrors it as
   // `burnsNightFullEvoRunsCompleted`.
