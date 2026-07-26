@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { REPLAY_RECORDER_FRAME_CAP } from '../replay/ReplayRecorder';
+import { createDefaultSave } from '../utils/save';
 import {
   CLOUD_SAVE_ENVELOPE_VERSION,
   MAX_PAYLOAD_BYTES,
@@ -8,6 +10,38 @@ import {
 } from './cloudSaveEnvelope';
 
 const SAMPLE_PAYLOAD = JSON.stringify({ saveVersion: 17, totalKills: 42 });
+
+function replayBearingSavePayload(): string {
+  const save = createDefaultSave();
+  const frames = Array.from({ length: REPLAY_RECORDER_FRAME_CAP }, () => ({
+    dtMs: 16,
+    dx: 0,
+    dy: 0,
+    dash: false,
+    menu: false,
+  }));
+  save.runHistory = [{
+    timestamp: 1,
+    timeSurvivedSec: 1_500,
+    enemiesKilled: 0,
+    level: 1,
+    bossKills: 0,
+    goldEarned: 0,
+    bestCombo: 0,
+    variantKey: 'classic',
+    isVictory: false,
+    weaponKeys: [],
+    replay: {
+      version: 1,
+      build: 'test',
+      seed: 1,
+      variantKey: 'classic',
+      frameCount: frames.length,
+      frames,
+    },
+  }];
+  return JSON.stringify(save);
+}
 
 describe('cloudSaveEnvelope — build', () => {
   it('builds with the current envelope version', () => {
@@ -47,6 +81,23 @@ describe('cloudSaveEnvelope — build', () => {
       payloadSchemaVersion: 17,
       deviceId: 'device-1',
     })).toThrow(/exceeds/);
+  });
+
+  it('strips replays from a capped replay-bearing save before enforcing the cloud payload limit', () => {
+    const payload = replayBearingSavePayload();
+    expect(new TextEncoder().encode(payload).length).toBeGreaterThan(MAX_PAYLOAD_BYTES);
+
+    const envelope = buildCloudSaveEnvelope(payload, {
+      payloadSchemaVersion: 24,
+      deviceId: 'device-1',
+    });
+    const cloudSave = JSON.parse(envelope.payload) as {
+      runHistory: Array<Record<string, unknown>>;
+    };
+
+    expect(new TextEncoder().encode(envelope.payload).length).toBeLessThan(MAX_PAYLOAD_BYTES);
+    expect(cloudSave.runHistory).toHaveLength(1);
+    expect(cloudSave.runHistory.every((entry) => !('replay' in entry))).toBe(true);
   });
 
   it('rejects empty deviceId', () => {

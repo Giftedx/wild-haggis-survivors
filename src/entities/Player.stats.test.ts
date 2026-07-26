@@ -169,6 +169,23 @@ describe('Player.heal', () => {
   });
 });
 
+describe('Player.getHpFraction', () => {
+  it('measures current HP against the rune-folded max-HP cap', () => {
+    const bag = createRuneEffectBag();
+    bag.hpMaxMult = 1.5;
+
+    const critical = makePlayer({ maxHp: 100 });
+    critical.setRuneBagAccessor(() => bag);
+    critical.takeDamage(85);
+    expect(critical.getHpFraction()).toBeCloseTo(0.1, 9);
+
+    const healthy = makePlayer({ maxHp: 100 });
+    healthy.setRuneBagAccessor(() => bag);
+    healthy.heal(40);
+    expect(healthy.getHpFraction()).toBeCloseTo(140 / 150, 9);
+  });
+});
+
 describe('Player bonus stacking', () => {
   it('addLuckDrawBonus stacks for level-up card weights', () => {
     const p = makePlayer();

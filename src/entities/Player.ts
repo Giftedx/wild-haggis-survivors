@@ -1346,7 +1346,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** Safe ratio for HUD / magnet / juice — avoids NaN if maxHp is ever pathological. */
   getHpFraction(): number {
     if (this.maxHp <= 0) return 1;
-    return Math.min(1, Math.max(0, this.hp / this.maxHp));
+    return Math.min(1, Math.max(0, this.hp / this.getMaxHp()));
   }
   getRunBaseSpeed(): number { return this.runBaseSpeed; }
   getRunBaseMaxHp(): number { return this.runBaseMaxHp; }

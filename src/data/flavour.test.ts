@@ -68,7 +68,7 @@ describe('C2 — flavour leaves present in EN + SCS', () => {
       keys: VARIANTS.map((v) => `variant.${v.key}.lore`),
     },
     {
-      // R1 M4 — 18 relics carry `flavour`. SCS overlay shipped 2026-04-24.
+      // R1 M4 — 19 relics carry `flavour`. SCS overlay shipped 2026-04-24.
       scope: 'relic',
       keys: Object.values(RELICS).map((r) => r.flavourKey),
     },

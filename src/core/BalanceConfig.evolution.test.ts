@@ -93,8 +93,8 @@ describe('P1.4 — bagpipes utility-only player-facing copy', () => {
     expect(rawDesc.toLowerCase(), `EN achievement copy implies all 14 weapons evolve: ${rawDesc}`)
       .not.toContain('every weapon');
     // The string MUST contain the {count} placeholder — that's the contract
-    // that `BURNS_EVOLUTION_THRESHOLD` (derived from `EVOLUTION_RECIPES.length`
-    // since 2026-05-10) interpolates against. If a future edit drops the
+    // that `BURNS_EVOLUTION_THRESHOLD` (hand-pinned literal in BalanceConfig.ts, not derived from EVOLUTION_RECIPES.length)
+    // interpolates against. If a future edit drops the
     // placeholder back to a literal, the threshold-vs-copy drift returns.
     expect(rawDesc).toContain('{count}');
     // Truth-anchor: the interpolated form must reference the active
