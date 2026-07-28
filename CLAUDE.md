@@ -139,7 +139,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 | Taxman Grudge Ledger | `entities/grudgeLedger.ts` | Silent per-run finish tracker; verdict drives Taxman victory line. |
 | Lemmings Easter Egg | `entities/lemmingsTrigger.ts` + `scenes/game/lemmingsEasterEgg.ts` | 90 s coastal idle → DMA Design 1991 homage. Once-per-variant. Refs SCOTTISH_RESEARCH_DEEP §21. |
 
-**Recent weapon ships (2026-05-09 sprint — shipped without integration coverage; e2e backfill in progress per `docs/REVIEW.md` C3):**
+**Recent weapon ships from the 2026-05-09 sprint (`e2e/sgian-dubh.spec.ts`, `e2e/shinty-stick.spec.ts`, and `e2e/stag-antler.spec.ts`):**
 
 | Weapon | Evolution | Behaviour | Note |
 |---|---|---|---|
