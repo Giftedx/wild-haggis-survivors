@@ -10,7 +10,7 @@
 - **Game version:** `2.7.0` (`package.json`).
 - **Game loop:** Boot → Menu (variants) → Game (survivors loop + biomes + curses + post-bell endless + W2 Moor Road acts + M1 multi-node graph) → Shop / MetaShop. CroftScene is the persistent hub between runs (H1, shipped 2026-04-24).
 - **Persistence:**
-  - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 23` (see `src/utils/save/schema.ts`). Migration chain since 2026-05-10: v18→v19 `RunHistoryEntry.sporranPicks` (S1 Phase 2 chronicle persistence), v19→v20 `beithirCuresLifetime`, v20→v21 `clootieWagersLifetime`, v21→v22 `cairnBlessingsLifetime` (DESIGN_IDEAS §1 mechanic-counter trio gating `*_first` banter sub-pools), v22→v23 `livingWorldUnlocks` (WLW Phase 2 companions roster — defaults `['sheepdog']` for pre-v23 saves).
+  - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 24` (see `src/utils/save/schema.ts`). Migration chain since 2026-05-10: v18→v19 `RunHistoryEntry.sporranPicks` (S1 Phase 2 chronicle persistence), v19→v20 `beithirCuresLifetime`, v20→v21 `clootieWagersLifetime`, v21→v22 `cairnBlessingsLifetime` (DESIGN_IDEAS §1 mechanic-counter trio gating `*_first` banter sub-pools), v22→v23 `livingWorldUnlocks` (WLW Phase 2 companions roster — defaults `['sheepdog']` for pre-v23 saves), v23→v24 `grudgeVerdictsLifetime` (Grudge Ledger v2 lifetime verdict counts).
   - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 12` (see `src/core/SaveManager.ts`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
 - **Tests:** Vitest suite via `npm test` (exact file/case counts change as coverage grows).
