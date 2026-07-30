@@ -22,6 +22,7 @@
     "loc-report": "node scripts/report-loc.mjs",
     "mechanic:e2e-inventory": "node scripts/report-mechanic-e2e-coverage.mjs",
     "palette": "node scripts/check-palette-drift.mjs",
+    "facts": "node scripts/check-doc-facts.mjs",
     "ci": "npm run lint && npm test && npm run build && npm run budget && npm run flash-budget && npm run loc-report",
     "test:e2e": "playwright test",
     "test:e2e:firefox": "playwright test --project=firefox-desktop",
