@@ -131,6 +131,7 @@ export default defineConfig({
     // README in `server/worker/README.md`.
     include: [
       'src/**/*.{test,spec}.ts',
+      'scripts/**/*.{test,spec}.mjs',
       'server/worker/test/**/*.{test,spec}.ts',
     ],
     // Preloads the Scots overlay chunk so sync `setLocale('scs'); t(...)`

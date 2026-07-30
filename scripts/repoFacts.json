@@ -1,0 +1,13 @@
+{
+  "weapons.total": 36,
+  "weapons.evolved": 7,
+  "evolution.recipes": 20,
+  "evolution.burnsThreshold": 10,
+  "relics.count": 19,
+  "variants.count": 28,
+  "biomes.count": 25,
+  "hazards.count": 25,
+  "runes.count": 30,
+  "seasonalEvents.count": 15,
+  "save.schemaVersion": 24
+}
