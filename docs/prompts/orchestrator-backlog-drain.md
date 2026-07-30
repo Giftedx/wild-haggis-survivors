@@ -39,7 +39,7 @@ These all touch `src/scenes/GameScene.ts`, `src/ui/`, save schema, or replay blo
 
 | Order | Charter | Notes |
 |---|---|---|
-| 1 | `task_01.md` — GameScene phase 2: extract one of {node-map lifecycle, run-start ceremony, replay bridge}. Pick exactly one. | `updateRunHudFrame.ts` + `actIntermissionOnResolve.ts` are already extracted — don't redo. `wc -l src/scenes/GameScene.ts` to confirm starting point. |
+| 1 | `task_01.md`: GameScene phase 2: extract one of {node-map lifecycle, run-start ceremony, replay bridge}. Pick exactly one. | `updateRunHudFrame.ts` is already extracted. The live act-intermission resolver remains in `actIntermissionLauncher.ts`. Do not extract another copy. `wc -l src/scenes/GameScene.ts` to confirm starting point. |
 | 2 | `task_10.md` — GameOver / Chronicle parity for routes / relics / act / runes / variant on the run-summary card. | Extends task_01 surface; pause already emits via `pauseStats.ts`. Reuse that helper shape. |
 | 3 | `task_04.md` — drift micro-practice: touch-primary skip path + tick-path test gaps. | Enter-only skip currently. Touch-primary detection lives in `src/systems/inputProfile.ts` or equivalent. |
 | 4 | `task_02.md` — DOM focus layer adoption #1: **CurseScene**. Add Playwright a11y smoke for the layer. | Helper + GameOver done. Pattern is proven. |
@@ -106,7 +106,7 @@ For every sub-agent dispatch:
    Hygiene:
      - Never `git add -A` (build-output redirects sneak in)
      - Never `--no-verify` or `--no-gpg-sign`
-     - Never delete / rewrite already-extracted helpers (updateRunHudFrame.ts, actIntermissionOnResolve.ts)
+     - Never delete / rewrite the already-extracted helper (`updateRunHudFrame.ts`)
      - Every gap you leave becomes a written follow-up at the bottom of your report — no handwaves
 
    Final report must include:
@@ -137,7 +137,7 @@ For every sub-agent dispatch:
 
 - No two GameScene-touching agents in parallel. `task_01`, `task_03`, `task_04`, `task_10`, P0.4, P1.1 all touch it directly or via shared state.
 - No skipping `npm run build`. Vitest's esbuild is permissive on TS shape errors (see `feedback_test_runner_vs_tsc`).
-- No re-extracting `updateRunHudFrame.ts` or `actIntermissionOnResolve.ts` — already shipped.
+- Do not re-extract `updateRunHudFrame.ts`. It is already shipped. Keep act-intermission resolution in `actIntermissionLauncher.ts`.
 - No closing Tier-C human gates by agent claim.
 - No pushes to remote, no Cloudflare deploys, no force-pushes — those are user-confirmation actions.
 - No `git add -A` (memory: `feedback_git_add_all_with_build_redirects`).

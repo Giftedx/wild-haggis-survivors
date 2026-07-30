@@ -38,12 +38,10 @@ Remaining T401 debt around this slice:
 - Telemetry begin / clip recorder install (lines ~1490-1545, charter
   priority 3) untouched — self-contained, low risk, good next pick.
 
-## 2026-04-26 — slice: act intermission `onResolve` (already shipped)
+## 2026-04-26 — slice: act intermission `onResolve` (not shipped)
 
-`createActIntermissionOnResolve` in `src/scenes/game/actIntermissionOnResolve.ts`.
-Pure factory for the Moor Road route-pick callback (records pick,
-applies modifier deltas, resyncs SpawnSystem + WeaponSystem cached
-fields, advances act state, releases the intermission token).
+The planned factory existed, but no source file imported it. The repository no
+longer contains the unused module. The live callback remains in `actIntermissionLauncher.ts`.
 
 ## 2026-04-26 — slice: per-frame HUD coordinator (already shipped)
 
