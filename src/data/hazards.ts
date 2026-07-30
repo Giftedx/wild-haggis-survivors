@@ -389,7 +389,7 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
   // Jacobite Moor — musket ball volley from the ridge. Brief, deadly, small
   // impact zone (10 px hitbox — the ball is narrow). Damage (9) matches
   // summit_gust and stone_ring: decisive, not drawn-out. Short lifetime
-  // (3500 ms) — the volley passes; the next one is already on the way.
+  // (4200 ms) — the volley passes; the next one is already on the way.
   // Pairs with jacobiteMoor's -10% speed: the ground slows the haggis while
   // the volleys punish lingering in any one position.
   musket_volley: {
