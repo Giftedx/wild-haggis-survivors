@@ -72,7 +72,7 @@ export interface RouteResumeContext {
  * append-only log owned by RunActState, not a tunable knob.
  *
  * Each key listed here is paired with a resync call in
- * `GameScene.launchActIntermission.onResolve` so the bag mutation
+ * `src/scenes/game/actIntermissionLauncher.ts:111-112` so the bag mutation
  * propagates to whichever system caches the value.
  */
 export type RouteModifierDeltaKey =
