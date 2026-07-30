@@ -34,7 +34,8 @@ import type { ReplayRecorder } from '../../replay/ReplayRecorder';
 import type { RunActState } from './RunActState';
 import { ActIntermissionScene } from '../ActIntermissionScene';
 import { applyRouteModifierDeltas } from '../actIntermissionResolve';
-import { bumpRoutePicked, addFirstRouteVisit } from '../../utils/save';
+import { bumpFirstTimeEvent, bumpRoutePicked, addFirstRouteVisit } from '../../utils/save';
+import { fireRouteFirstBanter } from './firstTimeBanters';
 import { globalEventBus } from '../../core/GlobalEventBus';
 import { t } from '../../core/i18n';
 import { COLORS_CSS } from '../../config';
@@ -95,6 +96,7 @@ export function launchActIntermission(
     bumpRoutePicked(pick.routeKey, hooks.discoveryRunId(), Date.now());
     // H1 M2 T16 — light up the Croft photo-wall polaroid on first pick.
     addFirstRouteVisit(pick.routeKey);
+    fireRouteFirstBanter(pick.routeKey, bumpFirstTimeEvent, hooks.banter);
     hooks.banter?.request('route_picked', { tag: pick.routeKey });
     applyRouteModifierDeltas(hooks.runModifiers, route);
     // Mid-run bag writes don't propagate through the cached private
