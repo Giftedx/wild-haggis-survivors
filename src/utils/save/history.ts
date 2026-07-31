@@ -87,7 +87,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
   );
 
   // V2 T3 — bumps when the player won AND reached the evolution
-  // threshold (7, all evolvable weapons). Missing / below-threshold
+  // threshold defined by `BURNS_EVOLUTION_THRESHOLD`. Missing / below-threshold
   // evolvedWeaponCount defaults false so unwired callers never false-
   // positive the Burns's Wee Beastie unlock.
   const isFullEvoVictory =

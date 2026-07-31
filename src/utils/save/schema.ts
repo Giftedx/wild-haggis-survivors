@@ -20,14 +20,16 @@ export const COASTAL_BIOMES: ReadonlySet<string> = new Set(['loch', 'pine']);
 /**
  * V2 Track 3 — evolutions-threshold for the Burns's Wee Beastie unlock.
  *
- * Re-exported from `BalanceConfig.ts`, where it's derived from
- * `EVOLUTION_RECIPES.length`. Adding a recipe automatically lifts the
- * threshold; the achievement copy interpolates `{count}` from this constant
- * (see `descriptionVars` on `ach_burns_beastie_unlock` and the `{count}`
- * placeholders in `i18n/achievement.ts` + `i18n.scs/achievement.ts`).
+ * `BalanceConfig.ts` hard-pins this threshold at 10 and intentionally
+ * decouples it from `EVOLUTION_RECIPES.length`. Adding a recipe does not
+ * lift the threshold. To lift the gate, bump the constant explicitly and
+ * update the achievement copy. The copy interpolates `{count}` from this
+ * constant (see `descriptionVars` on `ach_burns_beastie_unlock` and the
+ * `{count}` placeholders in `i18n/achievement.ts` +
+ * `i18n.scs/achievement.ts`).
  *
  * Lives in `BalanceConfig` to avoid the circular import that would result
- * from `BalanceConfig` (achievement defs) reading a derived constant from
+ * from `BalanceConfig` (achievement defs) reading the constant from
  * `save/schema.ts`. Re-exported here so existing call-sites keep working.
  */
 export { BURNS_EVOLUTION_THRESHOLD } from '../../core/BalanceConfig';
