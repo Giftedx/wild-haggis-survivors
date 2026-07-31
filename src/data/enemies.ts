@@ -700,10 +700,9 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     hp: 60,
     damage: 12,
     xpValue: 8,
-    appearsAt: 1080,    // 18:00 — late-game Cairngorm threat, after
-                        // auditor_priest (17:30) and well past the
-                        // post-bell escalation. Frost biome reaches
-                        // density by then; the silhouette reads.
+    appearsAt: 885,     // 14:45 — final pre-bell Cairngorm threat.
+                        // Frost-biome weights make the solo silhouette
+                        // prominent before regular spawns stop at 15:00.
     behavior: 'chase',
     packSize: 1,
     massOverride: 5,    // Tank contact — shoves the player on collision

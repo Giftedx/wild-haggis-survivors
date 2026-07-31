@@ -7,6 +7,7 @@ import {
   getActiveWaveTimelineEntry,
 } from './BalanceConfig';
 import { ENEMY_TYPES, BOSSES } from '../data/enemies';
+import { ALL_NODE_DEFS } from '../data/nodeBanks';
 
 /**
  * BalanceConfig is the tuning layer SpawnSystem + WeaponSystem +
@@ -42,6 +43,36 @@ describe('WAVE_TIMELINE', () => {
     for (const seg of WAVE_TIMELINE) {
       expect(seg.intervalSec).toBeGreaterThan(0);
       expect(seg.burstSize).toBeGreaterThan(0);
+    }
+  });
+
+  it('introduces enemies before regular spawns stop unless they have another encounter path', () => {
+    const enemiesWithNonTimelineSpawnPaths = new Set<string>();
+    for (const node of ALL_NODE_DEFS) {
+      const enemyKey = node.data.enemyKey;
+      if (typeof enemyKey === 'string') enemiesWithNonTimelineSpawnPaths.add(enemyKey);
+
+      const enemyMix = node.data.enemyMix;
+      if (!Array.isArray(enemyMix)) continue;
+      for (const enemy of enemyMix) {
+        if (typeof enemy !== 'object' || enemy === null || !('key' in enemy)) continue;
+        if (typeof enemy.key === 'string') enemiesWithNonTimelineSpawnPaths.add(enemy.key);
+      }
+    }
+    const introducedKeys = new Set<string>();
+
+    for (const seg of WAVE_TIMELINE) {
+      for (const key of seg.enemyKeys) {
+        if (introducedKeys.has(key)) continue;
+        introducedKeys.add(key);
+
+        if (seg.timeSec >= BALANCE.run.RUN_WIN_TIME_SEC) {
+          expect(
+            enemiesWithNonTimelineSpawnPaths.has(key),
+            `${key} first enters WAVE_TIMELINE at ${seg.timeSec}s, after regular spawns stop`,
+          ).toBe(true);
+        }
+      }
     }
   });
 

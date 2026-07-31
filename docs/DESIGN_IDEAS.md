@@ -116,7 +116,7 @@ Families worth sketching (pick one per content drop):
 | ~~`dean_apparition`~~ | Academic | ✅ shipped 2026-04-18. Chase at 12:45 with mass override 5 — formal dean in mortarboard + gown, contact-shoves the player as "the academy does not wait". |
 | ~~`ledger_wraith`~~ | Taxman | ✅ shipped 2026-04-18. Chase enemy at 15:30; ghostly auditor with floating ledger + red-ink drips. "Immune until Taxman takes damage" deferred pending an event-bus gate. |
 | ~~`auditor_priest`~~ | Taxman | ✅ shipped 2026-04-18. Ranged cleric at 17:30 with a censer-tipped staff (glowing amber telegraph). "Beam ranged, tests drift skill" deferred pending a beam-weapon class. |
-| ~~`bodach_glas`~~ | Weather / Cairngorm | ✅ shipped 2026-05-24. Late-game frost-biome solo threat at 18:00. Chase behaviour, massOverride 5 (shoves the player on contact). HP 60, speed 35. "Alone with him on the moor" register — packSize 1. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.1.*)  |
+| ~~`bodach_glas`~~ | Weather / Cairngorm | ✅ shipped 2026-05-24. Late-game frost-biome solo threat at 14:45. Chase behaviour, massOverride 5 (shoves the player on contact). HP 60, speed 35. "Alone with him on the moor" register — packSize 1. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.1.*)  |
 
 **Honest cap:** 4–6 new enemies per release. Retire weak ones.
 
