@@ -195,13 +195,13 @@ const ALLOWLIST: AllowlistEntry[] = [
   // ── Seed bootstrap ──────────────────────────────────────────────────
   {
     path: 'utils/rng.ts',
-    reason: 'seedFromBrowser fallback when crypto.getRandomValues unavailable (one-time at run start)',
+    reason: 'randomSeed fallback when crypto.getRandomValues is unavailable (one-time at run start)',
   },
 
-  // ── Dev-only tooling (not in production builds) ─────────────────────
+  // ── Stress-test tooling ─────────────────────────────────────────────
   {
     path: 'dev/StressTest.ts',
-    reason: 'dev-only stress spawner; not on production code path',
+    reason: 'stress-test spawner; statically imported by runFrameTick and shipped, but activation hooks are DEV-gated in main.ts',
   },
 
   // ── Comment-only mentions (the prose contract itself is the hit) ────

@@ -69,7 +69,7 @@ export interface ReplayRecorderMeta extends ReplayBlobMeta {
  * over the alternative of sampling. Frames past the cap are dropped with
  * a single console warning; the recorded blob still finalises cleanly,
  * just with a truncated suffix. Replay playback degrades gracefully —
- * `ReplayInput.isComplete()` fires when the recorded frame stream ends,
+ * `ReplayInput.isExhausted()` fires when the recorded frame stream ends,
  * after which the player drives manually.
  */
 export const REPLAY_RECORDER_FRAME_CAP = 90_000;
