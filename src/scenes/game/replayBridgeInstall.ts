@@ -47,6 +47,7 @@ import type { ReplayBlobV2Meta } from '../../replay/replayBlobV2';
 import { captureComposedStats } from '../../replay/composedStatsSnapshot';
 import type { ComposedPlayerStats } from '../../core/StatComposer';
 import type { RoutePick } from '../../data/routes';
+import type { FallenCairn } from '../../utils/save/fallenCairns';
 
 export type ReplayBridgeMode = 'playback' | 'record' | 'off';
 
@@ -75,6 +76,10 @@ export interface InstallReplayPlaybackResult {
   /** Same blob narrowed to a v2-compatible shape. v1 blobs lack the
    *  metadata fields that the curse and stats paths need. */
   playbackV2: ReplayBlobV2Meta | null;
+  /** Cairns captured by the playback blob. Older blobs return an empty
+   *  array, which prevents playback from reading the live meta-save.
+   *  Non-playback modes return null. */
+  replayCairns: FallenCairn[] | null;
   /** True when the helper consumed `pendingReplay`; the caller MUST
    *  null its own field so a recycled scene doesn't replay twice. */
   consumePending: boolean;
@@ -99,12 +104,16 @@ export function installReplayPlayback(
   const replayInput = playbackBlob ? new ReplayInput(playbackBlob) : null;
   const playbackV2 =
     playbackBlob && playbackBlob.version !== 1 ? playbackBlob : null;
+  const replayCairns = playbackBlob
+    ? (playbackBlob.version === 3 ? (playbackBlob.cairns ?? []) : [])
+    : null;
 
   return {
     replayMode,
     replayInput,
     playbackBlob,
     playbackV2,
+    replayCairns,
     consumePending: playbackBlob !== null,
   };
 }

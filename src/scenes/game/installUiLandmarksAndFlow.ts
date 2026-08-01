@@ -68,12 +68,13 @@ export interface UiLandmarksAndFlowLocals {
   readonly selectedVariant: VariantDef;
   readonly spawnPx: number;
   readonly spawnPy: number;
+  readonly replayCairns: FallenCairn[] | null;
 }
 
 /** Run `create()` phase 4: UI, landmarks, run flow, startup chain. */
 export function installUiLandmarksAndFlow(
   scene: GameScene,
-  { resumeRun, selectedVariant, spawnPx, spawnPy }: UiLandmarksAndFlowLocals,
+  { resumeRun, selectedVariant, spawnPx, spawnPy, replayCairns }: UiLandmarksAndFlowLocals,
 ): void {
   // Phase 5 Bucket 6 finish — four run-bookkeeping ctors bundled into
   // a single helper. MoorMomentScheduler must exist before resume
@@ -177,10 +178,6 @@ export function installUiLandmarksAndFlow(
     getCurrentSystem: () => scene.companionSystem,
   });
 
-  const replayCairns =
-    scene.pendingReplay
-      ? ((scene.pendingReplay as { cairns?: FallenCairn[] }).cairns ?? [])
-      : null;
   scene.firstCairnTouchedThisRun = true;
   scene.cairnSprites.clear();
   ({ cairnStacking: scene.cairnStacking,

@@ -15,9 +15,8 @@
  * point; `installReplayRecording` reads `runRng.seed`) so replay
  * determinism (ADR-0002) is byte-for-byte preserved.
  *
- * The three values the rest of `create()` needs downstream
- * (`selectedVariant`, `spawnPx`, `spawnPy`) are returned rather than
- * stashed on the scene, mirroring the original locals.
+ * The function returns the values that the later `create()` phases need.
+ * This keeps the values out of the scene state.
  *
  * Why type-couple to GameScene (precedent: `buildCombatCollisionHooks`):
  * the phase reads + writes many scene fields outside any sub-system's
@@ -42,12 +41,14 @@ import { applySeasonalRunStartPostSpawn, buildSeasonalRunStartPlan } from './sea
 import { Player } from '../../entities/Player';
 import { registerDebugHotkeys } from '../dev/debugHotkeys';
 import { t } from '../../core/i18n';
+import type { FallenCairn } from '../../utils/save/fallenCairns';
 
 /** The `create()` locals phase 2 produces for later phases. */
 export interface PlayerAndRunStartResult {
   readonly selectedVariant: VariantDef;
   readonly spawnPx: number;
   readonly spawnPy: number;
+  readonly replayCairns: FallenCairn[] | null;
 }
 
 /** Run `create()` phase 2: variant + replay + curse + player + run-start. */
@@ -78,7 +79,7 @@ export function installPlayerAndRunStart(
   // Slice in `replayBridgeInstall.ts`; recorder build deferred below
   // so the v2 meta captures the live curse + composed stats.
   scene.replayRecorder = null;
-  const { replayMode, replayInput, playbackV2, consumePending } =
+  const { replayMode, replayInput, playbackV2, replayCairns, consumePending } =
     installReplayPlayback({
       pendingReplay: scene.pendingReplay,
       resolvedMode: resolveReplayMode(),
@@ -215,5 +216,5 @@ export function installPlayerAndRunStart(
     },
   });
 
-  return { selectedVariant, spawnPx, spawnPy };
+  return { selectedVariant, spawnPx, spawnPy, replayCairns };
 }

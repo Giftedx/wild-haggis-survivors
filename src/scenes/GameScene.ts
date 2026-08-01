@@ -753,7 +753,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // sporran + seasonal run-start plans, Player construction, and the
     // post-spawn blessing pipeline. Returns the locals later phases need.
     // RNG consumption order preserved inside the helper (replay determinism).
-    const { selectedVariant, spawnPx, spawnPy } = installPlayerAndRunStart(this, {
+    const { selectedVariant, spawnPx, spawnPy, replayCairns } = installPlayerAndRunStart(this, {
       save,
       resumeRun,
     });
@@ -769,7 +769,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // + cairn + Cailleach Gauntlet + Corryvreckan + variant-companion +
     // Lemmings installs, LevelUpFlow + RunLifecycle, identity/intro toasts,
     // and the post-flow startup-HUD chain. Order preserved in the helper.
-    installUiLandmarksAndFlow(this, { resumeRun, selectedVariant, spawnPx, spawnPy });
+    installUiLandmarksAndFlow(this, {
+      resumeRun,
+      selectedVariant,
+      spawnPx,
+      spawnPy,
+      replayCairns,
+    });
   }
 
   private registerShutdownCleanup(): void {
