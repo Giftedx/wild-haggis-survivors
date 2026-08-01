@@ -8,10 +8,10 @@
  *   - playback driver constructed only when blob present
  *   - v1 blob present → playbackV2 is null (curse + composedStats fall
  *     back to live derivation in the caller)
- *   - v2 blob present → playbackV2 surfaces curse, routes, composedStats
+ *   - v2 or v3 blob present → playbackV2 surfaces curse, routes, composedStats
  *   - recorder construction gated on `mode === 'record'`
  *   - recorder meta carries the live curse + composed stats snapshot
- *   - pendingReplayRoutes seeded from v2 routes (copy, not the same ref)
+ *   - pendingReplayRoutes seeded from v2 or v3 routes (copy, not the same ref)
  *   - reset disposes the prior input and returns a fresh empty queue
  *
  * The recorded-frame pump (`pushFrame` per tick) and the playback
@@ -33,6 +33,7 @@ import {
   createEmptyReplayBlobV2,
   type ReplayBlobV2,
 } from '../../replay/replayBlobV2';
+import { createEmptyReplayBlobV3 } from '../../replay/replayBlobV3';
 import {
   createEmptyReplayBlob,
   type ReplayBlob,
@@ -115,6 +116,40 @@ describe('installReplayPlayback', () => {
     expect(out.playbackBlob).toBe(blob);
     expect(out.playbackV2).toBe(blob);
     expect(out.consumePending).toBe(true);
+  });
+
+  it('surfaces v2 metadata and seeds routes when a v3 blob is pending', () => {
+    const routes = [
+      {
+        slot: 'A' as const,
+        routeKey: 'up_the_brae' as const,
+        atGameTimeSec: 60,
+        defaultedBySetting: false,
+      },
+    ];
+    const blob = createEmptyReplayBlobV3({
+      build: 'whs-test',
+      seed: 99999,
+      variantKey: 'classic',
+      curseKey: 'cailleach_winter',
+      routes,
+      composedStats: sampleStats,
+    });
+
+    const playback = installReplayPlayback({ pendingReplay: blob, resolvedMode: 'off' });
+    expect(playback.playbackV2).toBe(blob);
+
+    const recording = installReplayRecording({
+      replayMode: playback.replayMode,
+      playbackV2: playback.playbackV2,
+      seed: blob.seed,
+      variantKey: blob.variantKey,
+      build: blob.build,
+      curseKey: blob.curseKey ?? null,
+      composedStats: sampleStats,
+    });
+    expect(recording.pendingReplayRoutes).toEqual(routes);
+    expect(recording.pendingReplayRoutes).not.toBe(routes);
   });
 
   it('playback wins over record when both signals are set (mutual exclusion)', () => {

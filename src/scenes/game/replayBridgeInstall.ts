@@ -43,7 +43,7 @@
 import { ReplayInput } from '../../replay/ReplayInput';
 import { ReplayRecorder } from '../../replay/ReplayRecorder';
 import type { ReplayBlobAny } from '../../replay/replayBlob';
-import type { ReplayBlobV2 } from '../../replay/replayBlobV2';
+import type { ReplayBlobV2Meta } from '../../replay/replayBlobV2';
 import { captureComposedStats } from '../../replay/composedStatsSnapshot';
 import type { ComposedPlayerStats } from '../../core/StatComposer';
 import type { RoutePick } from '../../data/routes';
@@ -72,9 +72,9 @@ export interface InstallReplayPlaybackResult {
    *  downstream curse / composedStats / routes resolution. Null
    *  outside of playback. */
   playbackBlob: ReplayBlobAny | null;
-  /** Same blob narrowed to v2 (and only v2) — null otherwise. v1
-   *  blobs lack the metadata fields the curse + stats path needs. */
-  playbackV2: ReplayBlobV2 | null;
+  /** Same blob narrowed to a v2-compatible shape. v1 blobs lack the
+   *  metadata fields that the curse and stats paths need. */
+  playbackV2: ReplayBlobV2Meta | null;
   /** True when the helper consumed `pendingReplay`; the caller MUST
    *  null its own field so a recycled scene doesn't replay twice. */
   consumePending: boolean;
@@ -98,7 +98,7 @@ export function installReplayPlayback(
   const playbackBlob = replayMode === 'playback' ? input.pendingReplay : null;
   const replayInput = playbackBlob ? new ReplayInput(playbackBlob) : null;
   const playbackV2 =
-    playbackBlob && playbackBlob.version === 2 ? playbackBlob : null;
+    playbackBlob && playbackBlob.version !== 1 ? playbackBlob : null;
 
   return {
     replayMode,
@@ -117,7 +117,7 @@ export interface InstallReplayRecordingInput {
   /** Same v2 sub-shape returned by `installReplayPlayback`. Used to
    *  seed `pendingReplayRoutes`; null in record / off mode → empty
    *  queue. */
-  playbackV2: ReplayBlobV2 | null;
+  playbackV2: ReplayBlobV2Meta | null;
   /** Run RNG seed — folded into the recorder meta so the captured
    *  blob can re-establish RNG on playback. */
   seed: number;
@@ -161,7 +161,7 @@ export interface InstallReplayRecordingResult {
 
 /**
  * Build the recorder (when mode === 'record') and seed the playback
- * route queue (when v2 playback). Pure — caller assigns the returned
+ * route queue (when v2 or v3 playback). Pure — caller assigns the returned
  * fields onto the scene.
  */
 export function installReplayRecording(

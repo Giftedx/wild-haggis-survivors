@@ -63,7 +63,7 @@ import { defaultModifiers, type RunModifiers } from '../../core/RunModifiers';
 import { getCurseByKey, type CurseKey } from '../../data/curses';
 import { globalEventBus } from '../../core/GlobalEventBus';
 import type { ComposedPlayerStats } from '../../core/StatComposer';
-import type { ReplayBlobV2 } from '../../replay/replayBlobV2';
+import type { ReplayBlobV2Meta } from '../../replay/replayBlobV2';
 
 export interface ApplyCurseAndComposeStatsInput {
   /** The pending curse key consumed from the GameScene init payload.
@@ -89,7 +89,7 @@ export interface ApplyCurseAndComposeStatsInput {
    *  non-null AND it carries `curseKey`, the helper applies that
    *  curse regardless of `resumeRun` / `runIsDaily` — replay
    *  determinism is the override. */
-  playbackV2: ReplayBlobV2 | null;
+  playbackV2: ReplayBlobV2Meta | null;
   /** Pre-curse stat sheet from `StatComposer.getPlayerStats(metaSave)`.
    *  Used as the base for both the snapshot-override path (v2 spread)
    *  and the live-derive path (curse multipliers folded). */
