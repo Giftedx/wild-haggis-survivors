@@ -4,6 +4,7 @@ import {
   findMissingTextureKeys,
   MISSING_PLACEHOLDER_KEY,
 } from './AssetValidator';
+import { MODE_CONFIG } from '../systems/AmbientWeatherSystem';
 
 describe('AssetValidator', () => {
   it('collects non-empty requirements including core gameplay keys', () => {
@@ -34,6 +35,17 @@ describe('AssetValidator', () => {
     expect(missingKeys).toContain('tourist');
     expect(missingKeys).toContain('wicon_bagpipe_blast');
     expect(missing.every((m) => m.category.length > 0)).toBe(true);
+  });
+
+  it('locks every ambient weather texture key', () => {
+    const requiredTextureKeys = collectRequiredTextureRequirements().map((r) => r.key);
+
+    for (const [mode, config] of Object.entries(MODE_CONFIG)) {
+      expect(
+        requiredTextureKeys,
+        `missing validator requirement for ${mode}: ${config.textureKey}`
+      ).toContain(config.textureKey);
+    }
   });
 
   it('reports no missing when predicate accepts all required keys', () => {

@@ -1,10 +1,10 @@
 /**
  * AmbientWeatherSystem — purely cosmetic seasonal weather overlay.
  *
- * Reads `getActiveSeasonalEventKey(new Date())` once at `start()` and
- * picks one of four ambient modes (drizzle, rain, sun-shaft, aurora) or
- * stays idle when no event is active. No gameplay coupling — no slow,
- * no damage, no pickup magnet, no minimap presence. Particles sit at
+ * Reads `getActiveSeasonalEventKey(new Date())` once at `start()`.
+ * It selects one of 14 ambient modes or stays idle when no event is active.
+ * The system has no gameplay coupling: no slow, no damage, no pickup
+ * magnet, and no minimap presence. Particles sit at
  * `setDepth(-100)` so they always fall behind gameplay sprites.
  *
  * Lifetime is tied to a single run. GameScene constructs one in
@@ -22,7 +22,10 @@
  *
  * Texture keys consumed (validator-locked, baked in BootScene):
  *   `fx_drizzle`, `fx_rain_drop`, `fx_sun_shaft`, `fx_aurora_band`,
- *   `fx_lambing_mote`, `fx_harvest_sheaf`. Each `scene.add.image` call
+ *   `fx_lambing_mote`, `fx_harvest_sheaf`, `fx_stonehaven_fireball`,
+ *   `fx_bracken_leaf`, `fx_ember_spark`, `fx_bannockburn_dust`,
+ *   `fx_grouse_feather`, `fx_tartan_thread`, `fx_simmer_dim_gloam`,
+ *   and `fx_highland_games_sun`. Each `scene.add.image` call
  * is guarded with `textures.exists(key)` so headless test stubs that
  * skip BootScene baking don't crash.
  */
@@ -147,7 +150,7 @@ interface ModeConfig {
   textureKey: string;
 }
 
-const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
+export const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
   // Smirr — fine wind-driven drizzle. ~4/sec → 250ms period.
   drizzle: { spawnPeriodMs: 250, textureKey: 'fx_drizzle' },
   // Pewter rain — ~10/sec → 100ms period.
