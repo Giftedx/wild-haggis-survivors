@@ -831,6 +831,9 @@ export class SaveManager {
       return { ...DEFAULT_SAVE };
     }
     const v = Math.max(1, Math.floor(obj.saveVersion));
+    if (v > CURRENT_SAVE_VERSION) {
+      console.warn(`Save version ${v} is newer than supported (${CURRENT_SAVE_VERSION}). This client can lose fields.`);
+    }
 
     const totalKills = clampInt(obj.totalKills, 0);
     const totalKillsSpent = clampInt(obj.totalKillsSpent, 0);

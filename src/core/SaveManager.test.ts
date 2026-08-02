@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SaveManager, type IRunState, type StorageLike } from './SaveManager';
 import { MemoryStorage } from '../test/MemoryStorage';
 import { type FallenCairn } from '../utils/save/fallenCairns';
@@ -103,6 +103,27 @@ describe('SaveManager', () => {
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(() => mgr.load()).not.toThrow();
     expect(mgr.load()).toEqual(defaultV9);
+  });
+
+  it('warns and coerces saves from a newer version', () => {
+    const storage = new MemoryStorage();
+    storage.setItem('k', JSON.stringify({
+      saveVersion: 99,
+      totalKills: 5,
+      unlockedAchievements: ['ach_first_victory'],
+    }));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    try {
+      const loaded = new SaveManager({ storage, key: 'k' }).load();
+
+      expect(warn).toHaveBeenCalledWith('Save version 99 is newer than supported (12). This client can lose fields.');
+      expect(loaded.saveVersion).toBe(12);
+      expect(loaded.totalKills).toBe(5);
+      expect(loaded.unlockedAchievements).toEqual(['ach_first_victory']);
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it('migrates v1 JSON to current with defaults', () => {
