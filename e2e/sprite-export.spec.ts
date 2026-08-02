@@ -42,4 +42,21 @@ test.describe('SpriteExportScene', () => {
 
     expect(pageErrors, `page errors:\n${pageErrors.join('\n')}`).toEqual([]);
   });
+
+  test('?export=sprites&atlas=1 reports its category count and downloads a PNG', async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Dev tool — chromium-only regression check');
+    test.setTimeout(60_000);
+
+    const canvasLogs: string[] = [];
+    page.on('console', (message) => {
+      if (message.text().startsWith('[SpriteExport] canvas:')) canvasLogs.push(message.text());
+    });
+
+    await page.goto('./?export=sprites&atlas=1');
+    const download = await page.waitForEvent('download', { timeout: 30_000 });
+
+    expect(download.suggestedFilename()).toMatch(/\.png$/);
+    expect(canvasLogs).toHaveLength(1);
+    expect(canvasLogs[0]).toMatch(/categories: \d+/);
+  });
 });

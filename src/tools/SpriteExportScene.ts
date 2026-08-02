@@ -11,6 +11,7 @@ import { COLORS, COLORS_CSS } from '../config';
 import { ENEMY_TYPES } from '../data/enemies';
 import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
 import { ALL_ANIMATION_STATES } from '../animation/textureAtlas';
+import { buildCategoryOrder } from './spriteExportCategoryOrder';
 
 interface SpriteEntry {
   key: string;
@@ -19,20 +20,20 @@ interface SpriteEntry {
   category: string;
 }
 
-// `?compact=1` halves SCALE + MAX_CELL_DIM and tightens MAX_ITEMS_PER_CATEGORY
-// so the composite canvas fits inside headless Chromium's framebuffer
-// attachment limits. Default mode produces the high-fidelity reference PNG;
-// compact mode produces a smaller draft that always exports — useful when
-// the sprite set has grown past the headless export ceiling.
+const EXPORT_PARAMS = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search)
+  : new URLSearchParams();
+const INCLUDE_ATLAS_FRAMES = EXPORT_PARAMS.get('atlas') === '1';
 const COMPACT_MODE =
-  typeof window !== 'undefined' &&
-  new URLSearchParams(window.location.search).get('compact') === '1';
+  EXPORT_PARAMS.get('compact') === '1';
 
-const SCALE = COMPACT_MODE ? 3 : 6;
-const PADDING = COMPACT_MODE ? 8 : 16;
-const LABEL_HEIGHT = COMPACT_MODE ? 12 : 20;
-const SECTION_HEIGHT = COMPACT_MODE ? 28 : 48;
-const COLS = 8;
+// Atlas mode uses more columns and a smaller scale. This keeps the full
+// atlas export below Chromium's 16,384 px canvas height limit.
+const SCALE = INCLUDE_ATLAS_FRAMES ? 2 : COMPACT_MODE ? 3 : 6;
+const PADDING = INCLUDE_ATLAS_FRAMES ? 6 : COMPACT_MODE ? 8 : 16;
+const LABEL_HEIGHT = INCLUDE_ATLAS_FRAMES || COMPACT_MODE ? 12 : 20;
+const SECTION_HEIGHT = INCLUDE_ATLAS_FRAMES ? 24 : COMPACT_MODE ? 28 : 48;
+const COLS = INCLUDE_ATLAS_FRAMES ? 32 : 8;
 
 type DrawableSource = HTMLCanvasElement | HTMLImageElement | ImageBitmap | OffscreenCanvas;
 function isDrawableSource(v: unknown): v is DrawableSource {
@@ -115,74 +116,6 @@ function categorize(key: string): string {
   return 'Other';
 }
 
-/**
- * Base category-order. Atlas-frame groups are appended dynamically so
- * a new variant or accessory shows up without touching this list.
- */
-const BASE_CATEGORY_ORDER = [
-  'Player Variants',
-  'Player Expressions',
-  'Wildlife',
-  'Enemies',
-  'Bosses',
-  'Hazards',
-  'Projectiles',
-  'Pickups',
-  'Weapon Flourishes',
-  'Weapon Icons',
-  'Card Icons',
-  'Relic Icons',
-  'Node Markers',
-  'Moor Moment Tokens',
-  'Decorations',
-  'Croft Props',
-  'Boss Props',
-  'HUD Elements',
-  'HUD Status Badges',
-  'Shadows',
-  'Telegraph Effects',
-  'Weather Effects',
-  'Effects',
-  'Other',
-];
-
-// Preferred order within atlas-frame groups: variants first (classic
-// before the rest), then accessories in draw-depth order.
-const HAGGIS_VARIANT_ORDER = [
-  'classic',
-  'moor_runner',
-  'iron_belly',
-  'glen_forager',
-  'surefoot',
-  'pipe_breath',
-  'wee_ghostie',
-  'laird',
-  'glaswegian',
-];
-const ACCESSORY_ORDER_IN_EXPORT = [
-  'loch_water',
-  'highland_shield',
-  'kilt',
-  'tartan_sash',
-  'sporran',
-  'whisky_flask',
-  'irn_bru',
-  'tam_o_shanter',
-  'thistle_crown',
-];
-
-function buildCategoryOrder(cats: Set<string>): string[] {
-  const atlasHaggis = HAGGIS_VARIANT_ORDER
-    .map((v) => `Haggis Frames — ${v}`)
-    .filter((c) => cats.has(c));
-  const atlasAccessories = ACCESSORY_ORDER_IN_EXPORT
-    .map((a) => `Accessory Frames — ${a}`)
-    .filter((c) => cats.has(c));
-  const atlasOther = cats.has('Atlas Frames — Other') ? ['Atlas Frames — Other'] : [];
-  const base = BASE_CATEGORY_ORDER.filter((c) => cats.has(c));
-  return [...base, ...atlasHaggis, ...atlasAccessories, ...atlasOther];
-}
-
 export class SpriteExportScene extends Phaser.Scene {
   constructor() {
     super({ key: 'SpriteExport' });
@@ -194,10 +127,9 @@ export class SpriteExportScene extends Phaser.Scene {
     // animation frames baked by BootScene, and including all of them
     // produces a multi-hundred-thousand-pixel canvas that exceeds
     // browser limits. Use `?export=sprites&atlas=1` to include them.
-    const includeAtlasFrames = new URLSearchParams(window.location.search).get('atlas') === '1';
     const allKeys = this.textures.getTextureKeys()
       .filter((k) => !k.startsWith('__') || k === '__whs_missing_texture__')
-      .filter((k) => includeAtlasFrames || !isAtlasFrameKey(k));
+      .filter((k) => INCLUDE_ATLAS_FRAMES || !isAtlasFrameKey(k));
 
     // Build entries with dimensions
     const entries: SpriteEntry[] = [];
@@ -259,7 +191,7 @@ export class SpriteExportScene extends Phaser.Scene {
      // per edge on Chromium). Any sprite larger than MAX_CELL_DIM*SCALE
      // will still render — it just won't inflate the cell beyond these
      // bounds. cellW × COLS + margins must stay < 16384 too.
-    const MAX_CELL_DIM = COMPACT_MODE ? 64 : 96;
+    const MAX_CELL_DIM = INCLUDE_ATLAS_FRAMES || COMPACT_MODE ? 64 : 96;
 
     for (const [cat, items] of groups) {
       // Section header
@@ -288,7 +220,10 @@ export class SpriteExportScene extends Phaser.Scene {
     totalHeight += TOP_MARGIN;
     const canvasWidth = Math.max(maxRowWidth + LEFT_MARGIN, 800);
     const canvasHeight = totalHeight;
-    console.info('[SpriteExport] canvas:', canvasWidth, 'x', canvasHeight, 'entries:', entries.length);
+    console.info(
+      '[SpriteExport] canvas:', canvasWidth, 'x', canvasHeight,
+      'entries:', entries.length, 'categories:', groups.size,
+    );
 
     // Create the export canvas
     const canvas = document.createElement('canvas');
