@@ -113,7 +113,7 @@ export type BanterContext =
   | 'taxman_retinue_wave'
   // DESIGN_IDEAS §3 Corryvreckan encounter — whirlpool pull begins (warn)
   // and the player survives (survived). Edge for the pull warning; hearth
-  // for the survival relief. Priority 65 (warn) and 60 (survived) — both
+  // for the survival relief. Priority 63 (warn) and 58 (survived). Both
   // sit below boss_down (70), interrupt ambient banter but yield to combat
   // urgency. Flat pools, four leaves each; no sub-pool tags.
   | 'corryvreckan_warn'
@@ -4028,13 +4028,18 @@ export interface PendingPoolMetadata {
 /**
  * Tone + priority per spec §2 / §3. Priority ladder (high → low) after
  * B1 Phase 4 + 5 graduation:
- *   first_time (110) > boss_warn (100) > low_hp (80) > death_reflection (75) >
+ *   first_time (110) > boss_warn (100) > taxman_grudge_phase2 (96) >
+ *   cailleach_gauntlet (95) > beithir_sting (90) > taxman_grudge (85) >
+ *   low_hp (80) > death_reflection (75) > taxman_retinue_wave (72) >
  *   boss_down (70) > weapon_evolve (65) > seasonal_event (64) >
- *   level_up (60) > curse_start (59) > act_complete (57) >
+ *   corryvreckan_warn (63) > level_up (60) > curse_start (59) >
+ *   corryvreckan_survived (58) > act_complete (57) >
  *   cailleach_whisper (55) > act_intermission_enter (52) >
- *   first_blood (50) > route_picked (48) > reliquary_pick (45) >
+ *   lemmings_remember (51) > first_blood (50) > route_picked (48) >
+ *   reliquary_pick (45) > field_note_pickup (44) >
  *   burns_citation (43) > enemy_ambient (41) > kill_streak (40) >
- *   recover (35) > moor_moment (31) > biome_change (30) >
+ *   recover (35) > cairn_walkover (34) > clootie_wager (33) >
+ *   cairn_moment (32) > moor_moment (31) > biome_change (30) >
  *   gran_commentary (28) > shinty_parry (27) > stance_change (26) >
  *   haggis_ambient (25) > form_shifted (24) > idle (10)
  *
