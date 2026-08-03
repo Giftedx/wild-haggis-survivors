@@ -30,23 +30,23 @@ Every entry below has a verified `caption(...)` emit in the source.
 
 | ID | Trigger | Source path | Tint | i18n key |
 |----|---------|-------------|------|----------|
-| `low_hp` | HP drops below threshold | `src/scenes/game/GameTickers.ts:188` | DANGER_RED | `ui.captions.low_hp` |
-| `level_up` | Player levels up | `src/scenes/GameScene.ts:1120` | `#ffdd66` | `ui.captions.level_up` |
-| `echo_ready` | Echo card available post-cap | `src/scenes/GameScene.ts:1132` | `#c8a8e8` | `ui.captions.echo_ready` |
-| `evo_<weaponKey>` | Evolution becomes available in level-up pool | `src/scenes/game/LevelUpFlow.ts:216` | `#ffcc44` | dynamic msg |
-| `victory` | Run victory (final boss kill) | `src/scenes/game/RunLifecycle.ts:178` | `#ffe08a` | `ui.captions.victory_chorus` |
-| `death` | Player death | `src/scenes/game/RunLifecycle.ts:317` | `#cc8866` | `ui.captions.death_fall` |
-| `achievement` | Achievement unlock | `src/scenes/game/wireSceneEventBus.ts:32` | TOAST_GOLD | `ui.game.achievement_unlock` |
-| `boss_enrage` | Boss low-HP enrage | `src/scenes/game/wireSceneEventBus.ts:38` | DANGER_RED | `ui.captions.boss_enrage` |
+| `low_hp` | HP drops below threshold | `src/scenes/game/GameTickers.ts:188` | DANGER_RED | `captions.low_hp` |
+| `level_up` | Player levels up | `src/scenes/game/wireXpSystemListeners.ts:54` | `#ffdd66` | `captions.level_up` |
+| `echo_ready` | Echo card available post-cap | `src/scenes/game/wireXpSystemListeners.ts:61` | `#c8a8e8` | `captions.echo_ready` |
+| `evo_<weaponKey>` | Evolution becomes available in level-up pool | `src/scenes/game/LevelUpFlow.ts:223` | `#ffcc44` | dynamic msg |
+| `victory` | Run victory (final boss kill) | `src/scenes/game/RunLifecycle.ts:216` | `#ffe08a` | `captions.victory_chorus` |
+| `death` | Player death | `src/scenes/game/RunLifecycle.ts:437` | `#cc8866` | `captions.death_fall` |
+| `achievement` | Achievement unlock | `src/scenes/game/wireSceneEventBus.ts:41` | TOAST_GOLD | `ui.game.achievement_unlock` |
+| `boss_enrage` | Boss low-HP enrage | `src/scenes/game/wireSceneEventBus.ts:47` | DANGER_RED | `captions.boss_enrage` |
 | `moor_<momentId>` | Moor moment fires | `src/scenes/game/MoorMomentScheduler.ts:114` | `#c9a86c` | per-moment captionKey |
-| `standing_stones_warn` | Standing stones rising warning | `src/scenes/GameScene.ts:1762` | `#ffe080` | `ui.standingStones.warn_caption` |
-| `standing_stones_announce` | Stones risen and ready | `src/scenes/GameScene.ts:2042` | `#ffe080` | `ui.standingStones.announce_caption` |
-| `standing_stones_pick` | Boon picked from stones | `src/scenes/GameScene.ts:2035` | `#ffe080` | dynamic boon desc |
-| `moor_mercy` | Moor mercy luck triggers | `src/scenes/GameScene.ts:1961` | `#c8a8e8` | `ui.game.moor_mercy_luck_caption` |
-| `ancestral_echo_announce` | Echo entity spawns | `src/scenes/GameScene.ts:2012` | `#b0d4ff` | `ui.ancestralEcho.announce_caption` |
-| `ancestral_echo_touch` | Player touches echo entity | `src/scenes/GameScene.ts:2000` | `#b0d4ff` | `ui.ancestralEcho.touch_caption` |
-| `reliquary_pick` | Player picks a relic from reliquary | `src/scenes/GameScene.ts:2063` | `#ffb060` | `ui.reliquary.grant_caption` |
-| `act_intermission_open` | Moor Road act intermission scene opens | `src/scenes/ActIntermissionScene.ts` | TOAST_GOLD | `ui.captions.act_intermission_open` |
+| `standing_stones_warn` | Standing stones rising warning | `src/scenes/game/runtimeTickHooks.ts:120` | `#ffe080` | `ui.standingStones.warn_caption` |
+| `standing_stones_announce` | Stones risen and ready | `src/scenes/game/moorMoments.ts:198` | `#ffe080` | `ui.standingStones.announce_caption` |
+| `standing_stones_pick` | Boon picked from stones | `src/scenes/game/moorMoments.ts:191` | `#ffe080` | dynamic boon desc |
+| `moor_mercy` | Moor mercy luck triggers | `src/scenes/game/moorMoments.ts:116` | `#c8a8e8` | `ui.game.moor_mercy_luck_caption` |
+| `ancestral_echo_announce` | Echo entity spawns | `src/scenes/game/moorMoments.ts:167` | `#b0d4ff` | `ui.ancestralEcho.announce_caption` |
+| `ancestral_echo_touch` | Player touches echo entity | `src/scenes/game/moorMoments.ts:149` | `#b0d4ff` | `ui.ancestralEcho.touch_caption` |
+| `reliquary_pick` | Player picks a relic from reliquary | `src/scenes/game/moorMoments.ts:219` | `#ffb060` | `ui.reliquary.grant_caption` |
+| `act_intermission_open` | Moor Road act intermission scene opens | `src/scenes/game/actIntermissionLauncher.ts:171` | TOAST_GOLD | `captions.act_intermission_open` |
 
 ## Gap list — events NOT yet captioned
 
