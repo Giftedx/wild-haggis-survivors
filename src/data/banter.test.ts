@@ -17,6 +17,7 @@ import { VARIANTS } from './variants';
 import { ROUTES } from './routes';
 import type { DeathCauseTag } from '../core/deathCauseClassifier';
 import { t } from '../core/i18n';
+import { SEASONAL_EVENTS } from '../systems/SeasonalEventManager';
 
 describe('BANTER_POOLS structure', () => {
   const allContexts: BanterContext[] = [
@@ -342,10 +343,7 @@ describe('B1 Phase 1 — pending pool metadata', () => {
     const pool = BANTER_POOLS.find((p) => p.context === 'seasonal_event');
     expect(pool, 'seasonal_event pool missing').toBeDefined();
     const tags = Object.keys(pool!.keysByTag ?? {});
-    // st_andrews has no banter sub-pool yet (lightweight data-only event;
-    // the ceremony resolver routes it through gran_commentary.seasonal_event).
-    // burns_night / hogmanay / samhain / beltane are required.
-    for (const evt of ['burns_night', 'hogmanay', 'samhain', 'beltane']) {
+    for (const evt of Object.keys(SEASONAL_EVENTS)) {
       expect(tags, `seasonal_event missing tag '${evt}'`).toContain(evt);
     }
   });
