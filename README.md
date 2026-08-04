@@ -1,11 +1,11 @@
 <div align="center">
 
-<img src="./assets/banner.png" alt="Wild Haggis Survivors — the wee haggis over the title, from the game&#39;s own main menu" width="100%" />
+<img src="./assets/banner.png" alt="Wild Haggis Survivors. The wee haggis over the title, from the game's own main menu." width="100%" />
 
 # Wild Haggis Survivors
 
 **A handcrafted, Highland-at-dusk, Scots-tinted bullet-heaven.**
-You play a wild haggis with one famously uneven set of legs — every input drifts five degrees clockwise — fending off Scottish-themed waves across a 3000 × 3000 moor.
+You play a wild haggis with one famously uneven set of legs, so every input drifts five degrees clockwise. You fend off Scottish-themed waves across a 3000 × 3000 moor.
 
 ![Phaser 4](https://img.shields.io/badge/Phaser-4-9070b0?style=flat)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
@@ -13,22 +13,22 @@ You play a wild haggis with one famously uneven set of legs — every input drif
 ![Sprites drawn in code](https://img.shields.io/badge/sprites-drawn_in_code-ffc840?style=flat)
 ![English + Scots](https://img.shields.io/badge/locale-English_%2B_Scots-c42828?style=flat)
 
-🎮 **Play it: [ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)** — or walk in through [the bothy](https://ha.ggis.xyz)
+🎮 **Play it: [ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)**. Or walk in through [the bothy](https://ha.ggis.xyz).
 
 </div>
 
-Built with **Phaser 4** + **TypeScript** + **Vite**. Every sprite is drawn in code at boot — there are no external image assets. The game ships 28 haggis variants, 36 weapons with 20 evolution recipes, and 25 biomes with their own hazards. Every run is seeded, so finished runs replay deterministically. A procedural Highland music engine plays the score. A Scots translation ships behind CI parity fences.
+Built with **Phaser 4** + **TypeScript** + **Vite**. The game draws every sprite in code at boot. It ships no external image assets. The game ships 28 haggis variants, 36 weapons with 20 evolution recipes, and 25 biomes with their own hazards. Every run carries a seed, so finished runs replay deterministically. A procedural Highland music engine plays the score. A Scots translation ships behind CI parity fences.
 
 ## A wee look
 
 | | |
 |:---:|:---:|
 | ![Main menu — the glen stirs](./assets/screens/main-menu.png) | ![Variant loadout — crooked legs, straight ambition](./assets/screens/loadout.png) |
-| *The glen stirs — yir first run awaits.* | *28 variants, one heart. "Crooked legs, straight ambition."* |
+| *The glen stirs. Yir first run awaits.* | *28 variants, one heart. "Crooked legs, straight ambition."* |
 | ![Run start — MON THEN!](./assets/screens/run-start.png) | ![Mid-run on the moor](./assets/screens/gameplay.png) |
-| *MON THEN!* | *The moor, mid-run — banter, drift ring, minimap and all.* |
+| *MON THEN!* | *The moor, mid-run: banter, drift ring, minimap and all.* |
 
-*(Screens come from the project's own [DESIGN.md verification harness](e2e/design-verify.spec.ts) — real pixels, not mock-ups.)*
+*(Screens come from the project's own [DESIGN.md verification harness](e2e/design-verify.spec.ts): real pixels, not mock-ups.)*
 
 > **New here?** Start with [`docs/INDEX.md`](docs/INDEX.md). Then read [`docs/PRD.md`](docs/PRD.md) for the live snapshot and [`AGENTS.md`](AGENTS.md) (or [`CLAUDE.md`](CLAUDE.md)) for the AI/contributor working agreement.
 
@@ -104,11 +104,11 @@ flowchart LR
 - **Scene flow:** the graph above shows the main path. Per-scene gotchas live in [`CLAUDE.md`](CLAUDE.md) "Architecture".
 - **Systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`, `HazardsSystem`, `AmbientWeatherSystem`, `RuneConditionSystem`, and more under `src/systems/`. Player level growth (scale + hitbox) lives in `Player.onLevelUp`, not a separate system class.
 - **Data-driven balance:** all weapons, enemies, upgrades, variants, routes, banter, curses, biomes, hazards, relics, and runes live under `src/data/`. Code consumes them. Balance work is data-only.
-- **Persistence:** three independent `localStorage` keys, each owned by one module (see [ADR-0007](docs/adr/0007-three-localstorage-stores-by-design.md)) —
-  - `whs_save` (`src/utils/save/*`, schema v24 — combined save: meta + run history + replay blob)
-  - `whs_meta_save` (`src/core/SaveManager.ts`, schema v12 — kills, unlocks, achievements, mid-run resume)
-  - `whs_game_settings` (`src/core/SettingsManager.ts`, schema v1 — audio / motion / a11y / keybindings / locale)
-- **Bilingual:** English baseline in `src/core/i18n.ts`. The Scots overlay (`src/core/i18n.scs.ts`) is code-split and lazy-loaded. Two parity fences run in CI — see `src/core/i18n.locale.test.ts`.
+- **Persistence:** three independent `localStorage` keys, each owned by one module (see [ADR-0007](docs/adr/0007-three-localstorage-stores-by-design.md)):
+  - `whs_save` (`src/utils/save/*`, schema v24: the combined save with meta, run history, and the replay blob)
+  - `whs_meta_save` (`src/core/SaveManager.ts`, schema v12: kills, unlocks, achievements, mid-run resume)
+  - `whs_game_settings` (`src/core/SettingsManager.ts`, schema v1: audio, motion, a11y, keybindings, locale)
+- **Bilingual:** English baseline in `src/core/i18n.ts`. The Scots overlay (`src/core/i18n.scs.ts`) is code-split and lazy-loaded. Two parity fences run in CI. See `src/core/i18n.locale.test.ts`.
 - **Sprites:** `BootScene` draws every texture with Phaser `Graphics.generateTexture`. The drawers live under `src/art/sprites/`, one file per sprite category.
 
 For deeper detail read [`CLAUDE.md`](CLAUDE.md) (architecture quick map + Phaser gotchas + safety pattern checklist).
@@ -149,7 +149,7 @@ For deeper detail read [`CLAUDE.md`](CLAUDE.md) (architecture quick map + Phaser
 
 ## Repo hygiene (critical)
 
-This is a **source repo**. Build artifacts are produced, not committed.
+This is a **source repo**. The build produces artifacts. Git does not track them.
 
 - Never commit `node_modules/` (vendor blobs).
 - Never commit `dist/` (build output).
@@ -166,22 +166,22 @@ This is a solo-dev project. The conventions, voice, and tone matter as much as t
 1. **Read [`AGENTS.md`](AGENTS.md) and [`CONTRIBUTING.md`](CONTRIBUTING.md)** for the working agreement and engineering bar.
 2. **Player-facing tone** → [`docs/VOICE_CARD.md`](docs/VOICE_CARD.md). **Visuals** → [`docs/ART_STYLE_BIBLE.md`](docs/ART_STYLE_BIBLE.md). **Soul charter & a11y matrix** → [`docs/DESIGN_SOUL.md`](docs/DESIGN_SOUL.md).
 3. **Pre-ship question:** *can a real human play this change without a contributor walking them through it?* (CONTRIBUTING.md headline).
-4. **Conventional Commits** — `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`. Examples in `git log`.
-5. **Don't break the parity fences** — adding a banter leaf without a Scots translation fails CI.
+4. **Conventional Commits**: `feat:`, `fix:`, `refactor:`, `docs:`, `chore:`. Examples in `git log`.
+5. **Don't break the parity fences**: adding a banter leaf without a Scots translation fails CI.
 6. **Cite research only when load-bearing.** The eight docs in [`docs/research/`](docs/research/) are reference material. Link one from a spec or PR when it genuinely helps a reader, not as ceremony.
 
 ---
 
 ## Accessibility & content notes
 
-**Photosensitivity:** the live build's VFX has not yet been independently audited with PEAT (Photosensitive Epilepsy Analysis Tool). As a precaution the **`reduceFlashing` setting is enabled by default** (≤ 0.4 alpha cap on screen flashes + 200 ms duration floor). Players can disable it in Settings → Accessibility once the audit lands. The PEAT pass is on the open-questions list (`docs/OPEN_QUESTIONS.md` Q6).
+**Photosensitivity:** no one has yet independently audited the live build's VFX with PEAT (Photosensitive Epilepsy Analysis Tool). As a precaution, **`reduceFlashing` defaults to on** (≤ 0.4 alpha cap on screen flashes + 200 ms duration floor). Players can disable it in Settings → Accessibility once the audit lands. The PEAT pass is on the open-questions list (`docs/OPEN_QUESTIONS.md` Q6).
 
-**Scottish dialect content:** the project ships drafted Scots, Doric, Shetlandic, and Gaelic content drawn from research-backed sources (`docs/research/SCOTTISH_RESEARCH.md` + `SCOTTISH_RESEARCH_DEEP.md`). **Native-speaker review is in progress, not yet complete.** Voices may be revised as feedback comes in. Reviewer briefs at `docs/C2_DIALECT_REVIEW.md` + `docs/C2_BURNS_PROVENANCE.md`.
+**Scottish dialect content:** the project ships drafted Scots, Doric, Shetlandic, and Gaelic content drawn from research-backed sources (`docs/research/SCOTTISH_RESEARCH.md` + `SCOTTISH_RESEARCH_DEEP.md`). **Native-speaker review is in progress, not yet complete.** The voices can change as feedback comes in. Reviewer briefs at `docs/C2_DIALECT_REVIEW.md` + `docs/C2_BURNS_PROVENANCE.md`.
 
 ---
 
 ## License & deploy
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](LICENSE).
 
 Canonical home: **[ha.ggis.xyz/wild](https://ha.ggis.xyz/wild)**. The game builds with Vite `base: '/wild/'`. It mounts under the [`ha-ggis-hub`](https://github.com/Giftedx/ha-ggis-hub) Cloudflare Pages project at the `/wild/` sub-path. The hub owns the domain and copies WHS into its `dist/wild/` at deploy time. There is no separate root-served standalone deployment. The dev server and Playwright preview also run under the `/wild/` base. See the hub repo's `docs/DEPLOYMENT.md` for the combined build + `wrangler pages deploy` flow.
