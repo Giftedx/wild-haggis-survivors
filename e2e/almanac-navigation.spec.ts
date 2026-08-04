@@ -87,6 +87,16 @@ test.describe('C1 Highland Almanac — navigation smoke', () => {
     });
     expect(sceneStarted, 'Almanac scene failed to activate').toBe(true);
 
+    const almanacVisits = await page.evaluate(() => {
+      const rawSave = localStorage.getItem('whs_save');
+      if (!rawSave) return -1;
+      const save = JSON.parse(rawSave) as {
+        discoveryLog?: { almanacVisits?: number };
+      };
+      return save.discoveryLog?.almanacVisits ?? -1;
+    });
+    expect(almanacVisits).toBe(1);
+
     // Beasties tab should be live with the body populated.
     const initialState = await page.evaluate(() => {
       const g = (window as unknown as { game: {

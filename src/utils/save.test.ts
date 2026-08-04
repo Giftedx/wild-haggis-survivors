@@ -4,6 +4,7 @@ import {
   MAX_RUN_HISTORY,
   SAVE_SCHEMA_VERSION,
   applyRunSummary,
+  bumpAlmanacVisit,
   bumpAncestralEchoesTouched,
   bumpBeastieKilled,
   bumpBeastieSeen,
@@ -1818,6 +1819,12 @@ describe('lifetime-counter bumps', () => {
   });
 
   // ── C1 M2 Task 11 discovery-log bumps ────────────────────────────────
+
+  it('bumpAlmanacVisit persists each Almanac visit', () => {
+    bumpAlmanacVisit();
+    bumpAlmanacVisit();
+    expect(loadSave().discoveryLog.almanacVisits).toBe(2);
+  });
 
   it('bumpBeastieSeen seeds firstSeenAt on first call, no-ops on repeat', () => {
     bumpBeastieSeen('tourist', 'run-1', 1000);

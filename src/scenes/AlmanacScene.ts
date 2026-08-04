@@ -25,7 +25,7 @@ import { buildBanterEntries } from './almanac/buildBanterEntries';
 import { renderBanterBook, type BanterBookHandle } from './almanac/BanterBook';
 import { closeExpanded, createExpandState, toggleExpanded, type ExpandState } from './almanac/expandState';
 import { resolveAlmanacEnterToggle, resolveAlmanacEsc } from './almanac/keyboardNav';
-import { flushBeastieKills, loadSave } from '../utils/save';
+import { bumpAlmanacVisit, flushBeastieKills, loadSave } from '../utils/save';
 import { SaveManager } from '../core/SaveManager';
 import {
   resolveSceneReturnTarget,
@@ -120,6 +120,7 @@ export class AlmanacScene extends Phaser.Scene {
     // freshest counts even if the player alt-tabbed mid-run into the
     // Almanac. No-op between runs (buffer is empty).
     flushBeastieKills();
+    bumpAlmanacVisit();
 
     addSceneBackdrop(this);
     addAmberHeaderWash(this);

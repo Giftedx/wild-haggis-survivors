@@ -304,6 +304,21 @@ export function bumpLemmingsSeenForVariant(variantKey: string): void {
   }
 }
 
+export function bumpAlmanacVisit(): void {
+  try {
+    const cur = loadSave();
+    writeSave({
+      ...cur,
+      discoveryLog: {
+        ...cur.discoveryLog,
+        almanacVisits: cur.discoveryLog.almanacVisits + 1,
+      },
+    });
+  } catch {
+    /* Ignore storage errors. */
+  }
+}
+
 /**
  * C1 M2 Task 11 — record a beastie sighting into the DiscoveryLog.
  * Best-effort — swallow storage errors so spawns never block. Writes

@@ -45,6 +45,7 @@ export { migrateSave } from './save/migrations';
 export {
   addFirstRouteVisit,
   bumpAncestralEchoesTouched,
+  bumpAlmanacVisit,
   bumpBanterHeard,
   bumpBeastieKilled,
   bumpBeastieSeen,
