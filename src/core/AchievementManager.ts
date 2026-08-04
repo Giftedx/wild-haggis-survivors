@@ -206,8 +206,9 @@ export class AchievementManager {
       }
 
       // E1 M2 T11 — ach_burns_beastie_unlock. Tightened to
-      // `burns_night_full_evo`: a victory with all seven evolvable
-      // weapons evolved AND the run ended inside a Burns Night window.
+      // `burns_night_full_evo`: a victory with at least
+      // `BURNS_EVOLUTION_THRESHOLD` weapon evolutions during a run
+      // that ends inside a Burns Night window.
       // Counter written by applyRunSummary via
       // `RunHistoryContext.seasonalEventKey` + evolvedWeaponCount;
       // threshold matches VariantDef.burns_wee_beastie.unlock.required.
