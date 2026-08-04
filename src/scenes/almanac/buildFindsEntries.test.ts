@@ -28,6 +28,12 @@ afterEach(() => {
 describe('buildFindsEntries', () => {
   it('yields one entry per acquirable thing across all seven categories', () => {
     const entries = buildFindsEntries(createEmptyDiscoveryLog());
+    const evolvedWeaponKeys = new Set(
+      EVOLUTION_RECIPES.map((recipe) => recipe.evolvedWeapon),
+    );
+    const evolutionOverlap = Object.keys(WEAPON_DEFS).filter((key) =>
+      evolvedWeaponKeys.has(key),
+    ).length;
     const expectedCount =
       Object.keys(WEAPON_DEFS).length +
       EVOLUTION_RECIPES.length +
@@ -36,8 +42,17 @@ describe('buildFindsEntries', () => {
       RELIQUARY_CURIOS.length +
       25 + // old drover lore arc
       1 +  // maker's-note colophon (DESIGN_IDEAS §13)
-      14;  // foundation lore arc
+      14 - // foundation lore arc
+      evolutionOverlap;
     expect(entries.length).toBe(expectedCount);
+  });
+
+  it('emits each key once and uses the evolution entry for recipe targets', () => {
+    const entries = buildFindsEntries(createEmptyDiscoveryLog());
+    expect(new Set(entries.map((entry) => entry.key)).size).toBe(entries.length);
+    const pibrochHammer = entries.filter((entry) => entry.key === 'pibroch_hammer');
+    expect(pibrochHammer).toHaveLength(1);
+    expect(pibrochHammer[0].category).toBe('evolution');
   });
 
   it('orders categories: weapon → evolution → passive → permanent → relic → lore → foundation', () => {

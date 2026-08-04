@@ -71,9 +71,9 @@ function collectCategory(
 ): FindEntryVM[] {
   switch (category) {
     case 'weapon':
-      return Object.values(WEAPON_DEFS).map((w) =>
-        toEntry(w.key, 'weapon', w.nameKey, w.descriptionKey, log),
-      );
+      return Object.values(WEAPON_DEFS)
+        .filter((w) => !EVOLUTION_RECIPES.some((r) => r.evolvedWeapon === w.key))
+        .map((w) => toEntry(w.key, 'weapon', w.nameKey, w.descriptionKey, log));
     case 'evolution':
       return EVOLUTION_RECIPES.map((r) =>
         toEntry(r.evolvedWeapon, 'evolution', r.nameKey, r.descriptionKey, log),
