@@ -145,7 +145,8 @@ export default defineConfig({
     ...vitestNoWebStorage,
     coverage: {
       provider: 'v8',
-      // text + html for human use, json-summary so CI / scripts can ratchet.
+      // The text and HTML reports support local review. The JSON summary
+      // supports local coverage analysis.
       reporter: ['text', 'html', 'json-summary'],
       include: ['src/**/*.ts'],
       // Tests, type-only files, the Phaser-boot entry, and the procedural
@@ -158,11 +159,10 @@ export default defineConfig({
         'src/main.ts',
         'src/art/sprites/**',
       ],
-      // Ratchet thresholds — measured baseline 2026-04-30 was
+      // Advisory thresholds. The measured baseline on 2026-04-30 was
       //   lines/statements 58.57%, functions 68.01%, branches 86.91%
-      // Floors set ~2 points below baseline so refactor PRs don't fail
-      // on minor reshuffling. Bump up over time as coverage genuinely
-      // improves; these are a regression floor, not an aspiration.
+      // `npm run coverage` enforces these floors. `npm run ci` does not run
+      // coverage, so these thresholds are not CI gates.
       thresholds: {
         lines: 56,
         statements: 56,
