@@ -44,9 +44,9 @@ export default defineConfig({
   testDir: 'e2e',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  // Retry once everywhere — including local. This repo has no git remote, so
-  // the CI workflow never fires; the local `npm run test:e2e` (via ci:all) is
-  // the only gate that actually runs. The suite carries known transient races
+  // Retry once everywhere, including local. GitHub Actions runs the full
+  // Playwright matrix for pushes and pull requests to `main`. Local
+  // `npm run ci:all` is the pre-push gate. The suite carries known transient races
   // (headless keyboard vs Phaser's per-frame key poll; cross-engine WebGL
   // boot timing) that single-shot `retries: 0` turned into hard-red on a busy
   // dev box, so the gate read perpetually broken and stopped being trusted.

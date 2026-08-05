@@ -31,9 +31,10 @@ const ENEMY_LOG_PATTERN = /^\[BootScene\] Enemy atlas bake: \+\d+ keys, ([0-9]+(
 // `ensureEnemyAtlas` (Enemy.spawn chokepoint). Boot total fell from ~400 ms
 // (1026 eager keys, over budget) to ~70 ms loaded / ~45 ms clean.
 //
-// Budgets stay deliberately generous: this suite is the LOCAL-ONLY gate (no
-// git remote → CI never fires) and runs on a possibly-busy dev box, so tight
-// perf thresholds would flake. They guard against (a) a descope revert —
+// Budgets stay deliberately generous. GitHub Actions runs the full Playwright
+// matrix for pushes and pull requests to `main`. Local `npm run ci:all` is the
+// pre-push gate and can run on a busy dev box, so tight perf thresholds would
+// flake. They guard against (a) a descope revert —
 // flipping boot back to the full `bakeEnemyAtlas` pushes enemy bake to
 // ~333 ms, tripping the 300 cap — and (b) gross accessory/variant/eager-set
 // bloat. The lazy path's render correctness is guarded by the
