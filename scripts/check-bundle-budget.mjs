@@ -28,10 +28,10 @@ const DIST_ASSETS = join(process.cwd(), 'dist', 'assets');
  *
  *  sprite-art budget added 2026-04-28 (B5 charter §3 Risk 1, Phase 1
  *  prerequisite). The chunk was split out of vendor in commit ff777d2;
- *  measured baseline ~161 KB gzip. 240_000 B leaves ~80 KB headroom
- *  (~50% growth) for the four pending biome sprite expansions
- *  (haar, frost, seawrack, edinburgh). If a Phase ship trips the gate,
- *  raise to 280 — do NOT raise above 320 without a charter update. */
+ *  measured baseline ~161 KB gzip. The 280_000 B ceiling leaves ~119 KB
+ *  headroom (~74% growth) for the four pending biome sprite expansions
+ *  (haar, frost, seawrack, edinburgh). Do not raise the ceiling above
+ *  320_000 B without a charter update. */
 const BUDGETS = [
   { re: /^vendor-phaser-.*\.js$/, label: 'vendor-phaser', maxGzipBytes: 390_000 },
   { re: /^index-.*\.js$/, label: 'index (app)', maxGzipBytes: 320_000 },

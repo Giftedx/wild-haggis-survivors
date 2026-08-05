@@ -2,11 +2,17 @@
 
 Post-build gzip ceiling for the production JS chunks. Wired into `npm run ci` and `npm run ci:all` so any CI run catches accidental bundle bloat before merge.
 
-> **Status as of 2026-04-26**: Gate live in CI chain. Current measured baselines pass with ~4–6% headroom (see Baselines below). Tracking origin: T310 in `docs/archive/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`. Task-09 (this dispatch slice) wired the standalone script into the CI pipeline and added `--report-only` / `--verbose` affordances.
+> **Status as of 2026-04-28**: Gate live in CI chain. Current measured baselines pass (see Baselines below). Tracking origin: T310 in `docs/archive/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`. Task-09 (this dispatch slice) wired the standalone script into the CI pipeline and added `--report-only` / `--verbose` affordances.
 
 ## What it covers
 
-`scripts/check-bundle-budget.mjs` reads `dist/assets/*.js`, filters to the two production-critical chunks (`vendor-phaser-*.js` and `index-*.js`), gzips each, and exits non-zero if either exceeds its documented ceiling.
+`scripts/check-bundle-budget.mjs` reads `dist/assets/*.js` and filters these three production-critical chunks:
+
+- `vendor-phaser-*.js`
+- `index-*.js`
+- `sprite-art-*.js`
+
+The script gzips each chunk. It exits non-zero if any chunk exceeds its documented ceiling.
 
 The script does **not** police:
 
@@ -17,14 +23,15 @@ The script does **not** police:
 
 If any of those become a regression vector, extend the `BUDGETS` array in the script.
 
-## Baselines (2026-04-26)
+## Baselines (2026-04-28)
 
 | Chunk            | Pattern                  | Max gzip (B) | Last measured (B) | Headroom |
 |------------------|--------------------------|--------------|--------------------|----------|
 | `vendor-phaser`  | `^vendor-phaser-.*\.js$` | 390,000      | 374,430            | +15,570 B (+4.0%) |
-| `index` (app)    | `^index-.*\.js$`         | 285,000      | 267,159            | +17,841 B (+6.3%) |
+| `index (app)`    | `^index-.*\.js$`         | 320,000      | 305,687            | +14,313 B (+4.5%) |
+| `sprite-art`     | `^sprite-art-.*\.js$`    | 280,000      | ~161,000           | ~119,000 B (+42.5%) |
 
-**Measurement context**: commit `3978c7c` (post-T310 lazy-scene split, post-W71 secondary-motion, U1 Runes M4 wired). Slack chosen so day-to-day churn (a typo fix that pulls a new dependency tree node) doesn't trip the gate, but a 30 KB regression — about one new feature module — will.
+**Measurement context**: The vendor measurement comes from commit `3978c7c`. The index measurement comes from commit `2c99ab4`, which added about 20 KB. The sprite-art measurement comes from commit `ff777d2`, which split the chunk from vendor.
 
 The Vite per-chunk warning floor is set elsewhere (see `vite.config.ts`); these gzip ceilings are the **shipping** budget, not the dev warning.
 
@@ -50,7 +57,7 @@ node scripts/check-bundle-budget.mjs --report-only # print sizes, never fail
 `package.json` chains it after the build step:
 
 ```json
-"ci": "npm run lint && npm test && npm run build && node scripts/check-bundle-budget.mjs",
+"ci": "npm run lint && npm test && npm run build && npm run budget && npm run flash-budget && npm run loc-report",
 "ci:all": "npm run ci && npm run test:e2e"
 ```
 
@@ -58,7 +65,7 @@ Both `ci` and `ci:all` enforce the gate. The check runs in <1s after the build a
 
 ## What counts as breakage
 
-The gate fails when **either**:
+The gate fails when any of these conditions occur:
 
 1. A tracked chunk's gzip size exceeds its `maxGzipBytes`. Fix path: identify what landed in the chunk (check the latest commits' module additions; `npm run build` per-chunk readout is the first signal), revert or refactor, OR justify the growth and update the baseline (see "Updating baselines" below).
 2. A tracked chunk pattern matches **zero** files in `dist/assets`. This means Vite's chunk-splitting changed and renamed something — investigate `vite.config.ts` rather than the budget itself.
@@ -72,7 +79,7 @@ Bump `maxGzipBytes` only when the increase is intentional and justified. Process
 2. **Quantify the cost**: `npm run build && node scripts/check-bundle-budget.mjs --verbose` — quote the new gzip size and the deficit.
 3. **Justify in the commit / PR**: which feature is responsible for the growth, why it can't be lazy-loaded or refactored to a cheaper form, and what the new headroom looks like (aim to keep ≥3% slack so future small changes don't immediately re-bust it).
 4. **Update both** `BUDGETS` in `scripts/check-bundle-budget.mjs` AND the Baselines table above with date + commit.
-5. If the new baseline pushes either chunk past a round number that warrants a perf review (e.g. `index` past 300 KB gzip), open a separate task for a chunk-split investigation rather than letting the ceiling drift indefinitely.
+5. If the new baseline pushes a chunk past a round number that warrants a perf review (e.g. `index` past 300 KB gzip), open a separate task for a chunk-split investigation rather than letting the ceiling drift indefinitely.
 
 A baseline bump is a **deliberate budget allocation**, not a routine maintenance step. PRs that bump the baseline without the rationale above should be sent back.
 
