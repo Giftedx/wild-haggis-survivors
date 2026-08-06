@@ -37,29 +37,31 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          # `-all` marks the full engine set (chromium + firefox + webkit).
-          # Bump distinguishes it from the old chromium-only cache so the
-          # extra engines actually get cached rather than re-downloaded.
-          key: playwright-all-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          # Key splits by engine set: pull requests install chromium only,
+          # pushes to master/main install all three. A shared key would make
+          # the chromium-only cache evict the full set and re-download the
+          # extra engines on every landing.
+          key: playwright-${{ github.event_name == 'pull_request' && 'chromium' || 'all' }}-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: Install Playwright browsers (all engines)
-        # playwright.config.ts defines firefox-desktop + webkit-desktop
-        # projects (cross-engine sanity) alongside chromium; `npm run
-        # test:e2e` (via ci:all) runs them all, so CI must install all three
-        # or those projects fail to launch and the e2e gate is meaningless.
-        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Install Playwright browsers
+        # Engine diet (2026-08-06, billing API: this workflow burned 1,368
+        # minutes in July and 1,328 in the first six days of August — the
+        # largest line in the portfolio, on a $0 spending limit). The
+        # firefox+webkit projects are ~25-30 min per run. Pull requests gate
+        # on the chromium projects; pushes to master/main run the full
+        # engine set, so cross-engine sanity still gates every landing.
+        run: npx playwright install --with-deps ${{ github.event_name == 'pull_request' && 'chromium' || 'chromium firefox webkit' }}
 
       - name: Lint, unit tests, build, budgets
         run: npm run ci
         env:
           CI: true
 
-      - name: E2E (all engines)
+      - name: E2E
+        # Pull requests: chromium-desktop + chromium-mobile (names from
+        # playwright.config.ts). Pushes to master/main: every project.
         # Includes the 30-sim-minute marathon soak: it fast-forwards spawn
-        # timing (skipToMinute), so wall-clock is ~25 s, not 30 min. It was
-        # briefly quarantined while its leak assertion was wrong (it slope-
-        # tested the enemy pool, which ramps toward MAX_ACTIVE by design); the
-        # assertion now checks the real cap invariant and the soak passes.
-        run: npx playwright test
+        # timing (skipToMinute), so wall-clock is ~25 s, not 30 min.
+        run: npx playwright test ${{ github.event_name == 'pull_request' && '--project=chromium-desktop --project=chromium-mobile' || '' }}
         env:
           CI: true
