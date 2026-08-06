@@ -12,8 +12,8 @@
  * curses (penalty + gold bonus, wraps existing CURSES), boons (small
  * positive), and quirks (mixed positive/negative, no gold).
  *
- * Phase 0 ships this helper + tests + an 11-card pool. NO runtime
- * wiring — the system is dead code until Phase 1 lifts the UI. See
+ * The shipped pool contains 26 cards. `SporranScene` uses this helper
+ * for the draft UI. `scenes/game/sporranRunStart.ts` applies the picks. See
  * `docs/archive/superpowers/specs/2026-05-09-sporran-deck-design.md`.
  *
  * Replay-determinism contract (T1 / ADR-0002 Phase 3): `drawSporran`
