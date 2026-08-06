@@ -1,8 +1,8 @@
 /**
  * Routes — Moor Road between-act choice definitions (W2).
  *
- * Six routes split across two picker slots. `modifierDeltas` are applied
- * additively to `RunModifiers` at pick resolve time. `onResume` handles
+ * Six routes split across two picker slots. Numeric `modifierDeltas` replace
+ * the current `RunModifiers` values at pick resolve time. `onResume` handles
  * effects that don't fit the multiplier bag — healing bursts, chest
  * forcing, one-off elite spawns, timed spawn-rate releases.
  *
@@ -71,9 +71,9 @@ export interface RouteResumeContext {
  * route that wrote them would silently no-op. `routePicks` is an
  * append-only log owned by RunActState, not a tunable knob.
  *
- * Each key listed here is paired with a resync call in
- * `GameScene.launchActIntermission.onResolve` so the bag mutation
- * propagates to whichever system caches the value.
+ * `src/scenes/game/actIntermissionLauncher.ts` resyncs the cached readers for
+ * `spawnIntervalMult` and `weaponCooldownMult`. The other keys have no cached
+ * readers and need no resync call.
  */
 export type RouteModifierDeltaKey =
   | 'spawnIntervalMult'
