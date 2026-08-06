@@ -68,9 +68,9 @@ export interface ReplayRecorderMeta extends ReplayBlobMeta {
  * telemetry), so the cap chooses "preserve the early game completely"
  * over the alternative of sampling. Frames past the cap are dropped with
  * a single console warning; the recorded blob still finalises cleanly,
- * just with a truncated suffix. Replay playback degrades gracefully —
- * `ReplayInput.isComplete()` fires when the recorded frame stream ends,
- * after which the player drives manually.
+ * just with a truncated suffix. When `ReplayInput.isExhausted()` reports
+ * that the recorded frame stream has ended, GameScene starts the
+ * Chronicle scene.
  */
 export const REPLAY_RECORDER_FRAME_CAP = 90_000;
 

@@ -2,14 +2,13 @@
  * ReplayInput — playback-side façade that reads recorded frames back as if
  * the user were typing them live. Shape matches the `InputManager` read
  * surface Player / GameScene already use (`getDirection`, `consumeDash…`,
- * `consumeMenuPausePressed`), so a future "use replay input during
- * playback" wire-up can swap the concrete implementation behind an
- * interface without touching callers.
+ * `consumeMenuPausePressed`). During playback, GameScene passes this
+ * implementation to Player without changing the callers.
  *
- * This module ships ahead of the playback engine (no GameScene wiring
- * yet — see ADR-0002 follow-ups). It documents the playback contract and
- * is covered by pure tests: construct with a blob, consume frames in
- * order, verify `dash`/`menu` fire once per captured edge.
+ * GameScene creates this input from the pending replay, stores it on the
+ * scene, and advances it once per game-loop tick. Pure tests construct it
+ * with a blob, consume frames in order, and verify that `dash` and `menu`
+ * fire once per captured edge.
  *
  * Frame cursor advances when the playback driver calls `advanceFrame()`
  * (one call per game-loop tick). Between `advanceFrame` calls, calls to
