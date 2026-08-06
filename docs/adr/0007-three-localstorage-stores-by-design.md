@@ -29,7 +29,7 @@ Rationale:
 
 2. **Failure isolation.** Settings corruption can't take down save state. Save corruption can't take down settings. Three storage quotas means a saturated `whs_save` (replay blobs at FIFO cap) doesn't block settings writes. The `emitSaveFailure(path, err)` event bus already routes per-store failures to the toast surface ([`src/utils/saveFailure.ts`](../../src/utils/saveFailure.ts) + `GLOBAL_SAVE_FAILED` listener in `GameScene`). One store would lose this granularity.
 
-3. **Migration cost is real.** Each store has its own version chain — `whs_save` v1→v18 (18 steps), `whs_meta_save` v1→v9 (9 steps), `whs_game_settings` v1 (single version). A coupled migration would need to traverse all three in lockstep, with rollback semantics for partial-failure cases. The current chains are independent — an `whs_save` migration failing doesn't risk `whs_meta_save` data.
+3. **Migration cost is real.** Each store has its own linear version chain. A coupled migration would need to traverse all three chains in lockstep. It would also need rollback semantics for partial failures. The current chains are independent. A failed `whs_save` migration does not risk `whs_meta_save` data.
 
 4. **The "overlap" is small + bounded.** Reviewing the schemas (verified 2026-05-10):
    - `unlockedVariants` exists only in `whs_save`.

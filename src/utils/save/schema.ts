@@ -9,8 +9,8 @@
 export const SAVE_SCHEMA_VERSION = 24;
 
 /**
- * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
- * unlock. Subset of the four live biomes (see `src/data/biomes.ts`).
+ * V2 Track 2: the `loch` and `pine` biome IDs for the Peerie Shetlander
+ * unlock. See `src/data/biomes.ts`.
  * `loch` = water; `pine` = forested island landscape (Scottish isles
  * carry Scots pine where heather wouldn't thrive). Bog + heather are
  * "moor" biomes and disqualify the run.
