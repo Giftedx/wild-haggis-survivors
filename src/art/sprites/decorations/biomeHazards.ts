@@ -1175,3 +1175,31 @@ export function bakeHazardFirePillar(scene: Phaser.Scene): void {
   g.generateTexture('hazard_fire_pillar', w, h);
   g.destroy();
 }
+
+// ── Jacobite Moor hazard ─────────────────────────────────────────────────────
+
+export function bakeHazardMusketVolley(scene: Phaser.Scene): void {
+  const w = 24, h = 20;
+  const g = scene.add.graphics();
+
+  // Powder smoke marks the narrow impact area.
+  g.fillStyle(0xb8b4a8, 0.30);
+  g.fillEllipse(12, 11, 22, 14);
+  g.fillStyle(0xd8d4c8, 0.45);
+  g.fillCircle(8, 8, 4);
+  g.fillCircle(14, 11, 5);
+  g.fillCircle(18, 8, 3);
+
+  // Three lead balls and their trails show the volley direction.
+  g.lineStyle(1, 0xf0eadc, 0.70);
+  g.lineBetween(2, 5, 8, 8);
+  g.lineBetween(6, 10, 12, 12);
+  g.lineBetween(10, 15, 16, 16);
+  g.fillStyle(0x303038, 1);
+  g.fillCircle(9, 8, 2);
+  g.fillCircle(13, 12, 2);
+  g.fillCircle(17, 16, 2);
+
+  g.generateTexture('hazard_musket_volley', w, h);
+  g.destroy();
+}

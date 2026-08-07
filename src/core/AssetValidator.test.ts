@@ -1,9 +1,11 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   collectRequiredTextureRequirements,
   findMissingTextureKeys,
   MISSING_PLACEHOLDER_KEY,
 } from './AssetValidator';
+import { HAZARDS } from '../data/hazards';
 import { MODE_CONFIG } from '../systems/AmbientWeatherSystem';
 
 describe('AssetValidator', () => {
@@ -46,6 +48,25 @@ describe('AssetValidator', () => {
         `missing validator requirement for ${mode}: ${config.textureKey}`
       ).toContain(config.textureKey);
     }
+  });
+
+  it('collects one hazard requirement for every hazard', () => {
+    const hazardRequirements = collectRequiredTextureRequirements().filter(
+      (requirement) => requirement.category === 'hazard'
+    );
+
+    expect(hazardRequirements).toHaveLength(Object.keys(HAZARDS).length);
+    for (const hazard of Object.values(HAZARDS)) {
+      expect(hazardRequirements.filter((requirement) => requirement.key === hazard.texture)).toEqual([
+        { category: 'hazard', id: hazard.key, key: hazard.texture },
+      ]);
+    }
+  });
+
+  it('does not transcribe hazard texture literals', () => {
+    const source = readFileSync(new URL('./AssetValidator.ts', import.meta.url), 'utf8');
+
+    expect(source).not.toMatch(/['"`]hazard_/);
   });
 
   it('reports no missing when predicate accepts all required keys', () => {

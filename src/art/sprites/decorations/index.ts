@@ -51,6 +51,7 @@ import {
   bakeHazardFairyMist,
   bakeHazardKelpStrand,
   bakeHazardFirePillar,
+  bakeHazardMusketVolley,
 } from './biomeHazards';
 import {
   bakeAutumnLeafScatter,
@@ -115,6 +116,8 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeHazardKelpStrand(scene);
   // Calton Hill (Beltane Fire Festival) hazard.
   bakeHazardFirePillar(scene);
+  // Jacobite Moor hazard.
+  bakeHazardMusketVolley(scene);
   bakeAutumnLeafScatter(scene);
   bakeSpringShoot(scene);
   bakeThawPuddle(scene);

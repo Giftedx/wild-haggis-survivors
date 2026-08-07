@@ -6,6 +6,7 @@ import { VARIANTS } from '../data/variants';
 import { WEAPON_DEFS } from '../data/weapons';
 import { RELICS } from '../data/relics';
 import { WILDLIFE_DEFS } from '../data/wildlife';
+import { HAZARDS } from '../data/hazards';
 
 /** Internal texture used as source for missing-key aliases (magenta checkerboard). */
 export const MISSING_PLACEHOLDER_KEY = '__whs_missing_texture__';
@@ -41,6 +42,9 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
   }
   for (const b of BOSSES) {
     pushKey(out, seen, 'boss', b.key, b.texture);
+  }
+  for (const h of Object.values(HAZARDS)) {
+    pushKey(out, seen, 'hazard', h.key, h.texture);
   }
 
   for (const k of ['thistle', 'caber', 'haggis_ball', 'shinty_ball', 'hagstone'] as const) {
@@ -202,35 +206,23 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     pushKey(out, seen, 'croft', k, k);
   }
 
-  // Round 2 additions — urban Glasgow props, biome hazards, seasonal
-  // moor decorations. World-dressing pool for FloraScatter / hazard
-  // system to draw from.
+  // Round 2 additions: urban Glasgow props and seasonal moor decorations.
+  // World-dressing pool for FloraScatter to draw from.
   for (const k of [
     'deco_chippy_sign',
     'deco_bus_stop',
     'deco_newsprint',
     'deco_close_door',
     'deco_scaffold_post',
-    'hazard_peat_pit',
-    'hazard_falling_slate',
-    'hazard_burn_water',
-    'hazard_loose_scree',
-    'hazard_tidal_wrack',
     // B5 Phase 1 — Seawrack/Coastal flora authored sprites.
     'deco_kelp_strand',
-    // (backfill) B6 Highland Horrors hazards were shipped without validator
-    // entries — lock them now so a future bake removal is caught.
-    'hazard_wind_shear',
-    'hazard_highland_mist',
     'deco_barnacle_rock',
     'deco_whelk_shell',
     'deco_foam_line',
-    // B5 Phase 1b — Haar/Fog flora + hazard authored sprites.
-    'hazard_slick_cobble',
+    // B5 Phase 1b: Haar/Fog flora sprites.
     'deco_fog_pier',
     'deco_dripping_heather',
-    // B5 Phase 2 — Frost flora + hazard authored sprites.
-    'hazard_rime_patch',
+    // B5 Phase 2: Frost flora sprites.
     'deco_snow_patch',
     'deco_bare_birch',
     'deco_rime_bracken',
@@ -264,10 +256,6 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'deco_rowan_charm',
     'deco_crannog_stake',
     'deco_machair_shell',
-    // Clyde Shipyard hazard.
-    'hazard_molten_slag',
-    // Black Bog hazard.
-    'hazard_ink_pool',
   ] as const) {
     pushKey(out, seen, 'decoration', k, k);
   }
