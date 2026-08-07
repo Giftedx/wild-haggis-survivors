@@ -76,10 +76,9 @@ export interface RelicDef {
  * a relic drop is triggered (elite kill, boss kill, chest open) to
  * decide which rarity tier the drop rolls against. Sums to 100.
  *
- * Note: these are pool weights, not count ratios. The actual catalogue
- * split is 8/7/3 = 44/39/17, but the roller is weighted 50/35/15 so
- * that common drops feel consistently common regardless of catalogue
- * growth in later waves.
+ * These values are pool weights, not count ratios. The actual catalogue
+ * split is 8/7/4, or 42/37/21 percent. The roller uses 50/35/15 weights.
+ * These weights keep common drops consistent as the catalogue grows.
  */
 export const RARITY_DROP_WEIGHTS: Readonly<Record<RelicRarity, number>> = {
   common: 50,
@@ -243,7 +242,7 @@ export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
     dropAffinity: ['chest', 'bargain'],
   },
 
-  // -------- Rare (3) --------
+  // -------- Rare (4) --------
   grans_teapot: {
     key: 'grans_teapot',
     rarity: 'rare',
