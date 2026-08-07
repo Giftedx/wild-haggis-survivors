@@ -1,11 +1,10 @@
 /**
  * RelicSystem — owns the player's 3 Relic slots for a run (R1 M2 T11).
  *
- * Slot state lives here (not on Player) so the drop-roll + pickup flow
- * touches one place. Scene-agnostic: no Phaser imports. Drop rolling +
- * elite/boss/chest hooks land in later M2 tasks; this file ships only
- * the slot model so the pickup UI + per-frame effect application have
- * a stable surface to build against.
+ * Slot state lives here (not on Player) so `rollDrop()` and the pickup
+ * flow touch one place. `rollDrop()` handles elite, boss, chest,
+ * hidden-node, and bargain sources through helpers in `data/relicDrops.ts`.
+ * This scene-agnostic module has no Phaser imports.
  *
  * Invariants:
  * - Exactly 3 slots. Hard cap per spec §2.
