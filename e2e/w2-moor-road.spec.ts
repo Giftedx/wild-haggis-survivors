@@ -187,10 +187,9 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
     });
 
     // Helper: drive DEBUG.skipToMinute + DEBUG.killCurrentBoss, then
-    // observe the downstream RunActState mutation. We don't wait on the
-    // picker render because launchActIntermission defers via delayedCall(0)
-    // which can race with headless rAF; the act-counter change is the
-    // real load-bearing assertion.
+    // observe the downstream RunActState mutation. The act-counter change
+    // is the load-bearing assertion. The picker poll below only resolves
+    // the live branch so the run can continue.
     const bossKillBumpsAct = async (
       minute: number,
       expectedAct: 1 | 2 | 3,
@@ -274,9 +273,8 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
           await new Promise((r) => setTimeout(r, 100));
         }
 
-        // If picker opened, resolve it so the run continues. launchActIntermission
-        // defers via scene.time.delayedCall(0) which may take several frames
-        // under headless rAF throttling.
+        // If the live picker opens, resolve it so the run continues. The launch
+        // is synchronous, but headless rAF throttling can delay scene activation.
         const g = (window as unknown as { game: {
           scene: {
             isActive(k: string): boolean;

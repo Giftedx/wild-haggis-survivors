@@ -886,16 +886,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   /**
-   * W2 Moor Road: called when a boss kill completes an act (gordon → 1,
-   * tour_bus → 2). Launches ActIntermissionScene unless Skip Intermissions
-   * is enabled in settings — in that case the default route for the slot
-   * is applied immediately.
-   *
-   * Note: scene launch is deferred a tick via scene.time.delayedCall(0, ...)
-   * so the kill-handling pipeline can finish cleanly (camera shake, XP gem
-   * spawn, banter) before the modal opens.
-   */
-  /**
    * Roll and install a node-path for the requested act. Generation is
    * seeded off `runRng.branch()` so the same run seed deterministically
    * reproduces the path for replay; positions are placed relative to the
@@ -927,6 +917,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
   }
 
+  /**
+   * W2 Moor Road: called when a boss kill completes an act (gordon → 1,
+   * tour_bus → 2). Live runs launch ActIntermissionScene. The replay and
+   * Skip Intermissions branches resolve the route without the picker.
+   *
+   * The replay and skip branches defer route resolution one tick with
+   * scene.time.delayedCall(0). The live branch launches the picker synchronously.
+   */
   launchActIntermission(actN: 1 | 2): void {
     launchActIntermissionImpl(
       {
