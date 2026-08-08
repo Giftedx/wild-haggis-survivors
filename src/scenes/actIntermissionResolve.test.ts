@@ -75,13 +75,12 @@ describe('resolveDefaultRoute', () => {
 });
 
 describe('applyRouteModifierDeltas', () => {
-  it('replaces numeric fields on the modifiers bag', () => {
+  it('multiplies numeric fields on the modifiers bag', () => {
     const m = defaultModifiers();
-    // through_the_kirkyard sets spawnIntervalMult: 0.7
+    m.spawnIntervalMult = 0.8;
     const route = getRoute('through_the_kirkyard');
-    expect(route.modifierDeltas.spawnIntervalMult).toBeDefined();
     applyRouteModifierDeltas(m, route);
-    expect(m.spawnIntervalMult).toBe(route.modifierDeltas.spawnIntervalMult);
+    expect(m.spawnIntervalMult).toBeCloseTo(0.56, 5);
   });
 
   it('returns the same modifier reference for chaining', () => {

@@ -3,6 +3,7 @@ import { RunPersistenceBridge, type RunPersistenceHooks } from './RunPersistence
 import { RunScoreState } from './RunScoreState';
 import { RunActState } from './RunActState';
 import { defaultModifiers } from '../../core/RunModifiers';
+import { getCurseByKey } from '../../data/curses';
 
 /**
  * Harness covers the snapshot shape (schema drift is a known risk class
@@ -408,6 +409,47 @@ describe('RunPersistenceBridge', () => {
       expect(spawnSys.setSpawnIntervalMult).toHaveBeenCalledWith(0.7);
       expect(weapons.setCurseCooldownMul).toHaveBeenCalledWith(1);
       expect(timeManager.scheduleRealTime).toHaveBeenCalledWith(30_000, expect.any(Function));
+    });
+
+    it('releases a restored kirkyard modifier without removing restless_spirits', () => {
+      const state = buildState();
+      getCurseByKey('restless_spirits')!.apply(state.modifiers);
+      const { hooks, spawnSystem, timeManager } = buildHooks(state);
+      new RunPersistenceBridge(hooks).applyResume({
+        killCount: 0,
+        ownedPassives: [],
+        evolvedWeaponKeys: [],
+        acquiredWeapons: [],
+        currentLevel: 1,
+        currentXp: 0,
+        selectedVariantKey: 'classic',
+        gameTimeSec: 360,
+        playerX: 0,
+        playerY: 0,
+        playerHealth: 50,
+        playerMaxHp: 100,
+        weaponDamage: {},
+        spawnedBossKeys: ['gordon'],
+        shieldCooldownMs: 0,
+        actState: {
+          currentAct: 2,
+          actStartTimeSec: 300,
+          pickerHistory: [
+            {
+              slot: 'A',
+              routeKey: 'through_the_kirkyard',
+              atGameTimeSec: 300,
+              defaultedBySetting: false,
+            },
+          ],
+        },
+      } as never);
+      const release = timeManager.scheduleRealTime.mock.calls[0][1] as () => void;
+      release();
+      expect(state.modifiers.spawnIntervalMult).toBeCloseTo(1 / 1.20, 5);
+      const spawnIntervalCalls = spawnSystem.setSpawnIntervalMult.mock.calls;
+      const cachedSpawnIntervalMult = spawnIntervalCalls[spawnIntervalCalls.length - 1][0];
+      expect(cachedSpawnIntervalMult).toBeCloseTo(1 / 1.20, 5);
     });
 
     it('does not restore an expired timed route modifier', () => {

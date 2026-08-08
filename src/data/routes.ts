@@ -1,10 +1,9 @@
 /**
  * Routes — Moor Road between-act choice definitions (W2).
  *
- * Six routes split across two picker slots. Numeric `modifierDeltas` replace
- * the current `RunModifiers` values at pick resolve time. `onResume` handles
- * effects that don't fit the multiplier bag — healing bursts, chest
- * forcing, one-off elite spawns, timed spawn-rate releases.
+ * Six routes use two picker slots. Numeric `modifierDeltas` multiply
+ * the current `RunModifiers` values at pick resolve time. `onResume`
+ * handles heals, forced chests, elite spawns, and timed releases.
  *
  * Keys are stable save-visible identifiers; Chronicle displays use the
  * i18n labelKey / descKey resolved through `t()`.
@@ -87,13 +86,11 @@ export interface RouteDef {
   readonly labelKey: string;
   readonly descKey: string;
   /**
-   * Partial rewrites of `RunModifiers` applied at pick-resolve time.
-   * Only the subset of fields in `RouteModifierDeltaKey` is allowed —
-   * the rest either read only at run start (readonly base stats) or
-   * aren't tunable (routePicks log).
+   * Partial multipliers for `RunModifiers` applied at pick-resolve time.
+   * Routes can use only fields in `RouteModifierDeltaKey`. Other fields
+   * are read at run start or are not tunable.
    *
-   * Numeric values REPLACE the current bag value (consistent with the
-   * routes authored today — see `actIntermissionResolve.applyRouteModifierDeltas`).
+   * Numeric values multiply the current bag value.
    */
   readonly modifierDeltas: Partial<Pick<RunModifiers, RouteModifierDeltaKey>>;
   /** Side-effect callback — heal bursts, chest forcing, timed releases. */
@@ -134,14 +131,10 @@ export const ROUTES: readonly RouteDef[] = [
     modifierDeltas: { spawnIntervalMult: 0.70 },
     onResume: (ctx) => {
       ctx.spawnSystem.forceSpawn('haggis_hunter', { elite: true });
-      // Wall-clock release: restore both the modifier bag (source of
-      // truth for new SpawnSystem reads) AND the SpawnSystem's cached
-      // private field — the cache is only refreshed when
-      // `setSpawnIntervalMult` is called explicitly, so a bag-only
-      // write would leave the 0.70 throttle in place forever.
+      const routeSpawnIntervalMult = 0.70;
       ctx.timeManager.scheduleRealTime(KIRKYARD_SPAWN_RELEASE_MS, () => {
-        ctx.modifiers.spawnIntervalMult = 1;
-        ctx.spawnSystem.setSpawnIntervalMult(1);
+        ctx.modifiers.spawnIntervalMult /= routeSpawnIntervalMult;
+        ctx.spawnSystem.setSpawnIntervalMult(ctx.modifiers.spawnIntervalMult);
       });
     },
   },

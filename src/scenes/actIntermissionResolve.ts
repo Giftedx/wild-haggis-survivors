@@ -81,11 +81,9 @@ export function actIntermissionShortcutIndex(key: string): number | null {
 
 /**
  * Apply a route's `modifierDeltas` to the run-scoped `RunModifiers` bag.
- * Numeric fields REPLACE the current value (consistent with the routes
- * authored today — `spawnIntervalMult` sets the absolute multiplier for
- * its window, restored by the route's `onResume` schedule). Non-numeric
- * keys (e.g. the `routePicks` array) are skipped — they're tracked by
- * RunActState, not the picker resolver.
+ * Numeric fields multiply the current value. This preserves modifiers
+ * that curses and other systems applied before the route. The function
+ * skips non-numeric keys because RunActState owns the route log.
  *
  * Pure: mutates the passed `modifiers` and returns it for chaining.
  */
@@ -94,8 +92,10 @@ export function applyRouteModifierDeltas(
   route: RouteDef,
 ): RunModifiers {
   for (const [k, v] of Object.entries(route.modifierDeltas)) {
-    if (typeof v === 'number') {
-      (modifiers as unknown as Record<string, unknown>)[k] = v;
+    const modifierBag = modifiers as unknown as Record<string, unknown>;
+    const current = modifierBag[k];
+    if (typeof current === 'number' && typeof v === 'number') {
+      modifierBag[k] = current * v;
     }
   }
   return modifiers;

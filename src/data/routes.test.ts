@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { ROUTES, ROUTES_BY_SLOT, getRoute, type RouteKey, type RouteResumeContext } from './routes';
 import { defaultModifiers } from '../core/RunModifiers';
 import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
+import { getCurseByKey } from './curses';
+import { applyRouteModifierDeltas } from '../scenes/actIntermissionResolve';
 
 describe('ROUTES table', () => {
   it('contains exactly 6 routes', () => {
@@ -114,21 +116,20 @@ describe('routes.onResume — picker A', () => {
     expect(ctx.hazardZones.spawnHealingCircle).toHaveBeenCalledTimes(2);
   });
 
-  it('through_the_kirkyard: force-spawns elite haggis_hunter + schedules 90s release of spawnIntervalMult', () => {
+  it('through_the_kirkyard: releases its spawn modifier without removing restless_spirits', () => {
     const ctx = makeCtx();
-    // Simulate the picker resolver applying the modifierDelta prior to onResume.
-    ctx.modifiers.spawnIntervalMult = 0.7;
-    getRoute('through_the_kirkyard').onResume!(ctx);
+    const route = getRoute('through_the_kirkyard');
+    getCurseByKey('restless_spirits')!.apply(ctx.modifiers);
+    applyRouteModifierDeltas(ctx.modifiers, route);
+    route.onResume!(ctx);
     expect(ctx.spawnSystem.forceSpawn).toHaveBeenCalledWith('haggis_hunter', { elite: true });
     expect(ctx.timeManager.scheduleRealTime).toHaveBeenCalledWith(
       90_000,
       expect.any(Function),
     );
-    // makeCtx's scheduleRealTime fires immediately — so modifier should be reset to 1.
-    expect(ctx.modifiers.spawnIntervalMult).toBe(1);
-    // Regression guard: the release must also propagate to SpawnSystem's
-    // cached private field, otherwise the 0.70 throttle sticks forever.
-    expect(ctx.spawnSystem.setSpawnIntervalMult).toHaveBeenCalledWith(1);
+    expect(ctx.modifiers.spawnIntervalMult).toBeCloseTo(1 / 1.20, 5);
+    const cachedSpawnIntervalMult = vi.mocked(ctx.spawnSystem.setSpawnIntervalMult).mock.calls[0][0];
+    expect(cachedSpawnIntervalMult).toBeCloseTo(1 / 1.20, 5);
   });
 });
 

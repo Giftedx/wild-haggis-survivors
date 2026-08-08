@@ -491,9 +491,10 @@ function restoreRouteRuntimeState(
       );
       if (remainingMs <= 0) return;
       applyRouteModifierDeltas(runModifiers, route);
+      const routeSpawnIntervalMult = route.modifierDeltas.spawnIntervalMult ?? 1;
       timeManager.scheduleRealTime?.(remainingMs, () => {
-        runModifiers.spawnIntervalMult = 1;
-        spawnSystem.setSpawnIntervalMult(1);
+        runModifiers.spawnIntervalMult /= routeSpawnIntervalMult;
+        spawnSystem.setSpawnIntervalMult(runModifiers.spawnIntervalMult);
       });
       return;
     }
