@@ -100,7 +100,7 @@ export function installPlayerAndRunStart(
   // live in the helper; this call site only owns the field
   // assignments + the consume-once null-out for `pendingCurseKey`.
   const curseResult = applyCurseAndComposeStats({
-    pendingCurseKey: scene.pendingCurseKey,
+    pendingCurseKey: resumeRun ? resumeRun.curseKey : scene.pendingCurseKey,
     resumeRun: !!resumeRun,
     runIsDaily: scene.runIsDaily,
     playbackV2,

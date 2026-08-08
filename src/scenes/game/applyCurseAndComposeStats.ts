@@ -26,11 +26,10 @@
  *   - Playback-with-curseKey → ALWAYS apply that curse, even on
  *     resumed runs or daily attempts. Replay determinism wins; the
  *     captured blob's curseKey is ground truth.
- *   - Otherwise (record / off mode), apply `pendingCurseKey` ONLY when
- *     this is a fresh-start non-daily run. Resumed runs already had
- *     the curse baked into their in-flight modifiers (we do NOT
- *     double-apply); daily runs use a fixed rule set so seed
- *     equivalence holds.
+ *   - Otherwise (record / off mode), apply `pendingCurseKey` on any
+ *     non-daily run. Resumed runs supply the saved curse key because
+ *     this helper creates a fresh modifier bag. Daily runs use a fixed
+ *     rule set so seed equivalence holds.
  *   - In all paths the helper emits `GLOBAL_CURSE_STARTED` exactly once
  *     when (and only when) a curse was successfully applied. Same
  *     contract as the pre-extraction emit.
@@ -66,7 +65,7 @@ import type { ComposedPlayerStats } from '../../core/StatComposer';
 import type { ReplayBlobV2Meta } from '../../replay/replayBlobV2';
 
 export interface ApplyCurseAndComposeStatsInput {
-  /** The pending curse key consumed from the GameScene init payload.
+  /** The curse key from the GameScene init payload or resume snapshot.
    *  Read once, then the caller nulls the field so it cannot bleed
    *  into a recycled scene instance. The helper signals consumption
    *  via the `consumePending` result flag. May be null/undefined when
@@ -76,10 +75,9 @@ export interface ApplyCurseAndComposeStatsInput {
    *  returns `null` on unknown values (the unit test pins this
    *  data-drift safety path). */
   pendingCurseKey: string | null | undefined;
-  /** Truthy when the run is being resumed from an active-run save.
-   *  Resumed runs do NOT re-apply curses (their curse was baked into
-   *  the in-flight modifier bag at original-start time) — but a v2
-   *  playback's recorded curseKey still wins for determinism. */
+  /** True when the run is being resumed from an active-run save.
+   *  The value does not block curse application because each call
+   *  creates a fresh modifier bag. */
   resumeRun: boolean;
   /** True when the run is a daily attempt. Daily runs use a fixed
    *  rule set (seed equivalence) and do not honor user curse picks.
@@ -157,7 +155,7 @@ export function applyCurseAndComposeStats(
       activeCurseKey = curse.key;
       globalEventBus.emit('GLOBAL_CURSE_STARTED', { curseKey: curse.key });
     }
-  } else if (!input.resumeRun && !input.runIsDaily) {
+  } else if (!input.runIsDaily) {
     const curse = getCurseByKey(input.pendingCurseKey ?? null);
     if (curse) {
       curse.apply(runModifiers);

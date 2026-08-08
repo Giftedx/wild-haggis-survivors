@@ -75,6 +75,7 @@ export interface InstallRunBookkeepingOpts {
   getActiveVariant(): VariantDef;
   getRunScore(): RunScoreState;
   getRunActState(): RunActState;
+  getActiveCurseKey(): string | null;
   isIronmoorRun(): boolean;
   getTempBuffBag(): TempBuffBag;
   getRevivalAvailable(): boolean;
@@ -150,6 +151,7 @@ export function installRunBookkeeping(
     getRunScore: opts.getRunScore,
     getRunActState: opts.getRunActState,
     getRunModifiers: opts.getRunModifiers,
+    getActiveCurseKey: opts.getActiveCurseKey,
     isIronmoorRun: opts.isIronmoorRun,
     getTempBuffBag: opts.getTempBuffBag,
     getRevivalAvailable: opts.getRevivalAvailable,

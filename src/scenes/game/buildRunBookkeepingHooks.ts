@@ -47,6 +47,7 @@ export function buildRunBookkeepingHooks(scene: GameScene): InstallRunBookkeepin
     getActiveVariant: () => scene.activeVariant,
     getRunScore: () => scene.runScore,
     getRunActState: () => scene.runActState,
+    getActiveCurseKey: () => scene.activeCurseKey,
     isIronmoorRun: () => scene.activeIronmoorRun,
     getTempBuffBag: () => scene.tempBuffBag,
     getRevivalAvailable: () => scene.revivalAvailable,

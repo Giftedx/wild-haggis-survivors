@@ -68,6 +68,9 @@ export interface RunPersistenceHooks {
   /** Run-scoped modifier bag — read + mutated on resume to re-apply route deltas. */
   getRunModifiers(): RunModifiers;
 
+  /** Curse that is active in this run. */
+  getActiveCurseKey(): string | null;
+
   /** W66 Ironmoor — run-scoped flag (locked in at run start, NOT live setting). */
   isIronmoorRun(): boolean;
 
@@ -129,6 +132,7 @@ export class RunPersistenceBridge {
     const score = h.getRunScore();
     const heldRelicKeys = h.getHeldRelicKeys?.() ?? [];
     const ownedRuneIds = h.getOwnedRuneIds?.() ?? [];
+    const curseKey = h.getActiveCurseKey();
     return {
       gameTimeSec: h.getSpawnSystem().getGameTimeSec(),
       playerX: player.x,
@@ -147,6 +151,7 @@ export class RunPersistenceBridge {
       killCount: score.killCount,
       ownedPassives: [...h.getOwnedPassives()],
       evolvedWeaponKeys: [...h.getEvolvedWeapons()],
+      ...(curseKey ? { curseKey } : {}),
       bossKillCount: score.bossKillCount,
       bossGoldEarned: score.bossGoldEarned,
       coinGoldEarned: score.coinGoldEarned,

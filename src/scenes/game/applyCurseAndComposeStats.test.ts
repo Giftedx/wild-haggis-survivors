@@ -6,8 +6,8 @@
  * Coverage matrix:
  *   - precedence: v2 playback curseKey wins over pendingCurseKey,
  *     resumeRun gate, and runIsDaily gate (replay determinism).
- *   - resumeRun=true + no v2 → no curse applied even if pendingCurseKey
- *     is non-null (resumed runs already baked their curse in).
+ *   - resumeRun=true + no v2 applies the saved pendingCurseKey to the
+ *     fresh modifier bag.
  *   - runIsDaily=true + no v2 → no curse applied (fixed rule set).
  *   - fresh run (resume=false, daily=false) + valid pendingCurseKey →
  *     curse applied; bag mutated; activeCurseKey returned;
@@ -119,20 +119,19 @@ describe('applyCurseAndComposeStats — curse precedence', () => {
     expect(cap.record.lastPayload?.curseKey).toBe('heavy_legs');
   });
 
-  it('skips pendingCurseKey on resumed runs (curse was already baked in)', () => {
+  it('re-applies a saved pendingCurseKey on resumed runs', () => {
     const result = applyCurseAndComposeStats({
-      pendingCurseKey: 'heavy_legs',
+      pendingCurseKey: 'thin_hide',
       resumeRun: true,
       runIsDaily: false,
       playbackV2: null,
       baseStats: sampleBaseStats,
     });
     cap.dispose();
-    expect(result.activeCurseKey).toBe(null);
-    expect(result.runModifiers.moveSpeedMult).toBe(1);
-    expect(cap.record.count).toBe(0);
-    // pendingCurseKey was non-null on input — caller must still null it
-    // to prevent next-run leak. consumePending=true signals that.
+    expect(result.activeCurseKey).toBe('thin_hide');
+    expect(result.runModifiers.goldMult).toBe(1.40);
+    expect(result.runModifiers.damageTakenMult).toBe(1.25);
+    expect(cap.record.count).toBe(1);
     expect(result.consumePending).toBe(true);
   });
 

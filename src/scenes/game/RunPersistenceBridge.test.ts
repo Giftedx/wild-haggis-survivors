@@ -23,6 +23,7 @@ function buildState(
     evolved?: string[];
     relics?: string[];
     runes?: string[];
+    curseKey?: string;
     ironmoor?: boolean;
   } = {},
 ) {
@@ -40,8 +41,9 @@ function buildState(
   };
   const actState = new RunActState();
   const modifiers = defaultModifiers();
+  const curseKey = counters.curseKey ?? null;
   const ironmoor = counters.ironmoor ?? false;
-  return { score, flags, actState, modifiers, ironmoor };
+  return { score, flags, actState, modifiers, curseKey, ironmoor };
 }
 
 function buildHooks(
@@ -115,6 +117,7 @@ function buildHooks(
     getRunScore: () => score,
     getRunActState: () => stateBundle.actState,
     getRunModifiers: () => stateBundle.modifiers,
+    getActiveCurseKey: () => stateBundle.curseKey,
     isIronmoorRun: () => stateBundle.ironmoor,
     getRevivalAvailable: () => flags.revival,
     getOwnedPassives: () => flags.owned,
@@ -152,6 +155,7 @@ describe('RunPersistenceBridge', () => {
         revival: true,
         owned: ['greaves'],
         evolved: ['claymore'],
+        curseKey: 'thin_hide',
       });
       const { hooks } = buildHooks(state);
       const snapshot = new RunPersistenceBridge(hooks).collect();
@@ -171,6 +175,7 @@ describe('RunPersistenceBridge', () => {
         killCount: 250,
         ownedPassives: ['greaves'],
         evolvedWeaponKeys: ['claymore'],
+        curseKey: 'thin_hide',
         bossKillCount: 2,
         bossGoldEarned: 400,
         coinGoldEarned: 125,

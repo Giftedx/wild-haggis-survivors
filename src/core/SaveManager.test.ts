@@ -10,8 +10,8 @@ class ThrowingStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
-const defaultV12 = {
-  saveVersion: 12 as const,
+const defaultV13 = {
+  saveVersion: 13 as const,
   totalKills: 0,
   totalKillsSpent: 0,
   unlockedWeapons: [] as string[],
@@ -35,7 +35,7 @@ const defaultV12 = {
 };
 
 /** Aliases kept for clarity in migration tests that seed earlier blobs. */
-const defaultV9 = defaultV12;
+const defaultV9 = defaultV13;
 
 const sampleRun = (): IRunState => ({
   gameTimeSec: 600,
@@ -53,6 +53,7 @@ const sampleRun = (): IRunState => ({
   killCount: 500,
   ownedPassives: ['kilt'],
   evolvedWeaponKeys: [],
+  curseKey: 'thin_hide',
   bossKillCount: 2,
   bossGoldEarned: 140,
   coinGoldEarned: 37,
@@ -87,7 +88,7 @@ describe('SaveManager', () => {
     });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(12);
+    expect(loaded.saveVersion).toBe(13);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
     expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
@@ -117,8 +118,8 @@ describe('SaveManager', () => {
     try {
       const loaded = new SaveManager({ storage, key: 'k' }).load();
 
-      expect(warn).toHaveBeenCalledWith('Save version 99 is newer than supported (12). This client can lose fields.');
-      expect(loaded.saveVersion).toBe(12);
+      expect(warn).toHaveBeenCalledWith('Save version 99 is newer than supported (13). This client can lose fields.');
+      expect(loaded.saveVersion).toBe(13);
       expect(loaded.totalKills).toBe(5);
       expect(loaded.unlockedAchievements).toEqual(['ach_first_victory']);
     } finally {
@@ -163,7 +164,7 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(12);
+    expect(loaded.saveVersion).toBe(13);
     expect(loaded.codexCulledKeys).toEqual([]);
     expect(loaded.fallenCairns).toEqual([]);
     expect(loaded.oldDroverRevealedCount).toBe(0);
@@ -260,6 +261,7 @@ describe('SaveManager', () => {
     expect(loaded.activeRun!.shieldCooldownMs).toBe(1800);
     expect(loaded.activeRun!.heldRelicKeys).toEqual(['sporran_of_holding', 'bronze_clasp']);
     expect(loaded.activeRun!.ownedRuneIds).toEqual(['peat_rune', 'thirst_rune']);
+    expect(loaded.activeRun!.curseKey).toBe('thin_hide');
     expect(loaded.activeRun!.cairnStackCount).toBe(2);
     expect(loaded.activeRun!.cairnSpawnedCount).toBe(2);
     expect(loaded.activeRun!.cairnNextSpawnAtSec).toBe(540);
@@ -404,7 +406,7 @@ describe('SaveManager v9 → v10 migration', () => {
     });
     store.set('whs_meta_save', JSON.stringify(v9Blob));
     const loaded = sm.load();
-    expect(loaded.saveVersion).toBe(12);
+    expect(loaded.saveVersion).toBe(13);
     expect(loaded.fallenCairns).toEqual([]);
     expect(loaded.oldDroverRevealedCount).toBe(0);
     expect(loaded.totalKills).toBe(100);
@@ -535,7 +537,7 @@ describe('SaveManager v10 → v11 migration', () => {
     });
     store.set('whs_meta_save', JSON.stringify(v10Blob));
     const loaded = sm.load();
-    expect(loaded.saveVersion).toBe(12);
+    expect(loaded.saveVersion).toBe(13);
     expect(loaded.fallenCairns).toHaveLength(1);
     expect(loaded.fallenCairns[0].savedAt).toBe(42);
     expect(loaded.fallenCairns[0].wreathedAt).toBeUndefined();
@@ -567,6 +569,25 @@ describe('SaveManager v10 → v11 migration', () => {
     const loaded = sm.load();
     expect(loaded.fallenCairns[0].wreathedAt).toBe(9999);
     expect(loaded.fallenCairns[1].extinguishedAt).toBe(8888);
+  });
+});
+
+describe('SaveManager v12 to v13 migration', () => {
+  it('preserves the active-run curse key', () => {
+    const storage = new MemoryStorage();
+    storage.setItem('k', JSON.stringify({
+      ...defaultV13,
+      saveVersion: 12,
+      activeRun: {
+        ...sampleRun(),
+        curseKey: 'thin_hide',
+      },
+    }));
+
+    const loaded = new SaveManager({ storage, key: 'k' }).load();
+
+    expect(loaded.saveVersion).toBe(13);
+    expect(loaded.activeRun).toMatchObject({ curseKey: 'thin_hide' });
   });
 });
 

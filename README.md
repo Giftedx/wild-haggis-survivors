@@ -106,7 +106,7 @@ flowchart LR
 - **Data-driven balance:** all weapons, enemies, upgrades, variants, routes, banter, curses, biomes, hazards, relics, and runes live under `src/data/`. Code consumes them. Balance work is data-only.
 - **Persistence:** three independent `localStorage` keys, each owned by one module (see [ADR-0007](docs/adr/0007-three-localstorage-stores-by-design.md)):
   - `whs_save` (`src/utils/save/*`, schema v24: the combined save with meta, run history, and the replay blob)
-  - `whs_meta_save` (`src/core/SaveManager.ts`, schema v12: kills, unlocks, achievements, mid-run resume)
+  - `whs_meta_save` (`src/core/SaveManager.ts`, schema v13: kills, unlocks, achievements, mid-run resume)
   - `whs_game_settings` (`src/core/SettingsManager.ts`, schema v1: audio, motion, a11y, keybindings, locale)
 - **Bilingual:** English baseline in `src/core/i18n.ts`. The Scots overlay (`src/core/i18n.scs.ts`) is code-split and lazy-loaded. Two parity fences run in CI. See `src/core/i18n.locale.test.ts`.
 - **Sprites:** `BootScene` draws every texture with Phaser `Graphics.generateTexture`. The drawers live under `src/art/sprites/`, one file per sprite category.

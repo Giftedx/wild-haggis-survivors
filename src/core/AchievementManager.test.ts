@@ -24,7 +24,7 @@ describe('AchievementManager', () => {
     storage = new MemoryStorage();
     save = new SaveManager({ storage, key: 'ach_test' });
     save.save({
-      saveVersion: 12,
+      saveVersion: 13,
       totalKills: 0,
       totalKillsSpent: 0,
       dailyChallenge: null,
@@ -271,7 +271,7 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
     storage = new MemoryStorage();
     save = new SaveManager({ storage, key: 'ach_test' });
     save.save({
-      saveVersion: 12,
+      saveVersion: 13,
       totalKills: 0,
       totalKillsSpent: 0,
       dailyChallenge: null,

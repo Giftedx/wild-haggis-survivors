@@ -103,6 +103,8 @@ export interface IRunState {
   killCount: number;
   ownedPassives: string[];
   evolvedWeaponKeys: string[];
+  /** Curse that is active in the saved run snapshot. */
+  curseKey?: string;
   /** Boss kills already earned in this run (for Game Over stats). */
   bossKillCount?: number;
   /** Gold earned from boss kills so far this run. */
@@ -381,9 +383,14 @@ export interface ISaveDataV12 extends Omit<ISaveDataV11, 'saveVersion'> {
   friendChallenges: FriendChallengeRecord[];
 }
 
-export type ISaveData = ISaveDataV12;
+/** V13 persists the active curse in mid-run snapshots. */
+export interface ISaveDataV13 extends Omit<ISaveDataV12, 'saveVersion'> {
+  saveVersion: 13;
+}
 
-export const CURRENT_SAVE_VERSION = 12 as const;
+export type ISaveData = ISaveDataV13;
+
+export const CURRENT_SAVE_VERSION = 13 as const;
 
 export const MAX_RUN_HISTORY = 20;
 
@@ -545,6 +552,9 @@ function coerceIRunState(raw: unknown): IRunState | null {
     killCount: Math.max(0, clampInt(o.killCount, 0)),
     ownedPassives: toStringArray(o.ownedPassives),
     evolvedWeaponKeys: toStringArray(o.evolvedWeaponKeys),
+    curseKey: typeof o.curseKey === 'string' && o.curseKey.length > 0
+      ? o.curseKey
+      : undefined,
     bossKillCount: toOptionalNonNegativeInt(o.bossKillCount),
     bossGoldEarned: toOptionalNonNegativeInt(o.bossGoldEarned),
     coinGoldEarned: toOptionalNonNegativeInt(o.coinGoldEarned),
