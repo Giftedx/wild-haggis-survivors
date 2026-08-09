@@ -449,11 +449,11 @@ test.describe('UI design audit — extra mapped states', () => {
 
   test('19 dev registered scenes', async ({ page }) => {
     await seedFullProgress(page);
-    await bootCanvas(page, '/?export');
+    await bootCanvas(page, './?export');
     await page.waitForTimeout(1000);
     await snap(page, '19a-sprite-export-scene');
 
-    await bootCanvas(page, '/?devScenes=1');
+    await bootCanvas(page, './?devScenes=1');
     await gotoScene(page, 'Game', {}, 1300);
     await page.keyboard.press('F3');
     await page.waitForTimeout(300);
