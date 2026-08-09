@@ -349,6 +349,26 @@ describe('replay determinism — Moor Remembers cairn payload (T12)', () => {
     expect(back?.cairns).toEqual([cairnA, cairnB]);
   });
 
+  it('v3 round-trip preserves cairn wreath state', () => {
+    const src = {
+      version: REPLAY_BLOB_V3_VERSION as typeof REPLAY_BLOB_V3_VERSION,
+      build: 'whs-test',
+      seed: 42,
+      variantKey: 'classic',
+      frameCount: 0,
+      frames: [],
+      cairns: [
+        { ...cairnA, wreathedAt: 9999 },
+        { ...cairnB, extinguishedAt: 8888 },
+      ],
+    };
+    const back = deserializeReplayV3(serializeReplayV3(src));
+    expect(back?.cairns).toEqual([
+      { ...cairnA, wreathedAt: 9999 },
+      { ...cairnB, extinguishedAt: 8888 },
+    ]);
+  });
+
   it('malformed cairn entries are dropped at deserialize', () => {
     const raw = JSON.stringify({
       version: REPLAY_BLOB_V3_VERSION,

@@ -222,7 +222,7 @@ function coerceCairns(arr: unknown[]): FallenCairn[] | undefined {
     if (typeof raw.timeSurvivedMs !== 'number' || !Number.isFinite(raw.timeSurvivedMs)) continue;
     if (typeof raw.inheritedStat !== 'string' || !raw.inheritedStat) continue;
     if (typeof raw.savedAt !== 'number' || !Number.isFinite(raw.savedAt)) continue;
-    out.push({
+    const cairn: FallenCairn = {
       x: raw.x,
       y: raw.y,
       cause: raw.cause as string,
@@ -230,7 +230,22 @@ function coerceCairns(arr: unknown[]): FallenCairn[] | undefined {
       timeSurvivedMs: raw.timeSurvivedMs,
       inheritedStat: raw.inheritedStat as FallenCairn['inheritedStat'],
       savedAt: raw.savedAt,
-    });
+    };
+    const wreathedAt =
+      typeof raw.wreathedAt === 'number' && Number.isFinite(raw.wreathedAt)
+        ? raw.wreathedAt
+        : undefined;
+    const extinguishedAt =
+      typeof raw.extinguishedAt === 'number' && Number.isFinite(raw.extinguishedAt)
+        ? raw.extinguishedAt
+        : undefined;
+    if (wreathedAt !== undefined && wreathedAt > 0) {
+      out.push({ ...cairn, wreathedAt });
+    } else if (extinguishedAt !== undefined && extinguishedAt > 0) {
+      out.push({ ...cairn, extinguishedAt });
+    } else {
+      out.push(cairn);
+    }
   }
   return out.length > 0 ? out : undefined;
 }
