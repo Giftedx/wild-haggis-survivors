@@ -17,7 +17,10 @@ describe('applyCullodenMemorial', () => {
 
   it('does not fire for other seasonal events', () => {
     for (const key of ['hogmanay', 'burns_night', 'beltane', 'samhain', 'bannockburn']) {
-      expect(applyCullodenMemorial(key, modifiers).applied).toBe(false);
+      expect(
+        applyCullodenMemorial(key, modifiers).applied,
+        `should skip ${key}`,
+      ).toBe(false);
     }
   });
 

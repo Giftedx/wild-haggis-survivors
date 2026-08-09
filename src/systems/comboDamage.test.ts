@@ -11,7 +11,7 @@ import {
 describe('comboDamageBonusFraction', () => {
   it('is zero below the first tier (combo 0..9)', () => {
     for (const c of [0, 1, 5, 9]) {
-      expect(comboDamageBonusFraction(c)).toBe(0);
+      expect(comboDamageBonusFraction(c), `combo ${c}`).toBe(0);
     }
   });
 
