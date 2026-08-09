@@ -3,7 +3,7 @@
  *
  * Extracted from `src/utils/save.ts` per the 2026-04-30 restructure plan
  * (Phase 1.3). Owns:
- *   - the `migrateSave` switch + 14 V→V step functions
+ *   - the `migrateSave` switch + V→V step functions
  *   - `finalizeSaveCandidate` (the coerce-and-seed wrapper)
  *   - all coercion helpers (coerce*, seed*, normalizeRunSummary,
  *     buildProgressSnapshot, compactReplayBlobs, isRecord)
