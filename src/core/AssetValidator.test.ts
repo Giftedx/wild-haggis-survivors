@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   collectRequiredTextureRequirements,
@@ -5,6 +6,12 @@ import {
   MISSING_PLACEHOLDER_KEY,
 } from './AssetValidator';
 import { MODE_CONFIG } from '../systems/AmbientWeatherSystem';
+import {
+  FLORA_BY_BIOME,
+  HEATHER_URBAN_PROPS,
+  SEASONAL_FLORA_INJECTIONS,
+  STORY_PROPS_BY_BIOME,
+} from '../systems/FloraScatter';
 
 describe('AssetValidator', () => {
   it('collects non-empty requirements including core gameplay keys', () => {
@@ -46,6 +53,33 @@ describe('AssetValidator', () => {
         `missing validator requirement for ${mode}: ${config.textureKey}`
       ).toContain(config.textureKey);
     }
+  });
+
+  it('locks every FloraScatter prop texture key', () => {
+    const requiredTextureKeys = new Set(
+      collectRequiredTextureRequirements().map((requirement) => requirement.key),
+    );
+    const propTextureKeys = [
+      ...Object.values(FLORA_BY_BIOME).flatMap((entries) =>
+        entries.map(([textureKey]) => textureKey),
+      ),
+      ...HEATHER_URBAN_PROPS,
+      ...SEASONAL_FLORA_INJECTIONS.map((injection) => injection.key),
+      ...Object.values(STORY_PROPS_BY_BIOME).flat(),
+    ];
+
+    for (const textureKey of propTextureKeys) {
+      expect(
+        requiredTextureKeys.has(textureKey),
+        `AssetValidator does not require ${textureKey}`,
+      ).toBe(true);
+    }
+  });
+
+  it('does not transcribe decoration texture keys', () => {
+    const source = readFileSync(new URL('./AssetValidator.ts', import.meta.url), 'utf8');
+
+    expect(source).not.toMatch(/['"]deco_/);
   });
 
   it('reports no missing when predicate accepts all required keys', () => {

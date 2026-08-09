@@ -28,7 +28,7 @@ type WeightedEntry = readonly [string, number];
  * at the moor's edge. Total weight 0.10 (≈ 1-in-10 heather scatter),
  * five entries at 0.02 each.
  */
-const HEATHER_URBAN_PROPS: readonly string[] = [
+export const HEATHER_URBAN_PROPS: readonly string[] = [
   'deco_chippy_sign',
   'deco_bus_stop',
   'deco_newsprint',
@@ -38,7 +38,7 @@ const HEATHER_URBAN_PROPS: readonly string[] = [
 const HEATHER_URBAN_TOTAL = 0.10;
 const HEATHER_URBAN_PER_ENTRY = HEATHER_URBAN_TOTAL / HEATHER_URBAN_PROPS.length; // 0.02
 
-const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
+export const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
   heather: [
     'deco_waymarker_post',
     'deco_pictish_stone',
@@ -298,7 +298,7 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
 };
 const STORY_PROP_TOTAL = 0.08;
 
-const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
+export const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   heather: [
     ['deco_heather', 0.20],
     ['deco_bracken', 0.35],
@@ -409,7 +409,7 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   clyde_shipyard: [
     ['deco_rock', 0.22],
     ['deco_rock_2', 0.40],
-    ['deco_traffic_cone', 0.56],
+    ['deco_cone', 0.56],
     ['deco_wind_grass', 0.72],
     ['deco_thistle', 0.88],
     ['deco_rock_3', 1.0],
@@ -445,10 +445,10 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   // the whole composition.
   glasgow_close: [
     ['deco_rock', 0.20],
-    ['deco_traffic_cone', 0.40],
+    ['deco_cone', 0.40],
     ['deco_wind_grass', 0.58],
     ['deco_thistle', 0.72],
-    ['deco_abandoned_pint', 0.84],
+    ['deco_tennents', 0.84],
     ['deco_rock_2', 0.94],
     ['deco_rock_3', 1.0],
   ],
@@ -458,7 +458,7 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   // door (reused as a wall-detail prop at low density). No heather.
   edinburgh_old_town: [
     ['deco_rock', 0.20],
-    ['deco_traffic_cone', 0.38],
+    ['deco_cone', 0.38],
     ['deco_wind_grass', 0.56],
     ['deco_thistle', 0.70],
     ['deco_close_door', 0.80],
@@ -590,6 +590,46 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   ],
 };
 
+interface SeasonalFloraInjection {
+  readonly seasonKeys: readonly string[];
+  readonly biomes: readonly BiomeId[];
+  readonly key: string;
+  readonly weight: number;
+}
+
+export const SEASONAL_FLORA_INJECTIONS: readonly SeasonalFloraInjection[] = [
+  {
+    seasonKeys: ['samhain'],
+    biomes: ['pine', 'heather'],
+    key: 'deco_autumn_leaves',
+    weight: 0.12,
+  },
+  {
+    seasonKeys: ['beltane'],
+    biomes: ['heather', 'bog'],
+    key: 'deco_spring_shoot',
+    weight: 0.10,
+  },
+  {
+    seasonKeys: ['hogmanay', 'burns_night'],
+    biomes: ['bog'],
+    key: 'deco_thaw_puddle',
+    weight: 0.10,
+  },
+  {
+    seasonKeys: ['midwinter'],
+    biomes: ['heather', 'pine'],
+    key: 'deco_winter_snowcap',
+    weight: 0.11,
+  },
+  {
+    seasonKeys: ['lammas'],
+    biomes: ['heather', 'bog'],
+    key: 'deco_summer_barley',
+    weight: 0.10,
+  },
+];
+
 /** Map a real-month index (0-11) to a synthetic seasonal hint when no
  *  formal seasonal event is firing. April-May → spring, October-November
  *  → autumn, January-February → thaw. Returned as the same string keys
@@ -624,18 +664,9 @@ export function getBiomeTable(
   let table: WeightedEntry[] = base.map((e) => [e[0], e[1]] as WeightedEntry);
 
   // Step 1: seasonal prepend.
-  const seasonInjections: Array<{ biomes: BiomeId[]; key: string; weight: number }> = [];
-  if (seasonKey === 'samhain') {
-    seasonInjections.push({ biomes: ['pine', 'heather'], key: 'deco_autumn_leaves', weight: 0.12 });
-  } else if (seasonKey === 'beltane') {
-    seasonInjections.push({ biomes: ['heather', 'bog'], key: 'deco_spring_shoot', weight: 0.10 });
-  } else if (seasonKey === 'hogmanay' || seasonKey === 'burns_night') {
-    seasonInjections.push({ biomes: ['bog'], key: 'deco_thaw_puddle', weight: 0.10 });
-  } else if (seasonKey === 'midwinter') {
-    seasonInjections.push({ biomes: ['heather', 'pine'], key: 'deco_winter_snowcap', weight: 0.11 });
-  } else if (seasonKey === 'lammas') {
-    seasonInjections.push({ biomes: ['heather', 'bog'], key: 'deco_summer_barley', weight: 0.10 });
-  }
+  const seasonInjections = SEASONAL_FLORA_INJECTIONS.filter((injection) =>
+    injection.seasonKeys.includes(seasonKey ?? ''),
+  );
   for (const inj of seasonInjections) {
     if (!inj.biomes.includes(biome)) continue;
     // Scale all existing thresholds by (1 - weight), then prepend the new entry at `weight`.
