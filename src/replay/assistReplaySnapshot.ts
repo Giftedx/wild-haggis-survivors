@@ -1,7 +1,6 @@
 /**
- * T1 — Assist-related settings snapshot for replay honesty.
- * Recorded on every new v2+ blob; playback warns when live settings differ
- * and applies snapshots via AssistMode / a11yMotion overrides.
+ * T1: Assist-related replay snapshot helpers.
+ * Replay recording and playback do not use these helpers.
  */
 import type { ISettingsData } from '../core/SettingsManager';
 
@@ -71,8 +70,8 @@ export function comfortReplaySnapshotsEqual(a: ComfortReplaySnapshot, b: Comfort
 }
 
 /**
- * Deserialize `comfortSettings` from JSON. `reduceParticles` defaults false when
- * absent so older blobs (pre-field) still load.
+ * Validate a comfort snapshot from an unknown value.
+ * If `reduceParticles` is absent, use `false`.
  */
 export function coerceComfortReplaySnapshot(v: unknown): ComfortReplaySnapshot | undefined {
   if (!isRecord(v)) return undefined;
