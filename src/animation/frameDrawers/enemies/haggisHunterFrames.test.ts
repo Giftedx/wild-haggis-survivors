@@ -10,10 +10,8 @@ describe('haggisHunterFrames', () => {
     expect(haggisHunterDrawer.canvasSize).toBe(48);
   });
 
-  it('authors idle, walking, hurt, and dying states', () => {
-    for (const s of ['idle', 'walking', 'hurt', 'dying'] as const) {
-      expect(haggisHunterDrawer.authoredStates.has(s)).toBe(true);
-    }
+  it.each(['idle', 'walking', 'hurt', 'dying'] as const)('authors the %s state', (state) => {
+    expect(haggisHunterDrawer.authoredStates.has(state)).toBe(true);
   });
 
   it('returns frames for each authored state matching frameClock count', () => {

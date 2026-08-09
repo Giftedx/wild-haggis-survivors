@@ -65,12 +65,13 @@ describe('WILDLIFE_DEFS', () => {
     expect(WILDLIFE_DEFS.buzzard.enemyFleeRadius).toBe(0);
   });
 
-  it('aerial seabirds and raptors have zero enemy flee radius', () => {
-    for (const key of ['puffin', 'golden_eagle', 'rook', 'pipistrelle_bat'] as const) {
+  it.each(['puffin', 'golden_eagle', 'rook', 'pipistrelle_bat'] as const)(
+    '%s is aerial and has zero enemy flee radius',
+    (key) => {
       expect(WILDLIFE_DEFS[key].aerial).toBe(true);
       expect(WILDLIFE_DEFS[key].enemyFleeRadius).toBe(0);
     }
-  });
+  );
 
   it('terrestrial creatures are not aerial', () => {
     expect(WILDLIFE_DEFS.hare.aerial).toBe(false);
@@ -104,18 +105,17 @@ describe('WILDLIFE_DEFS', () => {
     expect(WILDLIFE_DEFS.salmon.fleeRadius).toBeGreaterThan(0);
   });
 
-  it('new woodland creatures prefer pine over bog', () => {
-    for (const key of ['red_squirrel', 'pine_marten', 'capercaillie'] as const) {
+  it.each(['red_squirrel', 'pine_marten', 'capercaillie'] as const)(
+    '%s prefers pine over bog',
+    (key) => {
       expect(WILDLIFE_DEFS[key].biomeWeights.pine)
         .toBeGreaterThan(WILDLIFE_DEFS[key].biomeWeights.bog);
     }
-  });
+  );
 
-  it('loch wildlife prefers loch over pine', () => {
-    for (const key of ['otter', 'puffin'] as const) {
-      expect(WILDLIFE_DEFS[key].biomeWeights.loch)
-        .toBeGreaterThan(WILDLIFE_DEFS[key].biomeWeights.pine);
-    }
+  it.each(['otter', 'puffin'] as const)('%s prefers loch over pine', (key) => {
+    expect(WILDLIFE_DEFS[key].biomeWeights.loch)
+      .toBeGreaterThan(WILDLIFE_DEFS[key].biomeWeights.pine);
   });
 
   it('upland eagle and wildcat prefer open highland biomes', () => {
@@ -125,11 +125,12 @@ describe('WILDLIFE_DEFS', () => {
       .toBeGreaterThan(WILDLIFE_DEFS.scottish_wildcat.biomeWeights.bog);
   });
 
-  it('new loch and bog creatures prefer wet biomes', () => {
-    for (const key of ['grey_seal', 'salmon'] as const) {
-      expect(WILDLIFE_DEFS[key].biomeWeights.loch)
-        .toBeGreaterThan(WILDLIFE_DEFS[key].biomeWeights.heather);
-    }
+  it.each(['grey_seal', 'salmon'] as const)('%s prefers loch over heather', (key) => {
+    expect(WILDLIFE_DEFS[key].biomeWeights.loch)
+      .toBeGreaterThan(WILDLIFE_DEFS[key].biomeWeights.heather);
+  });
+
+  it('common frog prefers bog over pine', () => {
     expect(WILDLIFE_DEFS.common_frog.biomeWeights.bog)
       .toBeGreaterThan(WILDLIFE_DEFS.common_frog.biomeWeights.pine);
   });

@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { COLORBLIND_MATRICES, matrixToFeColorMatrixValues } from './colorblindMatrices';
 
 describe('colorblind matrices', () => {
-  it('each non-off mode has a 9-element matrix', () => {
-    for (const mode of ['protanopia', 'deuteranopia', 'tritanopia', 'monochrome'] as const) {
+  it.each(['protanopia', 'deuteranopia', 'tritanopia', 'monochrome'] as const)(
+    '%s has a 9-element matrix',
+    (mode) => {
       expect(COLORBLIND_MATRICES[mode].length).toBe(9);
     }
-  });
+  );
 
   it('monochrome matrix rows are identical (grayscale)', () => {
     const m = COLORBLIND_MATRICES.monochrome;

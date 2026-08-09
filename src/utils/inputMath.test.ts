@@ -109,11 +109,11 @@ describe('gamepadStickToMove', () => {
     expect(v.x).toBeGreaterThan(0);
   });
 
-  it('magnitude ≤ 1 for all stick positions', () => {
-    for (const lx of [-1, -0.5, 0, 0.5, 1]) {
-      for (const ly of [-1, -0.5, 0, 0.5, 1]) {
-        expect(vecLen(gamepadStickToMove(lx, ly))).toBeLessThanOrEqual(1 + EPSILON);
-      }
-    }
+  it.each(
+    [-1, -0.5, 0, 0.5, 1].flatMap((lx) =>
+      [-1, -0.5, 0, 0.5, 1].map((ly) => [lx, ly] as const)
+    )
+  )('magnitude ≤ 1 for stick position (%s, %s)', (lx, ly) => {
+    expect(vecLen(gamepadStickToMove(lx, ly))).toBeLessThanOrEqual(1 + EPSILON);
   });
 });

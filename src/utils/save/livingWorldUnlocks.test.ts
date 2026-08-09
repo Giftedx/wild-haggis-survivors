@@ -136,17 +136,21 @@ describe('save schema v23 — livingWorldUnlocks', () => {
     expect(migrated.livingWorldUnlocks.selectedCompanion).toBe('sheepdog');
   });
 
-  it('non-record livingWorldUnlocks falls back to defaults', () => {
-    for (const raw of [null, undefined, 'oops', 42, []]) {
-      const migrated = migrateSave({
-        schemaVersion: 23,
-        livingWorldUnlocks: raw,
-      });
-      expect(migrated.livingWorldUnlocks).toEqual({
-        unlockedCompanions: ['sheepdog'],
-        selectedCompanion: 'sheepdog',
-      });
-    }
+  it.each([
+    { sample: 'null', raw: null },
+    { sample: 'undefined', raw: undefined },
+    { sample: 'string', raw: 'oops' },
+    { sample: 'number', raw: 42 },
+    { sample: 'array', raw: [] },
+  ])('non-record livingWorldUnlocks sample $sample falls back to defaults', ({ raw }) => {
+    const migrated = migrateSave({
+      schemaVersion: 23,
+      livingWorldUnlocks: raw,
+    });
+    expect(migrated.livingWorldUnlocks).toEqual({
+      unlockedCompanions: ['sheepdog'],
+      selectedCompanion: 'sheepdog',
+    });
   });
 });
 
