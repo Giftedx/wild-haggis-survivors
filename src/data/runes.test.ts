@@ -27,9 +27,9 @@ describe('RUNES catalogue — biome-conditional (U1 Task 1)', () => {
     for (const id of biomeIds) {
       const r = RUNES[id];
       expect(r, `missing ${id}`).toBeDefined();
-      expect(r!.nameKey).toMatch(/^runes\./);
-      expect(r!.flavourKey).toMatch(/^runes\./);
-      expect(r!.glyph).toMatch(/^rune_/);
+      expect(r!.nameKey, `${id} nameKey`).toMatch(/^runes\./);
+      expect(r!.flavourKey, `${id} flavourKey`).toMatch(/^runes\./);
+      expect(r!.glyph, `${id} glyph`).toMatch(/^rune_/);
     }
   });
 
@@ -104,9 +104,9 @@ describe('RUNES i18n coverage (U1 Task 17)', () => {
       expect(name, `missing EN name for ${id}`).not.toBe(`runes.${id}.name`);
       expect(desc, `missing EN description for ${id}`).not.toBe(`runes.${id}.description`);
       expect(flav, `missing EN flavour for ${id}`).not.toBe(`runes.${id}.flavour`);
-      expect(name.length).toBeGreaterThan(0);
-      expect(desc.length).toBeGreaterThan(0);
-      expect(flav.length).toBeGreaterThan(0);
+      expect(name.length, `empty EN name for ${id}`).toBeGreaterThan(0);
+      expect(desc.length, `empty EN description for ${id}`).toBeGreaterThan(0);
+      expect(flav.length, `empty EN flavour for ${id}`).toBeGreaterThan(0);
     }
   });
 });
