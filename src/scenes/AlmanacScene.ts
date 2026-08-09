@@ -374,10 +374,7 @@ export class AlmanacScene extends Phaser.Scene {
   }
 
   /**
-   * Body renderer — each tab dispatches to a renderer module. For M2
-   * only Beasties is wired; the other three surfaces render the
-   * "coming soon" placeholder so the tab bar stays interactive without
-   * silently swapping to blank.
+   * Render the active Almanac book. All four tabs dispatch to their renderer modules.
    */
   private renderActiveBook(width: number, height: number, uiScale: number): void {
     this.activeBookHandle?.destroy();
@@ -486,19 +483,6 @@ export class AlmanacScene extends Phaser.Scene {
       this.rebuildAlmanacT407Nav();
       return;
     }
-
-    // Unreachable — all four tabs are wired. Defensive placeholder in
-    // case a future tab key is added to `ALMANAC_TAB_KEYS` without a
-    // renderer.
-    const placeholder = this.add
-      .text(width / 2, bodyTop + bodyHeight / 2, t('ui.almanac.coming_soon'), {
-        ...textStyle('body', { color: COLORS_CSS.TEXT_MUTED, align: 'center' }),
-        fontStyle: 'italic',
-      })
-      .setOrigin(0.5)
-      .setScale(uiScale);
-    this.bodyObjects.push(placeholder);
-    this.rebuildAlmanacT407Nav();
   }
 
   /**

@@ -374,8 +374,6 @@ export const ui = {
     tab_weys: 'WEYS',
     tab_finds: 'FINDS',
     tab_banter: 'BANTER',
-    /** Placeholder body for tabs that have not yet shipped content. */
-    coming_soon: 'Page unturned — the ink\'s still dryin.',
     /** Beasties book — progress pill at the top of the grid. */
     beasties_progress: '{seen} of {total} beasties kent',
     /** Kill-count chip on each cell. Intentionally short — the cell

@@ -75,19 +75,12 @@ const CROFT_ACTION_SECONDARY_HOVER = 0x514237;
 const CROFT_ACTION_TEXT = '#fff3d2';
 
 /**
- * H1 Gran's Croft — persistent between-runs hub that grows with the
- * player's progress (boss trophies, route polaroids, variant drove,
- * seasonal props). M1 ships the scaffold: backdrop, header, Gran
- * placeholder, hearth placeholder, ESC-to-Menu. Later milestones
- * layer in proper procedural sprites (T3/T4) and trophy data (M2).
+ * H1 Gran's Croft is the persistent between-runs hub. It grows with the
+ * player's progress through boss trophies, route polaroids, the variant drove,
+ * and seasonal props.
  *
  * Scene key: 'Croft'. Entered from MenuScene (post-T7) and
  * GameScene run-end (post-T9).
- *
- * Non-goals at this milestone:
- *  - Real trophy state (M2).
- *  - Variant drove silhouettes (M3).
- *  - Seasonal props auto-swap (M3 + E1 coupling).
  */
 export class CroftScene extends Phaser.Scene {
   private transitioning = false;
