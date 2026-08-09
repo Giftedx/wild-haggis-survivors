@@ -146,10 +146,16 @@ describe('cultural review release gate', () => {
       expect(typeof gate.releaseBlocking, `${gate.id} releaseBlocking must be boolean`).toBe(
         'boolean'
       );
-      expect(['needs_human_review', 'partially_verified_needs_editorial_review', 'approved']).toContain(
+      expect(
+        ['needs_human_review', 'partially_verified_needs_editorial_review', 'approved'],
+        `${gate.id} status must be an allowed value`
+      ).toContain(
         gate.status
       );
-      expect(['blocked_until_review', 'ship_release']).toContain(gate.releaseDecision);
+      expect(
+        ['blocked_until_review', 'ship_release'],
+        `${gate.id} releaseDecision must be an allowed value`
+      ).toContain(gate.releaseDecision);
       expect(Array.isArray(gate.reviewEvidence), `${gate.id} reviewEvidence must be an array`).toBe(
         true
       );
