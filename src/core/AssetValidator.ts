@@ -6,6 +6,12 @@ import { VARIANTS } from '../data/variants';
 import { WEAPON_DEFS } from '../data/weapons';
 import { RELICS } from '../data/relics';
 import { WILDLIFE_DEFS } from '../data/wildlife';
+import {
+  FLORA_BY_BIOME,
+  HEATHER_URBAN_PROPS,
+  SEASONAL_FLORA_INJECTIONS,
+  STORY_PROPS_BY_BIOME,
+} from '../systems/FloraScatter';
 
 /** Internal texture used as source for missing-key aliases (magenta checkerboard). */
 export const MISSING_PLACEHOLDER_KEY = '__whs_missing_texture__';
@@ -91,9 +97,6 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
   for (const k of [
     'entity_shadow',
     'boss_shadow',
-    'deco_thistle',
-    'deco_rock',
-    'deco_heather',
   ] as const) {
     pushKey(out, seen, 'aux', k, k);
   }
@@ -202,68 +205,36 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     pushKey(out, seen, 'croft', k, k);
   }
 
-  // Round 2 additions — urban Glasgow props, biome hazards, seasonal
-  // moor decorations. World-dressing pool for FloraScatter / hazard
-  // system to draw from.
+  for (const entries of Object.values(FLORA_BY_BIOME)) {
+    for (const [textureKey] of entries) {
+      pushKey(out, seen, 'decoration', textureKey, textureKey);
+    }
+  }
+  for (const textureKey of HEATHER_URBAN_PROPS) {
+    pushKey(out, seen, 'decoration', textureKey, textureKey);
+  }
+  for (const { key: textureKey } of SEASONAL_FLORA_INJECTIONS) {
+    pushKey(out, seen, 'decoration', textureKey, textureKey);
+  }
+  for (const textureKeys of Object.values(STORY_PROPS_BY_BIOME)) {
+    for (const textureKey of textureKeys) {
+      pushKey(out, seen, 'decoration', textureKey, textureKey);
+    }
+  }
+
+  // Additional hazard textures.
   for (const k of [
-    'deco_chippy_sign',
-    'deco_bus_stop',
-    'deco_newsprint',
-    'deco_close_door',
-    'deco_scaffold_post',
     'hazard_peat_pit',
     'hazard_falling_slate',
     'hazard_burn_water',
     'hazard_loose_scree',
     'hazard_tidal_wrack',
-    // B5 Phase 1 — Seawrack/Coastal flora authored sprites.
-    'deco_kelp_strand',
     // (backfill) B6 Highland Horrors hazards were shipped without validator
     // entries — lock them now so a future bake removal is caught.
     'hazard_wind_shear',
     'hazard_highland_mist',
-    'deco_barnacle_rock',
-    'deco_whelk_shell',
-    'deco_foam_line',
-    // B5 Phase 1b — Haar/Fog flora + hazard authored sprites.
     'hazard_slick_cobble',
-    'deco_fog_pier',
-    'deco_dripping_heather',
-    // B5 Phase 2 — Frost flora + hazard authored sprites.
     'hazard_rime_patch',
-    'deco_snow_patch',
-    'deco_bare_birch',
-    'deco_rime_bracken',
-    'deco_ptarmigan_print',
-    // deco_antler_shed already authored (sprites/decorations/antlerShed.ts)
-    // — used by frost STORY_PROPS_BY_BIOME, but not previously
-    // validator-locked. Lock it now so removing the bake is caught.
-    'deco_antler_shed',
-    'deco_autumn_leaves',
-    'deco_spring_shoot',
-    'deco_thaw_puddle',
-    'deco_winter_snowcap',
-    'deco_summer_barley',
-    'deco_waymarker_post',
-    'deco_pictish_stone',
-    'deco_ruined_croft',
-    'deco_clootie_ribbons',
-    'deco_fairy_ring',
-    'deco_selkie_skin',
-    'deco_pech_tools',
-    'deco_catsith_saucer',
-    'deco_brahan_eye_stone',
-    'deco_burns_scrap',
-    'deco_milestone',
-    'deco_bridge_plank',
-    'deco_peat_spade',
-    'deco_fishing_net',
-    'deco_salmon_leap',
-    'deco_standing_stone_glyph',
-    'deco_washer_cloth',
-    'deco_rowan_charm',
-    'deco_crannog_stake',
-    'deco_machair_shell',
     // Clyde Shipyard hazard.
     'hazard_molten_slag',
     // Black Bog hazard.
